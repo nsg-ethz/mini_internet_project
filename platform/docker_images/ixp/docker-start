@@ -1,0 +1,32 @@
+#!/bin/sh
+
+set -e
+
+##
+# For volume mounts...
+##
+chown -R quagga:quagga /etc/quagga
+/etc/init.d/quagga start
+
+sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/g' /etc/ssh/sshd_config
+
+mkdir -p /var/run/sshd
+chmod 0755 /var/run/sshd
+/usr/sbin/sshd
+
+mkdir -p /root/.ssh
+
+/usr/share/openvswitch/scripts/ovs-ctl start
+
+ovs-vsctl add-br IXP
+ovs-ofctl add-flow IXP action=NORMAL
+
+sysctl -w net.ipv4.icmp_ratelimit="0"
+
+while true
+do
+    sleep 30
+done
+
+# docker run -itd --net='none' --name="IXP_TEST" --hostname "IXP" -v /Users/thomas/Documents/Zurich/mini_internet/debian_frr/daemons:/etc/quagga/daemons -v /Users/thomas/Documents/Zurich/mini_internet/debian_frr/zebra.conf:/etc/quagga/zebra.conf -v /Users/thomas/Documents/Zurich/mini_internet/debian_frr/bgpd.conf:/etc/quagga/bgpd.conf --privileged thomahol/d_ixp
+# docker run -itd --net='none' --name="IXP_TEST" --hostname "IXP" -v /Users/thomas/Documents/Zurich/mini_internet/debian_frr/daemons:/etc/quagga/daemons --privileged thomahol/d_ixp

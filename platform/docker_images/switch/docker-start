@@ -1,0 +1,18 @@
+#!/bin/sh
+
+set -e
+
+sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/g' /etc/ssh/sshd_config
+
+mkdir -p /var/run/sshd
+chmod 0755 /var/run/sshd
+/usr/sbin/sshd
+
+mkdir -p /root/.ssh
+
+/usr/share/openvswitch/scripts/ovs-ctl start
+
+while true
+do
+  sleep 1000
+done

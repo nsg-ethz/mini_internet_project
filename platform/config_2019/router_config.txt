@@ -1,0 +1,8 @@
+LOND	N/A	host
+ZURI	MGT	L2
+BARC	N/A	host
+ROMA	DNS	host
+NEWY	N/A	host
+HOUS	MATRIX_TARGET	host
+TOKY	MATRIX	host
+ABID	N/A	host

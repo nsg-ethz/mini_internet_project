@@ -1,0 +1,8 @@
+#!/bin/sh
+
+set -e
+
+while true
+do
+  sleep 1000
+done

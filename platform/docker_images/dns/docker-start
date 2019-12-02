@@ -1,0 +1,10 @@
+#!/bin/sh
+
+set -e
+
+service bind9 start
+
+while true
+do
+        sleep 1000
+done
