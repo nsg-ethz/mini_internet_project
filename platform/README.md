@@ -17,11 +17,8 @@ sudo apt-get install openvswitch-switch
 
 For further information, see the [installation guide](http://docs.openvswitch.org/en/latest/intro/install/).
 
-```
-
 # Install OpenVPN
 
-You also need to install `easy-rsa` to generate keys and certificate.
 ```
 sudo apt-get install openvpn
 ```
