@@ -1,0 +1,8 @@
+LOND	N/A    host
+AMST    N/A host
+BRUS    DNS host
+PARI    MATRIX host
+FRAN    N/MATRIX_TARGET host
+ZURI    MGT L2
+MUNI    N/A host
+MILA    N/A host

@@ -1,0 +1,207 @@
+#!/bin/bash
+
+# All subnets are definded here.
+# Whenever an ip is needed this file is loaded
+
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+subnet_group () {
+  local n_grp="$1"
+
+  echo "${n_grp}"".0.0.0/8"
+}
+
+subnet_host_router () {
+  local n_grp="$1" n_router="$2" device="$3"
+
+  if [ "$device" = "host" ] ; then
+
+    echo "${n_grp}"".""$(($n_router+101))"".0.1/24"
+
+  elif [ "$device" = "router" ] ; then
+
+    echo "${n_grp}"".""$(($n_router+101))"".0.2/24"
+
+  elif [ "$device" = "bridge" ] ; then
+
+    echo "${n_grp}"".""$(($n_router+101))"".0.0 netmask 255.255.255.0"
+
+  fi
+}
+
+subnet_l2_router () {
+  local n_grp="$1" vlan="$2" n_host="$3"
+
+  echo "${n_grp}"".200.$vlan.$n_host/24"
+}
+
+gw_l2_ () {
+  local n_grp="$1" vlan="$2" n_host="$3"
+
+  echo "${n_grp}"".200.$vlan.$n_host/24"
+}
+
+subnet_router () {
+  local n_grp="$1" n_router="$2"
+
+  echo "${n_grp}"".""$(($n_router+201))"".0.1/24"
+}
+
+subnet_router_router_intern () {
+  local n_grp="$1" n_net="$2" device="$3"
+
+  if [ "${device}" = "1" ] ; then
+
+    echo "${n_grp}"".0."$((${n_net}+1))".1/24"
+
+  elif [ "${device}" = "2" ] ; then
+
+    echo "${n_grp}"".0."$((${n_net}+1))".2/24"
+
+  elif [ "${device}" = "bridge" ] ; then
+
+    echo "${n_grp}"".0."$((${n_net}+1))".0 netmask 255.255.255.0"
+
+  fi
+}
+
+subnet_router_router_extern () {
+  local n_net="$1" device="$2"
+
+  if [ "${device}" = "1" ] ; then
+
+    echo "179.24."$((${n_net}+1))".1/24"
+
+  elif [ "${device}" = "2" ] ; then
+
+    echo "179.24."$((${n_net}+1))".2/24"
+
+  elif [ "${device}" = "bridge" ] ; then
+
+    echo "179.24."$((${n_net}+1))".0 netmask 255.255.255.0"
+
+  fi
+}
+
+subnet_router_IXP () {
+  local n_grp="$1" n_ixp="$2" device="$3"
+
+  if [ "${device}" = "group" ] ; then
+
+    echo "180."${n_ixp}".0."${n_grp}"/24"
+
+  elif [ "${device}" = "IXP" ] ; then
+
+    echo "180."${n_ixp}".0."${n_ixp}"/24"
+
+  elif [ "${device}" = "bridge" ] ; then
+
+    echo "180."${n_ixp}".0.0 netmask 255.255.255.0"
+
+  fi
+}
+
+subnet_router_MGT () {
+  local n_grp="$1" device="$2"
+
+  if [ "${device}" = "group" ] ; then
+
+    echo "${n_grp}"".0.199.1/24"
+
+  elif [ "${device}" = "mgt" ] ; then
+
+    echo "${n_grp}"".0.199.2/24"
+
+  elif [ "${device}" = "bridge" ] ; then
+
+    echo "${n_grp}"".0.199.0 netmask 255.255.255.0"
+
+  fi
+}
+
+subnet_router_MATRIX () {
+  local n_grp="$1" device="$2"
+
+  if [ "${device}" = "group" ] ; then
+
+    echo "${n_grp}"".0.198.1/24"
+
+elif [ "${device}" = "matrix" ] ; then
+
+    echo "${n_grp}"".0.198.2/8"
+
+  elif [ "${device}" = "bridge" ] ; then
+
+    echo "${n_grp}"".0.198.0 netmask 255.255.255.0"
+
+  fi
+}
+
+subnet_router_DNS () {
+  local n_grp="$1" device="$2"
+
+  if [ "${device}" = "group" ] ; then
+
+    echo "198.0.0."${n_grp}"/24"
+
+  elif [ "${device}" = "mgt" ] ; then
+
+    echo "198.0.0.101/24"
+
+  elif [ "${device}" = "dns" ] ; then
+
+    echo "198.0.0.100/24"
+
+  elif [ "${device}" = "bridge" ] ; then
+
+    echo "198.0.0.0 netmask 255.255.255.0"
+
+  fi
+}
+
+subnet_ext_sshContainer () {
+  local n_grp=$1 device="$2"
+
+  if [ "${device}" = "sshContainer" ] ; then
+
+    echo "157.0.0.$(($n_grp+10))/24"
+
+  elif [ "${device}" = "MGT" ] ; then
+
+    echo "157.0.0.250/24"
+
+  elif [ "${device}" = "bridge" ] ; then
+
+    echo "157.0.0.1 netmask 255.255.255.0"
+
+  fi
+}
+
+subnet_sshContainer_groupContainer () {
+  local n_grp="$1" n_router="$2" n_layer2="$3" device="$4"
+
+  if [ "${device}" = "sshContainer" ] ; then
+
+    echo "158."$n_grp".0.2/16"
+
+  elif [ "${device}" = "router" ] ; then
+
+    echo "158."$n_grp".$((n_router+10)).1/16"
+
+  elif [ "${device}" = "host" ] ; then
+
+    echo "158."$n_grp".$((n_router+10)).2/16"
+
+  elif [ "${device}" = "L2" ] ; then
+
+    echo "158."$n_grp".$((n_router+10)).$((n_layer2+2))/16"
+
+  elif [ "${device}" = "bridge" ] ; then
+
+    echo "158."$n_grp".0.1 netmask 255.255.0.0"
+
+  fi
+}
