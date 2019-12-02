@@ -131,7 +131,7 @@ echo ""
 
 echo "create_ping_scripts.sh: "
 echo "create_ping_scripts.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
-time ./connectivity_matrix/create_ping_scripts.sh "${DIRECTORY}"
+time ./setup/create_ping_scripts.sh "${DIRECTORY}"
 
 echo ""
 echo ""
