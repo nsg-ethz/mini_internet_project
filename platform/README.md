@@ -1,8 +1,8 @@
-### Prerequisites
+# Prerequisites
 
 We run our mini-Internet on Ubuntu 18.04.
 
-# Install the Docker Engine
+#### Install the Docker Engine
 ```
 sudo apt-get update
 sudo apt install docker.io
@@ -10,7 +10,7 @@ sudo apt install docker.io
 
 For further information, see the [installation guide](https://docs.docker.com/install/linux/docker-ce/ubuntu/).
 
-# Install OpenVSwitch
+#### Install OpenVSwitch
 ```
 sudo apt-get install openvswitch-switch
 ```
