@@ -1,6 +1,6 @@
 # The mini-Internet documentation
 
-## Prerequisites
+## Prerequisite
 
 The following installation guide works for Ubuntu 18 and the Linux 4.15.0 kernel.
 
