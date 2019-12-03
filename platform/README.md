@@ -35,7 +35,7 @@ Then run the startup script:
 sudo startup.sh
 ```
 
-By default, this will run a mini-Internet with 20ASes. Make sure your server has enough resources to sustain this mini-Internet (e.g., around 64GB of memory are recommended). Otherwise, see in section [configure the mini-Internet](configure-the-mini-internet) how to run a mini-Internet with only one AS.
+By default, this will run a mini-Internet with 20ASes. Make sure your server has enough resources to sustain this mini-Internet (e.g., around 64GB of memory are recommended). Otherwise, see in section [configure the mini-Internet](README.md#configure-the-mini-internet) how to run a mini-Internet with only one AS.
 
 
 ## Configure the mini-Internet
