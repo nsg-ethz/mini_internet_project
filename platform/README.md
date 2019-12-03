@@ -51,7 +51,7 @@ However, this script used the configuration files, so is they have changed since
 sudo ./hard_reset.sh
 ```
 
-## Configure the mini-Internet
+## Configure the mini-Internet topology
 
 In the `config` directory, you can find all the configuration files used to define the topology of the mini-Internet.
 
