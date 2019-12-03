@@ -149,3 +149,49 @@ For instance to jump into the host connected to the router ABID, use the followi
 ```
 
 Once in a host, switch or router, just type `exit` to go back to the proxy container.
+
+
+## Use the monitoring tools and services
+
+We now explain how are built the different monitoring tools and services, and how to use them.
+
+#### Looking glass
+
+Every container running a router pulls the routing table from the FRRouting CLI and stores it in `/home/looking_glass.txt`.
+Then, you can simply periodically get that file with e.g., `docker cp 1_ABIDrouter:/home/looking_glass.txt .` and make it available to the students, for instance on a web interface.
+
+#### Active probing
+
+To run measurements between any two ASes, we must use a dedicated container called the management container. 
+To access the management VM, we must use the port 2099:
+
+```
+ssh -p 2099 root@server.ethz.ch
+```
+
+The password is available in the file `groups/ssh_mgt.txt`, and should be made available to the students do that they can access it. \
+In the management VM, we provide a script called `launch_traceroute.sh` that relies on `nping` you which you can use to launch traceroute between any two ASes. For example if you want to run a traceroute from AS 1 to AS 2, simply run the following command
+
+```
+./launch_traceroute.sh 1 2.101.0.1
+```
+
+where 2.101.0.1 is an IP address of a host in AS2.
+By default, the management container is connected to the router ZURI in every AS. You can see this in the config file `config/router_config.txt`. The second column of the ZURI row is `MGT` which means that the management container is connected to the ZURI router, but you can edit this file so that the management VM is connected to another router instead. 
+
+#### Connectivity matrix
+
+Another container called `MATRIX` is also connected to every AS. By looking at the config file `config/router_config.txt`, we can see to which router it is connected in every AS and towards which router it sends ping requests in every other AS. By default, the matrix container is connected to TOKY and HOUS. The pings are sent from TOKY and are destined to the HOUS routers. 
+Only the instructor can access the MATRIX container, from the server with:
+
+```
+sudo docker exec -it MATRIX bash
+```
+
+To generate the connectivity matrix, just run the following script:
+```
+cd /home
+.ping_all_groups.sh
+```
+
+The connectivity matrix is then available in the file `/home/connectivity.txt`, where 1 means connectivity, and 0 means no connectivity. You can then periodically download this file and making it available to the students on e.g., a web interface. 
