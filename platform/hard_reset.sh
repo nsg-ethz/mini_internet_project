@@ -30,9 +30,8 @@ fi
 
 # Delete virtual interfaces
 for n in $(ip -o link show | awk -F': ' '{print $2}'); do
-    if [[ ! $n =~ ^(enp|lo|eth) ]]; then
-        echo "ip link delete $n"
-        ip link delete $n
+    if [[ ! $n =~ ^(en|lo|eth) ]]; then
+        ip link delete $(echo $n | cut -d'@' -f 1)
     fi
 done
 
