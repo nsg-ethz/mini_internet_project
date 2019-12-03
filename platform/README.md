@@ -61,13 +61,17 @@ In the `config` directory, you can find all the configuration files used to defi
 
 `layer2_hosts_config.txt`: This file indicates the hosts that are in the layer 2 network, and to which they are directly connected. For instance the host student_1 is by default connected to ETH-IRCH. The next two columns indicate the throughout and delay, respectively. The last column indicates in which VLAN is each host. Also not that a host can be a VPN server, in which case it must start with "vpn_". 
 
-`router_config.txt`:
+#### Layer 3 topology
 
-`internal_links_config.txt`:
+`router_config.txt`: This file lists the routers. By default there are 8 routers. The second column indicates if a server (such as the connectivity matrix or the DNS server) is connected the to the network through the corresponding router. For instance, the DNS server is connected to ROMA. Finally the last column indicates whether a single host or a L2 network is connected to the router. By default, only the router ZURI is connected to a L2 network, all the others are connected to a single host.
 
-`AS_config.txt`:
+`internal_links_config.txt`: This is the internal topology. The first two columns indicate which pair of routers are interconnected, the last two columns indicate the throughput and delay of the link, respectively.
 
-`external_links_config.txt`:
+#### AS-level toplogy
+
+`AS_config.txt`: This file lists all the ASes and IXPs in the mini-Internet. By default, there are 20 ASes and 3 IXPs.
+
+`external_links_config.txt`: 
 
 ## Access the mini-Internet
 
