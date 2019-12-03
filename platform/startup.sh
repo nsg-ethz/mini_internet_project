@@ -105,18 +105,18 @@ time ./setup/external_links_setup.sh "${DIRECTORY}"
 echo ""
 echo ""
 
-echo "echo \"shh links\"" >> "${DIRECTORY}"/groups/ip_setup.sh
-echo "ssh_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
-echo "ssh_setup.sh: "
-time ./setup/ssh_setup.sh "${DIRECTORY}"
-
-echo ""
-echo ""
-
 echo "echo \"mgt links\"" >> "${DIRECTORY}"/groups/ip_setup.sh
 echo "mgt_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
 echo "mgt_setup.sh: "
 time ./setup/mgt_setup.sh "${DIRECTORY}"
+
+echo ""
+echo ""
+
+echo "echo \"shh links\"" >> "${DIRECTORY}"/groups/ip_setup.sh
+echo "ssh_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
+echo "ssh_setup.sh: "
+time ./setup/ssh_setup.sh "${DIRECTORY}"
 
 echo ""
 echo ""
