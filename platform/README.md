@@ -173,10 +173,17 @@ The password is available in the file `groups/ssh_mgt.txt`, and should be made a
 In the management VM, we provide a script called `launch_traceroute.sh` that relies on `nping` you which you can use to launch traceroute between any two ASes. For example if you want to run a traceroute from AS 1 to AS 2, simply run the following command
 
 ```
-./launch_traceroute.sh 1 2.101.0.1
+root@c7a60237994a:~# ./launch_traceroute.sh 1 2.101.0.1
+Hop 1:  1.0.199.1 TTL=0 during transit
+Hop 2:  1.0.8.2 TTL=0 during transit
+Hop 3:  179.24.1.2 TTL=0 during transit
+Hop 4:  2.0.8.1 TTL=0 during transit
+Hop 5:  2.0.1.1 TTL=0 during transit
+Hop 6:  2.101.0.1 Echo reply (type=0/code=0)
 ```
 
-where 2.101.0.1 is an IP address of a host in AS2.
+where 2.101.0.1 is an IP address of a host in AS2 (here we tested on a topology with 2 ASes). You can see the path used by the packets to reach the destination IP. 
+
 By default, the management container is connected to the router ZURI in every AS. You can see this in the config file `config/router_config.txt`. The second column of the ZURI row is `MGT` which means that the management container is connected to the ZURI router, but you can edit this file so that the management VM is connected to another router instead. 
 
 #### Connectivity matrix
