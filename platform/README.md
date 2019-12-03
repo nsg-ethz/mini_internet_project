@@ -35,8 +35,59 @@ Then run the startup script:
 sudo startup.sh
 ```
 
-By default, this will run a mini-Internet with 20ASes. Make sure your server has enough resources to sustain this mini-Internet (e.g., around 64GB of memory are recommended). Otherwise, see in section [configure the mini-Internet](README.md#configure-the-mini-internet) how to run a mini-Internet with only one AS.
+By default, this will run a mini-Internet with 20ASes. Make sure your server has enough resources to sustain this mini-Internet (e.g., around 64GB of memory and 8 CPU cores are recommended). Otherwise, see in section [configure the mini-Internet](README.md#configure-the-mini-internet) how to run a mini-Internet with only one AS.
 
+## Delete the mini-Internet
+
+The are two ways to delete the mini-Internet. First, you can delete all the virtual ethernet pairs, docker containers and ovs switches used in the mini-Internet, with the following command.
+```
+sudo ./cleanup/cleanup.sh .
+```
+
+However, this script used the configuration files, so is they have changed since the time the mini-Internet was built, not all the componenents will be deleted, and this will make problems if you want to run a new mini-Internet. We thus also provide you with a script that delete *all* the ethernet pairs, containers and switches, including the ones not used in for mini-Internet.
+```
+sudo ./hard_reset.sh
+```
 
 ## Configure the mini-Internet
+
+In the `config` directory, you can find all the configuration files used to define the topology of the mini-Internet.
+
+#### Layer 2 topology
+
+`layer2_switches_config.txt`: The file lists the switches in the L2 network. By default there are four switches (ETH-ZENT, ETH-HONG, ETH-IRCH, ETH-OERL). The second column indicates whether the switch is connected to the L3 router, here by default ETH-ZENT is connected to the router. Finally the third column indicates the MAC address used as an 'ID' to configure the switch.
+
+`layer2_links_config.txt`: This file indicates how the l2 switches are interconnected. For instance by default ETH-ZENT is connected to ETH-IRCH, ETH-ZENT is connected to ETH-OERL, etc. THe last two columns indicate the throughput and the delay of the link, respectively.
+
+`layer2_hosts_config.txt`: This file indicates the hosts that are in the layer 2 network, and to which they are directly connected. For instance the host student_1 is by default connected to ETH-IRCH. The next two columns indicate the throughout and delay, respectively. The last column indicates in which VLAN is each host. Also not that a host can be a VPN server, in which case it must start with "vpn_". 
+
+#### Layer 3 topology
+
+`router_config.txt`: This file lists the routers. By default there are 8 routers. The second column indicates if a server (such as the connectivity matrix or the DNS server) is connected the to the network through the corresponding router. For instance, the DNS server is connected to ROMA. Finally the last column indicates whether a single host or a L2 network is connected to the router. By default, only the router ZURI is connected to a L2 network, all the others are connected to a single host.
+
+`internal_links_config.txt`: This is the internal topology. The first two columns indicate which pair of routers are interconnected, the last two columns indicate the throughput and delay of the link, respectively.
+
+#### AS-level toplogy
+
+`AS_config.txt`: This file lists all the ASes and IXPs in the mini-Internet. By default, there are 20 ASes and 3 IXPs.
+
+`external_links_config.txt`: This file describes the AS-level topology, and which router in one AS is connected which router in another AS. Let us take this line as example:
+
+`1	HOUS	Provider	3	LOND	Customer	10000	1000	N/A`
+
+This means that the router HOUS (2nd column) in AS 1 (1st column) is connected to the router LOND (5th column) in AS 3 (4th column). AS1 is the provider (3rd column) and AS3 is the customer (6th column).
+
+Sometimes, an AS can also be connected to an IXP, for instance:
+
+`2	BARC	Peer	80	N/A	Peer	10000	1000	1,2,11,12`
+
+When the 5th column is N/A, it means it is an IXP, and the AS number of the IXP is 80.
+the column (1,2,11,12) indicate to which participants the routes advertised by AS2 should be propagated.
+
+As usual, the 7th and 8th columns indicate the throughput and the bandwidth, respectively.
+
+
+
+## Access the mini-Internet
+
 
