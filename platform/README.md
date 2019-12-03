@@ -131,8 +131,24 @@ To enable the student access through SSH, first the instructor needs to enable t
 
 `sudo portforwarding.sh`
 
+Make sure the following options are se to true in `/etc/sshd_config`:
+```
+GatewayPorts yes
+PasswordAuthentication yes
+AllowTcpForwarding yes
+```
+
 Then, the students can connect from outside. First, the students have to connect to the ssh proxy container:
 
-`ssh -p 2001 
+```ssh -p [2000+X] root@server.ethz.ch```
 
+with X the group number. The passwords of the groups are available in the file `groups/ssh_passwords.txt`
 
+Once in the proxy container, the student can use the `goto.sh` script to access a host, switch or router. 
+For instance to jump into the host connected to the router ABID, use the following command:
+
+```
+./goto ABID host
+```
+
+Once in a host, switch or router, just type `exit` to go back to the proxy container.
