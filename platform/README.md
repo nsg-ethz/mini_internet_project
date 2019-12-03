@@ -1,3 +1,5 @@
+# The mini-Internet documentation
+
 ## Prerequisites
 
 The following installation guide works for Ubuntu 18.
