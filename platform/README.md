@@ -71,7 +71,22 @@ In the `config` directory, you can find all the configuration files used to defi
 
 `AS_config.txt`: This file lists all the ASes and IXPs in the mini-Internet. By default, there are 20 ASes and 3 IXPs.
 
-`external_links_config.txt`: 
+`external_links_config.txt`: This file describes the AS-level topology, and which router in one AS is connected which router in another AS. Let us take this line as example:
+
+`1	HOUS	Provider	3	LOND	Customer	10000	1000	N/A`
+
+This means that the router HOUS (2nd column) in AS 1 (1st column) is connected to the router LOND (5th column) in AS 3 (4th column). AS1 is the provider (3rd column) and AS3 is the customer (6th column).
+
+Sometimes, an AS can also be connected to an IXP, for instance:
+
+`2	BARC	Peer	80	N/A	Peer	10000	1000	1,2,11,12`
+
+When the 5th column is N/A, it means it is an IXP, and the AS number of the IXP is 80.
+the column (1,2,11,12) indicate to which participants the routes advertised by AS2 should be propagated.
+
+As usual, the 7th and 8th columns indicate the throughput and the bandwidth, respectively.
+
+
 
 ## Access the mini-Internet
 
