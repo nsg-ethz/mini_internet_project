@@ -35,3 +35,6 @@ done
 if [ -e groups ]; then
   rm -rf groups
 fi
+
+# Kill the openvpn processes
+sudo killall openvpn
