@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-The following installation guide works for Ubuntu 18.
+The following installation guide works for Ubuntu 18 and the Linux 4.15.0 kernel.
 
 #### Install the Docker Engine
 ```
