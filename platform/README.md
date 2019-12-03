@@ -195,3 +195,23 @@ cd /home
 ```
 
 The connectivity matrix is then available in the file `/home/connectivity.txt`, where 1 means connectivity, and 0 means no connectivity. You can then periodically download this file and making it available to the students on e.g., a web interface. 
+
+#### The DNS service
+
+Finally, another container, connected to every AS and only available to the instructor run a bind9 DNS server.
+By looking at the file `config/router_config.txt`, we can see that the DNS container is to connected to every router ROMA.
+As soon as the students have configured intra-domain routing, they should be able to use the DNS.
+
+For instance, a traceroute from HOUS-host to ABID-host will return this:
+
+```
+root@HOUS_host:~# traceroute  1.108.0.1 --resolve-hostnames
+traceroute to 1.108.0.1 (1.108.0.1), 64 hops max
+  1   1.106.0.2 (HOUS-host.group1)  0.394ms  0.005ms  0.003ms
+  2   1.0.6.1 (LOND-HOUS.group1)  0.143ms  0.145ms  0.129ms
+  3   1.0.2.2 (BARC-LOND.group1)  2.159ms  2.168ms  2.150ms
+  4   1.0.11.2 (ABID-BARC.group1)  2.199ms  2.277ms  2.253ms
+  5   1.108.0.1 (host-ABID.group1)  2.383ms  2.289ms  2.290ms
+  ```
+  
+  Observe that we must use the option `--resolve-hostnames` to make traceroute resolve the hostnames.
