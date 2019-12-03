@@ -86,8 +86,53 @@ the column (1,2,11,12) indicate to which participants the routes advertised by A
 
 As usual, the 7th and 8th columns indicate the throughput and the bandwidth, respectively.
 
+The file `subnet_config.sh` and `daemons` are used to configure the IP addresses and the routers, we recommend not to modify these files.
+
+
+#### Change the size of the mini-Internet
+
+You may want to run a smaller of larger mini-Internet. For instance, if you just want to quickly experience the mini-Internet, or if you only have a small VM, you should run a very small Internet with only AS. Alternatively, if you want to run the mini-Internet for a class project, you may to run a larger one with e.g., 60 ASes. 
+In the directory `config_2019` with provide you with a set of configuration files for different size of the mini-Internet that you can just copy/past in the `config` directory. The AS-level topologies follow the structure we used in the 2019 iteration of the mini-Internet project. We always use the L3 and L2 topologies.
+
+To run a mini-Internet with only 1 AS, just copy the following files:
+
+```
+cp config_2019/AS_config_1.txt config/AS_config.txt
+cp config_2019/external_links_config_1.txt config/external_links_config.txt
+```
+
+To run a mini-Internet with 60 ASes, copy the following files:
+
+```
+cp config_2019/AS_config_60.txt config/AS_config.txt
+cp config_2019/external_links_config_60.txt config/external_links_config.txt
+```
+
+
+
+
 
 
 ## Access the mini-Internet
+
+You can access the mini-Internet in two ways.
+
+#### Instructor access with docker
+
+First, if you are the instructors and have access to the server hosting the mini-Internet, you can directly access the containers using the docker commands. First, type `sudo docker ps` to get a list of all the containers running. The names of the hosts, switches and routers always follow the same convention. To access the router LOND in AS1, just use the following command:
+
+`sudo docker exec -it 1_LONDrouter bash`
+
+Then, run `vtysh` to access the CLI of that router. Just change the name according the container you want to access. 
+
+#### Student access with SSH
+
+To enable the student access through SSH, first the instructor needs to enable the ssh port forwarding with the following command:
+
+`sudo portforwarding.sh`
+
+Then, the students can connect from outside. First, the students have to connect to the ssh proxy container:
+
+`ssh -p 2001 
 
 
