@@ -163,7 +163,7 @@ Then, you can simply periodically get that file with e.g., `docker cp 1_ABIDrout
 #### Active probing
 
 To run measurements between any two ASes, we must use a dedicated container called the management container. 
-To access the management VM, we must use the port 2099:
+To access the management container, we must use the port 2099:
 
 ```
 ssh -p 2099 root@server.ethz.ch
