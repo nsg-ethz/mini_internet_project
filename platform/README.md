@@ -108,11 +108,6 @@ cp config_2019/AS_config_60.txt config/AS_config.txt
 cp config_2019/external_links_config_60.txt config/external_links_config.txt
 ```
 
-
-
-
-
-
 ## Access the mini-Internet
 
 You can access the mini-Internet in two ways.
@@ -129,7 +124,7 @@ Then, run `vtysh` to access the CLI of that router. Just change the name accordi
 
 To enable the student access through SSH, first the instructor needs to enable the ssh port forwarding with the following command:
 
-`sudo portforwarding.sh`
+`sudo ./portforwarding.sh`
 
 Make sure the following options are se to true in `/etc/sshd_config`:
 ```
