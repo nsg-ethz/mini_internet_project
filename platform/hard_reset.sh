@@ -2,10 +2,6 @@
 #
 # remove all container, bridges and temporary files
 
-set -o errexit
-set -o pipefail
-set -o nounset
-
 # kill all container
 for container in `docker ps -q`; do
   docker kill "${container}" >/dev/nul &
