@@ -182,6 +182,8 @@ auth-user-pass
 The file `ca.crt`, automatically generated when building the mini-Internet and available in the directory `groups/gX/vpn/vpn_n` must be given to the student. 
 Finally, the username is `groupX` (X is the group number) and the password is the same than the one used to access the proxy container. 
 
+When connected, the student should have an interface `tap` with an IP address configured and that is connected to the mini-Internet.
+
 ## Use the monitoring tools and services
 
 We now explain how are built the different monitoring tools and services, and how to use them.
