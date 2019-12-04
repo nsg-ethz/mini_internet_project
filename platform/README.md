@@ -164,7 +164,7 @@ sudo openvpn --config client.conf
 We provide the `client.conf` file below, but VPN_IP must be replace by the IP address of the server hosting the mini-Internet, and VPN_PORT must be replaced by the port which the VPN server we want to use listen to.
 To find the port of a VPN server, we use the following convention: the port of the n-th VPN server in group X is 1000+(X\*m)+(n-1) where m is number of VPN server per AS (i.e., 2 by default).
 
-'''
+```
 client
 remote VPN_IP VPN_PORT
 dev tap
@@ -177,7 +177,7 @@ ca ca.crt
 cipher AES-256-CBC
 verb 3
 auth-user-pass
-'''
+```
 
 The file `ca.crt`, automatically generated when building the mini-Internet and available in the directory `groups/gX/vpn/vpn_n` must be given to the student. 
 Finally, the username is `groupX` (X is the group number) and the password is the same than the one used to access the proxy container. 
