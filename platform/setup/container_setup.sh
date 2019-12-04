@@ -33,8 +33,9 @@ for ((k=0;k<group_numbers;k++)); do
         location="${DIRECTORY}"/groups/g"${group_number}"
         # start ssh container
         docker run -itd --net='none'  --name="${group_number}""_ssh" \
-          -v "${location}"/goto.sh:/root/goto.sh --privileged thomahol/d_ssh \
-          --hostname "g${group_number}-proxy"
+          -v "${location}"/goto.sh:/root/goto.sh --privileged \
+          --hostname="g${group_number}-proxy" thomahol/d_ssh
+
 
         for ((i=0;i<n_routers;i++)); do
             router_i=(${routers[$i]})
