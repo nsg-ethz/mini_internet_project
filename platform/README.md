@@ -161,7 +161,7 @@ To use the VPN, a student must first install OpenVPN, and run it with the follow
 sudo openvpn --config client.conf
 ```
 
-We provide the `client.conf` file below, but VPN_IP must be replace by the IP address of the server hosting the mini-Internet, and VPN_PORT must be replaced by the port which the VPN server we want to use listen to.
+We provide the `client.conf` file below, where VPN_IP must be replace by the IP address of the server hosting the mini-Internet, and VPN_PORT must be replaced by the port on which the VPN server we want to use listen to.
 To find the port of a VPN server, we use the following convention: the port of the n-th VPN server in group X is 1000+(X\*m)+(n-1) where m is number of VPN server per AS (i.e., 2 by default).
 
 ```
