@@ -3,6 +3,7 @@
 In this README, we explain how to [install the required software](https://github.com/nsg-ethz/mini_internet_project/tree/master/platform#prerequisite), how to [run the mini-Internet](https://github.com/nsg-ethz/mini_internet_project/tree/master/platform#run-the-mini-internet), how to [delete it](https://github.com/nsg-ethz/mini_internet_project/tree/master/platform#delete-the-mini-internet), how to [configure it](https://github.com/nsg-ethz/mini_internet_project/tree/master/platform#configure-the-mini-internet-topology), how to [access its components](https://github.com/nsg-ethz/mini_internet_project/tree/master/platform#configure-the-mini-internet-topology), and how to use the different [monitoring tools](https://github.com/nsg-ethz/mini_internet_project/tree/master/platform#use-the-monitoring-tools-and-services).
 
 We run our mini-Internet on a server with Ubuntu 18.04 and the Linux 4.15.0 kernel.
+For more detail about the default topology used when you run the mini-Internet, along with the other topologies already prepared and ready to be used, see the documentation in the directory `config`.
 
 ## Prerequisite
 
@@ -41,16 +42,16 @@ Then run the startup script:
 sudo ./startup.sh
 ```
 
-By default, this will run a mini-Internet with 20ASes. :warning: Make sure your server has enough resources to sustain this mini-Internet (e.g., around 64GB of memory and at least 8 CPU cores are recommended). Otherwise, see in section [configure the mini-Internet](README.md#configure-the-mini-internet) how to run a mini-Internet with only one AS.
+By default, this will run a mini-Internet with 20ASes. :warning: Make sure your server has enough resources to sustain this mini-Internet (e.g., around 64GB of memory and at least 8 CPU cores are recommended). Otherwise, see in section [configure the mini-Internet](https://github.com/nsg-ethz/mini_internet_project/blob/master/platform/README.md#configure-the-mini-internet-topology) how to run a mini-Internet with only one AS.
 
 ## Delete the mini-Internet
 
-The are two ways to delete the mini-Internet. First, you can delete all the virtual ethernet pairs, docker containers and ovs switches used in the mini-Internet, with the following command.
+The are two ways to delete the mini-Internet. First, you can delete all the virtual ethernet pairs, docker containers, ovs switches and openvpn processes used in the mini-Internet, with the following command.
 ```
 sudo ./cleanup/cleanup.sh .
 ```
 
-However, this script used the configuration files, so is they have changed since the time the mini-Internet was built, not all the componenents will be deleted, and this will make problems if you want to run a new mini-Internet. We thus also provide you with a script that delete *all* the ethernet pairs, containers and switches, including the ones not used in for mini-Internet.
+However, this script uses the configuration files, thus if they have changed since the time the mini-Internet was built, or if the mini-Internet did not setup properly, not all the componenents might be deleted, in which case in can make some problems if you want to build a new mini-Internet. We thus also provide you with a script that delete *all* the ethernet pairs, containers and switches, :warning: including the ones not used in for mini-Internet. 
 ```
 sudo ./hard_reset.sh
 ```
