@@ -1,8 +1,12 @@
 # The mini-Internet documentation
 
+In this README, we explain how to [install the required software](https://github.com/nsg-ethz/mini_internet_project/tree/master/platform#prerequisite), how to [run the mini-Internet](https://github.com/nsg-ethz/mini_internet_project/tree/master/platform#run-the-mini-internet), how to [delete it](https://github.com/nsg-ethz/mini_internet_project/tree/master/platform#delete-the-mini-internet), how to [configure it](https://github.com/nsg-ethz/mini_internet_project/tree/master/platform#configure-the-mini-internet-topology), how to [access its components](https://github.com/nsg-ethz/mini_internet_project/tree/master/platform#configure-the-mini-internet-topology), and how to use the different [monitoring tools](https://github.com/nsg-ethz/mini_internet_project/tree/master/platform#use-the-monitoring-tools-and-services).
+
+We run our mini-Internet on a server with Ubuntu 18.04 and the Linux 4.15.0 kernel.
+
 ## Prerequisite
 
-The following installation guide works for Ubuntu 18 and the Linux 4.15.0 kernel.
+To build the mini-Internet, you need to install the following software.
 
 #### Install the Docker Engine
 ```
@@ -25,9 +29,9 @@ For further information, see the [installation guide](http://docs.openvswitch.or
 sudo apt-get install openvpn
 ```
 
-## Run the mini-Internet
+## Build the mini-Internet
 
-Clone this directory in your server, and go in the directory `platform`.
+To build the mini-Internet, first clone this repository in your server, and go in the directory `platform`.
 ```
 cd platform
 ```
@@ -37,7 +41,7 @@ Then run the startup script:
 sudo ./startup.sh
 ```
 
-By default, this will run a mini-Internet with 20ASes. Make sure your server has enough resources to sustain this mini-Internet (e.g., around 64GB of memory and 8 CPU cores are recommended). Otherwise, see in section [configure the mini-Internet](README.md#configure-the-mini-internet) how to run a mini-Internet with only one AS.
+By default, this will run a mini-Internet with 20ASes. :warning: Make sure your server has enough resources to sustain this mini-Internet (e.g., around 64GB of memory and at least 8 CPU cores are recommended). Otherwise, see in section [configure the mini-Internet](README.md#configure-the-mini-internet) how to run a mini-Internet with only one AS.
 
 ## Delete the mini-Internet
 
