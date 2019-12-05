@@ -1,12 +1,12 @@
 # The mini-Internet topology
 
-In the directory you will find the default configuration files that define the topology used when building the mini-Internet. 
+In this directory you will find the default configuration files that define the topology used when building the mini-Internet. 
 The files `layer2_hosts_config.txt`, `layer2_switches_config.txt` and `layer2_links_config.txt` define the L2 topology.
 The default L2 topology is the following one:
 
 <img src="l2network-crop.png" width="600" />
 
-The file `router_config.txt` and `internal_links_config.txt` define the L3 topology. The default topology and the default IP address allocation scheme is depicted in the figure below. 
+The file `router_config.txt` and `internal_links_config.txt` define the L3 topology. The default L3 topology and the default IP address allocation scheme is depicted in the figure below. 
 
 <img src="l3network-crop.png" width="800">
 
