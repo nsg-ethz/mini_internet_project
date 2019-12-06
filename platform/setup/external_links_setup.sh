@@ -72,11 +72,9 @@ for ((i=0;i<n_extern_links;i++)); do
         echo "ifconfig "${br_name}" 0.0.0.0 up" >> "${DIRECTORY}"/groups/ip_setup.sh
 
         ./setup/ovs-docker.sh add-port  "${br_name}" ext_"${grp_2}"_"${router_grp_2}" \
-        "${grp_1}"_"${router_grp_1}"router --ipaddress="${subnet_router1}" \
-        --delay="${delay}" --throughput="${throughput}"
+        "${grp_1}"_"${router_grp_1}"router --delay="${delay}" --throughput="${throughput}"
 
         ./setup/ovs-docker.sh add-port "${br_name}" ext_"${grp_1}"_"${router_grp_1}" \
-        "${grp_2}"_"${router_grp_2}"router --ipaddress="${subnet_router2}" \
-        --delay="${delay}" --throughput="${throughput}"
+        "${grp_2}"_"${router_grp_2}"router  --delay="${delay}" --throughput="${throughput}"
     fi
 done

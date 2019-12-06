@@ -42,12 +42,10 @@ for ((k=0;k<group_numbers;k++)); do
             subnet_router2="$(subnet_router_router_intern ${group_number} ${i} 2)"
 
             ./setup/ovs-docker.sh add-port "${br_name}" "port_""${router2}" \
-            "${group_number}"_"${router1}"router --ipaddress="${subnet_router1}" \
-            --delay="${delay}" --throughput="${throughput}"
+            "${group_number}"_"${router1}"router --delay="${delay}" --throughput="${throughput}"
 
             ./setup/ovs-docker.sh add-port "${br_name}" "port_""${router1}" \
-            "${group_number}"_"${router2}"router --ipaddress="${subnet_router2}" \
-            --delay="${delay}" --throughput="${throughput}"
+            "${group_number}"_"${router2}"router --delay="${delay}" --throughput="${throughput}"
 
             ./setup/ovs-docker.sh connect-ports "${br_name}" \
             "port_""${router2}" "${group_number}"_"${router1}"router \
