@@ -76,6 +76,7 @@ In addition, we also provide multiple sample topologies. Of course, you can also
 #### AS-level topology
 
 `AS_config.txt`: This file lists all the ASes and IXPs in the mini-Internet. By default, there are 20 ASes and 3 IXPs.
+"Config" in the third column indicates whether the components (hosts, switches and routers) in the corresponding AS should pre-configured, otherwise write "NoConfig". In the topologies we provide, all the ASes are pre-configured by default.
 
 `external_links_config.txt`: This file describes the AS-level topology, and which router in one AS is connected to which router in another AS. Let's take the following line as an example:
 
