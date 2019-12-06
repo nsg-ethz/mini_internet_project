@@ -2,9 +2,6 @@
 
 set -e
 
-##
-# For volume mounts...
-##
 chown -R frr:frr /etc/frr
 /etc/init.d/frr start
 

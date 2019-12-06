@@ -17,15 +17,5 @@ cp /launch_traceroute.sh /root/launch_traceroute.sh
 
 while true
 do
-
-  # echo "" > /root/mac_addresses
-  # for i in `seq 100`;do
-  #   ip route add default via $i.0.199.1 | true
-  #   ping $i.0.199.1 -c 1 -t 1 > /dev/null 2>&1 | true
-  #   echo `ip n | grep $i.0.199.1 | tr -s " " | cut -f 5 -d ' '` >>  /root/mac_addresses
-  #   ip route del default via $i.0.199.1 | true
-  # done
-  #
   sleep 60
-
 done

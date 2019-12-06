@@ -133,10 +133,6 @@ for ((k=0;k<group_numbers;k++)); do
 
                         echo "sudo ovs-vsctl add-port vpnbr_${group_k}_${host_l} tap_g"${group_number}_$hname >> groups/add_vpns.sh
                         echo "sudo ovs-vsctl add-port vpnbr_${group_k}_${host_l} g${group_number}_$hname" >> groups/add_vpns.sh
-                        # echo "port_id1=\`ovs-vsctl get Interface tap_g"${group_number}_$hname" ofport\`" >> groups/add_vpns.sh
-                        # echo "port_id2=\`ovs-vsctl get Interface g${group_number}_$hname ofport\`" >> groups/add_vpns.sh
-                        # echo "ovs-ofctl add-flow vpnbr_${group_k}_${host_l} in_port=\$port_id1,actions=output:\$port_id2" >> groups/add_vpns.sh
-                        # echo "ovs-ofctl add-flow vpnbr_${group_k}_${host_l} in_port=\$port_id2,actions=output:\$port_id1" >> groups/add_vpns.sh
 
                         echo "echo -n \" -- set interface tap_g"${group_number}_$hname" ingress_policing_rate="${throughput}" \" >> groups/throughput.sh " >>  "${DIRECTORY}"/groups/delay_throughput.sh
                         echo "tc qdisc add dev tap_g${group_number}_$hname root netem delay ${delay} " >>  "${DIRECTORY}"/groups/delay_throughput.sh

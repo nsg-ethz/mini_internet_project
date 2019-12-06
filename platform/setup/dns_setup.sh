@@ -37,16 +37,13 @@ for ((i=0;i<n_routers;i++)); do
       group_number="${group_k[0]}"
       group_as="${group_k[1]}"
       if [ "${group_as}" != "IXP" ];then
+
+
 	# create bridge between dns and group
-
-	# br_name="dns_""${group_number}"
-
 	subnet_bridge="$(subnet_router_DNS "${group_number}" "bridge")"
 	subnet_dns="$(subnet_router_DNS "${group_number}" "dns")"
 	subnet_group="$(subnet_router_DNS "${group_number}" "group")"
 
-	# echo -n "-- add-br "${br_name}" " >> "${DIRECTORY}"/groups/add_bridges.sh
-	# echo "ifconfig "${br_name}" "${subnet_bridge}" up" >> "${DIRECTORY}"/groups/ip_setup.sh
 	./setup/ovs-docker.sh add-port dns group_"${group_number}"  \
 	  DNS --ipaddress="${subnet_dns}"
 	./setup/ovs-docker.sh add-port dns dns_"${group_number}" \

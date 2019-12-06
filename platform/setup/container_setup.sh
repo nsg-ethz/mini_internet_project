@@ -82,17 +82,6 @@ for ((k=0;k<group_numbers;k++)); do
                 hname="${host_l[0]}"
 
                 if [[ $hname != vpn* ]]; then
-                    # vpn_location="${DIRECTORY}"/groups/g"${group_number}"/vpn/$hname
-                    #
-                    # docker run -itd --net='none' --dns="${subnet_dns%/*}" --privileged \
-                    # --hostname "${hname}" \
-                    # -v ${vpn_location}/ca.crt:/home/ca.crt \
-                    # -v ${vpn_location}/serv.crt:/home/serv.crt \
-                    # -v ${vpn_location}/serv.key:/home/serv.key \
-                    # -v ${vpn_location}/dh.pem:/home/dh.pem \
-                    # -v ${vpn_location}/server.conf:/home/server.conf \
-                    # --name="${group_number}""_""${rname}""_L2_""${hname}" thomahol/d_vpn
-                # else
                     docker run -itd --net='none' --dns="${subnet_dns%/*}" --privileged \
                         --hostname "${hname}" \
                         --name="${group_number}""_""${rname}""_L2_""${hname}" thomahol/d_host

@@ -3,12 +3,6 @@
 set -o errexit
 set -o pipefail
 set -o nounset
-#
-# DIRECTORY="$1"
-# source "${DIRECTORY}"/config/subnet_config.sh
-
-# echo -n "-- add-br nat " >> "${DIRECTORY}"/groups/add_bridges.sh
-# echo "ifconfig nat 0.0.0.0 up" >> "${DIRECTORY}"/groups/ip_setup.sh
 
 PORTNAME="nat_port"
 

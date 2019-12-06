@@ -2,9 +2,6 @@
 
 set -e
 
-##
-# For volume mounts...
-##
 chown -R quagga:quagga /etc/quagga
 /etc/init.d/quagga start
 

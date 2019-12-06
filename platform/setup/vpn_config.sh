@@ -88,7 +88,6 @@ for ((k=0;k<group_numbers;k++)); do
                 openssl dhparam -out $location/dh.pem ${DH_KEY_SIZE} 2>/dev/null
 
 
-                # echo "local 1.0.0.2" >> $location/server.conf
                 echo "proto udp" >> $location/server.conf
                 echo "port "$(($port_offset+10000)) >> $location/server.conf
                 echo "dev tap_g"${group_number}_$hname >> $location/server.conf
@@ -131,8 +130,6 @@ for ((k=0;k<group_numbers;k++)); do
                 echo "persist-key" >> $location/client.conf
                 echo "persist-tun" >> $location/client.conf
                 echo "ca ca.crt" >> $location/client.conf
-                # echo "cert client.crt" >> $location/client.conf
-                # echo "key client.key" >> $location/client.conf
                 echo "cipher AES-256-CBC" >> $location/client.conf
                 echo "verb 3" >> $location/client.conf
                 echo "auth-user-pass" >> $location/client.conf
