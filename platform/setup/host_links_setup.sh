@@ -20,6 +20,8 @@ for ((k=0;k<group_numbers;k++)); do
     group_k=(${groups[$k]})
     group_number="${group_k[0]}"
     group_as="${group_k[1]}"
+    group_config="${group_k[1]}"
+
     if [ "${group_as}" != "IXP" ];then
 
         br_name="${group_number}"-host
@@ -49,8 +51,11 @@ for ((k=0;k<group_numbers;k++)); do
                 "host" "${group_number}"_"${rname}"router \
                 "${rname}""router" "${group_number}"_"${rname}"host
 
-                # set default gw in host
-                echo "docker exec -i "${group_number}"_"${rname}"host ip route add default via "${subnet_router%/*}" &" >> "${DIRECTORY}"/groups/ip_setup.sh
+                # set default ip address and default gw in host
+                if [ "$group_config" == "Config" ]; then
+                    echo "docker exec -d "${group_number}"_"${rname}"host ifconfig "${rname}"router "${subnet_host}" up" >> "${DIRECTORY}"/groups/ip_setup.sh
+                    echo "docker exec -d "${group_number}"_"${rname}"host ip route add default via "${subnet_router%/*} >> "${DIRECTORY}"/groups/ip_setup.sh
+                fi
             fi
         done
     fi
