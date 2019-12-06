@@ -91,8 +91,8 @@ column indicates N/A. An example:
 
 This configuration line shows that the BARC router in AS 2 is connected to the IXP with AS number 80.
 The last column (1,2,11,12) indicates to which participants the routes advertised by AS 2 should be propagated.
-Important to note, during the project the students still have to use the correct BGP community values in order for
-their routes to be advertised to certain ASes. The last column just indicates what is physically possible.
+This last column is used when the configuration are automatically generated, otherwise it is the students that 
+have to use the correct BGP community values in order for their routes to be advertised to certain ASes only. 
 
 As usual, the 7th and 8th columns indicate the throughput and the bandwidth, respectively.
 
