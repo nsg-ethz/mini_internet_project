@@ -205,9 +205,9 @@ The are two ways to delete the mini-Internet. First, you can delete all the virt
 sudo ./cleanup/cleanup.sh .
 ```
 
-However, this script uses the configuration files, thus if they have changed since the time the mini-Internet was built, or if the mini-Internet did not setup properly, it might be that not all the components get deleted. That could be problematic if you try to start a new mini-Internet. We thus also provide you with a script that delete *all* the ethernet pairs, containers and switches. 
+However, this script uses the configuration files, thus if they have changed since the time the mini-Internet was built, or if the mini-Internet did not setup properly, it might be that not all the components get deleted. That could be problematic if you try to start a new mini-Internet. We thus also provide a script that deletes *all* the ethernet pairs, containers and switches. 
 
-:warning: this also includes containers, switches and ethernet pairs which do not belong to the mini-Internet (e.g., your very important Docker container)!!!
+:warning: This also includes containers, switches and ethernet pairs which do not belong to the mini-Internet (e.g., your very important Docker container)!!!
 ```
 sudo ./hard_reset.sh
 ```
@@ -230,7 +230,7 @@ By default, we can access the management container over port 2099:
 ssh -p 2099 root@server.ethz.ch
 ```
 
-You can find the password in the file `groups/ssh_mgt.txt`. It should be distributed to all students such that they can access the MGT container (e.g., using `ssh -p [2000+X] root@<your_server_domain>`). \
+You can find the password in the file `groups/ssh_mgt.txt`. It should be distributed to all students such that they can access the MGT container. \
 In the management VM, we provide a script called `launch_traceroute.sh` that relies on `nping` and which can be used to launch traceroutes between any pair of ASes. For example if you want to run a traceroute from AS 1 to AS 2, simply run the following command:
 
 ```
@@ -260,7 +260,7 @@ To generate the connectivity matrix, just run the following script:
 
 ```
 cd /home
-.ping_all_groups.sh
+./ping_all_groups.sh
 ```
 
 The connectivity matrix is then available in the file `/home/connectivity.txt`, where 1 means connectivity, and 0 means no connectivity. You can then periodically download this file and making it available to the students on e.g., a web interface. 
@@ -268,7 +268,7 @@ The connectivity matrix is then available in the file `/home/connectivity.txt`, 
 #### The DNS service
 
 Finally, another container, connected to every AS and only available to the instructor runs a bind9 DNS server.
-By looking at the file `config/router_config.txt`, we can see that the DNS container is to connected to every router ROMA.
+By looking at the file `config/router_config.txt`, we can see that the DNS container is connected to every ROMA router.
 The DNS server has the IP address 198.0.0.100/24, as soon as the students have configured intra-domain routing and have advertised this subnet into OSPF, they should be able to reach the DNS server and use it.
 
 For instance, a traceroute from HOUS-host to ABID-host returns the following output:
@@ -281,6 +281,6 @@ traceroute to 1.108.0.1 (1.108.0.1), 64 hops max
   3   1.0.2.2 (BARC-LOND.group1)  2.159ms  2.168ms  2.150ms
   4   1.0.11.2 (ABID-BARC.group1)  2.199ms  2.277ms  2.253ms
   5   1.108.0.1 (host-ABID.group1)  2.383ms  2.289ms  2.290ms
-  ```
+```
   
-  Observe that we must use the option `--resolve-hostnames` to make traceroute resolve the hostnames.
+Observe that we must use the option `--resolve-hostnames` to make traceroute resolve the hostnames.
