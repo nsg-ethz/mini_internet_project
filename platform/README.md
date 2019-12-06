@@ -120,19 +120,20 @@ We also provide configuration files for a 2 ASes and a 40 ASes topology.
 
 ## Access the mini-Internet
 
-You can access the mini-Internet in two ways.
+You can access the mini-Internet in three ways.
 
-#### Instructor access with docker
+#### Instructor access using docker
 
-First, if you are the instructor and have access to the server hosting the mini-Internet, you can directly access the containers using the docker commands. First, type `sudo docker ps` to get a list of all the containers running. The names of the hosts, switches and routers always follow the same convention. For instance, to access the router LOND in AS1, just use the following command:
+If you are the instructor and have access to the server hosting the mini-Internet, you can directly access the containers using the various docker commands. First, type `sudo docker ps` to get a list of all the containers running. The names of the hosts, switches and routers always follow the same convention. For instance, to access a shell of the LOND router in AS1, just use the following command:
 
 `sudo docker exec -it 1_LONDrouter bash`
 
-If you are in router, run `vtysh` to access the CLI of that router. \
+If you are in the router container, run `vtysh` to access the CLI of that router.
 
 #### Student access with SSH
 
-To enable the student access through SSH, first make sure the following options are se to true in `/etc/sshd_config`:
+Students first access a proxy container from where they can directly go to any device (router, host, ...) belonging to their AS.
+To enable the student access through SSH, first make sure the following options are set to true in `/etc/sshd_config` on your host server:
 
 ```
 GatewayPorts yes
@@ -140,17 +141,19 @@ PasswordAuthentication yes
 AllowTcpForwarding yes
 ```
 
-Then, enable the ssh port forwarding with the following command:
+and restart the ssh service: `sudo service ssh restart`
+
+Then, enable SSH port forwarding with the following command:
 
 `sudo ./portforwarding.sh`
 
-Then, the students can connect from outside. First, the students have to connect to the ssh proxy container:
+Now, the students should be able to connect from the outside. First, the students have to connect to the ssh proxy container:
 
-```ssh -p [2000+X] root@server.ethz.ch```
+```ssh -p [2000+X] root@<your_server_domain>```
 
-with X the group number. The passwords of the groups are automatically generated and available in the file `groups/ssh_passwords.txt`
+with X their corresponding AS number (group number). The passwords of the groups are automatically generated and available in the file `groups/ssh_passwords.txt`
 
-Once in the proxy container, the student can use the `goto.sh` script to access a host, switch or router. 
+Once in a proxy container, a student can use the `goto.sh` script to access a host, switch or router. 
 For instance to jump into the host connected to the router ABID, use the following command:
 
 ```
@@ -159,10 +162,12 @@ For instance to jump into the host connected to the router ABID, use the followi
 
 Once in a host, switch or router, just type `exit` to go back to the proxy container.
 
+Important to note, as some of our students are not too familiar with SSH, we give each student group a password to access their proxy container. However, it would also be possible to add the student's public keys to the corresponding proxy containers in order to achieve a key-based SSH authentication.
+
 #### Student access with OpenVPN
 
-We now explain how to connect to the mini-Internet through a VPN.
-In the file `config/layer2_hosts_config.txt`, the line starting with "vpn" corresponds to a L2-VPN server that will be automatically installed instead of normal host in a container. A L2-VPN is connected to a L2 switch (the one written in the 2nd column), and every user connected to this L2-VPN will be virtually connected to that L2 switch.
+Finally, you can also access the mini-Internet through a VPN.
+In the file `config/layer2_hosts_config.txt`, the line starting with "vpn" corresponds to a L2-VPN server which will be automatically installed instead of normal host. A L2-VPN is connected to a L2 switch (the one written in the 2nd column), and every user connected to this L2-VPN will be virtually connected to that L2 switch.
 
 To use the VPN, a student must first install OpenVPN, and run it with the following command (in Ubuntu 18):
 
@@ -170,8 +175,8 @@ To use the VPN, a student must first install OpenVPN, and run it with the follow
 sudo openvpn --config client.conf
 ```
 
-We provide the `client.conf` file below, where VPN_IP must be replace by the IP address of the server hosting the mini-Internet, and VPN_PORT must be replaced by the port on which the VPN server we want to use listen to.
-To find the port of a VPN server, we use the following convention: the port of the n-th VPN server in group X is 1000+(X\*m)+(n-1) where m is number of VPN server per AS (i.e., 2 by default).
+We provide the `client.conf` file below, where VPN_IP must be replace by the IP address of the server hosting the mini-Internet. VPN_PORT defines to which VPN server we want to connect to.
+To find the port of a specific VPN server, we use the following convention: the port of the n-th VPN server in group X is 1000+(X\*m)+(n-1) where m is number of VPN servers per AS (i.e., 2 by default).
 
 ```
 client
@@ -188,43 +193,45 @@ verb 3
 auth-user-pass
 ```
 
-The file `ca.crt`, automatically generated when building the mini-Internet and available in the directory `groups/gX/vpn/vpn_n` must be given to the student. 
+The file `ca.crt` is automatically generated during the mini-Internet setup. It is available in the directory `groups/gX/vpn/vpn_n` and must be given to the student. 
 Finally, the username is `groupX` (X is the group number) and the password is the same than the one used to access the proxy container. 
 
-When connected, the student should have an interface `tap` with an IP address configured and that is connected to the mini-Internet.
+When connected, the student should have an interface called `tap` with a corresponding IP address. This interface is connected to the mini-Internet.
 
 ## Delete the mini-Internet
 
-The are two ways to delete the mini-Internet. First, you can delete all the virtual ethernet pairs, docker containers, ovs switches and openvpn processes used in the mini-Internet, with the following command.
+The are two ways to delete the mini-Internet. First, you can delete all the virtual ethernet pairs, docker containers, OVS switches and OpenVPN processes used in the mini-Internet, with the following command:
 ```
 sudo ./cleanup/cleanup.sh .
 ```
 
-However, this script uses the configuration files, thus if they have changed since the time the mini-Internet was built, or if the mini-Internet did not setup properly, not all the componenents might be deleted, in which case in can make some problems if you want to build a new mini-Internet. We thus also provide you with a script that delete *all* the ethernet pairs, containers and switches, :warning: including the ones not used by the mini-Internet. 
+However, this script uses the configuration files, thus if they have changed since the time the mini-Internet was built, or if the mini-Internet did not setup properly, it might be that not all the components get deleted. That could be problematic if you try to start a new mini-Internet. We thus also provide you with a script that delete *all* the ethernet pairs, containers and switches. 
+
+:warning: this also includes containers, switches and ethernet pairs which do not belong to the mini-Internet (e.g., your very important Docker container)!!!
 ```
 sudo ./hard_reset.sh
 ```
 
 ## Use the monitoring tools and services
 
-We now explain how are built the different monitoring tools and services, and how to use them.
+The following section explains how we build and use the different monitoring tools and services.
 
 #### Looking glass
 
-Every container running a router pulls the routing table from the FRRouting CLI every 30 seconds and stores it in `/home/looking_glass.txt`.
-Then, you can simply periodically get that file with e.g., `docker cp 1_ABIDrouter:/home/looking_glass.txt .` and make it available to the students, for instance on a web interface.
+Every container which runs a router pulls the routing table from the FRRouting CLI every 30 seconds and stores it in `/home/looking_glass.txt`.
+You can then simply periodically copy this file from the container (e.g., using `docker cp 1_ABIDrouter:/home/looking_glass.txt .`) and make it available to the students for example over a web interface.
 
 #### Active probing
 
-To run measurements between any two ASes, we must use a dedicated container called MGT for "management" container. 
-To access the management container, we must use the port 2099:
+To run measurements between any two ASes, we must use a dedicated container called MGT (for "management"). 
+By default, we can access the management container over port 2099:
 
 ```
 ssh -p 2099 root@server.ethz.ch
 ```
 
-The password is available in the file `groups/ssh_mgt.txt`, and should be made available to the students so that they can access it. \
-In the management VM, we provide a script called `launch_traceroute.sh` that relies on `nping` and which can be used to launch traceroutes between any pair of ASes. For example if you want to run a traceroute from AS 1 to AS 2, simply run the following command
+You can find the password in the file `groups/ssh_mgt.txt`. It should be distributed to all students such that they can access the MGT container (e.g., using `ssh -p [2000+X] root@<your_server_domain>`). \
+In the management VM, we provide a script called `launch_traceroute.sh` that relies on `nping` and which can be used to launch traceroutes between any pair of ASes. For example if you want to run a traceroute from AS 1 to AS 2, simply run the following command:
 
 ```
 root@c7a60237994a:~# ./launch_traceroute.sh 1 2.101.0.1
