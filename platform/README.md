@@ -1,6 +1,6 @@
 # The mini-Internet documentation
 
-In this README, we first explain how to [install the required software](https://github.com/nsg-ethz/mini_internet_project/tree/master/platform#prerequisite). Then we show how to [build](https://github.com/nsg-ethz/mini_internet_project/tree/master/platform#build-the-mini-internet), [configure](https://github.com/nsg-ethz/mini_internet_project/tree/master/platform#configure-the-mini-internet-topology), [access](https://github.com/nsg-ethz/mini_internet_project/tree/master/platform#configure-the-mini-internet-topology) and [delete](https://github.com/nsg-ethz/mini_internet_project/tree/master/platform#delete-the-mini-internet) the mini-Internet. Finally, we explain the different [monitoring tools](https://github.com/nsg-ethz/mini_internet_project/tree/master/platform#use-the-monitoring-tools-and-services).
+In this README, we first explain how to [install the required software](https://github.com/nsg-ethz/mini_internet_project/tree/master/platform#prerequisite). Then we show how to [build](https://github.com/nsg-ethz/mini_internet_project/tree/master/platform#build-the-mini-internet), [configure](https://github.com/nsg-ethz/mini_internet_project/tree/master/platform#configure-the-mini-internet-topology), [access](https://github.com/nsg-ethz/mini_internet_project/tree/master/platform#access-the-mini-internet) and [delete](https://github.com/nsg-ethz/mini_internet_project/tree/master/platform#delete-the-mini-internet) the mini-Internet. Finally, we explain the different [monitoring tools](https://github.com/nsg-ethz/mini_internet_project/tree/master/platform#use-the-monitoring-tools-and-services).
 
 We run our mini-Internet on a server with Ubuntu 18.04 and the Linux 4.15.0 kernel.
 For more details about the used default topology as well as other example topologies, please refer to the [config](config) directory.
@@ -50,12 +50,14 @@ Then run the startup script:
 sudo ./startup.sh
 ```
 
-By default, this will run a mini-Internet with 20ASes. :warning: Make sure your server has enough resources to sustain this mini-Internet (around 64GB of memory and at least 8 CPU cores are recommended). Otherwise, look at section [configure the mini-Internet](https://github.com/nsg-ethz/mini_internet_project/blob/master/platform/README.md#configure-the-mini-internet-topology) for instructions on how to run a smaller mini-Internet.
+By default, this will run a mini-Internet with 20ASes.
+
+:warning: Make sure your server has enough resources to sustain this mini-Internet (around 64GB of memory and at least 8 CPU cores are recommended). Otherwise, look at section [configure the mini-Internet](https://github.com/nsg-ethz/mini_internet_project/blob/master/platform/README.md#configure-the-mini-internet-topology) for instructions on how to run a smaller mini-Internet.
 
 ## Configure the mini-Internet topology
 
 In the [config](config) directory, you can find all the configuration files used to define the topology of the mini-Internet.
-In addition, we also provide multiple sample topologies. Of course, you can also define you own topology using the configuration files.
+In addition, we also provide multiple sample topologies. Of course, you can also define your own topology using the configuration files.
 
 #### Layer 2 topology
 
@@ -67,7 +69,7 @@ In addition, we also provide multiple sample topologies. Of course, you can also
 
 #### Layer 3 topology
 
-`router_config.txt`: This file contains all the routers in the L3 topology. In the default L3 topology there are 8 routers. The second column indicates if a tool or service (such as the connectivity matrix or the DNS server) is connected the to the network through the corresponding router. For instance, the DNS server is connected to ROMA. Finally the last column indicates whether a single host or a L2 network is connected to the router. In the default topology, only the router ZURI is connected to a L2 network, all the others are connected to a single host.
+`router_config.txt`: This file contains all the routers in the L3 topology. In the default L3 topology there are 8 routers. The second column indicates if a tool or service (such as the connectivity matrix or the DNS server) is connected to the network through the corresponding router. For instance, the DNS server is connected to ROMA. Finally the last column indicates whether a single host or a L2 network is connected to the router. In the default topology, only the router ZURI is connected to a L2 network, all the others are connected to a single host.
 
 `internal_links_config.txt`: This is the internal topology. The first two columns indicate which pair of routers are interconnected, the last two columns indicate the throughput and delay of the link, respectively.
 
