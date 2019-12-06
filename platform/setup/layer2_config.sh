@@ -6,7 +6,6 @@ set -o nounset
 
 DIRECTORY="$1"
 source "${DIRECTORY}"/config/subnet_config.sh
-with_router_config=$2
 
 # read configs
 readarray groups < "${DIRECTORY}"/config/AS_config.txt
@@ -27,6 +26,8 @@ for ((k=0;k<group_numbers;k++)); do
     group_k=(${groups[$k]})
     group_number="${group_k[0]}"
     group_as="${group_k[1]}"
+    group_config="${group_k[2]}"
+
     if [ "${group_as}" != "IXP" ];then
         for ((i=0;i<n_routers;i++)); do
             router_i=(${routers[$i]})
@@ -50,7 +51,7 @@ for ((k=0;k<group_numbers;k++)); do
                     delay="${host_l[3]}"
                     vlan="${host_l[4]}"
 
-                    if [ "$with_router_config" == true ]; then
+                    if [ "$group_config" == "Config" ]; then
                         docker exec -d "${group_number}""_""${rname}""_L2_""${sname}" \
                             ovs-vsctl set port ${rname}-$hname tag=$vlan
                     fi
@@ -64,11 +65,13 @@ for ((k=0;k<group_numbers;k++)); do
                     vlanset[$vlan]=$((${vlanset[$vlan]}+1))
 
                     if [[ $hname != vpn* ]]; then
-                        docker exec -d "${group_number}""_""${rname}""_L2_""${hname}" \
-                            ifconfig ${rname}-${sname} $(subnet_l2_router $group_number "$vlan" $((${vlanset[$vlan]}+1))) up
+                        if [ "$group_config" == "Config" ]; then
+                            docker exec -d "${group_number}""_""${rname}""_L2_""${hname}" \
+                                ifconfig ${rname}-${sname} $(subnet_l2_router $group_number "$vlan" $((${vlanset[$vlan]}+1))) up
 
-                        docker exec -d "${group_number}""_""${rname}""_L2_""${hname}" \
-                            route add default gw $group_number.200.${vlan}.1
+                            docker exec -d "${group_number}""_""${rname}""_L2_""${hname}" \
+                                route add default gw $group_number.200.${vlan}.1
+                        fi
                     fi
                 done
 
@@ -85,7 +88,7 @@ for ((k=0;k<group_numbers;k++)); do
                     throughput="${row_l[2]}"
                     delay="${row_l[3]}"
 
-                    if [ "$with_router_config" == true ]; then
+                    if [ "$group_config" == "Config" ]; then
                         docker exec -d "${group_number}""_""${rname}""_L2_""${switch1}" \
                             ovs-vsctl set port ${rname}-${switch2} trunks=${trunk_string::-1}
 

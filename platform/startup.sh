@@ -7,21 +7,6 @@ set -o pipefail
 set -o nounset
 
 
-with_router_config=true
-while getopts "ch" option
-do
-    case $option in
-        c)
-            with_router_config=false
-            ;;
-        h)
-            echo 'Options:'
-            echo '-c to not generate router configuration'
-            exit 0
-            ;;
-    esac
-done
-
 DIRECTORY=$(cd `dirname $0` && pwd)
 
 echo "$(date +%Y-%m-%d_%H-%M-%S)"
@@ -189,14 +174,14 @@ echo ""
 
 echo "switches_config.sh: "
 echo "switches_config.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
-time ./setup/layer2_config.sh "${DIRECTORY}" "$with_router_config"
+time ./setup/layer2_config.sh "${DIRECTORY}"
 
 echo ""
 echo ""
 
 echo "router_config.sh: "
 echo "router_config.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
-time ./setup/router_config.sh "${DIRECTORY}" "$with_router_config"
+time ./setup/router_config.sh "${DIRECTORY}" 
 
 echo ""
 echo ""

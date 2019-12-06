@@ -27,6 +27,3 @@ while true
 do
     sleep 30
 done
-
-# docker run -itd --net='none' --name="IXP_TEST" --hostname "IXP" -v /Users/thomas/Documents/Zurich/mini_internet/debian_frr/daemons:/etc/quagga/daemons -v /Users/thomas/Documents/Zurich/mini_internet/debian_frr/zebra.conf:/etc/quagga/zebra.conf -v /Users/thomas/Documents/Zurich/mini_internet/debian_frr/bgpd.conf:/etc/quagga/bgpd.conf --privileged thomahol/d_ixp
-# docker run -itd --net='none' --name="IXP_TEST" --hostname "IXP" -v /Users/thomas/Documents/Zurich/mini_internet/debian_frr/daemons:/etc/quagga/daemons --privileged thomahol/d_ixp

@@ -9,7 +9,6 @@ set -o nounset
 
 DIRECTORY="$1"
 source "${DIRECTORY}"/config/subnet_config.sh
-with_router_config=$2
 
 
 # read configs
@@ -435,6 +434,8 @@ for ((k=0;k<group_numbers;k++)); do
     group_k=(${groups[$k]})
     group_number="${group_k[0]}"
     group_as="${group_k[1]}"
+    group_config="${group_k[2]}"
+
     if [ "${group_as}" != "IXP" ];then
         for ((i=0;i<n_routers;i++)); do
             router_i=(${routers[$i]})
@@ -447,7 +448,7 @@ for ((k=0;k<group_numbers;k++)); do
             docker cp "${DIRECTORY}"/groups/g"${group_number}"/"${rname}"/init_conf.sh "${group_number}"_"${rname}"router:/home/init_conf.sh
             docker exec -d "${group_number}"_"${rname}"router bash ./home/init_conf.sh &
 
-            if [ "$with_router_config" == true ]; then
+            if [ "$group_config" == "Config" ]; then
                 docker cp "${DIRECTORY}"/groups/g"${group_number}"/"${rname}"/init_full_conf.sh "${group_number}"_"${rname}"router:/home/init_full_conf.sh
                 docker exec -d "${group_number}"_"${rname}"router bash ./home/init_full_conf.sh &
             fi
