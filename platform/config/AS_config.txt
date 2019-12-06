@@ -1,23 +1,23 @@
-1	AS
-2	AS
-11	AS
-12	AS
-3	AS
-4	AS
-5	AS
-6	AS
-7	AS
-8	AS
-9	AS
-10	AS
-13	AS
-14	AS
-15	AS
-16	AS
-17	AS
-18	AS
-19	AS
-20	AS
-80	IXP
-81	IXP
-82	IXP
+1	AS    Config
+2	AS    Config
+11	AS    Config
+12	AS    Config
+3	AS    Config
+4	AS    Config
+5	AS    Config
+6	AS    Config
+7	AS    Config
+8	AS    Config
+9	AS    Config
+10	AS    Config
+13	AS    Config
+14	AS    Config
+15	AS    Config
+16	AS    Config
+17	AS    Config
+18	AS    Config
+19	AS    Config
+20	AS    Config
+80	IXP    Config
+81	IXP    Config
+82	IXP    Config

@@ -1,2 +1,2 @@
 1	AS    Config
-2   AS  NoConfig
+2   AS  Config
