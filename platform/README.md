@@ -154,7 +154,7 @@ Now, the students should be able to connect from the outside. First, the student
 
 ```ssh -p [2000+X] root@<your_server_domain>```
 
-with X their corresponding AS number (group number). The passwords of the groups are automatically generated and available in the file `groups/ssh_passwords.txt`
+with X their corresponding AS number (group number). The passwords of the groups are automatically generated with the `openssl`'s rand function and are available in the file `groups/ssh_passwords.txt`
 
 Once in a proxy container, a student can use the `goto.sh` script to access a host, switch or router. 
 For instance to jump into the host connected to the router ABID, use the following command:
