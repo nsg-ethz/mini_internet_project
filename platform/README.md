@@ -5,6 +5,8 @@ In this README, we first explain how to [install the required software](https://
 We run our mini-Internet on a server with Ubuntu 18.04 and the Linux 4.15.0 kernel.
 For more details about the used default topology as well as other example topologies, please refer to the [config](config) directory.
 
+For further information about how we use the mini-Internet at ETH Zurich, and how we implemented it, please see our [technical report](https://arxiv.org/pdf/1912.02031.pdf).
+
 ## Prerequisite
 
 To build the mini-Internet, you need to install the following software on the server which hosts the mini-Internet.
@@ -91,8 +93,8 @@ column indicates N/A. An example:
 
 This configuration line shows that the BARC router in AS 2 is connected to the IXP with AS number 80.
 The last column (1,2,11,12) indicates to which participants the routes advertised by AS 2 should be propagated.
-Important to note, during the project the students still have to use the correct BGP community values in order for
-their routes to be advertised to certain ASes. The last column just indicates what is physically possible.
+This last column is used when the configuration is automatically generated, otherwise it is the students that 
+have to use the correct BGP community values in order for their routes to be advertised to certain ASes only. 
 
 As usual, the 7th and 8th columns indicate the throughput and the bandwidth, respectively.
 
