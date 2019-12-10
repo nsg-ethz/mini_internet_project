@@ -190,7 +190,7 @@ sudo openvpn --config client.conf
 ```
 
 We provide the `client.conf` file below, where VPN_IP must be replace by the IP address of the server hosting the mini-Internet. VPN_PORT defines to which VPN server we want to connect to.
-To find the port of a specific VPN server, we use the following convention: the port of the n-th VPN server in group X is 1000+(X\*m)+(n-1) where m is number of VPN servers per AS (i.e., 2 by default).
+To find the port of a specific VPN server, we use the following convention: the port of the n-th VPN server in group X is 1000+(X\*m)+(n-1) where m is number of VPN servers per AS (i.e., 2 by default). For instance, to access `vpn_4` in group 11, the port is 1000+(11\*2)+1 = 1023.
 
 ```
 client
