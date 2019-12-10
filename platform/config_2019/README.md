@@ -6,3 +6,4 @@ In the topology with 2 ASes, the two ASes are connected via the router TOKY, see
 If you want to try a larger mini-Internet, you may want to use the topology with 40 or 60 ASes.
 
 We always use the same L2 and L3 topologies.
+When you make your own topology, make that the ASes are ordered in the file `AS_config.txt`.
