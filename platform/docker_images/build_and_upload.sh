@@ -19,6 +19,8 @@ docker build --tag=d_vpn docker_images/vpn/
 
 docker login
 
+# If you want to use your custom docker containers and upload them into
+# docker hub, change the docker username with your own docker username.
 docker_name=thomahol
 
 container_name=d_router

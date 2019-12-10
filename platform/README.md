@@ -21,6 +21,17 @@ sudo apt install docker.io
 ```
 
 For further information, see the [installation guide](https://docs.docker.com/install/linux/docker-ce/ubuntu/).
+In the directory `docker_images` you can find all the Dockerfile and docker-start files used to build the containers.
+In case you want to add some functionalities into some of the docker containers, you can
+update these files and build you own docker images:
+
+```
+docker build --tag=your_tag your_dir/
+```
+
+Then, you have to manually update the scripts in the `setup` directory and run
+your custom docker images instead of the ones we provide by default.
+
 
 #### Install Open vSwitch
 
@@ -67,7 +78,7 @@ In addition, we also provide multiple sample topologies. Of course, you can also
 
 `layer2_links_config.txt`: This file indicates how the l2 switches are interconnected. For instance by default ETH-ZENT is connected to ETH-IRCH, ETH-ZENT is connected to ETH-OERL, etc. The last two columns indicate the throughput and the delay of the link, respectively.
 
-`layer2_hosts_config.txt`: This file indicates the hosts that are in the layer 2 network, and to which switch they are directly connected to. For instance the host student_1 is by default connected to ETH-IRCH. The next two columns indicate the throughout and delay, respectively. The last column indicates the VLAN the host belongs to. Observe that a host can be a VPN server, in which case it must start with "vpn_". 
+`layer2_hosts_config.txt`: This file indicates the hosts that are in the layer 2 network, and to which switch they are directly connected to. For instance the host student_1 is by default connected to ETH-IRCH. The next two columns indicate the throughout and delay, respectively. The last column indicates the VLAN the host belongs to. Observe that a host can be a VPN server, in which case it must start with "vpn_".
 
 #### Layer 3 topology
 
@@ -93,8 +104,8 @@ column indicates N/A. An example:
 
 This configuration line shows that the BARC router in AS 2 is connected to the IXP with AS number 80.
 The last column (1,2,11,12) indicates to which participants the routes advertised by AS 2 should be propagated.
-This last column is used when the configuration is automatically generated, otherwise it is the students that 
-have to use the correct BGP community values in order for their routes to be advertised to certain ASes only. 
+This last column is used when the configuration is automatically generated, otherwise it is the students that
+have to use the correct BGP community values in order for their routes to be advertised to certain ASes only.
 
 As usual, the 7th and 8th columns indicate the throughput and the bandwidth, respectively.
 
@@ -102,7 +113,7 @@ The file `subnet_config.sh` is used to configure the IP addresses following a pa
 
 #### Change the size of the mini-Internet
 
-You may want to run a smaller or larger mini-Internet. For instance, if you just want to quickly test the setup, or if you only have a small VM available, you should run a very small mini-Internet topology with only few ASes. Alternatively, if you want to run the mini-Internet for a class project, you may want to run a larger one with e.g., 60 ASes. 
+You may want to run a smaller or larger mini-Internet. For instance, if you just want to quickly test the setup, or if you only have a small VM available, you should run a very small mini-Internet topology with only few ASes. Alternatively, if you want to run the mini-Internet for a class project, you may want to run a larger one with e.g., 60 ASes.
 In the directory `config_2019`, you find working configuration files for different sizes of the mini-Internet. To use them, copy them to the `config` directory. The AS-level topologies follow the structure we used in the 2019 iteration of the mini-Internet project. For each of the different mini-Internet AS-level topologies we use the same L3 and L2 topologies.
 
 To run a mini-Internet with only 1 AS, just copy the following files:
@@ -156,7 +167,7 @@ Now, the students should be able to connect from the outside. First, the student
 
 with X their corresponding AS number (group number). The passwords of the groups are automatically generated with the `openssl`'s rand function and are available in the file `groups/ssh_passwords.txt`
 
-Once in a proxy container, a student can use the `goto.sh` script to access a host, switch or router. 
+Once in a proxy container, a student can use the `goto.sh` script to access a host, switch or router.
 For instance to jump into the host connected to the router ABID, use the following command:
 
 ```
@@ -196,8 +207,8 @@ verb 3
 auth-user-pass
 ```
 
-The file `ca.crt` is automatically generated during the mini-Internet setup. It is available in the directory `groups/gX/vpn/vpn_n` and must be given to the student. 
-Finally, the username is `groupX` (X is the group number) and the password is the same than the one used to access the proxy container. 
+The file `ca.crt` is automatically generated during the mini-Internet setup. It is available in the directory `groups/gX/vpn/vpn_n` and must be given to the student.
+Finally, the username is `groupX` (X is the group number) and the password is the same than the one used to access the proxy container.
 
 When connected, the student should have an interface called `tap` with a corresponding IP address. This interface is connected to the mini-Internet.
 
@@ -208,7 +219,7 @@ The are two ways to delete the mini-Internet. First, you can delete all the virt
 sudo ./cleanup/cleanup.sh .
 ```
 
-However, this script uses the configuration files, thus if they have changed since the time the mini-Internet was built, or if the mini-Internet did not setup properly, it might be that not all the components get deleted. That could be problematic if you try to start a new mini-Internet. We thus also provide a script that deletes *all* the ethernet pairs, containers and switches. 
+However, this script uses the configuration files, thus if they have changed since the time the mini-Internet was built, or if the mini-Internet did not setup properly, it might be that not all the components get deleted. That could be problematic if you try to start a new mini-Internet. We thus also provide a script that deletes *all* the ethernet pairs, containers and switches.
 
 :warning: This also includes containers, switches and ethernet pairs which do not belong to the mini-Internet (e.g., your very important Docker container)!!!
 ```
@@ -226,7 +237,7 @@ You can then simply periodically copy this file from the container (e.g., using 
 
 #### Active probing
 
-To run measurements between any two ASes, we must use a dedicated container called MGT (for "management"). 
+To run measurements between any two ASes, we must use a dedicated container called MGT (for "management").
 By default, we can access the management container over port 2099:
 
 ```
@@ -246,13 +257,13 @@ Hop 5:  2.0.1.1 TTL=0 during transit
 Hop 6:  2.101.0.1 Echo reply (type=0/code=0)
 ```
 
-where 2.101.0.1 is an IP address of a host in AS2 (here we used the topology with 2 ASes). You can see the path used by the packets to reach the destination IP. 
+where 2.101.0.1 is an IP address of a host in AS2 (here we used the topology with 2 ASes). You can see the path used by the packets to reach the destination IP.
 
-By default, the management container is connected to the router ZURI in every AS. You can see this in the config file `config/router_config.txt`. The second column of the ZURI row is `MGT` which means that the management container is connected to the ZURI router, but you can edit this file so that the management VM is connected to another router instead. 
+By default, the management container is connected to the router ZURI in every AS. You can see this in the config file `config/router_config.txt`. The second column of the ZURI row is `MGT` which means that the management container is connected to the ZURI router, but you can edit this file so that the management VM is connected to another router instead.
 
 #### Connectivity matrix
 
-Another container called `MATRIX` is also connected to every AS. By looking at the config file `config/router_config.txt`, we can see to which router it is connected in every AS and towards which router it sends ping requests in every other AS. By default, the matrix container is connected to TOKY, and the pings are destined to the HOUS routers. 
+Another container called `MATRIX` is also connected to every AS. By looking at the config file `config/router_config.txt`, we can see to which router it is connected in every AS and towards which router it sends ping requests in every other AS. By default, the matrix container is connected to TOKY, and the pings are destined to the HOUS routers.
 Only the instructor can access the MATRIX container, from the server with:
 
 ```
@@ -266,7 +277,7 @@ cd /home
 ./ping_all_groups.sh
 ```
 
-The connectivity matrix is then available in the file `/home/connectivity.txt`, where 1 means connectivity, and 0 means no connectivity. You can then periodically download this file and making it available to the students on e.g., a web interface. 
+The connectivity matrix is then available in the file `/home/connectivity.txt`, where 1 means connectivity, and 0 means no connectivity. You can then periodically download this file and making it available to the students on e.g., a web interface.
 
 #### The DNS service
 
@@ -285,5 +296,5 @@ traceroute to 1.108.0.1 (1.108.0.1), 64 hops max
   4   1.0.11.2 (ABID-BARC.group1)  2.199ms  2.277ms  2.253ms
   5   1.108.0.1 (host-ABID.group1)  2.383ms  2.289ms  2.290ms
 ```
-  
+
 Observe that we must use the option `--resolve-hostnames` to make traceroute resolve the hostnames.
