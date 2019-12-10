@@ -98,7 +98,7 @@ have to use the correct BGP community values in order for their routes to be adv
 
 As usual, the 7th and 8th columns indicate the throughput and the bandwidth, respectively.
 
-The file `subnet_config.sh` is used to configure the IP addresses following a particular scheme (see our [2019 assignment](https://github.com/nsg-ethz/mini_internet_project/blob/master/2019_assignement_eth/mini_internet_project.pdf)), we recommend to not modify these file if you are using our topologies.
+The file `subnet_config.sh` is used to configure the IP addresses following a particular scheme (see our [2019 assignment](https://github.com/nsg-ethz/mini_internet_project/blob/master/2019_assignement_eth/mini_internet_project.pdf)), we recommend to not modify these file if you are using our topologies and want to use our IP address allocation scheme. In case you modify this file, you must keep the same name for each function, otherwise the mini-Internet will not start properly.
 
 #### Change the size of the mini-Internet
 
@@ -154,7 +154,7 @@ Now, the students should be able to connect from the outside. First, the student
 
 ```ssh -p [2000+X] root@<your_server_domain>```
 
-with X their corresponding AS number (group number). The passwords of the groups are automatically generated and available in the file `groups/ssh_passwords.txt`
+with X their corresponding AS number (group number). The passwords of the groups are automatically generated with the `openssl`'s rand function and are available in the file `groups/ssh_passwords.txt`
 
 Once in a proxy container, a student can use the `goto.sh` script to access a host, switch or router. 
 For instance to jump into the host connected to the router ABID, use the following command:
