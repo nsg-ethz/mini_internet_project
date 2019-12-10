@@ -47,12 +47,12 @@ for ((k=0;k<group_numbers;k++)); do
         ssh-keygen -t rsa -b 4096 -C "comment" -P "" -f "groups/g"${group_number}"/id_rsa" -q
 
         # copy private key to container and change access rights
-        docker cp "${DIRECTORY}"/groups/g"${group_number}"/id_rsa "${group_number}"_ssh:/root/.ssh/id_rsa &
-        docker cp "${DIRECTORY}"/groups/authorized_keys "${group_number}"_ssh:/root/.ssh/authorized_keys &
+        docker cp "${DIRECTORY}"/groups/g"${group_number}"/id_rsa "${group_number}"_ssh:/root/.ssh/id_rsa
+        docker cp "${DIRECTORY}"/groups/authorized_keys "${group_number}"_ssh:/root/.ssh/authorized_keys
 
         # generate password for login to ssh container, safe it to group folder
         passwd="$(openssl rand -hex 8)"
-        echo "${passwd}" >> "${DIRECTORY}"/groups/ssh_passwords.txt
+        echo "${group_number} ${passwd}" >> "${DIRECTORY}"/groups/ssh_passwords.txt
         echo -e ""${passwd}"\n"${passwd}"" | docker exec -i "${group_number}"_ssh passwd root
         echo -e ""${passwd}"\n"${passwd}"" | docker exec -i "${group_number}"_ssh service ssh restart &>/dev/nul
         sleep 1
@@ -78,13 +78,13 @@ for ((k=0;k<group_numbers;k++)); do
             #ssh login for router"
             subnet_router="$(subnet_sshContainer_groupContainer "${group_number}" "${i}" -1 "router")"
             ./setup/ovs-docker.sh add-port "${group_number}"-ssh ssh "${group_number}"_"${rname}"router --ipaddress="${subnet_router}"
-            docker cp "${DIRECTORY}"/groups/g"${group_number}"/id_rsa.pub "${group_number}"_"${rname}"router:/root/.ssh/authorized_keys &
+            docker cp "${DIRECTORY}"/groups/g"${group_number}"/id_rsa.pub "${group_number}"_"${rname}"router:/root/.ssh/authorized_keys
 
             if [ "${property2}" == "host" ];then
                 #ssh login for host
                 subnet_host="$(subnet_sshContainer_groupContainer "${group_number}" "${i}" -1 "host")"
                 ./setup/ovs-docker.sh add-port "${group_number}"-ssh ssh "${group_number}"_"${rname}"host --ipaddress="${subnet_host}"
-                docker cp "${DIRECTORY}"/groups/g"${group_number}"/id_rsa.pub "${group_number}"_"${rname}"host:/root/.ssh/authorized_keys &
+                docker cp "${DIRECTORY}"/groups/g"${group_number}"/id_rsa.pub "${group_number}"_"${rname}"host:/root/.ssh/authorized_keys
 
             elif [ "${property2}" == "L2" ];then
                 for ((l=0;l<n_l2_switches;l++)); do
@@ -94,7 +94,7 @@ for ((k=0;k<group_numbers;k++)); do
                     cont_name="${group_number}""_""${rname}""_L2_""${sname}"
                     subnet_l2_switch="$(subnet_sshContainer_groupContainer "${group_number}" "${i}" "$((${l}+2))" "L2")"
                     ./setup/ovs-docker.sh add-port "${group_number}"-ssh ssh "${cont_name}" --ipaddress="${subnet_l2_switch}"
-                    docker cp "${DIRECTORY}"/groups/g"${group_number}"/id_rsa.pub "${cont_name}":/root/.ssh/authorized_keys &
+                    docker cp "${DIRECTORY}"/groups/g"${group_number}"/id_rsa.pub "${cont_name}":/root/.ssh/authorized_keys
                 done
 
                 for ((l=0;l<n_l2_hosts;l++)); do
@@ -106,7 +106,7 @@ for ((k=0;k<group_numbers;k++)); do
 
                     if [[ $hname != vpn* ]]; then
                         ./setup/ovs-docker.sh add-port "${group_number}"-ssh ssh "${cont_name}" --ipaddress="${subnet_l2_host}"
-                        docker cp "${DIRECTORY}"/groups/g"${group_number}"/id_rsa.pub "${cont_name}":/root/.ssh/authorized_keys &
+                        docker cp "${DIRECTORY}"/groups/g"${group_number}"/id_rsa.pub "${cont_name}":/root/.ssh/authorized_keys
                     fi
                 done
             fi
