@@ -104,14 +104,14 @@ subnet_router_IXP () {
   fi
 }
 
-subnet_router_MGT () {
+subnet_router_MEASUREMENT () {
   local n_grp="$1" device="$2"
 
   if [ "${device}" = "group" ] ; then
 
     echo "${n_grp}"".0.199.1/24"
 
-  elif [ "${device}" = "mgt" ] ; then
+    elif [ "${device}" = "measurement" ] ; then
 
     echo "${n_grp}"".0.199.2/24"
 
@@ -147,7 +147,7 @@ subnet_router_DNS () {
 
     echo "198.0.0."${n_grp}"/24"
 
-  elif [ "${device}" = "mgt" ] ; then
+elif [ "${device}" = "measurement" ] ; then
 
     echo "198.0.0.101/24"
 
@@ -169,7 +169,7 @@ subnet_ext_sshContainer () {
 
     echo "157.0.0.$(($n_grp+10))/24"
 
-  elif [ "${device}" = "MGT" ] ; then
+elif [ "${device}" = "MEASUREMENT" ] ; then
 
     echo "157.0.0.250/24"
 

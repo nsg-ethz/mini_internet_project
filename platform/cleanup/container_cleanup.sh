@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# delere all group containers(ssh, routers, hosts, switches), DNS, MGT and MATRIX
+# delere all group containers(ssh, routers, hosts, switches), DNS, MEASUREMENT and MATRIX
 
 set -o errexit
 set -o pipefail
@@ -77,7 +77,7 @@ for ((k=0;k<group_numbers;k++)); do
 done
 
 docker kill DNS &>/dev/nul || true &
-docker kill MGT &>/dev/nul || true &
+docker kill MEASUREMENT &>/dev/nul || true &
 docker kill MATRIX &>/dev/nul || true &
 
 wait

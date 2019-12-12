@@ -28,19 +28,5 @@ for ((k=0;k<group_numbers;k++)); do
 
         br_name="int-""${group_number}"
         echo -n "-- --if-exists del-br "${br_name}" " >> "${DIRECTORY}"/ovs_command.txt
-
-  #   for ((i=0;i<n_intern_links;i++)); do
-  #     row_i=(${intern_links[$i]})
-  #     router1="${row_i[0]}"
-  #     router2="${row_i[1]}"
-  #     throughput="${row_i[2]}"
-  #     delay="${row_i[3]}"
-  #
-  #     br_name="int-""${group_number}""-""${i}"
-  #
-  #     echo -n "-- --if-exists del-br "${br_name}" " >> "${DIRECTORY}"/ovs_command.txt
-  #
-  #   done
-
     fi
 done

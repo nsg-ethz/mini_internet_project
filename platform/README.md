@@ -250,15 +250,15 @@ You can then simply periodically copy this file from the container (e.g., using 
 
 #### Active probing
 
-To run measurements between any two ASes, we must use a dedicated container called MGT (for "management").
-By default, we can access the management container over port 2099:
+To run measurements between any two ASes, we must use a dedicated container called MEASUREMENT.
+By default, we can access the measurement container over port 2099:
 
 ```
 ssh -p 2099 root@server.ethz.ch
 ```
 
-You can find the password in the file `groups/ssh_mgt.txt`. It should be distributed to all students such that they can access the MGT container. \
-In the management VM, we provide a script called `launch_traceroute.sh` that relies on `nping` and which can be used to launch traceroutes between any pair of ASes. For example if you want to run a traceroute from AS 1 to AS 2, simply run the following command:
+You can find the password in the file `groups/ssh_measurement.txt`. It should be distributed to all students such that they can access the MEASUREMENT container. \
+In the MEASUREMENT container, we provide a script called `launch_traceroute.sh` that relies on `nping` and which can be used to launch traceroutes between any pair of ASes. For example if you want to run a traceroute from AS 1 to AS 2, simply run the following command:
 
 ```
 root@c7a60237994a:~# ./launch_traceroute.sh 1 2.101.0.1
@@ -272,7 +272,7 @@ Hop 6:  2.101.0.1 Echo reply (type=0/code=0)
 
 where 2.101.0.1 is an IP address of a host in AS2 (here we used the topology with 2 ASes). You can see the path used by the packets to reach the destination IP.
 
-By default, the management container is connected to the router ZURI in every AS. You can see this in the config file `config/router_config.txt`. The second column of the ZURI row is `MGT` which means that the management container is connected to the ZURI router, but you can edit this file so that the management VM is connected to another router instead.
+By default, the measurement container is connected to the router ZURI in every AS. You can see this in the config file `config/router_config.txt`. The second column of the ZURI row is `MEASUREMENT` which means that the measurement container is connected to the ZURI router, but you can edit this file so that the measurement container is connected to another router instead.
 
 #### Connectivity matrix
 
