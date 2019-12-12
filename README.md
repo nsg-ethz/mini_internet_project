@@ -14,7 +14,7 @@ Laurent Vanbever <lvanbever@ethz.ch> \
 
 ### Disclaimer
 
-This is platform has been tailord to teach how the Internet works in our Communication Networks lecture at ETH Zurich. Although this platform may be useful for other kind of purposes (research, experiments, etc), it has not been designed for them.
+This platform has been tailord to teach how the Internet works in our Communication Networks lecture at ETH Zurich. Although this platform may be useful for other kind of purposes (research, experiments, etc), it has not been designed for them.
 
 If you want to use this platform for your networking class, we recommend that you spent some time understanding the code and how we build the mini-Internet, and we recommand you to try it first before using it with actual students.
 We assume no responsibility or liability for any problems you may encounter while using the platform.
