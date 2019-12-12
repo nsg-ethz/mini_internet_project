@@ -64,6 +64,7 @@ sudo ./startup.sh
 ```
 
 By default, this will run a mini-Internet with 20ASes.
+When building the mini-Internet, a directory called `groups` is created and all the configuration files, passwords, automatically-generated scripts, etc will be stored in this directorty.
 
 :warning: Make sure your server has enough resources to sustain this mini-Internet (around 64GB of memory and at least 8 CPU cores are recommended). Otherwise, look at section [configure the mini-Internet](https://github.com/nsg-ethz/mini_internet_project/blob/master/platform/README.md#configure-the-mini-internet-topology) for instructions on how to run a smaller mini-Internet.
 
@@ -172,6 +173,18 @@ For instance to jump into the host connected to the router ABID, use the followi
 
 ```
 ./goto ABID host
+```
+
+If you want to jump the the router connected to the router ABID, write:
+
+```
+./goto ABID router
+```
+
+And if you to access the switch ETH-IRCH in the L2 network connected to the router ZURI, use the following command:
+
+```
+./goto ZURI ETH-IRCH
 ```
 
 Once in a host, switch or router, just type `exit` to go back to the proxy container.
