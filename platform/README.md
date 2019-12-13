@@ -236,7 +236,7 @@ However, this script uses the configuration files, thus if they have changed sin
 
 :warning: This also includes containers, switches and ethernet pairs which do not belong to the mini-Internet (e.g., your very important Docker container)!!!
 ```
-sudo ./hard_reset.sh
+sudo ./cleanup/hard_reset.sh
 ```
 
 ## Use the monitoring tools and services
