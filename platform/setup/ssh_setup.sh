@@ -34,7 +34,7 @@ echo "ifconfig ssh_to_group $subnet_bridge up" >> "${DIRECTORY}"/groups/ip_setup
 ssh-keygen -t rsa -b 4096 -C "comment" -P "" -f "groups/id_rsa" -q
 cp groups/id_rsa.pub groups/authorized_keys
 
-docker cp "${DIRECTORY}"/groups/authorized_keys MGT:/root/.ssh/authorized_keys &
+docker cp "${DIRECTORY}"/groups/authorized_keys MEASUREMENT:/root/.ssh/authorized_keys &
 
 
 for ((k=0;k<group_numbers;k++)); do

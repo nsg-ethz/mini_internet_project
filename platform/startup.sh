@@ -90,10 +90,10 @@ time ./setup/external_links_setup.sh "${DIRECTORY}"
 echo ""
 echo ""
 
-echo "echo \"mgt links\"" >> "${DIRECTORY}"/groups/ip_setup.sh
-echo "mgt_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
-echo "mgt_setup.sh: "
-time ./setup/mgt_setup.sh "${DIRECTORY}"
+echo "echo \"measurement links\"" >> "${DIRECTORY}"/groups/ip_setup.sh
+echo "measurement_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
+echo "measurement_setup.sh: "
+time ./setup/measurement_setup.sh "${DIRECTORY}"
 
 echo ""
 echo ""
@@ -181,7 +181,7 @@ echo ""
 
 echo "router_config.sh: "
 echo "router_config.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
-time ./setup/router_config.sh "${DIRECTORY}" 
+time ./setup/router_config.sh "${DIRECTORY}"
 
 echo ""
 echo ""

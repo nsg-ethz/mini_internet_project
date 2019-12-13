@@ -10,7 +10,7 @@ docker build --tag=d_router docker_images/router/
 docker build --tag=d_ixp docker_images/ixp/
 docker build --tag=d_host docker_images/host/
 docker build --tag=d_ssh docker_images/ssh/
-docker build --tag=d_mgt docker_images/mgt/
+docker build --tag=d_measurement docker_images/measurement/
 docker build --tag=d_dns docker_images/dns/
 docker build --tag=d_switch docker_images/switch/
 docker build --tag=d_matrix docker_images/matrix/
@@ -39,7 +39,7 @@ container_name=d_ssh
 docker tag "${container_name}" "${docker_name}"/"${container_name}"
 docker push "${docker_name}"/"${container_name}"
 
-container_name=d_mgt
+container_name=d_measurement
 docker tag "${container_name}" "${docker_name}"/"${container_name}"
 docker push "${docker_name}"/"${container_name}"
 
