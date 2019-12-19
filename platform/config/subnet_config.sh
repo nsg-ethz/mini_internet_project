@@ -33,9 +33,9 @@ subnet_host_router () {
 }
 
 subnet_l2_router () {
-  local n_grp="$1" vlan="$2" n_host="$3"
+  local n_grp="$1" l2_id="$2" vlan="$3" n_host="$4"
 
-  echo "${n_grp}"".200.$vlan.$n_host/24"
+  echo "${n_grp}"".$((200+$l2_id)).$vlan.$n_host/24"
 }
 
 gw_l2_ () {

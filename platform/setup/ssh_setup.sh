@@ -85,30 +85,29 @@ for ((k=0;k<group_numbers;k++)); do
                 subnet_host="$(subnet_sshContainer_groupContainer "${group_number}" "${i}" -1 "host")"
                 ./setup/ovs-docker.sh add-port "${group_number}"-ssh ssh "${group_number}"_"${rname}"host --ipaddress="${subnet_host}"
                 docker cp "${DIRECTORY}"/groups/g"${group_number}"/id_rsa.pub "${group_number}"_"${rname}"host:/root/.ssh/authorized_keys
+            fi
 
-            elif [ "${property2}" == "L2" ];then
-                for ((l=0;l<n_l2_switches;l++)); do
-                    switch_l=(${l2_switches[$l]})
-                    sname="${switch_l[0]}"
-                    connected="${switch_l[1]}"
-                    cont_name="${group_number}""_""${rname}""_L2_""${sname}"
-                    subnet_l2_switch="$(subnet_sshContainer_groupContainer "${group_number}" "${i}" "$((${l}+2))" "L2")"
-                    ./setup/ovs-docker.sh add-port "${group_number}"-ssh ssh "${cont_name}" --ipaddress="${subnet_l2_switch}"
-                    docker cp "${DIRECTORY}"/groups/g"${group_number}"/id_rsa.pub "${cont_name}":/root/.ssh/authorized_keys
-                done
+        done
+        for ((l=0;l<n_l2_switches;l++)); do
+            switch_l=(${l2_switches[$l]})
+            sname="${switch_l[0]}"
+            connected="${switch_l[1]}"
+            cont_name=${group_number}_L2_${sname}
+            subnet_l2_switch="$(subnet_sshContainer_groupContainer "${group_number}" "${i}" "$((${l}+2))" "L2")"
+            ./setup/ovs-docker.sh add-port "${group_number}"-ssh ssh "${cont_name}" --ipaddress="${subnet_l2_switch}"
+            docker cp "${DIRECTORY}"/groups/g"${group_number}"/id_rsa.pub "${cont_name}":/root/.ssh/authorized_keys
+        done
 
-                for ((l=0;l<n_l2_hosts;l++)); do
-                    host_l=(${l2_hosts[$l]})
-                    hname="${host_l[0]}"
-                    sname="${host_l[1]}"
-                    cont_name="${group_number}""_""${rname}""_L2_""${hname}"
-                    subnet_l2_host="$(subnet_sshContainer_groupContainer "${group_number}" "${i}" "$((${l}+${n_l2_switches}+2))" "L2")"
+        for ((l=0;l<n_l2_hosts;l++)); do
+            host_l=(${l2_hosts[$l]})
+            hname="${host_l[0]}"
+            sname="${host_l[1]}"
+            cont_name=${group_number}_L2_${sname}_${hname}
+            subnet_l2_host="$(subnet_sshContainer_groupContainer "${group_number}" "${i}" "$((${l}+${n_l2_switches}+2))" "L2")"
 
-                    if [[ $hname != vpn* ]]; then
-                        ./setup/ovs-docker.sh add-port "${group_number}"-ssh ssh "${cont_name}" --ipaddress="${subnet_l2_host}"
-                        docker cp "${DIRECTORY}"/groups/g"${group_number}"/id_rsa.pub "${cont_name}":/root/.ssh/authorized_keys
-                    fi
-                done
+            if [[ $hname != vpn* ]]; then
+                ./setup/ovs-docker.sh add-port "${group_number}"-ssh ssh "${cont_name}" --ipaddress="${subnet_l2_host}"
+                docker cp "${DIRECTORY}"/groups/g"${group_number}"/id_rsa.pub "${cont_name}":/root/.ssh/authorized_keys
             fi
         done
     fi
