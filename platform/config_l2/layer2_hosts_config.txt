@@ -1,0 +1,16 @@
+student_1	ETH-IRCH	1000	1000    10
+staff_1		ETH-IRCH        1000    1000   20
+vpn_1		ETH-IRCH        1000    1000   30
+student_2	ETH-HONG        1000    1000  10
+staff_2		ETH-HONG        1000    1000   20
+student_3	ETH-OERL        1000    1000  10
+staff_3		ETH-OERL        1000    1000   20
+student_4	ETH-ZENT        1000    1000  10
+staff_4		ETH-ZENT        1000    1000   20
+vpn_4		ETH-ZENT        1000    1000   30
+student_5	NEWY-STATION        1000    1000  10
+staff_5		NEWY-STATION        1000    1000   20
+vpn_5		NEWY-STATION        1000    1000   30
+student_6	NEWY-AIRPORT        1000    1000  10
+staff_6		NEWY-AIRPORT        1000    1000   20
+vpn_6		NEWY-AIRPORT        1000    1000   30

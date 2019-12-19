@@ -31,12 +31,37 @@ for ((k=0;k<group_numbers;k++)); do
     if [ "${group_as}" != "IXP" ];then
 
         location="${DIRECTORY}"/groups/g"${group_number}"
+        subnet_dns="$(subnet_router_DNS "${group_number}" "dns")"
+
         # start ssh container
         docker run -itd --net='none'  --name="${group_number}""_ssh" \
           -v "${location}"/goto.sh:/root/goto.sh --privileged \
           --hostname="g${group_number}-proxy" thomahol/d_ssh
 
+    	# start switches
+    	for ((l=0;l<n_l2_switches;l++)); do
 
+            switch_l=(${l2_switches[$l]})
+            sname="${switch_l[0]}"
+            docker run -itd --net='none' --dns="${subnet_dns%/*}" --privileged \
+                --hostname "${sname}" \
+                --name="${group_number}""_L2_""${sname}" thomahol/d_switch
+        done
+
+        # start hosts in l2 network
+        for ((l=0;l<n_l2_hosts;l++)); do
+            host_l=(${l2_hosts[$l]})
+            hname="${host_l[0]}"
+            sname="${host_l[1]}"
+
+            if [[ $hname != vpn* ]]; then
+                docker run -itd --net='none' --dns="${subnet_dns%/*}" --privileged \
+                    --hostname "${hname}" \
+                    --name="${group_number}""_L2_""${sname}""_""${hname}" thomahol/d_host
+            fi
+        done
+
+        # start routers and hosts
         for ((i=0;i<n_routers;i++)); do
             router_i=(${routers[$i]})
             rname="${router_i[0]}"
@@ -44,7 +69,6 @@ for ((k=0;k<group_numbers;k++)); do
             property2="${router_i[2]}"
 
             location="${DIRECTORY}"/groups/g"${group_number}"/"${rname}"
-            subnet_dns="$(subnet_router_DNS "${group_number}" "dns")"
 
             # start router
             docker run -itd --net='none'  --dns="${subnet_dns%/*}" \
@@ -54,40 +78,15 @@ for ((k=0;k<group_numbers;k++)); do
                 -v "${location}"/daemons:/etc/frr/daemons \
                 -v "${location}"/frr.conf:/etc/frr/frr.conf thomahol/d_router
 
-            # start host or layer 2
+            # start host
             if [ "${property2}" == "host" ];then
-            docker run -itd --net='none' --dns="${subnet_dns%/*}"  \
-                --name="${group_number}""_""${rname}""host" --privileged \
-                --hostname "${rname}""_host" \
-                -v "${location}"/connectivity.txt:/home/connectivity.txt \
-                -v ${DIRECTORY}/docker_images/host/bgpsimple.pl:/home/bgpsimple.pl \
-                -v "${location}"/ping_all_groups.sh:/home/ping_all_groups.sh thomahol/d_host
-
-            #start l2 containers
-            elif [ "${property2}" == "L2" ];then
-
-        	# start switches
-        	for ((l=0;l<n_l2_switches;l++)); do
-
-                switch_l=(${l2_switches[$l]})
-                sname="${switch_l[0]}"
-                docker run -itd --net='none' --dns="${subnet_dns%/*}" --privileged \
-                    --hostname "${sname}" \
-                    --name="${group_number}""_""${rname}""_L2_""${sname}" thomahol/d_switch
-            done
-
-        	# start hosts
-        	for ((l=0;l<n_l2_hosts;l++)); do
-                host_l=(${l2_hosts[$l]})
-                hname="${host_l[0]}"
-
-                if [[ $hname != vpn* ]]; then
-                    docker run -itd --net='none' --dns="${subnet_dns%/*}" --privileged \
-                        --hostname "${hname}" \
-                        --name="${group_number}""_""${rname}""_L2_""${hname}" thomahol/d_host
-                fi
-            done
-          fi
+                docker run -itd --net='none' --dns="${subnet_dns%/*}"  \
+                    --name="${group_number}""_""${rname}""host" --privileged \
+                    --hostname "${rname}""_host" \
+                    -v "${location}"/connectivity.txt:/home/connectivity.txt \
+                    -v ${DIRECTORY}/docker_images/host/bgpsimple.pl:/home/bgpsimple.pl \
+                    -v "${location}"/ping_all_groups.sh:/home/ping_all_groups.sh thomahol/d_host
+            fi
         done
 
     elif [ "${group_as}" = "IXP" ];then
