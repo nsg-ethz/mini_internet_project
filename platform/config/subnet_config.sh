@@ -33,9 +33,15 @@ subnet_host_router () {
 }
 
 subnet_l2_router () {
-  local n_grp="$1" vlan="$2" n_host="$3"
+  local n_grp="$1" l2_id="$2"
 
-  echo "${n_grp}"".200.$vlan.$n_host/24"
+  echo "${n_grp}"".$((200+$l2_id)).0.0/16"
+}
+
+subnet_l2 () {
+  local n_grp="$1" l2_id="$2" vlan="$3" n_host="$4"
+
+  echo "${n_grp}"".$((200+$l2_id)).$vlan.$n_host/24"
 }
 
 gw_l2_ () {
@@ -47,7 +53,7 @@ gw_l2_ () {
 subnet_router () {
   local n_grp="$1" n_router="$2"
 
-  echo "${n_grp}"".""$(($n_router+201))"".0.1/24"
+  echo "${n_grp}"".""$(($n_router+150))"".0.1/24"
 }
 
 subnet_router_router_intern () {
@@ -104,14 +110,14 @@ subnet_router_IXP () {
   fi
 }
 
-subnet_router_MGT () {
+subnet_router_MEASUREMENT () {
   local n_grp="$1" device="$2"
 
   if [ "${device}" = "group" ] ; then
 
     echo "${n_grp}"".0.199.1/24"
 
-  elif [ "${device}" = "mgt" ] ; then
+    elif [ "${device}" = "measurement" ] ; then
 
     echo "${n_grp}"".0.199.2/24"
 
@@ -147,7 +153,7 @@ subnet_router_DNS () {
 
     echo "198.0.0."${n_grp}"/24"
 
-  elif [ "${device}" = "mgt" ] ; then
+elif [ "${device}" = "measurement" ] ; then
 
     echo "198.0.0.101/24"
 
@@ -169,7 +175,7 @@ subnet_ext_sshContainer () {
 
     echo "157.0.0.$(($n_grp+10))/24"
 
-  elif [ "${device}" = "MGT" ] ; then
+elif [ "${device}" = "MEASUREMENT" ] ; then
 
     echo "157.0.0.250/24"
 

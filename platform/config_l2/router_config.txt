@@ -1,4 +1,4 @@
-LOND	N/A    host
+LOND	N/A    L2-ETH
 ZURI	MEASUREMENT    L2-ETH
 BARC	N/A    host
 ROMA	DNS    host

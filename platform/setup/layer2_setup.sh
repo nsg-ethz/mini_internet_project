@@ -134,6 +134,7 @@ for ((k=0;k<group_numbers;k++)); do
         rname="${router_i[0]}"
         property1="${router_i[1]}"
         property2="${router_i[2]}"
+        l2_id=0
         if [ "${group_as}" != "IXP" ];then
             if [[ "${property2}" == L2* ]];then
 
@@ -144,9 +145,6 @@ for ((k=0;k<group_numbers;k++)); do
                     sys_id="${switch_l[2]}"
 
                     if [ "${connected}" == "$rname" ];then
-                        subnet_student="$(subnet_l2_router "${group_number}" "${i}" "student")"
-                        subnet_staff="$(subnet_l2_router "${group_number}" "${i}" "staff")"
-
                         ./setup/ovs-docker.sh add-port "${br_name}" "${rname}""-L2" \
                           "${group_number}""_""${rname}""router"
                         ./setup/ovs-docker.sh add-port "${br_name}" "${rname}""router" \
@@ -159,6 +157,7 @@ for ((k=0;k<group_numbers;k++)); do
                         echo "docker exec -d "${group_number}""_L2_""${sname}" ovs-vsctl add-port br0 "${rname}""router"" >> "${DIRECTORY}"/groups/l2_init_switch.sh
                     fi
                 done
+                l2_id=$(($l2_id+1))
             fi
         fi
     done

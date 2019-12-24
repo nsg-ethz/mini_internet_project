@@ -28,6 +28,28 @@ n_l2_switches=${#l2_switches[@]}
 n_l2_links=${#l2_links[@]}
 n_l2_hosts=${#l2_hosts[@]}
 
+# Initlization the associative array to configure the layer2 subnet advertisements
+declare -A l2_id
+idtmp=1
+for ((i=0;i<n_routers;i++)); do
+    router_i=(${routers[$i]})
+    property2="${router_i[2]}"
+    if [[ "${property2}" == *L2* ]];then
+        l2_id[$property2]=0
+    fi
+done
+for ((i=0;i<n_routers;i++)); do
+    router_i=(${routers[$i]})
+    property2="${router_i[2]}"
+    if [[ "${property2}" == *L2* ]];then
+        if [[ "${l2_id[$property2]}" -eq "0" ]]; then
+            l2_id[$property2]=$idtmp
+            idtmp=$(($idtmp+1))
+        fi
+    fi
+done
+
+
 
 # create initial configuration for each router
 for ((k=0;k<group_numbers;k++));do
@@ -53,8 +75,7 @@ for ((k=0;k<group_numbers;k++));do
             echo " -c 'interface lo' \\" >> "${location}"
             echo " -c '"ip address "$(subnet_router "${group_number}" "${i}")""' \\" >> "${location}"
             echo " -c 'exit' \\" >> "${location}"
-
-                if [ "${property2}" == "host" ];then
+                if [[ "${property2}" == "host" ]];then
                     echo " -c 'interface host' \\" >> "${location}"
                     echo " -c '"ip address "$(subnet_host_router "${group_number}" "${i}" "router")""'\\" >> "${location}"
                     echo " -c 'exit' \\" >> "${location}"
@@ -62,32 +83,10 @@ for ((k=0;k<group_numbers;k++));do
                     echo " -c '"network "$(subnet_host_router "${group_number}" "${i}" "router")" area 0"'\\" >> "${location}"
                     echo " -c 'exit'\\" >> "${location}"
 
-                elif [ "${property2}" == "L2" ];then
-                    declare -A vlanset
-                    for ((l=0;l<n_l2_hosts;l++)); do
-                        host_l=(${l2_hosts[$l]})
-                        vlan="${host_l[4]}"
-                        vlanset[$vlan]="0"
-                    done
-
-                    for ((l=0;l<n_l2_hosts;l++)); do
-                        host_l=(${l2_hosts[$l]})
-                        hname="${host_l[0]}"
-                        sname="${host_l[1]}"
-                        throughput="${host_l[2]}"
-                        delay="${host_l[3]}"
-                        vlan="${host_l[4]}"
-
-                        if [ "${vlanset[$vlan]}" == "0" ]; then
-                            echo " -c 'interface "${rname}"-L2.$vlan' \\" >> "${location}"
-                            echo " -c '"ip address "$(subnet_l2_router "${group_number}" $vlan 1)""'\\" >> "${location}"
-                            echo " -c 'exit' \\" >> "${location}"
-                            echo " -c 'router ospf' \\" >> "${location}"
-                            echo " -c '"network "$(subnet_l2_router "${group_number}" $vlan 1)" area 0"'\\" >> "${location}"
-                            echo " -c 'exit'\\" >> "${location}"
-                        fi
-                        vlanset[$vlan]="1"
-                    done
+                elif [[ "${property2}" == *L2* ]];then
+                        echo " -c 'router ospf' \\" >> "${location}"
+                        echo " -c '"network "$(subnet_l2_router "${group_number}" $((${l2_id[$property2]}-1)))" area 0"'\\" >> "${location}"
+                        echo " -c 'exit'\\" >> "${location}"
                 fi
 
             echo " -c 'router ospf' \\" >> "${location}"
