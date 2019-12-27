@@ -23,18 +23,5 @@ for ((k=0;k<group_numbers;k++)); do
     if [ "${group_as}" != "IXP" ];then
 
         echo -n "-- --if-exists del-br "${group_number}"-host " >> "${DIRECTORY}"/ovs_command.txt
-        # for ((i=0;i<n_routers;i++)); do
-        #     router_i=(${routers[$i]})
-        #     rname="${router_i[0]}"
-        #     property1="${router_i[1]}"
-        #     property2="${router_i[2]}"
-        #
-        #     if [ "${property2}" == "host" ];then
-        #         #connection host -- router
-        #         br_name="${group_number}"-"${rname}"-host
-        #
-        #         echo -n "-- --if-exists del-br "${group_number}"-"${rname}"-host " >> "${DIRECTORY}"/ovs_command.txt
-        #     fi
-        # done
     fi
 done

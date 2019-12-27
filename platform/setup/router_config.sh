@@ -344,13 +344,13 @@ for ((i=0;i<n_extern_links;i++)); do
     fi
 done
 
-# mgt
+# measurement
 for ((i=0;i<n_routers;i++)); do
     router_i=(${routers[$i]})
     rname="${router_i[0]}"
     property1="${router_i[1]}"
 
-    if [ "${property1}" = "MGT"  ];then
+    if [ "${property1}" = "MEASUREMENT"  ];then
         for ((k=0;k<group_numbers;k++)); do
             group_k=(${groups[$k]})
             group_number="${group_k[0]}"
@@ -360,11 +360,11 @@ for ((i=0;i<n_routers;i++)); do
                 location="${DIRECTORY}"/groups/g"${group_number}"/"${rname}"/init_conf.sh
                 echo "#!/bin/bash" >> "${location}"
                 echo "vtysh  -c 'conf t' \\" >> "${location}"
-                echo " -c '"interface mgt_"${group_number}""'\\" >> "${location}"
-                echo " -c '"ip address "$(subnet_router_MGT "${group_number}" "group")""' \\" >> "${location}"
+                echo " -c '"interface measurement_"${group_number}""'\\" >> "${location}"
+                echo " -c '"ip address "$(subnet_router_MEASUREMENT "${group_number}" "group")""' \\" >> "${location}"
                 echo " -c 'exit' \\" >> "${location}"
                 echo " -c 'router ospf' \\" >> "${location}"
-                echo " -c '"network "$(subnet_router_MGT "${group_number}" "group")" area 0"' \\" >> "${location}"
+                echo " -c '"network "$(subnet_router_MEASUREMENT "${group_number}" "group")" area 0"' \\" >> "${location}"
                 echo " -c 'exit'\\" >> "${location}"
             fi
         done

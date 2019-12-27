@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# delete links between groups and matrix container
+# delete links between groups and measurement container
 
 set -o errexit
 set -o pipefail
@@ -16,4 +16,4 @@ readarray routers < "${DIRECTORY}"/config/router_config.txt
 group_numbers=${#groups[@]}
 n_routers=${#routers[@]}
 
-echo -n "-- --if-exists del-br matrix " >> "${DIRECTORY}"/ovs_command.txt
+echo -n "-- --if-exists del-br measurement " >> "${DIRECTORY}"/ovs_command.txt

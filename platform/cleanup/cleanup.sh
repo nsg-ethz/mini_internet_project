@@ -21,7 +21,7 @@ echo -n "ovs-vsctl " > ovs_command.txt
 ./cleanup/layer2_cleanup.sh "${DIRECTORY}"
 ./cleanup/internal_links_cleanup.sh "${DIRECTORY}"
 ./cleanup/external_links_cleanup.sh "${DIRECTORY}"
-./cleanup/mgt_cleanup.sh "${DIRECTORY}"
+./cleanup/measurement_cleanup.sh "${DIRECTORY}"
 ./cleanup/matrix_cleanup.sh "${DIRECTORY}"
 ./cleanup/dns_cleanup.sh "${DIRECTORY}"
 ./cleanup/ssh_cleanup.sh "${DIRECTORY}"

@@ -1,11 +1,5 @@
 1	AS    Config
 2	AS    Config
-11	AS    Config
-12	AS    Config
-21	AS    Config
-22	AS    Config
-31	AS    Config
-32	AS    Config
 3	AS    Config
 4	AS    Config
 5	AS    Config
@@ -14,6 +8,8 @@
 8	AS    Config
 9	AS    Config
 10	AS    Config
+11	AS    Config
+12	AS    Config
 13	AS    Config
 14	AS    Config
 15	AS    Config
@@ -22,6 +18,8 @@
 18	AS    Config
 19	AS    Config
 20	AS    Config
+21	AS    Config
+22	AS    Config
 23	AS    Config
 24	AS    Config
 25	AS    Config
@@ -30,6 +28,8 @@
 28	AS    Config
 29	AS    Config
 30	AS    Config
+31	AS    Config
+32	AS    Config
 33	AS    Config
 34	AS    Config
 35	AS    Config

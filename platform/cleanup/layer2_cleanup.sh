@@ -40,45 +40,6 @@ for ((k=0;k<group_numbers;k++)); do
             if [ "${property2}" == "L2" ];then
                 br_name="l2-""${group_number}""-""${rname}"
                 echo -n "-- --if-exists del-br "${br_name}" " >> "${DIRECTORY}"/ovs_command.txt
-
-                # for ((l=0;l<n_l2_switches;l++)); do
-                #     switch_l=(${l2_switches[$l]})
-                #     sname="${switch_l[0]}"
-                #     connected="${switch_l[1]}"
-                #     sys_id="${switch_l[2]}"
-                #
-                #     if [ "${connected}" == "router" ];then
-                #         br_name="l2-""${group_number}""-""${rname}"
-                #
-                #         echo -n "-- --if-exists del-br "${br_name}" " >> "${DIRECTORY}"/ovs_command.txt
-                #     fi
-                # done
-                #
-                # for ((l=0;l<n_l2_links;l++)); do
-                #     row_l=(${l2_links[$l]})
-                #     switch1="${row_l[0]}"
-                #     switch2="${row_l[1]}"
-                #     throughput="${row_l[2]}"
-                #     delay="${row_l[3]}"
-                #
-                #     br_name="l2-""${group_number}""-""${rname}""-""${l}"
-                #
-                #     echo -n "-- --if-exists del-br "${br_name}" " >> "${DIRECTORY}"/ovs_command.txt
-                #
-                # done
-                #
-                # for ((l=0;l<n_l2_hosts;l++)); do
-                #     host_l=(${l2_hosts[$l]})
-                #     hname="${host_l[0]}"
-                #     sname="${host_l[1]}"
-                #     throughput="${host_l[2]}"
-                #     delay="${host_l[3]}"
-                #
-                #     br_name="l2-""${group_number}""-""${rname}""-""$((l+n_l2_links))"
-                #
-                #     echo -n "-- --if-exists del-br "${br_name}" " >> "${DIRECTORY}"/ovs_command.txt
-                #
-                # done
             fi
         done
     fi

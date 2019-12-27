@@ -2,7 +2,7 @@
 #
 # start dns server container
 # setup links between groups and dns server
-# connect mgt container to dns server
+# connect measurement container to dns server
 
 set -o errexit
 set -o pipefail
@@ -66,14 +66,14 @@ docker cp "${DIRECTORY}"/groups/dns/zones DNS:/etc/bind/zones
 docker cp "${DIRECTORY}"/groups/dns/named.conf.local DNS:/etc/bind/named.conf.local
 docker cp "${DIRECTORY}"/groups/dns/named.conf.options DNS:/etc/bind/named.conf.options
 
-# connect mgt to dns service
-br_name="dns_mgt"
+# connect measurement to dns service
+br_name="dns_measurement"
 subnet_bridge="$(subnet_router_DNS -1 "bridge")"
 subnet_dns="$(subnet_router_DNS -1 "dns")"
-subnet_mgt="$(subnet_router_DNS -1 "mgt")"
+subnet_measurement="$(subnet_router_DNS -1 "measurement")"
 
 echo -n "-- add-br "${br_name}" ">> "${DIRECTORY}"/groups/add_bridges.sh
 echo "ifconfig "${br_name}" 0.0.0.0 up" >> "${DIRECTORY}"/groups/ip_setup.sh
-./setup/ovs-docker.sh add-port "${br_name}" mgt DNS --ipaddress="${subnet_dns}"
-./setup/ovs-docker.sh add-port "${br_name}" dns MGT --ipaddress="${subnet_mgt}"
-echo "docker exec -d DNS ip route add "${subnet_mgt%/*}" dev mgt " >> "${DIRECTORY}"/groups/dns_routes.sh
+./setup/ovs-docker.sh add-port "${br_name}" measurement DNS --ipaddress="${subnet_dns}"
+./setup/ovs-docker.sh add-port "${br_name}" dns MEASUREMENT --ipaddress="${subnet_measurement}"
+echo "docker exec -d DNS ip route add "${subnet_measurement%/*}" dev measurement " >> "${DIRECTORY}"/groups/dns_routes.sh
