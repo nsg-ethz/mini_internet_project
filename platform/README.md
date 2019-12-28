@@ -83,7 +83,7 @@ In addition, we also provide multiple sample topologies (see [config_2019](confi
 
 `router_config.txt`: This file lists all the routers. When a router is connected to a L2 network, it must be indicated in the third column. For instance by default the router ZURI is connected to the L2 network "ETH". 
 
-:information_source: Whenever you want to configure your own topology with your custom L2 network, you must follow the same naming convention. We recommend you to look into the directory `l2_config` for more details. 
+:information_source: Whenever you want to configure your own topology with your custom L2 network, you must follow the same naming convention. We recommend you to look into the directory [config_l2](config_l2) for more details. 
 
 #### Layer 3 topology
 
