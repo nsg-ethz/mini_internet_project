@@ -75,11 +75,15 @@ In addition, we also provide multiple sample topologies. Of course, you can also
 
 #### Layer 2 topology
 
-`layer2_switches_config.txt`: This file lists the switches in the L2 network. By default there are four switches (ETH-ZENT, ETH-HONG, ETH-IRCH, ETH-OERL). The second column indicates whether one switch is connected to a L3 router, here by default ETH-ZENT is connected to a router. Finally the third column indicates the MAC address used as an 'ID' to configure the switch.
+`layer2_switches_config.txt`: This file lists the switches in the L2 network. By default there are four switches (ETH-ZENT, ETH-HONG, ETH-IRCH, ETH-OERL). The second column indicates whether one switch is connected to a L3 router, here by default ETH-ZENT is connected to the router ZURI. Finally the third column indicates the MAC address used as an 'ID' to configure the switch. Note that a router can only be connected to one L2 network, but a layer 2 network can be connected to one or more routers. 
 
 `layer2_links_config.txt`: This file indicates how the l2 switches are interconnected. For instance by default ETH-ZENT is connected to ETH-IRCH, ETH-ZENT is connected to ETH-OERL, etc. The last two columns indicate the throughput and the delay of the link, respectively.
 
 `layer2_hosts_config.txt`: This file indicates the hosts that are in the layer 2 network, and to which switch they are directly connected to. For instance the host student_1 is by default connected to ETH-IRCH. The next two columns indicate the throughout and delay, respectively. The last column indicates the VLAN the host belongs to. Observe that a host can be a VPN server, in which case it must start with "vpn_".
+
+`router_config.txt`: This file lists all the routers. When a router is connected to a L2 network, it must be indicated in the third column. For instance by default the router ZURI is connected to the L2 network "ETH". 
+
+:information_source: Whenever you want to configure your own topology with your custom L2 network, you must follow the same naming convention. We recommend you to look into the directory `l2_config` for more details. 
 
 #### Layer 3 topology
 
