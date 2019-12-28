@@ -1,4 +1,4 @@
-ETH-ZENT	router	aa:aa:aa:aa:aa:aa
+ETH-ZENT	ZURI	aa:aa:aa:aa:aa:aa
 ETH-HONG	N/A	bb:bb:bb:bb:bb:bb
 ETH-OERL	N/A	cc:cc:cc:cc:cc:cc
 ETH-IRCH	N/A	dd:dd:dd:dd:dd:dd

@@ -96,11 +96,11 @@ for ((k=0;k<group_numbers;k++)); do
         delay="${host_l[3]}"
 
         if [[ $hname == vpn* ]]; then
-            echo "ip link add $hname type veth peer name g${group_number}_$hname" >> "${DIRECTORY}"/groups/add_vpns.sh
+            echo "ip link add ${group_number}-$hname type veth peer name g${group_number}_$hname" >> "${DIRECTORY}"/groups/add_vpns.sh
             echo "PID=$(sudo docker inspect -f '{{.State.Pid}}' "${group_number}_L2_${sname}")" >> "${DIRECTORY}"/groups/add_vpns.sh
-            echo "ip link set $hname netns \$PID" >> "${DIRECTORY}"/groups/add_vpns.sh
-            echo "docker exec -d "${group_number}""_L2_""${sname}" ifconfig $hname 0.0.0.0 up" >> "${DIRECTORY}"/groups/add_vpns.sh
-            echo "docker exec -d "${group_number}""_L2_""${sname}" ovs-vsctl add-port br0 $hname" >> "${DIRECTORY}"/groups/add_vpns.sh
+            echo "ip link set ${group_number}-$hname netns \$PID" >> "${DIRECTORY}"/groups/add_vpns.sh
+            echo "docker exec -d "${group_number}""_L2_""${sname}" ifconfig ${group_number}-$hname 0.0.0.0 up" >> "${DIRECTORY}"/groups/add_vpns.sh
+            echo "docker exec -d "${group_number}""_L2_""${sname}" ovs-vsctl add-port br0 ${group_number}-$hname" >> "${DIRECTORY}"/groups/add_vpns.sh
 
             echo "ifconfig g${group_number}_$hname 0.0.0.0 up" >> groups/add_vpns.sh
             echo "ifconfig tap_g"${group_number}_$hname" 0.0.0.0 up" >> groups/add_vpns.sh
