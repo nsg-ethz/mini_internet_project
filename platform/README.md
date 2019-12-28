@@ -71,7 +71,7 @@ When building the mini-Internet, a directory called `groups` is created and all 
 ## Configure the mini-Internet topology
 
 In the [config](config) directory, you can find all the configuration files used to define the topology of the mini-Internet.
-In addition, we also provide multiple sample topologies. Of course, you can also define your own topology using the configuration files.
+In addition, we also provide multiple sample topologies (see [config_2019](config_2019) and [config_l2](config_l2)). Of course, you can also define your own topology using the configuration files.
 
 #### Layer 2 topology
 
