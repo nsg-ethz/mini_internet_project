@@ -71,15 +71,19 @@ When building the mini-Internet, a directory called `groups` is created and all 
 ## Configure the mini-Internet topology
 
 In the [config](config) directory, you can find all the configuration files used to define the topology of the mini-Internet.
-In addition, we also provide multiple sample topologies. Of course, you can also define your own topology using the configuration files.
+In addition, we also provide multiple sample topologies (see [config_2019](config_2019) and [config_l2](config_l2)). Of course, you can also define your own topology using the configuration files.
 
 #### Layer 2 topology
 
-`layer2_switches_config.txt`: This file lists the switches in the L2 network. By default there are four switches (ETH-ZENT, ETH-HONG, ETH-IRCH, ETH-OERL). The second column indicates whether one switch is connected to a L3 router, here by default ETH-ZENT is connected to a router. Finally the third column indicates the MAC address used as an 'ID' to configure the switch.
+`layer2_switches_config.txt`: This file lists the switches in the L2 network. By default there are four switches (ETH-ZENT, ETH-HONG, ETH-IRCH, ETH-OERL). The second column indicates whether one switch is connected to a L3 router, here by default ETH-ZENT is connected to the router ZURI. Finally the third column indicates the MAC address used as an 'ID' to configure the switch. Note that a router can only be connected to one L2 network, but a layer 2 network can be connected to one or more routers. 
 
 `layer2_links_config.txt`: This file indicates how the l2 switches are interconnected. For instance by default ETH-ZENT is connected to ETH-IRCH, ETH-ZENT is connected to ETH-OERL, etc. The last two columns indicate the throughput and the delay of the link, respectively.
 
 `layer2_hosts_config.txt`: This file indicates the hosts that are in the layer 2 network, and to which switch they are directly connected to. For instance the host student_1 is by default connected to ETH-IRCH. The next two columns indicate the throughout and delay, respectively. The last column indicates the VLAN the host belongs to. Observe that a host can be a VPN server, in which case it must start with "vpn_".
+
+`router_config.txt`: This file lists all the routers. When a router is connected to a L2 network, it must be indicated in the third column. For instance by default the router ZURI is connected to the L2 network "ETH". 
+
+:information_source: Whenever you want to configure your own topology with your custom L2 network, you must follow the same naming convention. We recommend you to look into the directory [config_l2](config_l2) for more details. 
 
 #### Layer 3 topology
 
@@ -203,7 +207,7 @@ sudo openvpn --config client.conf
 ```
 
 We provide the `client.conf` file below, where VPN_IP must be replace by the IP address of the server hosting the mini-Internet. VPN_PORT defines to which VPN server we want to connect to.
-To find the port of a specific VPN server, we use the following convention: the port of the n-th VPN server in the X-th group (starting from 0) is 1000+(X\*m)+(n-1) where m is number of VPN servers per AS (i.e., 2 by default). For instance, to access `vpn_4` in group 11, the port is 1000+(11\*2)+1 = 1023.
+To find the port of a specific VPN server, we use the following convention: the port of the n-th VPN server in the X-th group (starting from 0) is 10000+(X\*m)+(n-1) where m is number of VPN servers per AS (i.e., 2 by default). For instance, to access `vpn_4` in group 11, the port is 10000+(11\*2)+1 = 10023.
 
 ```
 client
