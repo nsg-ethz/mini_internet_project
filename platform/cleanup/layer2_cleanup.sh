@@ -37,8 +37,8 @@ for ((k=0;k<group_numbers;k++)); do
             rname="${router_i[0]}"
             property1="${router_i[1]}"
             property2="${router_i[2]}"
-            if [ "${property2}" == "L2" ];then
-                br_name="l2-""${group_number}""-""${rname}"
+            if [[ "${property2}" == *L2* ]];then
+                br_name="l2-"${group_number}
                 echo -n "-- --if-exists del-br "${br_name}" " >> "${DIRECTORY}"/ovs_command.txt
             fi
         done

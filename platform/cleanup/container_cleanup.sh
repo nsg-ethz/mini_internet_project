@@ -20,59 +20,59 @@ n_routers=${#routers[@]}
 n_l2_switches=${#l2_switches[@]}
 n_l2_hosts=${#l2_hosts[@]}
 
-
 for ((k=0;k<group_numbers;k++)); do
-  group_k=(${groups[$k]})
-  group_number="${group_k[0]}"
-  group_as="${group_k[1]}"
+    group_k=(${groups[$k]})
+    group_number="${group_k[0]}"
+    group_as="${group_k[1]}"
 
-  if [ "${group_as}" != "IXP" ];then
+    if [ "${group_as}" != "IXP" ];then
 
-    # kill ssh container
-    docker kill "${group_number}""_ssh" &>/dev/nul || true
+        # kill ssh container
+        docker kill "${group_number}""_ssh" &>/dev/nul || true
 
-    for ((i=0;i<n_routers;i++)); do
-      router_i=(${routers[$i]})
-      rname="${router_i[0]}"
-      property1="${router_i[1]}"
-      property2="${router_i[2]}"
+        for ((i=0;i<n_routers;i++)); do
+            router_i=(${routers[$i]})
+            rname="${router_i[0]}"
+            property1="${router_i[1]}"
+            property2="${router_i[2]}"
 
-      # kill router router
-      docker kill "${group_number}""_""${rname}""router" &>/dev/nul || true &
+            # kill router router
+            docker kill "${group_number}""_""${rname}""router" &>/dev/nul || true &
 
-      # kill host or layer 2
-      if [ "${property2}" == "host" ];then
-        docker kill "${group_number}""_""${rname}""host" &>/dev/nul || true &
-      elif [ "${property2}" == "L2" ];then
+            # kill host or layer 2
+            if [ "${property2}" == "host" ];then
+                docker kill "${group_number}""_""${rname}""host" &>/dev/nul || true &
 
-	# kill switches
-	for ((l=0;l<n_l2_switches;l++)); do
+            elif [[ "${property2}" == *L2* ]];then
+                # kill switches
+                for ((l=0;l<n_l2_switches;l++)); do
 
-          switch_l=(${l2_switches[$l]})
-	  sname="${switch_l[0]}"
-	  docker kill "${group_number}""_""${rname}""_L2_""${sname}" &>/dev/nul || true &
+                    switch_l=(${l2_switches[$l]})
+                    sname="${switch_l[0]}"
+                    docker kill ${group_number}_L2_${sname} &>/dev/nul || true &
+
+                done
+
+                # kill hosts
+                for ((l=0;l<n_l2_hosts;l++)); do
+
+                    host_l=(${l2_hosts[$l]})
+                    hname="${host_l[0]}"
+                    sname="${host_l[1]}"
+
+                    docker kill ${group_number}_L2_${sname}_${hname} &>/dev/nul || true &
+
+                done
+            fi
 
         done
 
-	# kill hosts
-	for ((l=0;l<n_l2_hosts;l++)); do
+        elif [ "${group_as}" = "IXP" ];then
 
-          host_l=(${l2_hosts[$l]})
-	  hname="${host_l[0]}"
-	  docker kill "${group_number}""_""${rname}""_L2_""${hname}" &>/dev/nul || true &
+        #kill IXP router
+        docker kill "${group_number}""_IXP" &>/dev/nul || true &
 
-        done
-
-      fi
-
-    done
-
-  elif [ "${group_as}" = "IXP" ];then
-
-    #kill IXP router
-    docker kill "${group_number}""_IXP" &>/dev/nul || true &
-
-  fi
+    fi
 
 done
 
