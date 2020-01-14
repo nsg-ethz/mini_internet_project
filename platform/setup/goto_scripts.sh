@@ -35,74 +35,108 @@ for ((k=0;k<n_groups;k++)); do
         echo "" >> "${file_loc}"
         chmod 0755 "${file_loc}"
 
+        declare -A l2_id
+        declare -A l2_cur
+
         for ((i=0;i<n_routers;i++)); do
             router_i=(${routers[$i]})
             rname="${router_i[0]}"
             property1="${router_i[1]}"
             property2="${router_i[2]}"
+            l2_name=$(echo $property2 | cut -f 2 -d '-')
+            l2_id[$l2_name]=1000000
+            l2_cur[$l2_name]=0
+        done
 
-        if [ "${property2}" == "host" ];then
+        for ((i=0;i<n_routers;i++)); do
+            router_i=(${routers[$i]})
+            rname="${router_i[0]}"
+            property1="${router_i[1]}"
+            property2="${router_i[2]}"
+            l2_name=$(echo $property2 | cut -f 2 -d '-')
 
-            # ssh to host
-            echo "if [ \"\${location}\" == \"$rname\" ] && [ \"\${device}\" == \""host"\" ]; then" >> "${file_loc}"
-            echo "	subnet=""$(subnet_sshContainer_groupContainer "${group_number}" "${i}" -1  "host")" >> "${file_loc}"
-            echo "	ssh -t -o "StrictHostKeyChecking=no" root@\"\${subnet%???}"\" >> "${file_loc}"
-            echo "	exit" >> "${file_loc}"
+            if [[ ${l2_id[$l2_name]} == 1000000 ]]; then
+                l2_id[$l2_name]=$i
+            fi
+
+            if [ "${property2}" == "host" ];then
+
+                # ssh to host
+                echo "if [ \"\${location}\" == \"$rname\" ] && [ \"\${device}\" == \""host"\" ]; then" >> "${file_loc}"
+                echo "	subnet=""$(subnet_sshContainer_groupContainer "${group_number}" "${i}" -1  "host")" >> "${file_loc}"
+                echo "	ssh -t -o "StrictHostKeyChecking=no" root@\"\${subnet%???}"\" >> "${file_loc}"
+                echo "	exit" >> "${file_loc}"
+                echo "fi" >> "${file_loc}"
+            fi
+
+            #ssh to router vtysh
+            echo "if [ \"\${location}\" == \"$rname\" ] && [ \"\${device}\" == \""router"\" ]; then" >> "${file_loc}"
+            echo "  subnet=""$(subnet_sshContainer_groupContainer "${group_number}" "${i}" -1  "router")" >> "${file_loc}"
+            echo "  ssh -t -o "StrictHostKeyChecking=no" root@\"\${subnet%???}\" vtysh" >> "${file_loc}" >> "${file_loc}"
+            echo "  exit" >> "${file_loc}"
             echo "fi" >> "${file_loc}"
 
-        elif [[ "${property2}" == *L2* ]];then
+            #shh to router container
+            echo "if [ \"\${location}\" == \"$rname\" ] && [ \"\${device}\" == \""container"\" ]; then" >> "${file_loc}"
+            echo "  subnet=""$(subnet_sshContainer_groupContainer "${group_number}" "${i}" -1  "router")" >> "${file_loc}"
+            echo "  ssh -t -o "StrictHostKeyChecking=no" root@\"\${subnet%???}\"" >> "${file_loc}" >> "${file_loc}"
+            echo "  exit" >> "${file_loc}"
+            echo "fi" >> "${file_loc}"
 
-            l2_rname="$rname"
-            for ((l=0;l<n_l2_hosts;l++)); do
-                host_l=(${l2_hosts[$l]})
-                hname="${host_l[0]}"
+        done
 
-                if [[ "$hname" != *vpn* ]];then
-                    last_hname=$hname
-                fi
+        last_l2name_s=''
+        last_devicename_s=''
+        for ((l=0;l<n_l2_switches;l++)); do
+            switch_l=(${l2_switches[$l]})
+            sname="${switch_l[0]}"
+            l2_name=$(echo $sname | cut -f 1 -d '-')
+            device_name=$(echo $sname | cut -f 2 -d '-')
+
+
+            echo "if [ \"\${location}\" == \"$l2_name\" ] && [ \"\${device}\" == \""${device_name}"\" ]; then" >> "${file_loc}"
+            echo "  subnet=""$(subnet_sshContainer_groupContainer "${group_number}" "${l2_id[$l2_name]}" "${l2_cur[$l2_name]}" "L2")" >> "${file_loc}"
+            echo "  ssh -t -o "StrictHostKeyChecking=no" root@\"\${subnet%???}"\" >> "${file_loc}"
+            echo "  exit" >> "${file_loc}"
+            echo "fi" >> "${file_loc}"
+
+            l2_cur[$l2_name]=$((${l2_cur[$l2_name]}+1))
+            last_l2name_s=$l2_name
+            last_devicename_s=$device_name
+        done
+
+        last_l2name_h=''
+        last_hname=''
+        for ((l=0;l<n_l2_hosts;l++)); do
+            host_l=(${l2_hosts[$l]})
+            hname="${host_l[0]}"
+
+            if [[ "$hname" != *vpn* ]];then
 
                 sname="${host_l[1]}"
-                echo "if [ \"\${location}\" == \"$rname\" ] && [ \"\${device}\" == \""${hname}"\" ]; then" >> "${file_loc}"
-                echo "  subnet=""$(subnet_sshContainer_groupContainer "${group_number}" "${i}" "$((${l}+${n_l2_switches}+2))" "L2")" >> "${file_loc}"
-                echo "  ssh -t -o "StrictHostKeyChecking=no" root@\"\${subnet%???}"\" >> "${file_loc}"
-                echo "  exit" >> "${file_loc}"
-                echo "fi" >> "${file_loc}"
-            done
+                l2_name=$(echo $sname | cut -f 1 -d '-')
 
-            for ((l=0;l<n_l2_switches;l++)); do
-                switch_l=(${l2_switches[$l]})
-                sname="${switch_l[0]}"
-                echo "if [ \"\${location}\" == \"$rname\" ] && [ \"\${device}\" == \""${sname}"\" ]; then" >> "${file_loc}"
-                echo "  subnet=""$(subnet_sshContainer_groupContainer "${group_number}" "${i}" "$((${l}+2))" "L2")" >> "${file_loc}"
+                echo "if [ \"\${location}\" == \"$l2_name\" ] && [ \"\${device}\" == \""$hname"\" ]; then" >> "${file_loc}"
+                echo "  subnet=""$(subnet_sshContainer_groupContainer "${group_number}" "${l2_id[$l2_name]}" "${l2_cur[$l2_name]}" "L2")" >> "${file_loc}"
                 echo "  ssh -t -o "StrictHostKeyChecking=no" root@\"\${subnet%???}"\" >> "${file_loc}"
                 echo "  exit" >> "${file_loc}"
                 echo "fi" >> "${file_loc}"
-            done
+
+                l2_cur[$l2_name]=$((${l2_cur[$l2_name]}+1))
+                last_l2name_h=$l2_name
+                last_hname=$hname
+            fi
+
+        done
+
+        echo "echo \"invalid arguments\"" >> "${file_loc}"
+        echo "echo \"valid examples:\"" >> "${file_loc}"
+        echo "echo \"./goto $rname router\"" >> "${file_loc}"
+        echo "echo \"./goto $rname host\"" >> "${file_loc}"
+
+        if [ "${last_l2name_s}" != "" ];then
+            echo "echo \"./goto ${last_l2name_s} ${last_devicename_s}\"" >> "${file_loc}"
+            echo "echo \"./goto ${last_l2name_h} ${last_hname}\"" >> "${file_loc}"
         fi
-
-        #ssh to router vtysh
-        echo "if [ \"\${location}\" == \"$rname\" ] && [ \"\${device}\" == \""router"\" ]; then" >> "${file_loc}"
-        echo "  subnet=""$(subnet_sshContainer_groupContainer "${group_number}" "${i}" -1  "router")" >> "${file_loc}"
-        echo "  ssh -t -o "StrictHostKeyChecking=no" root@\"\${subnet%???}\" vtysh" >> "${file_loc}" >> "${file_loc}"
-        echo "  exit" >> "${file_loc}"
-        echo "fi" >> "${file_loc}"
-
-        #shh to router container
-        echo "if [ \"\${location}\" == \"$rname\" ] && [ \"\${device}\" == \""container"\" ]; then" >> "${file_loc}"
-        echo "  subnet=""$(subnet_sshContainer_groupContainer "${group_number}" "${i}" -1  "router")" >> "${file_loc}"
-        echo "  ssh -t -o "StrictHostKeyChecking=no" root@\"\${subnet%???}\"" >> "${file_loc}" >> "${file_loc}"
-        echo "  exit" >> "${file_loc}"
-        echo "fi" >> "${file_loc}"
-    done
-
-    echo "echo \"invalid arguments\"" >> "${file_loc}"
-    echo "echo \"valid examples:\"" >> "${file_loc}"
-    echo "echo \"./goto $rname router\"" >> "${file_loc}"
-    echo "echo \"./goto $rname host\"" >> "${file_loc}"
-
-    if [ "${l2_rname}" != "-" ];then
-        echo "echo \"./goto ${l2_rname} ${sname}\"" >> "${file_loc}"
-        echo "echo \"./goto ${l2_rname} ${last_hname}\"" >> "${file_loc}"
     fi
-fi
 done
