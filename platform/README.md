@@ -75,13 +75,16 @@ In addition, we also provide multiple sample topologies (see [config_2019](confi
 
 #### Layer 2 topology
 
-`layer2_switches_config.txt`: This file lists the switches in the L2 network. By default there are four switches (ETH-ZENT, ETH-HONG, ETH-IRCH, ETH-OERL). The second column indicates whether one switch is connected to a L3 router, here by default ETH-ZENT is connected to the router ZURI. Finally the third column indicates the MAC address used as an 'ID' to configure the switch. Note that a router can only be connected to one L2 network, but a layer 2 network can be connected to one or more routers. 
+You can configure the layer topology with the following files. There can be several  L2 networks in each AS. 
+Each L2 network has a name. By default there is one L2 called ETH.
 
-`layer2_links_config.txt`: This file indicates how the l2 switches are interconnected. For instance by default ETH-ZENT is connected to ETH-IRCH, ETH-ZENT is connected to ETH-OERL, etc. The last two columns indicate the throughput and the delay of the link, respectively.
+`layer2_switches_config.txt`: This file lists the switches in the L2 network. The first column indicates the name of the L2 network. The second line indicates the name the switch. By default, there are four switches (ZENT, HONG, IRCH, OERL). The third column indicates whether one switch is connected to a L3 router, here by default ZENT is connected to the router ZURI. Finally the fourth column indicates the MAC address used as an 'ID' to configure the switch. Note that a router can only be connected to one L2 network, but a layer 2 network can be connected to one or more routers (see [config_l2](config_l2)). 
 
-`layer2_hosts_config.txt`: This file indicates the hosts that are in the layer 2 network, and to which switch they are directly connected to. For instance the host student_1 is by default connected to ETH-IRCH. The next two columns indicate the throughout and delay, respectively. The last column indicates the VLAN the host belongs to. Observe that a host can be a VPN server, in which case it must start with "vpn_".
+`layer2_links_config.txt`: This file indicates how the l2 switches are interconnected. For instance by default ZENT is connected to IRCH, ZENT is connected to OERL, etc. The last two columns indicate the throughput and the delay of the link, respectively. The first and third columns indicate the name of the L2 network in which the switches in the second and fourth columns are, respectively. The L2 names should be identical since it is not possible to connect two switches that are in two different L2 network. 
 
-`router_config.txt`: This file lists all the routers. When a router is connected to a L2 network, it must be indicated in the third column. For instance by default the router ZURI is connected to the L2 network "ETH". 
+`layer2_hosts_config.txt`: This file indicates the hosts that are in the layer 2 network, and to which switch they are directly connected to. For instance the host student_1 is by default in the L2 network named ETH and is connected to IRCH. The next two columns indicate the throughout and delay, respectively. The last column indicates the VLAN the host belongs to. Observe that a host can be a VPN server, in which case it must start with "vpn_".
+
+`router_config.txt`: This file lists all the routers. When a router is connected to a L2 network, it must be indicated in the third column. For instance by default the router ZURI is connected to the L2 network "ETH". Here, the name of the L2 network must always be preceded by "L2-".
 
 :information_source: Whenever you want to configure your own topology with your custom L2 network, you must follow the same naming convention. We recommend you to look into the directory [config_l2](config_l2) for more details. 
 
