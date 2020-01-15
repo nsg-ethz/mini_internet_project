@@ -42,22 +42,25 @@ for ((k=0;k<group_numbers;k++)); do
     	for ((l=0;l<n_l2_switches;l++)); do
 
             switch_l=(${l2_switches[$l]})
-            sname="${switch_l[0]}"
+            l2name="${switch_l[0]}"
+            sname="${switch_l[1]}"
+
             docker run -itd --net='none' --dns="${subnet_dns%/*}" --privileged \
                 --hostname "${sname}" \
-                --name="${group_number}""_L2_""${sname}" thomahol/d_switch
+                --name=${group_number}_L2_${l2name}_${sname} thomahol/d_switch
         done
 
         # start hosts in l2 network
         for ((l=0;l<n_l2_hosts;l++)); do
             host_l=(${l2_hosts[$l]})
             hname="${host_l[0]}"
-            sname="${host_l[1]}"
+            l2name="${host_l[1]}"
+            sname="${host_l[2]}"
 
             if [[ $hname != vpn* ]]; then
                 docker run -itd --net='none' --dns="${subnet_dns%/*}" --privileged \
                     --hostname "${hname}" \
-                    --name="${group_number}""_L2_""${sname}""_""${hname}" thomahol/d_host
+                    --name="${group_number}""_L2_""${l2name}""_""${hname}" thomahol/d_host
             fi
         done
 

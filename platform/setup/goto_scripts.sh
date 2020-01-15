@@ -86,15 +86,13 @@ for ((k=0;k<n_groups;k++)); do
         done
 
         last_l2name_s=''
-        last_devicename_s=''
+        last_sname_s=''
         for ((l=0;l<n_l2_switches;l++)); do
             switch_l=(${l2_switches[$l]})
-            sname="${switch_l[0]}"
-            l2_name=$(echo $sname | cut -f 1 -d '-')
-            device_name=$(echo $sname | cut -f 2 -d '-')
+            l2_name="${switch_l[0]}"
+            sname="${switch_l[1]}"
 
-
-            echo "if [ \"\${location}\" == \"$l2_name\" ] && [ \"\${device}\" == \""${device_name}"\" ]; then" >> "${file_loc}"
+            echo "if [ \"\${location}\" == \"$l2_name\" ] && [ \"\${device}\" == \""${sname}"\" ]; then" >> "${file_loc}"
             echo "  subnet=""$(subnet_sshContainer_groupContainer "${group_number}" "${l2_id[$l2_name]}" "${l2_cur[$l2_name]}" "L2")" >> "${file_loc}"
             echo "  ssh -t -o "StrictHostKeyChecking=no" root@\"\${subnet%???}"\" >> "${file_loc}"
             echo "  exit" >> "${file_loc}"
@@ -102,7 +100,7 @@ for ((k=0;k<n_groups;k++)); do
 
             l2_cur[$l2_name]=$((${l2_cur[$l2_name]}+1))
             last_l2name_s=$l2_name
-            last_devicename_s=$device_name
+            last_sname_s=$sname
         done
 
         last_l2name_h=''
@@ -112,9 +110,7 @@ for ((k=0;k<n_groups;k++)); do
             hname="${host_l[0]}"
 
             if [[ "$hname" != *vpn* ]];then
-
-                sname="${host_l[1]}"
-                l2_name=$(echo $sname | cut -f 1 -d '-')
+                l2_name="${host_l[1]}"
 
                 echo "if [ \"\${location}\" == \"$l2_name\" ] && [ \"\${device}\" == \""$hname"\" ]; then" >> "${file_loc}"
                 echo "  subnet=""$(subnet_sshContainer_groupContainer "${group_number}" "${l2_id[$l2_name]}" "${l2_cur[$l2_name]}" "L2")" >> "${file_loc}"
@@ -135,7 +131,7 @@ for ((k=0;k<n_groups;k++)); do
         echo "echo \"./goto $rname host\"" >> "${file_loc}"
 
         if [ "${last_l2name_s}" != "" ];then
-            echo "echo \"./goto ${last_l2name_s} ${last_devicename_s}\"" >> "${file_loc}"
+            echo "echo \"./goto ${last_l2name_s} ${last_sname_s}\"" >> "${file_loc}"
             echo "echo \"./goto ${last_l2name_h} ${last_hname}\"" >> "${file_loc}"
         fi
     fi

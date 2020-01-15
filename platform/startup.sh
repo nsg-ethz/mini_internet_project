@@ -172,8 +172,8 @@ time ./groups/add_vpns.sh
 echo ""
 echo ""
 
-echo "switches_config.sh: "
-echo "switches_config.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
+echo "layer2_config.sh: "
+echo "layer2_config.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
 time ./setup/layer2_config.sh "${DIRECTORY}"
 
 echo ""

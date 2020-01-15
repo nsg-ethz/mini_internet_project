@@ -28,7 +28,6 @@ for ((k=0;k<group_numbers;k++)); do
     group_as="${group_k[1]}"
     group_config="${group_k[2]}"
 
-
     if [ "${group_as}" != "IXP" ];then
 
         declare -A l2_id
@@ -54,7 +53,7 @@ for ((k=0;k<group_numbers;k++)); do
                 declare -A vlanl2set
                 for ((l=0;l<n_l2_hosts;l++)); do
                     host_l=(${l2_hosts[$l]})
-                    vlan="${host_l[4]}"
+                    vlan="${host_l[5]}"
                     vlanset[$vlan]=0
                     vlanl2set[${property2}-${vlan}]=0
                 done
@@ -81,36 +80,35 @@ for ((k=0;k<group_numbers;k++)); do
             fi
         done
 
-
         for ((l=0;l<n_l2_hosts;l++)); do
             host_l=(${l2_hosts[$l]})
             hname="${host_l[0]}"
-            sname="${host_l[1]}"
-            throughput="${host_l[2]}"
-            delay="${host_l[3]}"
-            vlan="${host_l[4]}"
-            l2name="L2-"$(echo $sname | cut -f 1 -d '-')
+            l2name="${host_l[1]}"
+            sname="${host_l[2]}"
+            throughput="${host_l[3]}"
+            delay="${host_l[4]}"
+            vlan="${host_l[5]}"
 
             if [ "$group_config" == "Config" ]; then
-                docker exec -d "${group_number}""_L2_""${sname}" \
+                docker exec -d "${group_number}""_L2_""${l2name}_${sname}" \
                     ovs-vsctl set port ${group_number}-$hname tag=$vlan
             fi
 
             if [[ $hname != vpn* ]]; then
                 if [ "$group_config" == "Config" ]; then
-                    subnet_host=$(subnet_l2 $group_number $((${l2_id[$l2name]}-1)) $vlan $((${vlanl2set[${l2name}-${vlan}]}+${l2_routerid[$l2name]})))
+                    subnet_host=$(subnet_l2 $group_number $((${l2_id["L2-"$l2name]}-1)) $vlan $((${vlanl2set["L2-"${l2name}-${vlan}]}+${l2_routerid["L2-"$l2name]})))
 
-                    docker exec -d ${group_number}_L2_${sname}_${hname} \
+                    docker exec -d ${group_number}_L2_${l2name}_${hname} \
                         ifconfig ${group_number}-${sname} $subnet_host up
 
-                    subnet_gw="$(subnet_l2 ${group_number} $((${l2_id[$l2name]}-1)) ${vlan} 1)"
+                    subnet_gw="$(subnet_l2 ${group_number} $((${l2_id["L2-"$l2name]}-1)) ${vlan} 1)"
 
-                    docker exec -d ${group_number}_L2_${sname}_${hname} \
+                    docker exec -d ${group_number}_L2_${l2name}_${hname} \
                         route add default gw ${subnet_gw%/*}
                 fi
             fi
 
-            vlanl2set[${l2name}-${vlan}]=$((${vlanl2set[${l2name}-${vlan}]}+1))
+            vlanl2set["L2-"${l2name}-${vlan}]=$((${vlanl2set["L2-"${l2name}-${vlan}]}+1))
         done
 
         trunk_string=''
@@ -121,29 +119,33 @@ for ((k=0;k<group_numbers;k++)); do
 
         for ((l=0;l<n_l2_links;l++)); do
             row_l=(${l2_links[$l]})
-            switch1="${row_l[0]}"
-            switch2="${row_l[1]}"
-            throughput="${row_l[2]}"
-            delay="${row_l[3]}"
+            l2name1="${row_l[0]}"
+            switch1="${row_l[1]}"
+            l2name2="${row_l[2]}"
+            switch2="${row_l[3]}"
+            throughput="${row_l[4]}"
+            delay="${row_l[5]}"
 
             if [ "$group_config" == "Config" ]; then
-                docker exec -d "${group_number}""_L2_""${switch1}" \
+                docker exec -d "${group_number}""_L2_""${l2name1}_${switch1}" \
                     ovs-vsctl set port ${group_number}-${switch2} trunks=${trunk_string::-1}
 
-                docker exec -d "${group_number}""_L2_""${switch2}" \
+                docker exec -d "${group_number}""_L2_""${l2name2}_${switch2}" \
                     ovs-vsctl set port ${group_number}-${switch1} trunks=${trunk_string::-1}
             fi
         done
 
         for ((l=0;l<n_l2_switches;l++)); do
             switch_l=(${l2_switches[$l]})
-            sname="${switch_l[0]}"
-            connected="${switch_l[1]}"
-            sys_id="${switch_l[2]}"
+            switch_l=(${l2_switches[$l]})
+            l2name="${switch_l[0]}"
+            sname="${switch_l[1]}"
+            connected="${switch_l[2]}"
+            sys_id="${switch_l[3]}"
 
             if [ "$group_config" == "Config" ]; then
                 if [[ $connected != "N/A" ]]; then
-                    docker exec -d "${group_number}""_L2_""${sname}" \
+                    docker exec -d "${group_number}""_L2_""${l2name}_${sname}" \
                         ovs-vsctl set port ${connected}router trunks=${trunk_string::-1}
                 fi
             fi
