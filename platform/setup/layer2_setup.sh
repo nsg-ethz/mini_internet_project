@@ -36,132 +36,133 @@ for ((k=0;k<group_numbers;k++)); do
     group_number="${group_k[0]}"
     group_as="${group_k[1]}"
 
-    br_name="l2-"${group_number}
-    echo -n "-- add-br "${br_name}" " >> "${DIRECTORY}"/groups/add_bridges.sh
-    echo "ovs-vsctl set bridge "${br_name}" other-config:forward-bpdu=true" >> "${DIRECTORY}"/groups/l2_init_switch.sh
+    if [ "${group_as}" != "IXP" ];then
 
-    for ((l=0;l<n_l2_switches;l++)); do
-        switch_l=(${l2_switches[$l]})
-        l2name="${switch_l[0]}"
-        sname="${switch_l[1]}"
-        connected="${switch_l[2]}"
-        sys_id="${switch_l[3]}"
 
-        docker exec -d "${group_number}""_L2_""${l2name}"_${sname} \
-            ovs-vsctl add-br br0
+        br_name="l2-"${group_number}
+        echo -n "-- add-br "${br_name}" " >> "${DIRECTORY}"/groups/add_bridges.sh
+        echo "ovs-vsctl set bridge "${br_name}" other-config:forward-bpdu=true" >> "${DIRECTORY}"/groups/l2_init_switch.sh
 
-        docker exec -d "${group_number}""_L2_""${l2name}"_${sname} \
-            ovs-vsctl set bridge br0 stp_enable=true
+        for ((l=0;l<n_l2_switches;l++)); do
+            switch_l=(${l2_switches[$l]})
+            l2name="${switch_l[0]}"
+            sname="${switch_l[1]}"
+            connected="${switch_l[2]}"
+            sys_id="${switch_l[3]}"
 
-        docker exec -d "${group_number}""_L2_""${l2name}"_${sname} \
-            ovs-vsctl set-fail-mode br0 standalone
+            docker exec -d "${group_number}""_L2_""${l2name}"_${sname} \
+                ovs-vsctl add-br br0
 
-        docker exec -d "${group_number}""_L2_""${l2name}"_${sname} \
-            ovs-vsctl set bridge br0 other_config:stp-system-id="${sys_id}"
+            docker exec -d "${group_number}""_L2_""${l2name}"_${sname} \
+                ovs-vsctl set bridge br0 stp_enable=true
 
-        docker exec -d "${group_number}""_L2_""${l2name}"_${sname} \
-            ovs-vsctl set bridge br0 other_config:stp-priority=$((100*l+1))
-    done
+            docker exec -d "${group_number}""_L2_""${l2name}"_${sname} \
+                ovs-vsctl set-fail-mode br0 standalone
 
-    for ((l=0;l<n_l2_links;l++)); do
-        row_l=(${l2_links[$l]})
-        l2name1="${row_l[0]}"
-        switch1="${row_l[1]}"
-        l2name2="${row_l[2]}"
-        switch2="${row_l[3]}"
-        throughput="${row_l[4]}"
-        delay="${row_l[5]}"
+            docker exec -d "${group_number}""_L2_""${l2name}"_${sname} \
+                ovs-vsctl set bridge br0 other_config:stp-system-id="${sys_id}"
 
-        ./setup/ovs-docker.sh add-port "${br_name}" "${group_number}"-"${switch2}" \
-        "${group_number}""_L2_""${l2name1}"_${switch1} \
-        --delay="${delay}" --throughput="${throughput}"
+            docker exec -d "${group_number}""_L2_""${l2name}"_${sname} \
+                ovs-vsctl set bridge br0 other_config:stp-priority=$((100*l+1))
+        done
 
-        ./setup/ovs-docker.sh add-port "${br_name}" "${group_number}"-"${switch1}" \
-        "${group_number}""_L2_""${l2name2}"_${switch2} \
-        --delay="${delay}" --throughput="${throughput}"
+        for ((l=0;l<n_l2_links;l++)); do
+            row_l=(${l2_links[$l]})
+            l2name1="${row_l[0]}"
+            switch1="${row_l[1]}"
+            l2name2="${row_l[2]}"
+            switch2="${row_l[3]}"
+            throughput="${row_l[4]}"
+            delay="${row_l[5]}"
 
-        ./setup/ovs-docker.sh connect-ports "${br_name}" \
-        "${group_number}"-"${switch2}" "${group_number}""_L2_""${l2name1}"_${switch1} \
-        "${group_number}"-"${switch1}" "${group_number}""_L2_""${l2name2}"_${switch2}
-
-        echo "docker exec -d "${group_number}""_L2_""${l2name1}_${switch1}" ovs-vsctl add-port br0 "${group_number}"-"${switch2}"" >> "${DIRECTORY}"/groups/l2_init_switch.sh
-        echo "docker exec -d "${group_number}""_L2_""${l2name2}_${switch2}" ovs-vsctl add-port br0 "${group_number}"-"${switch1}"" >> "${DIRECTORY}"/groups/l2_init_switch.sh
-
-        echo "docker exec -d "${group_number}""_L2_""${l2name1}_${switch1}" ovs-vsctl set Port "${group_number}"-"${switch2}" trunks=0 " >> "${DIRECTORY}"/groups/l2_init_switch.sh
-        echo "docker exec -d "${group_number}""_L2_""${l2name2}_${switch2}" ovs-vsctl set Port "${group_number}"-"${switch1}" trunks=0 " >> "${DIRECTORY}"/groups/l2_init_switch.sh
-    done
-
-    for ((l=0;l<n_l2_hosts;l++)); do
-        host_l=(${l2_hosts[$l]})
-        hname="${host_l[0]}"
-        l2name="${host_l[1]}"
-        sname="${host_l[2]}"
-        throughput="${host_l[3]}"
-        delay="${host_l[4]}"
-
-        if [[ $hname == vpn* ]]; then
-            echo "ip link add ${group_number}-$hname type veth peer name g${group_number}_$hname" >> "${DIRECTORY}"/groups/add_vpns.sh
-            echo "PID=$(sudo docker inspect -f '{{.State.Pid}}' "${group_number}_L2_${l2name}_${sname}")" >> "${DIRECTORY}"/groups/add_vpns.sh
-            echo "ip link set ${group_number}-$hname netns \$PID" >> "${DIRECTORY}"/groups/add_vpns.sh
-            echo "docker exec -d "${group_number}""_L2_""${l2name}_${sname}" ifconfig ${group_number}-$hname 0.0.0.0 up" >> "${DIRECTORY}"/groups/add_vpns.sh
-            echo "docker exec -d "${group_number}""_L2_""${l2name}_${sname}" ovs-vsctl add-port br0 ${group_number}-$hname" >> "${DIRECTORY}"/groups/add_vpns.sh
-
-            echo "ifconfig g${group_number}_$hname 0.0.0.0 up" >> groups/add_vpns.sh
-            echo "ifconfig tap_g"${group_number}_$hname" 0.0.0.0 up" >> groups/add_vpns.sh
-
-            echo "sudo ovs-vsctl add-port vpnbr_${group_k}_${host_l} tap_g"${group_number}_$hname >> groups/add_vpns.sh
-            echo "sudo ovs-vsctl add-port vpnbr_${group_k}_${host_l} g${group_number}_$hname" >> groups/add_vpns.sh
-
-            echo "echo -n \" -- set interface tap_g"${group_number}_$hname" ingress_policing_rate="${throughput}" \" >> groups/throughput.sh " >>  "${DIRECTORY}"/groups/delay_throughput.sh
-            echo "tc qdisc add dev tap_g${group_number}_$hname root netem delay ${delay} " >>  "${DIRECTORY}"/groups/delay_throughput.sh
-
-        else
-            ./setup/ovs-docker.sh add-port "${br_name}" "${group_number}"-"${hname}" \
-            ${group_number}_L2_${l2name}_${sname} \
+            ./setup/ovs-docker.sh add-port "${br_name}" "${group_number}"-"${switch2}" \
+            "${group_number}""_L2_""${l2name1}"_${switch1} \
             --delay="${delay}" --throughput="${throughput}"
 
-            ./setup/ovs-docker.sh add-port "${br_name}" "${group_number}"-"${sname}" \
-            ${group_number}_L2_${l2name}_${hname} \
+            ./setup/ovs-docker.sh add-port "${br_name}" "${group_number}"-"${switch1}" \
+            "${group_number}""_L2_""${l2name2}"_${switch2} \
             --delay="${delay}" --throughput="${throughput}"
 
-            ./setup/ovs-docker.sh connect-ports ${br_name} \
-            ${group_number}-${hname} ${group_number}_L2_${l2name}_${sname} \
-            ${group_number}-${sname} ${group_number}_L2_${l2name}_${hname}
+            ./setup/ovs-docker.sh connect-ports "${br_name}" \
+            "${group_number}"-"${switch2}" "${group_number}""_L2_""${l2name1}"_${switch1} \
+            "${group_number}"-"${switch1}" "${group_number}""_L2_""${l2name2}"_${switch2}
 
-            echo "docker exec -d "${group_number}""_L2_""${l2name}_${sname}" ovs-vsctl add-port br0 "${group_number}"-"${hname}"" >> "${DIRECTORY}"/groups/l2_init_switch.sh
-        fi
-    done
+            echo "docker exec -d "${group_number}""_L2_""${l2name1}_${switch1}" ovs-vsctl add-port br0 "${group_number}"-"${switch2}"" >> "${DIRECTORY}"/groups/l2_init_switch.sh
+            echo "docker exec -d "${group_number}""_L2_""${l2name2}_${switch2}" ovs-vsctl add-port br0 "${group_number}"-"${switch1}"" >> "${DIRECTORY}"/groups/l2_init_switch.sh
 
-    for ((i=0;i<n_routers;i++)); do
-        router_i=(${routers[$i]})
-        rname="${router_i[0]}"
-        property1="${router_i[1]}"
-        property2="${router_i[2]}"
+            echo "docker exec -d "${group_number}""_L2_""${l2name1}_${switch1}" ovs-vsctl set Port "${group_number}"-"${switch2}" trunks=0 " >> "${DIRECTORY}"/groups/l2_init_switch.sh
+            echo "docker exec -d "${group_number}""_L2_""${l2name2}_${switch2}" ovs-vsctl set Port "${group_number}"-"${switch1}" trunks=0 " >> "${DIRECTORY}"/groups/l2_init_switch.sh
+        done
 
-        if [ "${group_as}" != "IXP" ];then
-            if [[ "${property2}" == L2* ]];then
+        for ((l=0;l<n_l2_hosts;l++)); do
+            host_l=(${l2_hosts[$l]})
+            hname="${host_l[0]}"
+            l2name="${host_l[1]}"
+            sname="${host_l[2]}"
+            throughput="${host_l[3]}"
+            delay="${host_l[4]}"
 
-                for ((l=0;l<n_l2_switches;l++)); do
-                    switch_l=(${l2_switches[$l]})
-                    l2name="${switch_l[0]}"
-                    sname="${switch_l[1]}"
-                    connected="${switch_l[2]}"
-                    sys_id="${switch_l[3]}"
+            if [[ $hname == vpn* ]]; then
+                echo "ip link add ${group_number}-$hname type veth peer name g${group_number}_$hname" >> "${DIRECTORY}"/groups/add_vpns.sh
+                echo "PID=$(sudo docker inspect -f '{{.State.Pid}}' "${group_number}_L2_${l2name}_${sname}")" >> "${DIRECTORY}"/groups/add_vpns.sh
+                echo "ip link set ${group_number}-$hname netns \$PID" >> "${DIRECTORY}"/groups/add_vpns.sh
+                echo "docker exec -d "${group_number}""_L2_""${l2name}_${sname}" ifconfig ${group_number}-$hname 0.0.0.0 up" >> "${DIRECTORY}"/groups/add_vpns.sh
+                echo "docker exec -d "${group_number}""_L2_""${l2name}_${sname}" ovs-vsctl add-port br0 ${group_number}-$hname" >> "${DIRECTORY}"/groups/add_vpns.sh
 
-                    if [ "${connected}" == "$rname" ];then
-                        ./setup/ovs-docker.sh add-port "${br_name}" "${rname}""-L2" \
-                          "${group_number}""_""${rname}""router"
-                        ./setup/ovs-docker.sh add-port "${br_name}" "${rname}""router" \
-                          "${group_number}""_L2_""${l2name}_${sname}"
+                echo "ifconfig g${group_number}_$hname 0.0.0.0 up" >> groups/add_vpns.sh
+                echo "ifconfig tap_g"${group_number}_$hname" 0.0.0.0 up" >> groups/add_vpns.sh
 
-                        ./setup/ovs-docker.sh connect-ports "${br_name}" \
-                        "${rname}""-L2" "${group_number}""_""${rname}""router" \
-                        "${rname}""router" "${group_number}""_L2_""${l2name}_${sname}"
+                echo "sudo ovs-vsctl add-port vpnbr_${group_k}_${host_l} tap_g"${group_number}_$hname >> groups/add_vpns.sh
+                echo "sudo ovs-vsctl add-port vpnbr_${group_k}_${host_l} g${group_number}_$hname" >> groups/add_vpns.sh
 
-                        echo "docker exec -d "${group_number}""_L2_""${l2name}_${sname}" ovs-vsctl add-port br0 "${rname}""router"" >> "${DIRECTORY}"/groups/l2_init_switch.sh
-                    fi
-                done
+                echo "echo -n \" -- set interface tap_g"${group_number}_$hname" ingress_policing_rate="${throughput}" \" >> groups/throughput.sh " >>  "${DIRECTORY}"/groups/delay_throughput.sh
+                echo "tc qdisc add dev tap_g${group_number}_$hname root netem delay ${delay} " >>  "${DIRECTORY}"/groups/delay_throughput.sh
+
+            else
+                ./setup/ovs-docker.sh add-port "${br_name}" "${group_number}"-"${hname}" \
+                ${group_number}_L2_${l2name}_${sname} \
+                --delay="${delay}" --throughput="${throughput}"
+
+                ./setup/ovs-docker.sh add-port "${br_name}" "${group_number}"-"${sname}" \
+                ${group_number}_L2_${l2name}_${hname} \
+                --delay="${delay}" --throughput="${throughput}"
+
+                ./setup/ovs-docker.sh connect-ports ${br_name} \
+                ${group_number}-${hname} ${group_number}_L2_${l2name}_${sname} \
+                ${group_number}-${sname} ${group_number}_L2_${l2name}_${hname}
+
+                echo "docker exec -d "${group_number}""_L2_""${l2name}_${sname}" ovs-vsctl add-port br0 "${group_number}"-"${hname}"" >> "${DIRECTORY}"/groups/l2_init_switch.sh
             fi
-        fi
-    done
+        done
+
+        for ((i=0;i<n_routers;i++)); do
+            router_i=(${routers[$i]})
+            rname="${router_i[0]}"
+            property1="${router_i[1]}"
+            property2="${router_i[2]}"
+
+                if [[ "${property2}" == L2* ]];then
+                    for ((l=0;l<n_l2_switches;l++)); do
+                        switch_l=(${l2_switches[$l]})
+                        l2name="${switch_l[0]}"
+                        sname="${switch_l[1]}"
+                        connected="${switch_l[2]}"
+                        sys_id="${switch_l[3]}"
+
+                        if [ "${connected}" == "$rname" ];then
+                            ./setup/ovs-docker.sh add-port "${br_name}" "${rname}""-L2" \
+                              "${group_number}""_""${rname}""router"
+                            ./setup/ovs-docker.sh add-port "${br_name}" "${rname}""router" \
+                              "${group_number}""_L2_""${l2name}_${sname}"
+
+                            ./setup/ovs-docker.sh connect-ports "${br_name}" \
+                            "${rname}""-L2" "${group_number}""_""${rname}""router" \
+                            "${rname}""router" "${group_number}""_L2_""${l2name}_${sname}"
+
+                            echo "docker exec -d "${group_number}""_L2_""${l2name}_${sname}" ovs-vsctl add-port br0 "${rname}""router"" >> "${DIRECTORY}"/groups/l2_init_switch.sh
+                        fi
+                    done
+            fi
+        done
+    fi
 done
