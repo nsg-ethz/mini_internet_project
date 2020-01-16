@@ -151,6 +151,12 @@ If you are the instructor and have access to the server hosting the mini-Interne
 `sudo docker exec -it 1_LONDrouter bash`
 
 If you are in the router container, run `vtysh` to access the CLI of that router.
+The following example show you how to access the switch IRCH in the L2 network ETH of AS1:
+
+`sudo docker exec -it 1_L2_ETH_IRCH`
+
+Hosts and switches do not have a CLI, so once you are in the container, you can start configuring them. 
+
 
 #### Student access with SSH
 
