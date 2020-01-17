@@ -68,6 +68,10 @@ When building the mini-Internet, a directory called `groups` is created and all 
 
 :warning: Make sure your server has enough resources to sustain this mini-Internet (around 64GB of memory and at least 8 CPU cores are recommended). Otherwise, look at section [configure the mini-Internet](https://github.com/nsg-ethz/mini_internet_project/blob/master/platform/README.md#configure-the-mini-internet-topology) for instructions on how to run a smaller mini-Internet.
 
+#### Hosts, switches and routers can be automatically pre-configured
+
+You can specify in the configuration files if you want the hosts, switches and routers to be pre-configured (with STP, OSPF, BGP, etc). In the sample configuration files that we provide (see [config_2019](config_2019) and [config_l2](config_l2)), all the ASes will be automatically pre-configured. If you want the hosts, switches and routers in an AS not to be automatically configured, just replace "Config" with "NoConfig" in the [AS_config.txt](config/AS_config.txt) configuration file.
+
 ## Configure the mini-Internet topology
 
 In the [config](config) directory, you can find all the configuration files used to define the topology of the mini-Internet.
