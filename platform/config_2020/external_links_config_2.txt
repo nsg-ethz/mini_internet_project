@@ -1,1 +1,0 @@
-1	TOKY	Peer	2	TOKY	Peer	10000	1000	N/A
