@@ -1,0 +1,3 @@
+UNIV    ETHZ    ZURI	aa:aa:aa:aa:aa:aa
+UNIV    CERN    GENE    bb:bb:bb:bb:bb:bb
+UNIV    EPFL    N/A cc:cc:cc:cc:cc:cc
