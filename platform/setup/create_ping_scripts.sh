@@ -49,6 +49,8 @@ for ((kk=0;kk<n_groups;kk++)); do
     group_number_kk="${group_kk[0]}"
     group_as_kk="${group_kk[1]}"
 
+    echo "echo Group "$group_kk >> "${DIRECTORY}"/groups/matrix/ping_all_groups.sh
+
     if [ "${group_as_kk}" != "IXP" ];then
         for ((jj=0;jj<n_groups;jj++)); do
             group_jj=(${groups[$jj]})
@@ -64,12 +66,14 @@ for ((kk=0;kk<n_groups;kk++)); do
                     mac_addr="aa:11:11:11:11:"$group_number_kk
                 fi
                 cmd="nping --dest-ip "${subnet%/*}" --dest-mac "$mac_addr" --interface group_"$group_number_kk" --tcp -c 1 | grep RCVD | grep -v unreachable"
-                echo "(timeout 3 "$cmd" &>> /home/log_ping.txt ) &" >> "${DIRECTORY}"/groups/matrix/ping_all_groups.sh
+                echo "(timeout 1.5 "$cmd" &>> /home/log_ping.txt ) &" >> "${DIRECTORY}"/groups/matrix/ping_all_groups.sh
 
                 echo "results[\"${group_number_kk},${group_number_jj}\"]=\$!" >> "${DIRECTORY}"/groups/matrix/ping_all_groups.sh
             fi
         done
     fi
+
+    echo "sleep 1" >> "${DIRECTORY}"/groups/matrix/ping_all_groups.sh
 done
 
 
@@ -101,3 +105,5 @@ for ((kk=0;kk<n_groups;kk++)); do
 done
 
 echo "date \"+%FT%T\">>/home/connectivity.txt" >> "${DIRECTORY}"/groups/matrix/ping_all_groups.sh
+
+echo "cp /home/connectivity.txt /home/matrix.txt" >> "${DIRECTORY}"/groups/matrix/ping_all_groups.sh
