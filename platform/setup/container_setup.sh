@@ -36,7 +36,7 @@ for ((k=0;k<group_numbers;k++)); do
         # start ssh container
         docker run -itd --net='none'  --name="${group_number}""_ssh" \
           -v "${location}"/goto.sh:/root/goto.sh --privileged \
-          --cpus=2 \
+          --cpus=2 --memory=100m \
           --hostname="g${group_number}-proxy" thomahol/d_ssh
 
     	# start switches
