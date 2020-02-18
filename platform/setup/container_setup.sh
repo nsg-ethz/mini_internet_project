@@ -47,7 +47,7 @@ for ((k=0;k<group_numbers;k++)); do
             sname="${switch_l[1]}"
 
             docker run -itd --net='none' --dns="${subnet_dns%/*}" --privileged \
-                --cpus=2 --storage-opt size=5G --hostname "${sname}" \
+                --cpus=2 --hostname "${sname}" \
                 --name=${group_number}_L2_${l2name}_${sname} thomahol/d_switch
         done
 
@@ -60,7 +60,7 @@ for ((k=0;k<group_numbers;k++)); do
 
             if [[ $hname != vpn* ]]; then
                 docker run -itd --net='none' --dns="${subnet_dns%/*}" --privileged \
-                    --cpus=2 --storage-opt size=5G --hostname "${hname}" \
+                    --cpus=2 --hostname "${hname}" \
                     --name="${group_number}""_L2_""${l2name}""_""${hname}" thomahol/d_host
             fi
         done
@@ -77,7 +77,7 @@ for ((k=0;k<group_numbers;k++)); do
             # start router
             docker run -itd --net='none'  --dns="${subnet_dns%/*}" \
                 --name="${group_number}""_""${rname}""router" --privileged \
-                --cpus=2 --storage-opt size=5G --hostname "${rname}""_router" \
+                --cpus=2 --hostname "${rname}""_router" \
                 -v "${location}"/looking_glass.txt:/home/looking_glass.txt \
                 -v "${location}"/daemons:/etc/frr/daemons \
                 -v "${location}"/frr.conf:/etc/frr/frr.conf thomahol/d_router
@@ -86,7 +86,8 @@ for ((k=0;k<group_numbers;k++)); do
             if [ "${property2}" == "host" ];then
                 docker run -itd --net='none' --dns="${subnet_dns%/*}"  \
                     --name="${group_number}""_""${rname}""host" --privileged \
-                    --cpus=2 --storage-opt size=5G --hostname "${rname}""_host" thomahol/d_host \
+                    --cpus=2 --hostname "${rname}""_host" thomahol/d_host \
+                    # -v "${location}"/connectivity.txt:/home/connectivity.txt \
                     # add this for bgpsimple -v ${DIRECTORY}/docker_images/host/bgpsimple.pl:/home/bgpsimple.pl \
 
             fi
