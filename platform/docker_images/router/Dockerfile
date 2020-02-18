@@ -2,7 +2,7 @@ FROM debian:stretch
 
 # Install dependencies
 RUN apt-get update && apt-get install -y rsyslog locales libpcre3-dev apt-transport-https ca-certificates curl wget logrotate \
-    libc-ares2 libjson-c3 vim systemd procps iperf3 openssh-server inetutils-traceroute net-tools tcpdump dnsutils vlan gnupg lsb-release
+    libc-ares2 libjson-c3 vim systemd procps openssh-server inetutils-traceroute net-tools tcpdump dnsutils vlan gnupg lsb-release
 
 # Install FRR
 ## add FRR GPG key
