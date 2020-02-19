@@ -23,6 +23,9 @@ sysctl net.ipv4.neigh.default.gc_thresh2=8192
 sysctl net.ipv4.neigh.default.gc_thresh3=16384
 sysctl -p
 
+# Increase the max number of running processes
+sysctl kernel.pid_max=4194304
+
 echo "folder_setup.sh $(($(date +%s%N)/1000000))" > "${DIRECTORY}"/log.txt
 echo "folder_setup.sh: "
 time ./setup/folder_setup.sh "${DIRECTORY}"
