@@ -10,7 +10,4 @@ chmod 0755 /var/run/sshd
 
 mkdir -p /root/.ssh
 
-while true
-do
-  sleep 1000
-done
+tail -f /dev/null # To keep the container running forever

@@ -15,7 +15,4 @@ service ssh restart
 
 cp /launch_traceroute.sh /root/launch_traceroute.sh
 
-while true
-do
-  sleep 60
-done
+tail -f /dev/null # To keep the container running forever

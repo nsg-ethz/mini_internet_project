@@ -24,7 +24,7 @@ group_numbers=${#groups[@]}
 n_routers=${#routers[@]}
 
 # start matrix container
-docker run -itd --net='none' --name="MATRIX" --privileged \
+docker run -itd --net='none' --name="MATRIX" --privileged --pids-limit 500 \
     -v "${location}"/ping_all_groups.sh:/home/ping_all_groups.sh thomahol/d_matrix
 
 echo -n "-- add-br matrix " >> "${DIRECTORY}"/groups/add_bridges.sh

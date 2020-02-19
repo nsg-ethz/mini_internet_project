@@ -1,9 +1,10 @@
 FROM debian:stretch
 RUN apt-get update && apt-get install -y rsyslog locales iputils-ping inetutils-traceroute \
-  openssh-server vim tcpdump net-tools dnsutils iperf3 cpanminus build-essential
+  openssh-server vim tcpdump net-tools dnsutils iperf3 build-essential
+# Install cpanminus for bgpsimple
 
 # cpanminus and build-essential needed for this
-RUN cpanm Net::BGP
+# RUN cpanm Net::BGP
 
 
 # Set locale
