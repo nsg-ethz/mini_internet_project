@@ -12,13 +12,3 @@ do
   vtysh -c 'write'
 
 done
-
-
-# sleep 10
-#
-#
-# for i in {0..200}
-# do
-# 	./sleep.sh &
-# 	echo $i
-# done
