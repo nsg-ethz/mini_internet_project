@@ -1,3 +1,3 @@
-1	AS    Config
-2   AS  Config
-3   IXP     Config
+1	AS      Config  router_config_full.txt    internal_links_setup_full.txt
+2   AS      Config  router_config_small.txt   internal_links_setup_small.txt
+3   IXP     Config  N/A N/A

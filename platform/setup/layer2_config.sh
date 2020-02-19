@@ -9,7 +9,6 @@ source "${DIRECTORY}"/config/subnet_config.sh
 
 # read configs
 readarray groups < "${DIRECTORY}"/config/AS_config.txt
-readarray routers < "${DIRECTORY}"/config/router_config.txt
 readarray l2_switches < "${DIRECTORY}"/config/layer2_switches_config.txt
 readarray l2_links < "${DIRECTORY}"/config/layer2_links_config.txt
 readarray l2_hosts < "${DIRECTORY}"/config/layer2_hosts_config.txt
@@ -27,6 +26,10 @@ for ((k=0;k<group_numbers;k++)); do
     group_number="${group_k[0]}"
     group_as="${group_k[1]}"
     group_config="${group_k[2]}"
+    group_router_config="${group_k[3]}"
+    group_internal_links="${group_k[4]}"
+
+    readarray routers < "${DIRECTORY}"/config/$group_router_config
 
     if [ "${group_as}" != "IXP" ];then
 

@@ -11,7 +11,6 @@ source "${DIRECTORY}"/config/subnet_config.sh
 
 # read configs
 readarray groups < "${DIRECTORY}"/config/AS_config.txt
-readarray routers < "${DIRECTORY}"/config/router_config.txt
 readarray l2_switches < "${DIRECTORY}"/config/layer2_switches_config.txt
 readarray l2_hosts < "${DIRECTORY}"/config/layer2_hosts_config.txt
 
@@ -24,6 +23,10 @@ for ((k=0;k<n_groups;k++)); do
     group_k=(${groups[$k]})
     group_number="${group_k[0]}"
     group_as="${group_k[1]}"
+    group_config="${group_k[2]}"
+    group_router_config="${group_k[3]}"
+
+    readarray routers < "${DIRECTORY}"/config/router_config.txt
 
     file_loc="${DIRECTORY}"/groups/g"${group_number}"/goto.sh
 

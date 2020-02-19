@@ -13,8 +13,6 @@ source "${DIRECTORY}"/config/subnet_config.sh
 
 # read configs
 readarray groups < "${DIRECTORY}"/config/AS_config.txt
-readarray routers < "${DIRECTORY}"/config/router_config.txt
-readarray intern_links < "${DIRECTORY}"/config/internal_links_config.txt
 readarray extern_links < "${DIRECTORY}"/config/external_links_config.txt
 readarray l2_switches < "${DIRECTORY}"/config/layer2_switches_config.txt
 readarray l2_links < "${DIRECTORY}"/config/layer2_links_config.txt
@@ -28,26 +26,6 @@ n_l2_switches=${#l2_switches[@]}
 n_l2_links=${#l2_links[@]}
 n_l2_hosts=${#l2_hosts[@]}
 
-# Initlization the associative array to configure the layer2 subnet advertisements
-declare -A l2_id
-idtmp=1
-for ((i=0;i<n_routers;i++)); do
-    router_i=(${routers[$i]})
-    property2="${router_i[2]}"
-    if [[ "${property2}" == *L2* ]];then
-        l2_id[$property2]=0
-    fi
-done
-for ((i=0;i<n_routers;i++)); do
-    router_i=(${routers[$i]})
-    property2="${router_i[2]}"
-    if [[ "${property2}" == *L2* ]];then
-        if [[ "${l2_id[$property2]}" -eq "0" ]]; then
-            l2_id[$property2]=$idtmp
-            idtmp=$(($idtmp+1))
-        fi
-    fi
-done
 
 
 
@@ -56,6 +34,34 @@ for ((k=0;k<group_numbers;k++));do
     group_k=(${groups[$k]})
     group_number="${group_k[0]}"
     group_as="${group_k[1]}"
+    group_config="${group_k[2]}"
+    group_router_config="${group_k[3]}"
+    group_internal_links="${group_k[4]}"
+
+    readarray routers < "${DIRECTORY}"/config/$group_router_config
+    readarray intern_links < "${DIRECTORY}"/config/$group_internal_links
+
+    # Initlization the associative array to configure the layer2 subnet advertisements
+    declare -A l2_id
+    idtmp=1
+    for ((i=0;i<n_routers;i++)); do
+        router_i=(${routers[$i]})
+        property2="${router_i[2]}"
+        if [[ "${property2}" == *L2* ]];then
+            l2_id[$property2]=0
+        fi
+    done
+    for ((i=0;i<n_routers;i++)); do
+        router_i=(${routers[$i]})
+        property2="${router_i[2]}"
+        if [[ "${property2}" == *L2* ]];then
+            if [[ "${l2_id[$property2]}" -eq "0" ]]; then
+                l2_id[$property2]=$idtmp
+                idtmp=$(($idtmp+1))
+            fi
+        fi
+    done
+
     if [ "${group_as}" != "IXP" ];then
         for ((i=0;i<n_routers;i++)); do
             router_i=(${routers[$i]})

@@ -13,7 +13,6 @@ DIRECTORY="$1"
 
 # read configs
 readarray groups < "${DIRECTORY}"/config/AS_config.txt
-readarray routers < "${DIRECTORY}"/config/router_config.txt
 
 group_numbers=${#groups[@]}
 n_routers=${#routers[@]}
@@ -21,30 +20,34 @@ n_routers=${#routers[@]}
 mkdir "${DIRECTORY}"/groups
 
 for ((k=0;k<group_numbers;k++)); do
-  group_k=(${groups[$k]})
-  group_number="${group_k[0]}"
-  group_as="${group_k[1]}"
+    group_k=(${groups[$k]})
+    group_number="${group_k[0]}"
+    group_as="${group_k[1]}"
+    group_config="${group_k[2]}"
+    group_router_config="${group_k[3]}"
 
-  mkdir "${DIRECTORY}"/groups/g"${group_number}"
+    readarray routers < "${DIRECTORY}"/config/$group_router_config
 
-  if [ "${group_as}" != "IXP" ];then
-    for ((i=0;i<n_routers;i++)); do
-      router_i=(${routers[$i]})
-      rname="${router_i[0]}"
+    mkdir "${DIRECTORY}"/groups/g"${group_number}"
 
-      location="${DIRECTORY}"/groups/g"${group_number}"/"${rname}"
-      mkdir "${location}"
-      # router configs are safe periodically in frr.con
-      touch  "${location}"/frr.conf
-      cp config/daemons "${location}"/daemons
-      touch  "${location}"/connectivity.txt
-      touch  "${location}"/looking_glass.txt
-    done
-  else
-    location="${DIRECTORY}"/groups/g"${group_number}"
-    touch  "${location}"/frr.conf
-    cp config/daemons "${location}"/daemons
-  fi
+    if [ "${group_as}" != "IXP" ];then
+        for ((i=0;i<n_routers;i++)); do
+            router_i=(${routers[$i]})
+            rname="${router_i[0]}"
+
+            location="${DIRECTORY}"/groups/g"${group_number}"/"${rname}"
+            mkdir "${location}"
+            # router configs are safe periodically in frr.con
+            touch  "${location}"/frr.conf
+            cp config/daemons "${location}"/daemons
+            touch  "${location}"/connectivity.txt
+            touch  "${location}"/looking_glass.txt
+        done
+    else
+        location="${DIRECTORY}"/groups/g"${group_number}"
+        touch  "${location}"/frr.conf
+        cp config/daemons "${location}"/daemons
+    fi
 done
 
 location="${DIRECTORY}"/groups

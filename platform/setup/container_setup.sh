@@ -11,7 +11,6 @@ source "${DIRECTORY}"/config/subnet_config.sh
 
 # read configs
 readarray groups < "${DIRECTORY}"/config/AS_config.txt
-readarray routers < "${DIRECTORY}"/config/router_config.txt
 readarray l2_switches < "${DIRECTORY}"/config/layer2_switches_config.txt
 readarray l2_hosts < "${DIRECTORY}"/config/layer2_hosts_config.txt
 
@@ -25,6 +24,10 @@ for ((k=0;k<group_numbers;k++)); do
     group_k=(${groups[$k]})
     group_number="${group_k[0]}"
     group_as="${group_k[1]}"
+    group_config="${group_k[2]}"
+    group_router_config="${group_k[3]}"
+
+    readarray routers < "${DIRECTORY}"/config/$group_router_config
 
     echo "creating containers for group: ""${group_number}"
 
@@ -36,7 +39,7 @@ for ((k=0;k<group_numbers;k++)); do
         # start ssh container
         docker run -itd --net='none'  --name="${group_number}""_ssh" \
           -v "${location}"/goto.sh:/root/goto.sh --privileged \
-          --cpus=2 --pids-limit 100 --hostname="g${group_number}-proxy" thomahol/d_ssh
+          --cpus=1 --pids-limit 100 --hostname="g${group_number}-proxy" thomahol/d_ssh
 
     	# start switches
     	for ((l=0;l<n_l2_switches;l++)); do
@@ -46,7 +49,7 @@ for ((k=0;k<group_numbers;k++)); do
             sname="${switch_l[1]}"
 
             docker run -itd --net='none' --dns="${subnet_dns%/*}" --privileged \
-                --cpus=2 --pids-limit 100 --hostname "${sname}" \
+                --cpus=1 --pids-limit 100 --hostname "${sname}" \
                 --name=${group_number}_L2_${l2name}_${sname} thomahol/d_switch
         done
 
@@ -59,7 +62,7 @@ for ((k=0;k<group_numbers;k++)); do
 
             if [[ $hname != vpn* ]]; then
                 docker run -itd --net='none' --dns="${subnet_dns%/*}" --privileged \
-                    --cpus=2 --pids-limit 100 --hostname "${hname}" \
+                    --cpus=1 --pids-limit 100 --hostname "${hname}" \
                     --name="${group_number}""_L2_""${l2name}""_""${hname}" thomahol/d_host
             fi
         done
@@ -76,7 +79,7 @@ for ((k=0;k<group_numbers;k++)); do
             # start router
             docker run -itd --net='none'  --dns="${subnet_dns%/*}" \
                 --name="${group_number}""_""${rname}""router" --privileged \
-                --cpus=2 --pids-limit 100 --hostname "${rname}""_router" \
+                --cpus=1 --pids-limit 100 --hostname "${rname}""_router" \
                 -v "${location}"/looking_glass.txt:/home/looking_glass.txt \
                 -v "${location}"/daemons:/etc/frr/daemons \
                 -v "${location}"/frr.conf:/etc/frr/frr.conf thomahol/d_router
@@ -85,7 +88,7 @@ for ((k=0;k<group_numbers;k++)); do
             if [ "${property2}" == "host" ];then
                 docker run -itd --net='none' --dns="${subnet_dns%/*}"  \
                     --name="${group_number}""_""${rname}""host" --privileged \
-                    --cpus=2 --pids-limit 100 --hostname "${rname}""_host" thomahol/d_host \
+                    --cpus=1 --pids-limit 100 --hostname "${rname}""_host" thomahol/d_host \
                     # -v "${location}"/connectivity.txt:/home/connectivity.txt \
                     # add this for bgpsimple -v ${DIRECTORY}/docker_images/host/bgpsimple.pl:/home/bgpsimple.pl \
 
