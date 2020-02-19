@@ -14,7 +14,6 @@ source "${DIRECTORY}"/config/subnet_config.sh
 readarray groups < "${DIRECTORY}"/config/AS_config.txt
 
 group_numbers=${#groups[@]}
-n_routers=${#routers[@]}
 
 for ((k=0;k<group_numbers;k++)); do
     group_k=(${groups[$k]})
@@ -24,6 +23,7 @@ for ((k=0;k<group_numbers;k++)); do
     group_router_config="${group_k[3]}"
 
     readarray routers < "${DIRECTORY}"/config/router_config.txt
+    n_routers=${#routers[@]}
 
     if [ "${group_as}" != "IXP" ];then
 

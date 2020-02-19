@@ -15,7 +15,6 @@ DIRECTORY="$1"
 readarray groups < "${DIRECTORY}"/config/AS_config.txt
 
 group_numbers=${#groups[@]}
-n_routers=${#routers[@]}
 
 mkdir "${DIRECTORY}"/groups
 
@@ -27,6 +26,8 @@ for ((k=0;k<group_numbers;k++)); do
     group_router_config="${group_k[3]}"
 
     readarray routers < "${DIRECTORY}"/config/$group_router_config
+    n_routers=${#routers[@]}
+
 
     mkdir "${DIRECTORY}"/groups/g"${group_number}"
 

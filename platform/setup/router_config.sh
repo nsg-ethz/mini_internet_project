@@ -19,8 +19,6 @@ readarray l2_links < "${DIRECTORY}"/config/layer2_links_config.txt
 readarray l2_hosts < "${DIRECTORY}"/config/layer2_hosts_config.txt
 
 group_numbers=${#groups[@]}
-n_routers=${#routers[@]}
-n_intern_links=${#intern_links[@]}
 n_extern_links=${#extern_links[@]}
 n_l2_switches=${#l2_switches[@]}
 n_l2_links=${#l2_links[@]}
@@ -40,6 +38,8 @@ for ((k=0;k<group_numbers;k++));do
 
     readarray routers < "${DIRECTORY}"/config/$group_router_config
     readarray intern_links < "${DIRECTORY}"/config/$group_internal_links
+    n_routers=${#routers[@]}
+    n_intern_links=${#intern_links[@]}
 
     # Initlization the associative array to configure the layer2 subnet advertisements
     declare -A l2_id

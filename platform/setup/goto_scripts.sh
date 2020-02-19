@@ -15,7 +15,6 @@ readarray l2_switches < "${DIRECTORY}"/config/layer2_switches_config.txt
 readarray l2_hosts < "${DIRECTORY}"/config/layer2_hosts_config.txt
 
 n_groups=${#groups[@]}
-n_routers=${#routers[@]}
 n_l2_switches=${#l2_switches[@]}
 n_l2_hosts=${#l2_hosts[@]}
 
@@ -27,6 +26,7 @@ for ((k=0;k<n_groups;k++)); do
     group_router_config="${group_k[3]}"
 
     readarray routers < "${DIRECTORY}"/config/router_config.txt
+    n_routers=${#routers[@]}
 
     file_loc="${DIRECTORY}"/groups/g"${group_number}"/goto.sh
 

@@ -16,7 +16,6 @@ source "${DIRECTORY}"/config/subnet_config.sh
 readarray groups < "${DIRECTORY}"/config/AS_config.txt
 
 group_numbers=${#groups[@]}
-n_intern_links=${#intern_links[@]}
 
 for ((k=0;k<group_numbers;k++)); do
     group_k=(${groups[$k]})
@@ -27,6 +26,7 @@ for ((k=0;k<group_numbers;k++)); do
     group_internal_links="${group_k[4]}"
 
     readarray intern_links < "${DIRECTORY}"/config/$group_internal_links
+    n_intern_links=${#intern_links[@]}
 
     if [ "${group_as}" != "IXP" ];then
         br_name="int-""${group_number}"
