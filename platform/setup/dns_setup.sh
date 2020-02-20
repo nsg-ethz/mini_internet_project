@@ -13,9 +13,7 @@ source "${DIRECTORY}"/config/subnet_config.sh
 
 # read configs
 readarray groups < "${DIRECTORY}"/config/AS_config.txt
-readarray routers < "${DIRECTORY}"/config/router_config.txt
 group_numbers=${#groups[@]}
-n_routers=${#routers[@]}
 
 echo "#!/bin/bash" > "${DIRECTORY}"/groups/dns_routes.sh
 chmod +x "${DIRECTORY}"/groups/dns_routes.sh
@@ -26,38 +24,42 @@ docker run -itd --net='none'  --name="DNS" --privileged thomahol/d_dns
 echo -n "-- add-br dns " >> "${DIRECTORY}"/groups/add_bridges.sh
 echo "ifconfig dns 0.0.0.0 up" >> "${DIRECTORY}"/groups/ip_setup.sh
 
-for ((i=0;i<n_routers;i++)); do
-  router_i=(${routers[$i]})
-  rname="${router_i[0]}"
-  property1="${router_i[1]}"
+for ((k=0;k<group_numbers;k++)); do
+    group_k=(${groups[$k]})
+    group_number="${group_k[0]}"
+    group_as="${group_k[1]}"
+    group_config="${group_k[2]}"
+    group_router_config="${group_k[3]}"
 
-  if [ "${property1}" = "DNS"  ];then
-    for ((k=0;k<group_numbers;k++)); do
-      group_k=(${groups[$k]})
-      group_number="${group_k[0]}"
-      group_as="${group_k[1]}"
-      if [ "${group_as}" != "IXP" ];then
+    readarray routers < "${DIRECTORY}"/config/$group_router_config
+    n_routers=${#routers[@]}
 
+    if [ "${group_as}" != "IXP" ];then
+        for ((i=0;i<n_routers;i++)); do
+            router_i=(${routers[$i]})
+            rname="${router_i[0]}"
+            property1="${router_i[1]}"
 
-	# create bridge between dns and group
-	subnet_bridge="$(subnet_router_DNS "${group_number}" "bridge")"
-	subnet_dns="$(subnet_router_DNS "${group_number}" "dns")"
-	subnet_group="$(subnet_router_DNS "${group_number}" "group")"
+            if [ "${property1}" = "DNS"  ];then
+                # create bridge between dns and group
+                subnet_bridge="$(subnet_router_DNS "${group_number}" "bridge")"
+                subnet_dns="$(subnet_router_DNS "${group_number}" "dns")"
+                subnet_group="$(subnet_router_DNS "${group_number}" "group")"
 
-	./setup/ovs-docker.sh add-port dns group_"${group_number}"  \
-	  DNS --ipaddress="${subnet_dns}"
-	./setup/ovs-docker.sh add-port dns dns_"${group_number}" \
-	  "${group_number}"_"${rname}"router --ipaddress="${subnet_group}"
+                ./setup/ovs-docker.sh add-port dns group_"${group_number}"  \
+                  DNS --ipaddress="${subnet_dns}"
+                ./setup/ovs-docker.sh add-port dns dns_"${group_number}" \
+                  "${group_number}"_"${rname}"router --ipaddress="${subnet_group}"
 
-    ./setup/ovs-docker.sh connect-ports dns \
-    group_"${group_number}" DNS \
-    dns_"${group_number}" "${group_number}"_"${rname}"router
+                ./setup/ovs-docker.sh connect-ports dns \
+                group_"${group_number}" DNS \
+                dns_"${group_number}" "${group_number}"_"${rname}"router
 
-	echo "docker exec -d DNS ip route add "${subnet_group%/*}" dev group_"${group_number}" " >> "${DIRECTORY}"/groups/dns_routes.sh
-	echo "docker exec -d DNS ip route add "$(subnet_group "${group_number}")" via "${subnet_group%/*}" " >> "${DIRECTORY}"/groups/dns_routes.sh
-      fi
-    done
-  fi
+                echo "docker exec -d DNS ip route add "${subnet_group%/*}" dev group_"${group_number}" " >> "${DIRECTORY}"/groups/dns_routes.sh
+                echo "docker exec -d DNS ip route add "$(subnet_group "${group_number}")" via "${subnet_group%/*}" " >> "${DIRECTORY}"/groups/dns_routes.sh
+            fi
+        done
+    fi
 done
 
 # copy dns config files to container generated from dns_config.sh

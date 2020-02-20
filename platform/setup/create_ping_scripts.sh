@@ -21,22 +21,9 @@ source config/subnet_config.sh
 
 # read configs
 readarray groups < "${DIRECTORY}"/config/AS_config.txt
-readarray routers < "${DIRECTORY}"/config/router_config.txt
-readarray intern_links < "${DIRECTORY}"/config/internal_links_config.txt
 readarray extern_links < "${DIRECTORY}"/config/external_links_config.txt
-
-# find the ID of that router
-for i in "${!routers[@]}"; do
-   if [[ "${routers[$i]}" == *'MATRIX_TARGET'* ]]; then
-       dest_router_id=$i;
-   fi
-done
-
 n_groups=${#groups[@]}
-n_routers=${#routers[@]}
-n_intern_links=${#intern_links[@]}
 n_extern_links=${#extern_links[@]}
-
 
 echo '' > "${DIRECTORY}"/groups/matrix/ping_all_groups.sh
 echo  "#!/bin/bash" &> "${DIRECTORY}"/groups/matrix/ping_all_groups.sh
@@ -48,6 +35,21 @@ for ((kk=0;kk<n_groups;kk++)); do
     group_kk=(${groups[$kk]})
     group_number_kk="${group_kk[0]}"
     group_as_kk="${group_kk[1]}"
+    group_config="${group_kk[2]}"
+    group_router_config="${group_kk[3]}"
+    group_internal_links="${group_kk[4]}"
+
+    readarray routers < "${DIRECTORY}"/config/$group_router_config
+    readarray intern_links < "${DIRECTORY}"/config/$group_internal_links
+    n_routers=${#routers[@]}
+    n_intern_links=${#intern_links[@]}
+
+    # find the ID of that router
+    for i in "${!routers[@]}"; do
+       if [[ "${routers[$i]}" == *'MATRIX_TARGET'* ]]; then
+           dest_router_id=$i;
+       fi
+    done
 
     echo "echo Group "$group_kk >> "${DIRECTORY}"/groups/matrix/ping_all_groups.sh
 
@@ -84,6 +86,13 @@ for ((kk=0;kk<n_groups;kk++)); do
     group_kk=(${groups[$kk]})
     group_number_kk="${group_kk[0]}"
     group_as_kk="${group_kk[1]}"
+    group_router_config="${group_kk[3]}"
+    group_internal_links="${group_kk[4]}"
+
+    readarray routers < "${DIRECTORY}"/config/$group_router_config
+    readarray intern_links < "${DIRECTORY}"/config/$group_internal_links
+    n_routers=${#routers[@]}
+    n_intern_links=${#intern_links[@]}
 
     if [ "${group_as_kk}" != "IXP" ];then
 
