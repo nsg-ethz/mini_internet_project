@@ -351,18 +351,24 @@ for ((i=0;i<n_extern_links;i++)); do
 done
 
 # measurement
-for ((i=0;i<n_routers;i++)); do
-    router_i=(${routers[$i]})
-    rname="${router_i[0]}"
-    property1="${router_i[1]}"
+for ((k=0;k<group_numbers;k++)); do
+    group_k=(${groups[$k]})
+    group_number="${group_k[0]}"
+    group_as="${group_k[1]}"
+    group_config="${group_k[2]}"
+    group_router_config="${group_k[3]}"
+    group_internal_links="${group_k[4]}"
 
-    if [ "${property1}" = "MEASUREMENT"  ];then
-        for ((k=0;k<group_numbers;k++)); do
-            group_k=(${groups[$k]})
-            group_number="${group_k[0]}"
-            group_as="${group_k[1]}"
+    readarray routers < "${DIRECTORY}"/config/$group_router_config
+    n_routers=${#routers[@]}
 
-            if [ "${group_as}" != "IXP" ];then
+    if [ "${group_as}" != "IXP" ];then
+        for ((i=0;i<n_routers;i++)); do
+            router_i=(${routers[$i]})
+            rname="${router_i[0]}"
+            property1="${router_i[1]}"
+
+            if [ "${property1}" = "MEASUREMENT"  ];then
                 location="${DIRECTORY}"/groups/g"${group_number}"/"${rname}"/init_conf.sh
                 echo "#!/bin/bash" >> "${location}"
                 echo "vtysh  -c 'conf t' \\" >> "${location}"
@@ -378,27 +384,33 @@ for ((i=0;i<n_routers;i++)); do
 done
 
 # matrix
-for ((i=0;i<n_routers;i++)); do
-    router_i=(${routers[$i]})
-    rname="${router_i[0]}"
-    property1="${router_i[1]}"
+for ((k=0;k<group_numbers;k++)); do
+    group_k=(${groups[$k]})
+    group_number="${group_k[0]}"
+    group_as="${group_k[1]}"
+    group_config="${group_k[2]}"
+    group_router_config="${group_k[3]}"
+    group_internal_links="${group_k[4]}"
 
-    if [ "${property1}" = "MATRIX"  ];then
-        for ((k=0;k<group_numbers;k++)); do
-            group_k=(${groups[$k]})
-            group_number="${group_k[0]}"
-            group_as="${group_k[1]}"
+    readarray routers < "${DIRECTORY}"/config/$group_router_config
+    n_routers=${#routers[@]}
 
-            if [ "${group_as}" != "IXP" ];then
-                location="${DIRECTORY}"/groups/g"${group_number}"/"${rname}"/init_conf.sh
-                echo "#!/bin/bash" >> "${location}"
-                echo "vtysh  -c 'conf t' \\" >> "${location}"
-                echo " -c '"interface matrix_"${group_number}""'\\" >> "${location}"
-                echo " -c '"ip address "$(subnet_router_MATRIX "${group_number}" "group")""' \\" >> "${location}"
-                echo " -c 'exit' \\" >> "${location}"
-                echo " -c 'router ospf' \\" >> "${location}"
-                echo " -c '"network "$(subnet_router_MATRIX "${group_number}" "group")" area 0"' \\" >> "${location}"
-                echo " -c 'exit'\\" >> "${location}"
+    if [ "${group_as}" != "IXP" ];then
+        for ((i=0;i<n_routers;i++)); do
+            router_i=(${routers[$i]})
+            rname="${router_i[0]}"
+            property1="${router_i[1]}"
+
+            if [ "${property1}" = "MATRIX"  ];then
+                    location="${DIRECTORY}"/groups/g"${group_number}"/"${rname}"/init_conf.sh
+                    echo "#!/bin/bash" >> "${location}"
+                    echo "vtysh  -c 'conf t' \\" >> "${location}"
+                    echo " -c '"interface matrix_"${group_number}""'\\" >> "${location}"
+                    echo " -c '"ip address "$(subnet_router_MATRIX "${group_number}" "group")""' \\" >> "${location}"
+                    echo " -c 'exit' \\" >> "${location}"
+                    echo " -c 'router ospf' \\" >> "${location}"
+                    echo " -c '"network "$(subnet_router_MATRIX "${group_number}" "group")" area 0"' \\" >> "${location}"
+                    echo " -c 'exit'\\" >> "${location}"
             fi
         done
     fi
@@ -406,18 +418,24 @@ done
 
 
 # dns
-for ((i=0;i<n_routers;i++)); do
-    router_i=(${routers[$i]})
-    rname="${router_i[0]}"
-    property1="${router_i[1]}"
+for ((k=0;k<group_numbers;k++)); do
+    group_k=(${groups[$k]})
+    group_number="${group_k[0]}"
+    group_as="${group_k[1]}"
+    group_config="${group_k[2]}"
+    group_router_config="${group_k[3]}"
+    group_internal_links="${group_k[4]}"
 
-    if [ "${property1}" = "DNS"  ];then
-        for ((k=0;k<group_numbers;k++)); do
-            group_k=(${groups[$k]})
-            group_number="${group_k[0]}"
-            group_as="${group_k[1]}"
+    readarray routers < "${DIRECTORY}"/config/$group_router_config
+    n_routers=${#routers[@]}
 
-            if [ "${group_as}" != "IXP" ];then
+    if [ "${group_as}" != "IXP" ];then
+        for ((i=0;i<n_routers;i++)); do
+            router_i=(${routers[$i]})
+            rname="${router_i[0]}"
+            property1="${router_i[1]}"
+
+            if [ "${property1}" = "DNS"  ];then
                 location="${DIRECTORY}"/groups/g"${group_number}"/"${rname}"/init_conf.sh
                 echo "#!/bin/bash" >> "${location}"
                 echo "vtysh  -c 'conf t' \\" >> "${location}"
@@ -440,6 +458,12 @@ for ((k=0;k<group_numbers;k++)); do
     group_number="${group_k[0]}"
     group_as="${group_k[1]}"
     group_config="${group_k[2]}"
+    group_config="${group_k[2]}"
+    group_router_config="${group_k[3]}"
+    group_internal_links="${group_k[4]}"
+
+    readarray routers < "${DIRECTORY}"/config/$group_router_config
+    n_routers=${#routers[@]}
 
     if [ "${group_as}" != "IXP" ];then
         for ((i=0;i<n_routers;i++)); do

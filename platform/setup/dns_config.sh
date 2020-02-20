@@ -13,8 +13,6 @@ source "${DIRECTORY}"/config/subnet_config.sh
 readarray groups < "${DIRECTORY}"/config/AS_config.txt
 
 n_groups=${#groups[@]}
-n_routers=${#routers[@]}
-n_intern_links=${#intern_links[@]}
 
 # all configs are safed in groups
 mkdir "${DIRECTORY}"/groups/dns
@@ -42,12 +40,14 @@ for ((i=0;i<n_groups;i++)); do
     group_i=(${groups[$i]})
     group_number="${group_i[0]}"
     group_as="${group_i[1]}"
-    group_config="${group_k[2]}"
-    group_router_config="${group_k[3]}"
-    group_internal_links="${group_k[4]}"
+    group_config="${group_i[2]}"
+    group_router_config="${group_i[3]}"
+    group_internal_links="${group_i[4]}"
 
     readarray routers < "${DIRECTORY}"/config/$group_router_config
     readarray intern_links < "${DIRECTORY}"/config/$group_internal_links
+    n_routers=${#routers[@]}
+    n_intern_links=${#intern_links[@]}
 
     location_local="${DIRECTORY}"/groups/dns/named.conf.local
     location_grp="groups/dns/group_config/named.conf.local.group""${group_number}"
@@ -68,11 +68,14 @@ for ((j=0;j<n_groups;j++)); do
     group_j=(${groups[$j]})
     group_number="${group_j[0]}"
     group_as="${group_j[1]}"
-    group_router_config="${group_k[2]}"
-    group_internal_links="${group_k[3]}"
+    group_config="${group_j[2]}"
+    group_router_config="${group_j[3]}"
+    group_internal_links="${group_j[4]}"
 
     readarray routers < "${DIRECTORY}"/config/$group_router_config
     readarray intern_links < "${DIRECTORY}"/config/$group_internal_links
+    n_routers=${#routers[@]}
+    n_intern_links=${#intern_links[@]}
 
     location_db="groups/dns/zones/db.""${group_number}"
     location_grp="groups/dns/zones/db.group""${group_number}"

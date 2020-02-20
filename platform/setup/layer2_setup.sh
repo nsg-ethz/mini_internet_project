@@ -18,14 +18,8 @@ modprobe 8021q
 
 # read configs
 readarray groups < "${DIRECTORY}"/config/AS_config.txt
-readarray l2_switches < "${DIRECTORY}"/config/layer2_switches_config.txt
-readarray l2_links < "${DIRECTORY}"/config/layer2_links_config.txt
-readarray l2_hosts < "${DIRECTORY}"/config/layer2_hosts_config.txt
-
 group_numbers=${#groups[@]}
-n_l2_switches=${#l2_switches[@]}
-n_l2_links=${#l2_links[@]}
-n_l2_hosts=${#l2_hosts[@]}
+
 
 
 # Layer2 connectivity
@@ -35,9 +29,18 @@ for ((k=0;k<group_numbers;k++)); do
     group_as="${group_k[1]}"
     group_router_config="${group_k[3]}"
     group_internal_links="${group_k[4]}"
+    group_layer2_switches="${group_k[5]}"
+    group_layer2_hosts="${group_k[6]}"
+    group_layer2_links="${group_k[7]}"
 
     readarray routers < "${DIRECTORY}"/config/$group_router_config
+    readarray l2_switches < "${DIRECTORY}"/config/$group_layer2_switches
+    readarray l2_hosts < "${DIRECTORY}"/config/$group_layer2_hosts
+    readarray l2_links < "${DIRECTORY}"/config/$group_layer2_links
     n_routers=${#routers[@]}
+    n_l2_switches=${#l2_switches[@]}
+    n_l2_hosts=${#l2_hosts[@]}
+    n_l2_links=${#l2_links[@]}
 
     if [ "${group_as}" != "IXP" ];then
 

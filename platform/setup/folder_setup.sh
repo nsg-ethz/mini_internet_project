@@ -28,7 +28,6 @@ for ((k=0;k<group_numbers;k++)); do
     readarray routers < "${DIRECTORY}"/config/$group_router_config
     n_routers=${#routers[@]}
 
-
     mkdir "${DIRECTORY}"/groups/g"${group_number}"
 
     if [ "${group_as}" != "IXP" ];then
