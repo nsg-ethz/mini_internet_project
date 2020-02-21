@@ -4,6 +4,8 @@ This is the official mini-Internet repository. For more information please see o
 The documentation as well as the source code of the mini-Internet can be found in the [platform](platform) directory. \
 In [2019_assignement_eth](2019_assignement_eth) we describe how we used the mini-Internet at ETH in the 2019 iteration of our [Communication Networks](https://comm-net.ethz.ch/2019/) lecture.
 
+For further information, you can watch our [talk](https://www.youtube.com/watch?v=8SRjTqH5Z8M&list=PLO8DR5ZGla8jSzWlrWt_cz13LLAz44rHY&index=11&t=0s) we gave at NANOG 78 (February 2020).
+
 ### Contacts
 
 Thomas Holterbach <thomahol@ethz.ch> \
