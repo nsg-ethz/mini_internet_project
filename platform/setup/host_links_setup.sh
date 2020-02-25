@@ -23,10 +23,10 @@ for ((k=0;k<group_numbers;k++)); do
     group_router_config="${group_k[3]}"
     group_internal_links="${group_k[4]}"
 
-    readarray routers < "${DIRECTORY}"/config/$group_router_config
-    n_routers=${#routers[@]}
-
     if [ "${group_as}" != "IXP" ];then
+
+        readarray routers < "${DIRECTORY}"/config/$group_router_config
+        n_routers=${#routers[@]}
 
         br_name="${group_number}"-host
 
@@ -38,8 +38,6 @@ for ((k=0;k<group_numbers;k++)); do
             rname="${router_i[0]}"
             property1="${router_i[1]}"
             property2="${router_i[2]}"
-
-
 
             if [ "${property2}" == "host" ];then
 

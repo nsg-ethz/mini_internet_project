@@ -23,18 +23,19 @@ for ((k=0;k<group_numbers;k++)); do
     group_layer2_hosts="${group_k[6]}"
     group_layer2_links="${group_k[7]}"
 
-    readarray routers < "${DIRECTORY}"/config/$group_router_config
-    readarray l2_switches < "${DIRECTORY}"/config/$group_layer2_switches
-    readarray l2_hosts < "${DIRECTORY}"/config/$group_layer2_hosts
-    readarray l2_links < "${DIRECTORY}"/config/$group_layer2_links
-    n_routers=${#routers[@]}
-    n_l2_switches=${#l2_switches[@]}
-    n_l2_hosts=${#l2_hosts[@]}
-    n_l2_links=${#l2_links[@]}
-
     ip_range_offset=0
 
     if [ "${group_as}" != "IXP" ];then
+
+        readarray routers < "${DIRECTORY}"/config/$group_router_config
+        readarray l2_switches < "${DIRECTORY}"/config/$group_layer2_switches
+        readarray l2_hosts < "${DIRECTORY}"/config/$group_layer2_hosts
+        readarray l2_links < "${DIRECTORY}"/config/$group_layer2_links
+        n_routers=${#routers[@]}
+        n_l2_switches=${#l2_switches[@]}
+        n_l2_hosts=${#l2_hosts[@]}
+        n_l2_links=${#l2_links[@]}
+
         mkdir -p "${DIRECTORY}"/groups/g"${group_number}"/vpn
 
         # start hosts

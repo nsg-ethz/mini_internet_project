@@ -25,12 +25,13 @@ for ((k=0;k<n_groups;k++)); do
     group_config="${group_k[2]}"
     group_router_config="${group_k[3]}"
 
-    readarray routers < "${DIRECTORY}"/config/router_config.txt
-    n_routers=${#routers[@]}
-
     file_loc="${DIRECTORY}"/groups/g"${group_number}"/goto.sh
 
     if [ "${group_as}" != "IXP" ];then
+
+        readarray routers < "${DIRECTORY}"/config/router_config.txt
+        n_routers=${#routers[@]}
+
         l2_rname="-"
         echo "#!/bin/bash" > "${file_loc}"
         echo "location=\$1" >> "${file_loc}"

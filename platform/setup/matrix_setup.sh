@@ -33,10 +33,11 @@ for ((k=0;k<group_numbers;k++)); do
     group_config="${group_k[2]}"
     group_router_config="${group_k[3]}"
 
-    readarray routers < "${DIRECTORY}"/config/$group_router_config
-    n_routers=${#routers[@]}
-
     if [ "${group_as}" != "IXP" ];then
+
+        readarray routers < "${DIRECTORY}"/config/$group_router_config
+        n_routers=${#routers[@]}
+
         for ((i=0;i<n_routers;i++)); do
             router_i=(${routers[$i]})
             rname="${router_i[0]}"
@@ -44,15 +45,25 @@ for ((k=0;k<group_numbers;k++)); do
 
             if [ "${property1}" = "MATRIX"  ];then
                 subnet_bridge="$(subnet_router_MATRIX "${group_number}" "bridge")"
-                subnet_matrix="$(subnet_router_MATRIX "${group_number}" "matrix")"
+                    subnet_matrix="$(subnet_router_MATRIX "${group_number}" "matrix")"
                 subnet_group="$(subnet_router_MATRIX "${group_number}" "group")"
 
                 ./setup/ovs-docker.sh add-port matrix group_"${group_number}"  \
                 MATRIX --ipaddress="${subnet_matrix}"
 
+                mod=$((${group_number} % 100))
+                div=$((${group_number} / 100))
+
+                if [ $mod -lt 10 ];then
+                    mod="0"$mod
+                fi
+                if [ $div -lt 10 ];then
+                    div="0"$div
+                fi
+
                 ./setup/ovs-docker.sh add-port matrix matrix_"${group_number}" \
                 "${group_number}"_"${rname}"router --ipaddress="${subnet_group}" \
-                --macaddress="aa:11:11:11:11:"${group_number}
+                --macaddress="aa:11:11:11:"$div":"$mod
 
                 ./setup/ovs-docker.sh connect-ports matrix \
                 group_"${group_number}" MATRIX \

@@ -13,7 +13,6 @@ DIRECTORY="$1"
 
 # read configs
 readarray groups < "${DIRECTORY}"/config/AS_config.txt
-
 group_numbers=${#groups[@]}
 
 mkdir "${DIRECTORY}"/groups
@@ -25,12 +24,13 @@ for ((k=0;k<group_numbers;k++)); do
     group_config="${group_k[2]}"
     group_router_config="${group_k[3]}"
 
-    readarray routers < "${DIRECTORY}"/config/$group_router_config
-    n_routers=${#routers[@]}
-
     mkdir "${DIRECTORY}"/groups/g"${group_number}"
 
     if [ "${group_as}" != "IXP" ];then
+
+        readarray routers < "${DIRECTORY}"/config/$group_router_config
+        n_routers=${#routers[@]}
+
         for ((i=0;i<n_routers;i++)); do
             router_i=(${routers[$i]})
             rname="${router_i[0]}"

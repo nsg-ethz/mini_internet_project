@@ -36,11 +36,13 @@ for ((k=0;k<group_numbers;k++)); do
     group_as="${group_k[1]}"
     group_config="${group_k[2]}"
     group_router_config="${group_k[3]}"
-    
-    readarray routers < "${DIRECTORY}"/config/$group_router_config
-    n_routers=${#routers[@]}
+
 
     if [ "${group_as}" != "IXP" ];then
+
+        readarray routers < "${DIRECTORY}"/config/$group_router_config
+        n_routers=${#routers[@]}
+
         for ((i=0;i<n_routers;i++)); do
             router_i=(${routers[$i]})
             rname="${router_i[0]}"
@@ -54,9 +56,19 @@ for ((k=0;k<group_numbers;k++)); do
                 ./setup/ovs-docker.sh add-port measurement group_"${group_number}"  \
                 MEASUREMENT --ipaddress="${subnet_measurement}"
 
+                mod=$((${group_number} % 100))
+                div=$((${group_number} / 100))
+
+                if [ $mod -lt 10 ];then
+                    mod="0"$mod
+                fi
+                if [ $div -lt 10 ];then
+                    div="0"$div
+                fi
+
                 ./setup/ovs-docker.sh add-port measurement measurement_"${group_number}" \
                 "${group_number}"_"${rname}"router --ipaddress="${subnet_group}" \
-                --macaddress="aa:22:22:22:22:"${group_number}
+                --macaddress="aa:22:22:22:"$div":"$mod
 
                 ./setup/ovs-docker.sh connect-ports measurement \
                 group_"${group_number}" MEASUREMENT \

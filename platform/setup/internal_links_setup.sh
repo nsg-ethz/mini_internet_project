@@ -25,10 +25,11 @@ for ((k=0;k<group_numbers;k++)); do
     group_router_config="${group_k[3]}"
     group_internal_links="${group_k[4]}"
 
-    readarray intern_links < "${DIRECTORY}"/config/$group_internal_links
-    n_intern_links=${#intern_links[@]}
-
     if [ "${group_as}" != "IXP" ];then
+
+        readarray intern_links < "${DIRECTORY}"/config/$group_internal_links
+        n_intern_links=${#intern_links[@]}
+
         br_name="int-""${group_number}"
 
         echo -n "-- add-br "${br_name}" " >> "${DIRECTORY}"/groups/add_bridges.sh

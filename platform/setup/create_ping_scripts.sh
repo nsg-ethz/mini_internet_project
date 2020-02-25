@@ -35,38 +35,46 @@ for ((kk=0;kk<n_groups;kk++)); do
     group_kk=(${groups[$kk]})
     group_number_kk="${group_kk[0]}"
     group_as_kk="${group_kk[1]}"
-    group_config="${group_kk[2]}"
-    group_router_config="${group_kk[3]}"
-    group_internal_links="${group_kk[4]}"
-
-    readarray routers < "${DIRECTORY}"/config/$group_router_config
-    readarray intern_links < "${DIRECTORY}"/config/$group_internal_links
-    n_routers=${#routers[@]}
-    n_intern_links=${#intern_links[@]}
-
-    # find the ID of that router
-    for i in "${!routers[@]}"; do
-       if [[ "${routers[$i]}" == *'MATRIX_TARGET'* ]]; then
-           dest_router_id=$i;
-       fi
-    done
 
     echo "echo Group "$group_kk >> "${DIRECTORY}"/groups/matrix/ping_all_groups.sh
 
     if [ "${group_as_kk}" != "IXP" ];then
+
         for ((jj=0;jj<n_groups;jj++)); do
             group_jj=(${groups[$jj]})
             group_number_jj="${group_jj[0]}"
             group_as_jj="${group_jj[1]}"
+            group_config="${group_jj[2]}"
+            group_router_config="${group_jj[3]}"
+            group_internal_links="${group_jj[4]}"
+
+            readarray routers < "${DIRECTORY}"/config/$group_router_config
+            readarray intern_links < "${DIRECTORY}"/config/$group_internal_links
+            n_routers=${#routers[@]}
+            n_intern_links=${#intern_links[@]}
+
+            # find the ID of that router
+            for i in "${!routers[@]}"; do
+               if [[ "${routers[$i]}" == *'MATRIX_TARGET'* ]]; then
+                   dest_router_id=$i;
+               fi
+            done
 
             if [ "${group_as_jj}" != "IXP" ];then
                 subnet="$(subnet_host_router "${group_number_jj}" "$dest_router_id" host)"
 
-                if [ $group_number_kk -lt 10 ];then
-                    mac_addr="aa:11:11:11:11:0"$group_number_kk
-                else
-                    mac_addr="aa:11:11:11:11:"$group_number_kk
+                mod=$((${group_number_kk} % 100))
+                div=$((${group_number_kk} / 100))
+
+                if [ $mod -lt 10 ];then
+                    mod="0"$mod
                 fi
+                if [ $div -lt 10 ];then
+                    div="0"$div
+                fi
+
+                mac_addr="aa:11:11:11:"$div":"$mod
+
                 cmd="nping --dest-ip "${subnet%/*}" --dest-mac "$mac_addr" --interface group_"$group_number_kk" --tcp -c 1 | grep RCVD | grep -v unreachable"
                 echo "(timeout 2 "$cmd" &>> /home/log_ping.txt ) &" >> "${DIRECTORY}"/groups/matrix/ping_all_groups.sh
 
@@ -79,20 +87,12 @@ for ((kk=0;kk<n_groups;kk++)); do
 done
 
 
-
 echo "echo '' > /home/connectivity.txt" >> "${DIRECTORY}"/groups/matrix/ping_all_groups.sh
 
 for ((kk=0;kk<n_groups;kk++)); do
     group_kk=(${groups[$kk]})
     group_number_kk="${group_kk[0]}"
     group_as_kk="${group_kk[1]}"
-    group_router_config="${group_kk[3]}"
-    group_internal_links="${group_kk[4]}"
-
-    readarray routers < "${DIRECTORY}"/config/$group_router_config
-    readarray intern_links < "${DIRECTORY}"/config/$group_internal_links
-    n_routers=${#routers[@]}
-    n_intern_links=${#intern_links[@]}
 
     if [ "${group_as_kk}" != "IXP" ];then
 
@@ -100,6 +100,13 @@ for ((kk=0;kk<n_groups;kk++)); do
             group_jj=(${groups[$jj]})
             group_number_jj="${group_jj[0]}"
             group_as_jj="${group_jj[1]}"
+            group_router_config="${group_jj[3]}"
+            group_internal_links="${group_jj[4]}"
+
+            readarray routers < "${DIRECTORY}"/config/$group_router_config
+            readarray intern_links < "${DIRECTORY}"/config/$group_internal_links
+            n_routers=${#routers[@]}
+            n_intern_links=${#intern_links[@]}
 
             if [ "${group_as_jj}" != "IXP" ];then
                 echo "if wait \${results[\"${group_number_kk},${group_number_jj}\"]}; then" >> "${DIRECTORY}"/groups/matrix/ping_all_groups.sh

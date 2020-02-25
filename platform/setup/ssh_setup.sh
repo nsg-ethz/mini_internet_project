@@ -36,18 +36,19 @@ for ((k=0;k<group_numbers;k++)); do
     group_layer2_hosts="${group_k[6]}"
     group_layer2_links="${group_k[7]}"
 
-    readarray routers < "${DIRECTORY}"/config/$group_router_config
-    readarray intern_links < "${DIRECTORY}"/config/$group_internal_links
-    readarray l2_switches < "${DIRECTORY}"/config/$group_layer2_switches
-    readarray l2_hosts < "${DIRECTORY}"/config/$group_layer2_hosts
-    readarray l2_links < "${DIRECTORY}"/config/$group_layer2_links
-    n_routers=${#routers[@]}
-    n_intern_links=${#intern_links[@]}
-    n_l2_switches=${#l2_switches[@]}
-    n_l2_hosts=${#l2_hosts[@]}
-    n_l2_links=${#l2_links[@]}
-
     if [ "${group_as}" != "IXP" ];then
+
+        readarray routers < "${DIRECTORY}"/config/$group_router_config
+        readarray intern_links < "${DIRECTORY}"/config/$group_internal_links
+        readarray l2_switches < "${DIRECTORY}"/config/$group_layer2_switches
+        readarray l2_hosts < "${DIRECTORY}"/config/$group_layer2_hosts
+        readarray l2_links < "${DIRECTORY}"/config/$group_layer2_links
+        n_routers=${#routers[@]}
+        n_intern_links=${#intern_links[@]}
+        n_l2_switches=${#l2_switches[@]}
+        n_l2_hosts=${#l2_hosts[@]}
+        n_l2_links=${#l2_links[@]}
+
         # genarate key pair for authentification between ssh container and group containers
         ssh-keygen -t rsa -b 4096 -C "comment" -P "" -f "groups/g"${group_number}"/id_rsa" -q
 
