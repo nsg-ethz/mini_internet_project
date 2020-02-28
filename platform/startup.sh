@@ -182,7 +182,7 @@ time ./setup/layer2_config.sh "${DIRECTORY}"
 echo ""
 echo ""
 
-echo "--cpus=1onfig.sh: "
+echo "router_config.sh: "
 echo "router_config.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
 time ./setup/router_config.sh "${DIRECTORY}"
 
