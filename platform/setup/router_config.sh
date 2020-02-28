@@ -489,6 +489,9 @@ for ((k=0;k<group_numbers;k++)); do
 
             #disable reverse path filtering
             docker exec -d "${group_number}"_"${rname}"router bash -c 'for i in /proc/sys/net/ipv4/conf/*/rp_filter ; do echo 0 > $i ; done' &
+
+            # no icmp rate limiting
+            docker exec -d "${group_number}"_"${rname}"router bash -c 'sysctl -w net.ipv4.icmp_ratelimit="0" > /dev/null' &
         done
     else
         echo " -c 'exit' -c 'write' " >> "${DIRECTORY}"/groups/g"${group_number}"/init_full_conf.sh
@@ -499,6 +502,9 @@ for ((k=0;k<group_numbers;k++)); do
 
         #disable reverse path filtering
         docker exec -d "${group_number}"_IXP bash -c 'for i in /proc/sys/net/ipv4/conf/*/rp_filter ; do echo 0 > $i ; done' &
+
+        # no icmp rate limiting
+        docker exec -d "${group_number}"_"${rname}"router bash -c 'sysctl -w net.ipv4.icmp_ratelimit="0" > /dev/null' &
     fi
 done
 

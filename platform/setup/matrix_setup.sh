@@ -18,10 +18,17 @@ location="${DIRECTORY}"/groups/matrix/
 mkdir $location
 echo '' > "$location"/ping_all_groups.sh
 chmod +x "${location}"/ping_all_groups.sh
+echo '' > "$location"/run_matrix.sh
+chmod +x "${location}"/run_matrix.sh
+
 
 # start matrix container
 docker run -itd --net='none' --name="MATRIX" --privileged --pids-limit 500 \
-    -v "${location}"/ping_all_groups.sh:/home/ping_all_groups.sh thomahol/d_matrix
+    -v "${location}"/ping_all_groups.sh:/home/ping_all_groups.sh \
+    -v "${location}"/run_matrix.sh:/home/run_matrix.sh thomahol/d_matrix
+
+# no icmp rate limiting
+docker exec -d MATRIX bash -c 'sysctl -w net.ipv4.icmp_ratelimit="0" > /dev/null' &
 
 echo -n "-- add-br matrix " >> "${DIRECTORY}"/groups/add_bridges.sh
 echo "ifconfig matrix 0.0.0.0 up" >> "${DIRECTORY}"/groups/ip_setup.sh

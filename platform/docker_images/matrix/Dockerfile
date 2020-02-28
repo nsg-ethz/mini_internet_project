@@ -1,5 +1,5 @@
 FROM debian:stretch
-RUN apt-get update && apt-get install -y rsyslog locales iputils-ping openssh-server nmap net-tools
+RUN apt-get update && apt-get install -y rsyslog locales iputils-ping openssh-server nmap net-tools tmux vim
 
 # Set locale
 RUN sed -i -e 's/# \(en_US\.UTF-8 .*\)/\1/' /etc/locale.gen && \
