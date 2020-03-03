@@ -75,21 +75,24 @@ subnet_router_router_intern () {
 }
 
 subnet_router_router_extern () {
-  local n_net="$1" device="$2"
+    local n_net="$1" device="$2"
 
-  if [ "${device}" = "1" ] ; then
+    mod=$((${n_net} % 100))
+    div=$((${n_net} / 100))
 
-    echo "179.24."$((${n_net}+1))".1/24"
+    if [ "${device}" = "1" ] ; then
 
-  elif [ "${device}" = "2" ] ; then
+        echo "179."${div}"."${mod}".1/24"
 
-    echo "179.24."$((${n_net}+1))".2/24"
+    elif [ "${device}" = "2" ] ; then
 
-  elif [ "${device}" = "bridge" ] ; then
+        echo "179."${div}"."${mod}".2/24"
 
-    echo "179.24."$((${n_net}+1))".0 netmask 255.255.255.0"
+    elif [ "${device}" = "bridge" ] ; then
 
-  fi
+        echo "179."${div}"."${mod}".0 netmask 255.255.255.0"
+
+    fi
 }
 
 subnet_router_IXP () {

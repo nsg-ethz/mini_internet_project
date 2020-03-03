@@ -83,6 +83,9 @@ for ((kk=0;kk<n_groups;kk++)); do
                 echo "(timeout 2 "$cmd" &>> /home/log_ping.txt ) &" >> "${DIRECTORY}"/groups/matrix/ping_all_groups.sh
 
                 echo "results[\"${group_number_kk},${group_number_jj}\"]=\$!" >> "${DIRECTORY}"/groups/matrix/ping_all_groups.sh
+
+                echo "sleep 0.5" >> "${DIRECTORY}"/groups/matrix/ping_all_groups.sh
+
             fi
         done
 
