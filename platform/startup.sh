@@ -102,14 +102,14 @@ echo ""
 echo ""
 
 echo "echo \"shh links\"" >> "${DIRECTORY}"/groups/ip_setup.sh
-echo "--cpus=1up.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
+echo "ssh_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
 echo "ssh_setup.sh: "
 time ./setup/ssh_setup.sh "${DIRECTORY}"
 
 echo ""
 echo ""
 
-echo "echo \"--cpus=1x links\"" >> "${DIRECTORY}"/groups/ip_setup.sh
+echo "echo \"matrix_setup\"" >> "${DIRECTORY}"/groups/ip_setup.sh
 echo "matrix_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
 echo "matrix_setup.sh: "
 time ./setup/matrix_setup.sh "${DIRECTORY}"
@@ -117,7 +117,7 @@ time ./setup/matrix_setup.sh "${DIRECTORY}"
 echo ""
 echo ""
 
-echo "--cpus=1g_scripts.sh: "
+echo "create_ping_scripts.sh: "
 echo "create_ping_scripts.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
 time ./setup/create_ping_scripts.sh "${DIRECTORY}"
 
