@@ -9,6 +9,8 @@ ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 
 # Add startup script and set it as entrypoint
+ADD ping.py /home/ping.py
+RUN chmod +x /home/ping.py
 ADD docker-start /docker-start
 RUN chmod +x /docker-start
 ENTRYPOINT ["/docker-start"]

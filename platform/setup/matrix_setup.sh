@@ -16,16 +16,19 @@ group_numbers=${#groups[@]}
 
 location="${DIRECTORY}"/groups/matrix/
 mkdir $location
-echo '' > "$location"/ping_all_groups.sh
-chmod +x "${location}"/ping_all_groups.sh
+# echo '' > "$location"/ping_all_groups.sh
+# chmod +x "${location}"/ping_all_groups.sh
 echo '' > "$location"/run_matrix.sh
 chmod +x "${location}"/run_matrix.sh
+touch "$location"/destination_ips.txt
+chmod +x "${location}"/destination_ips.txt
 
 
 # start matrix container
 docker run -itd --net='none' --name="MATRIX" --privileged --pids-limit 500 \
-    -v "${location}"/ping_all_groups.sh:/home/ping_all_groups.sh \
-    -v "${location}"/run_matrix.sh:/home/run_matrix.sh thomahol/d_matrix
+    -v "${location}"/run_matrix.sh:/home/run_matrix.sh \
+    -v "${location}"/destination_ips.txt:/home/destination_ips.txt thomahol/d_matrix
+    # -v "${location}"/ping_all_groups.sh:/home/ping_all_groups.sh \
 
 # no icmp rate limiting
 docker exec -d MATRIX bash -c 'sysctl -w net.ipv4.icmp_ratelimit="0" > /dev/null' &
@@ -39,11 +42,23 @@ for ((k=0;k<group_numbers;k++)); do
     group_as="${group_k[1]}"
     group_config="${group_k[2]}"
     group_router_config="${group_k[3]}"
+    group_internal_links="${group_k[4]}"
 
     if [ "${group_as}" != "IXP" ];then
 
         readarray routers < "${DIRECTORY}"/config/$group_router_config
+        readarray intern_links < "${DIRECTORY}"/config/$group_internal_links
         n_routers=${#routers[@]}
+        n_intern_links=${#intern_links[@]}
+
+        # find the ID of that router
+        for i in "${!routers[@]}"; do
+           if [[ "${routers[$i]}" == *'MATRIX_TARGET'* ]]; then
+               dest_router_id=$i;
+           fi
+        done
+        subnet="$(subnet_host_router "${group_number}" "$dest_router_id" host)"
+        echo $group_number" "${subnet%/*} >> ${location}/destination_ips.txt
 
         for ((i=0;i<n_routers;i++)); do
             router_i=(${routers[$i]})
