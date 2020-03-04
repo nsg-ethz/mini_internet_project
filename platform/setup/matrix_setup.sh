@@ -16,19 +16,14 @@ group_numbers=${#groups[@]}
 
 location="${DIRECTORY}"/groups/matrix/
 mkdir $location
-# echo '' > "$location"/ping_all_groups.sh
-# chmod +x "${location}"/ping_all_groups.sh
-echo '' > "$location"/run_matrix.sh
-chmod +x "${location}"/run_matrix.sh
+
 touch "$location"/destination_ips.txt
 chmod +x "${location}"/destination_ips.txt
 
 
 # start matrix container
 docker run -itd --net='none' --name="MATRIX" --privileged --pids-limit 500 \
-    -v "${location}"/run_matrix.sh:/home/run_matrix.sh \
     -v "${location}"/destination_ips.txt:/home/destination_ips.txt thomahol/d_matrix
-    # -v "${location}"/ping_all_groups.sh:/home/ping_all_groups.sh \
 
 # no icmp rate limiting
 docker exec -d MATRIX bash -c 'sysctl -w net.ipv4.icmp_ratelimit="0" > /dev/null' &
