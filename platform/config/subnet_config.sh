@@ -53,7 +53,7 @@ gw_l2_ () {
 subnet_router () {
   local n_grp="$1" n_router="$2"
 
-  echo "${n_grp}"".""$(($n_router+150))"".0.1/24"
+  echo "${n_grp}"".""$(($n_router+151))"".0.1/24"
 }
 
 subnet_router_router_intern () {

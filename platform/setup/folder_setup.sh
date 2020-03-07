@@ -61,6 +61,7 @@ echo "#!/bin/bash" > "${location}"/throughput.sh
 echo "#!/bin/bash" > "${location}"/delete_veth_pairs.sh
 echo "#!/bin/bash" > "${location}"/add_vpns.sh
 echo "#!/bin/bash" > "${location}"/del_vpns.sh
+echo "#!/bin/bash" > "${location}"/restart_container.sh
 
 chmod +x "${location}"/ip_setup.sh
 chmod +x "${location}"/add_ports.sh
@@ -71,6 +72,7 @@ chmod +x "${location}"/throughput.sh
 chmod +x "${location}"/delete_veth_pairs.sh
 chmod +x "${location}"/add_vpns.sh
 chmod +x "${location}"/del_vpns.sh
+chmod +x "${location}"/restart_container.sh
 
 echo -n "ovs-vsctl " >> "${location}"/add_ports.sh
 echo -n "ovs-vsctl " >> "${location}"/add_bridges.sh
@@ -90,3 +92,28 @@ echo " ">> "${location}"/ip_setup.sh
 echo "delete_netns_link () {">> "${location}"/ip_setup.sh
 echo "  rm -f /var/run/netns/"\$PID"">> "${location}"/ip_setup.sh
 echo "}">> "${location}"/ip_setup.sh
+
+if [ $# -ne 1 ]; then
+    echo $0: usage ./make_vms dst_grp
+    exit 1
+fi
+
+echo "if [ \$# -ne 1 ]; then" >> "${location}"/restart_container.sh
+echo "  echo \$0: usage ./restart_container.sh container_name" >> "${location}"/restart_container.sh
+echo "  exit 1" >> "${location}"/restart_container.sh
+echo "fi" >> "${location}"/restart_container.sh
+echo "container_name=\$1" >> "${location}"/restart_container.sh
+echo "create_netns_link () { ">> "${location}"/restart_container.sh
+echo "  mkdir -p /var/run/netns">> "${location}"/restart_container.sh
+echo "  if [ ! -e /var/run/netns/"\$PID" ]; then">> "${location}"/restart_container.sh
+echo "    ln -s /proc/"\$PID"/ns/net /var/run/netns/"\$PID"">> "${location}"/restart_container.sh
+echo "    trap 'delete_netns_link' 0">> "${location}"/restart_container.sh
+echo "    for signal in 1 2 3 13 14 15; do">> "${location}"/restart_container.sh
+echo "      trap 'delete_netns_link; trap - \$signal; kill -\$signal \$\$' \$signal">> "${location}"/restart_container.sh
+echo "     done">> "${location}"/restart_container.sh
+echo "  fi">> "${location}"/restart_container.sh
+echo "}">> "${location}"/restart_container.sh
+echo " ">> "${location}"/restart_container.sh
+echo "delete_netns_link () {">> "${location}"/restart_container.sh
+echo "  rm -f /var/run/netns/"\$PID"">> "${location}"/restart_container.sh
+echo "}">> "${location}"/restart_container.sh
