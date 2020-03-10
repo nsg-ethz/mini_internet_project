@@ -40,8 +40,10 @@ for ((k=0;k<group_numbers;k++)); do
 
         # start ssh container
         docker run -itd --net='none'  --name="${group_number}""_ssh" \
-          -v "${location}"/goto.sh:/root/goto.sh --privileged \
-          --cpus=2 --pids-limit 100 --hostname="g${group_number}-proxy" thomahol/d_ssh
+            -v "${location}"/goto.sh:/root/goto.sh --privileged \
+            --cpus=2 --pids-limit 100 --hostname="g${group_number}-proxy" \
+            -v /etc/timezone:/etc/timezone:ro \
+            -v /etc/localtime:/etc/localtime:ro thomahol/d_ssh
 
     	# start switches
     	for ((l=0;l<n_l2_switches;l++)); do
@@ -52,7 +54,9 @@ for ((k=0;k<group_numbers;k++)); do
 
             docker run -itd --net='none' --dns="${subnet_dns%/*}" --privileged \
                 --cpus=2 --pids-limit 100 --hostname "${sname}" \
-                --name=${group_number}_L2_${l2name}_${sname} thomahol/d_switch
+                --name=${group_number}_L2_${l2name}_${sname} \
+                -v /etc/timezone:/etc/timezone:ro \
+                -v /etc/localtime:/etc/localtime:ro thomahol/d_switch
         done
 
         # start hosts in l2 network
@@ -65,7 +69,9 @@ for ((k=0;k<group_numbers;k++)); do
             if [[ $hname != vpn* ]]; then
                 docker run -itd --net='none' --dns="${subnet_dns%/*}" --privileged \
                     --cpus=2 --pids-limit 100 --hostname "${hname}" \
-                    --name="${group_number}""_L2_""${l2name}""_""${hname}" thomahol/d_host
+                    --name="${group_number}""_L2_""${l2name}""_""${hname}" \
+                    -v /etc/timezone:/etc/timezone:ro \
+                    -v /etc/localtime:/etc/localtime:ro thomahol/d_host
             fi
         done
 
@@ -84,13 +90,17 @@ for ((k=0;k<group_numbers;k++)); do
                 --cpus=2 --pids-limit 100 --hostname "${rname}""_router" \
                 -v "${location}"/looking_glass.txt:/home/looking_glass.txt \
                 -v "${location}"/daemons:/etc/frr/daemons \
-                -v "${location}"/frr.conf:/etc/frr/frr.conf thomahol/d_router
+                -v "${location}"/frr.conf:/etc/frr/frr.conf \
+                -v /etc/timezone:/etc/timezone:ro \
+                -v /etc/localtime:/etc/localtime:ro thomahol/d_router
 
             # start host
             if [ "${property2}" == "host" ];then
                 docker run -itd --net='none' --dns="${subnet_dns%/*}"  \
                     --name="${group_number}""_""${rname}""host" --privileged \
-                    --cpus=2 --pids-limit 100 --hostname "${rname}""_host" thomahol/d_host \
+                    --cpus=2 --pids-limit 100 --hostname "${rname}""_host" \
+                    -v /etc/timezone:/etc/timezone:ro \
+                    -v /etc/localtime:/etc/localtime:ro thomahol/d_host \
                     # -v "${location}"/connectivity.txt:/home/connectivity.txt \
                     # add this for bgpsimple -v ${DIRECTORY}/docker_images/host/bgpsimple.pl:/home/bgpsimple.pl \
 
@@ -103,7 +113,10 @@ for ((k=0;k<group_numbers;k++)); do
         docker run -itd --net='none' --name="${group_number}""_IXP" \
             --pids-limit 100 --hostname "${group_number}""_IXP" \
             -v "${location}"/daemons:/etc/quagga/daemons \
-            --privileged thomahol/d_ixp
+            --privileged \
+            -v /etc/timezone:/etc/timezone:ro \
+            -v /etc/localtime:/etc/localtime:ro \
+            thomahol/d_ixp
 
     fi
 
