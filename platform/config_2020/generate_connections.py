@@ -10,12 +10,12 @@ import string
 # ixp_out = [81,82,83,84,85,86]
 
 # 78 ASes
-tier1 = [[1,2],[21,22],[41,42],[61,62],[81,82],[101,102]]
-transit = [[1,2,3,4,5,6,7,8,9,10,11,12,13,14],[21,22,23,24,25,26,27,28,29,30,31,32,33,34], \
-[41,42,43,44,45,46,47,48,49,50,51,52,53,54], [61,62,63,64,65,66,67,68,69,70,71,72], \
-[81,82,83,84,85,86,87,88,89,90,91,92],[101,102,103,104,105,106,107,108,109,110,111,112]]
-ixp_central = 120
-ixp_out = [121,122,123,124,125,126]
+# tier1 = [[1,2],[21,22],[41,42],[61,62],[81,82],[101,102]]
+# transit = [[1,2,3,4,5,6,7,8,9,10,11,12,13,14],[21,22,23,24,25,26,27,28,29,30,31,32,33,34], \
+# [41,42,43,44,45,46,47,48,49,50,51,52,53,54], [61,62,63,64,65,66,67,68,69,70,71,72], \
+# [81,82,83,84,85,86,87,88,89,90,91,92],[101,102,103,104,105,106,107,108,109,110,111,112]]
+# ixp_central = 120
+# ixp_out = [121,122,123,124,125,126]
 
 # # 30 ASes
 # tier1 = [[1,2],[11,12],[21,22]]
@@ -30,10 +30,10 @@ ixp_out = [121,122,123,124,125,126]
 # ixp_out = [81,82]
 
 # 20 ASes
-# tier1 = [[1,2],[11,12]]
-# transit = [[1,2,3,4,5,6,7,8,9,10],[11,12,13,14,15,16,17,18,19,20]]
-# ixp_central = 80
-# ixp_out = [81,82]
+tier1 = [[1,2],[11,12]]
+transit = [[1,2,3,4,5,6,7,8,9,10],[11,12,13,14,15,16,17,18,19,20]]
+ixp_central = 80
+ixp_out = [81,82]
 
 # 40 ASes
 # tier1 = [[1,2],[11,12],[21,22],[31,32]]
@@ -120,7 +120,7 @@ for b in tier1:
     fd_students.write(str(customer2)+'\tZURI\tCustomer\t'+str(left)+'\tZURI\tProvider\t'+str(subnet_ebgp2())+'\n')
 
     ixp1 = ixp_central
-    fd.write(str(left)+'\tGENE\tPeer\t'+str(ixp1)+'\tN/A\tPeer\t'+str(throughput)+'\t'+str(delay)+'\t'+','.join(all_tier1)+'\n')
+    fd.write(str(left)+'\tLOND\tPeer\t'+str(ixp1)+'\tN/A\tPeer\t'+str(throughput)+'\t'+str(delay)+'\t'+','.join(all_tier1)+'\n')
 
     ixp2 = ixp_out[block_nb]
     fd.write(str(left)+'\tZURI\tPeer\t'+str(ixp2)+'\tN/A\tPeer\t'+str(throughput)+'\t'+str(delay)+'\t'+','.join(map(lambda x:str(x), transit[(block_nb+1)%len(tier1)]))+'\n')
@@ -146,7 +146,7 @@ for b in tier1:
     fd_students.write(str(customer2)+'\tZURI\tCustomer\t'+str(right)+'\tZURI\tProvider\t'+str(subnet_ebgp2())+'\n')
 
     ixp1 = ixp_central
-    fd.write(str(right)+'\tGENE\tPeer\t'+str(ixp1)+'\tN/A\tPeer\t'+str(throughput)+'\t'+str(delay)+'\t'+','.join(all_tier1)+'\n')
+    fd.write(str(right)+'\tLOND\tPeer\t'+str(ixp1)+'\tN/A\tPeer\t'+str(throughput)+'\t'+str(delay)+'\t'+','.join(all_tier1)+'\n')
 
     ixp2 = ixp_out[block_nb-1]
     fd.write(str(right)+'\tZURI\tPeer\t'+str(ixp2)+'\tN/A\tPeer\t'+str(throughput)+'\t'+str(delay)+'\t'+','.join(map(lambda x:str(x), transit[(block_nb-1)%len(tier1)]))+'\n')

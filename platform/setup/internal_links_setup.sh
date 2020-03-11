@@ -41,10 +41,10 @@ for ((k=0;k<group_numbers;k++)); do
             router2="${row_i[1]}"
             IFS=',' read -r -a throughput_array <<< "${row_i[2]}"
             IFS=',' read -r -a delay_array <<< "${row_i[3]}"
-            throughput_array_index=$((k%${#throughput_array[@]}))
+            throughput_array_index=$((group_number%${#throughput_array[@]}))
             throughput="${throughput_array[$throughput_array_index]}"
 
-            delay_array_index=$((k%${#delay_array[@]}))
+            delay_array_index=$((group_number%${#delay_array[@]}))
             delay="${delay_array[$delay_array_index]}"
 
             subnet_router1="$(subnet_router_router_intern ${group_number} ${i} 1)"

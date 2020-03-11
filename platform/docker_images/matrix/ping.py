@@ -7,7 +7,7 @@ from random import shuffle
 
 as_list = {}
 
-def update_matrix(as_list, co_dic):
+def update_matrix(as_list, co_dic, t):
     fd = open('matrix.html', 'w')
 
     fd.write('<!DOCTYPE html>\n')
@@ -39,7 +39,7 @@ def update_matrix(as_list, co_dic):
     fd.write('\t\t</div>\n')
     fd.write('\t\n')
     fd.write('\t\t<p>\n')
-    fd.write('\t\t\tThis connectivity matrix indicates the networks that each group can (<span class="connectivity-success">&nbsp;&nbsp;&nbsp;</span>) or cannot reach (<span class="connectivity-failure">&nbsp;&nbsp;&nbsp;</span>). Matrix updated at TIME.\n')
+    fd.write('\t\t\tThis connectivity matrix indicates the networks that each group can (<span class="connectivity-success">&nbsp;&nbsp;&nbsp;</span>) or cannot reach (<span class="connectivity-failure">&nbsp;&nbsp;&nbsp;</span>). The matrix took '+str(int(t))+'s to be updated.\n')
     fd.write('\t\t</p>\n')
     fd.write('\t\n')
     fd.write('\t\t<div class="progress_container"></div>\n')
@@ -137,7 +137,11 @@ for asn in as_list:
 
     mac_dic[asn] = "aa:11:11:11:"+str(div)+":"+str(mod)
 
+update_time = 999
+
 while True:
+
+    start_ts = time.time()
 
     # Perform the ping measurements
     for from_g in sorted(as_list.keys()):
@@ -168,8 +172,10 @@ while True:
                 #print output_tmp.split('\n')[3]
         # sleep(0.1)
 
-        update_matrix(as_list, co_dic)
+        update_matrix(as_list, co_dic, update_time)
 
+
+    update_time = time.time() - start_ts
 
 
     # # success_symbol = 'glyphicon glyphicon-ok text-success'
