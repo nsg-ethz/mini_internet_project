@@ -200,7 +200,6 @@ for ((i=0;i<n_extern_links;i++)); do
     relation_grp_2="${row_i[5]}"
     throughput="${row_i[6]}"
     delay="${row_i[7]}"
-    ixp_peers="${row_i[8]}"
 
     for ((k=0;k<group_numbers;k++)); do
         group_k=(${groups[$k]})
@@ -221,6 +220,8 @@ for ((i=0;i<n_extern_links;i++)); do
             grp_2="${row_i[0]}"
             router_grp_2="${row_i[1]}"
         fi
+
+        ixp_peers="${row_i[8]}"
 
         subnet1="$(subnet_router_IXP "${grp_1}" "${grp_2}" "group")"
         subnet2="$(subnet_router_IXP "${grp_1}" "${grp_2}" "IXP")"
@@ -255,8 +256,16 @@ for ((i=0;i<n_extern_links;i++)); do
         echo " -c 'exit'\\" >> "${location}"
 
     else
-        subnet1="$(subnet_router_router_extern "${i}" 1)"
-        subnet2="$(subnet_router_router_extern "${i}" 2)"
+        subnet="${row_i[8]}"
+
+        if [ "$subnet" != "N/A" ]; then
+            subnet1=${subnet%????}1/24
+            subnet2=${subnet%????}2/24
+        else
+            subnet1="$(subnet_router_router_extern "${i}" 1)"
+            subnet2="$(subnet_router_router_extern "${i}" 2)"
+        fi
+
         location1="${DIRECTORY}"/groups/g"${grp_1}"/"${router_grp_1}"/init_full_conf.sh
         echo " -c 'interface ext_"${grp_2}"_"${router_grp_2}"' \\" >> "${location1}"
         echo " -c 'ip address "${subnet1}"'\\" >> "${location1}"

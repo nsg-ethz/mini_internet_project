@@ -51,9 +51,6 @@ for ((i=0;i<n_extern_links;i++)); do
         fi
 
         br_name="ixp-""${grp_2}""-""${grp_1}"
-        subnet_bridge="$(subnet_router_IXP "${grp_1}" "${grp_2}" "bridge")"
-        subnet_1="$(subnet_router_IXP "${grp_1}" "${grp_2}" "group")"
-        subnet_2="$(subnet_router_IXP "${grp_1}" "${grp_2}" "IXP")"
 
         echo -n "-- add-br "${br_name}" " >> "${DIRECTORY}"/groups/add_bridges.sh
         echo "ifconfig "${br_name}" 0.0.0.0 up" >> "${DIRECTORY}"/groups/ip_setup.sh
@@ -64,9 +61,6 @@ for ((i=0;i<n_extern_links;i++)); do
           "${grp_2}""_IXP"
     else
         br_name="ext-""${i}"
-        subnet_bridge="$(subnet_router_router_extern ${i} "bridge")"
-        subnet_router1="$(subnet_router_router_extern ${i} 1)"
-        subnet_router2="$(subnet_router_router_extern ${i} 2)"
 
         echo -n "-- add-br "${br_name}" " >> "${DIRECTORY}"/groups/add_bridges.sh
         echo "ifconfig "${br_name}" 0.0.0.0 up" >> "${DIRECTORY}"/groups/ip_setup.sh

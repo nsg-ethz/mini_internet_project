@@ -54,6 +54,7 @@ for ((k=0;k<group_numbers;k++)); do
             sname="${switch_l[1]}"
             connected="${switch_l[2]}"
             sys_id="${switch_l[3]}"
+            stp_prio="${switch_l[4]}"
 
             docker exec -d "${group_number}""_L2_""${l2name}"_${sname} \
                 ovs-vsctl add-br br0
@@ -65,10 +66,10 @@ for ((k=0;k<group_numbers;k++)); do
                 ovs-vsctl set-fail-mode br0 standalone
 
             docker exec -d "${group_number}""_L2_""${l2name}"_${sname} \
-                ovs-vsctl set bridge br0 other_config:stp-system-id="${sys_id}"
+                ovs-vsctl set bridge br0 other_config:stp-system-id=${sys_id}
 
             docker exec -d "${group_number}""_L2_""${l2name}"_${sname} \
-                ovs-vsctl set bridge br0 other_config:stp-priority=$((100*l+1))
+                ovs-vsctl set bridge br0 other_config:stp-priority=$stp_prio
         done
 
         for ((l=0;l<n_l2_links;l++)); do
