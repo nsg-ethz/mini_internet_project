@@ -11,4 +11,9 @@ do
   # save router config
   vtysh -c 'write'
 
+  for intf_name in $(vtysh -c 'show interface brief' | grep _c | cut -f 1 -d ' '); do
+      vtysh -c "conf t" -c "interface $intf_name" -c "shutdown" -c "exit" -c "no interface $intf_name"
+  done
+
+
 done
