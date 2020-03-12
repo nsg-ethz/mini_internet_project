@@ -500,7 +500,7 @@ for ((k=0;k<group_numbers;k++)); do
             # no icmp rate limiting
             docker exec -d "${group_number}"_"${rname}"router bash -c 'sysctl -w net.ipv4.icmp_ratelimit="0" > /dev/null' &
 
-            # no icmp rate limiting
+            # enable l3+l4 ecmp
             docker exec -d "${group_number}"_"${rname}"router bash -c 'sysctl net.ipv4.fib_multipath_hash_policy=1 > /dev/null' &
         done
     else
@@ -516,7 +516,7 @@ for ((k=0;k<group_numbers;k++)); do
         # no icmp rate limiting
         docker exec -d "${group_number}"_IXP bash -c 'sysctl -w net.ipv4.icmp_ratelimit="0" > /dev/null' &
 
-        # no icmp rate limiting
+        # enable l3+l4 ecmp
         docker exec -d "${group_number}"_IXP bash -c 'sysctl net.ipv4.fib_multipath_hash_policy=1 > /dev/null' &
     fi
 done
