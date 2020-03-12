@@ -1,5 +1,5 @@
 FROM debian:stretch
-RUN apt-get update && apt-get install -y rsyslog locales iputils-ping inetutils-traceroute \
+RUN apt-get update && apt-get install -y rsyslog locales iputils-ping traceroute \
   openssh-server vim tcpdump net-tools dnsutils iperf3 build-essential
 # Install cpanminus for bgpsimple
 

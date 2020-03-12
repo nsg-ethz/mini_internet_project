@@ -54,6 +54,13 @@ time ./setup/goto_scripts.sh "${DIRECTORY}"
 echo ""
 echo ""
 
+echo "save_configs.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
+echo "save_configs.sh: "
+time ./setup/save_configs.sh "${DIRECTORY}"
+
+echo ""
+echo ""
+
 echo "container_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
 echo "container_setup.sh: "
 time ./setup/container_setup.sh "${DIRECTORY}"

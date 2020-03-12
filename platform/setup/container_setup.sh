@@ -40,8 +40,9 @@ for ((k=0;k<group_numbers;k++)); do
 
         # start ssh container
         docker run -itd --net='none'  --name="${group_number}""_ssh" \
-            -v "${location}"/goto.sh:/root/goto.sh --privileged \
-            --cpus=2 --pids-limit 100 --hostname="g${group_number}-proxy" \
+            --cpus=2 --pids-limit 100 --hostname="g${group_number}-proxy" --privileged \
+            -v "${location}"/goto.sh:/root/goto.sh  \
+            -v "${location}"/save_configs.sh:/root/save_configs.sh \
             -v /etc/timezone:/etc/timezone:ro \
             -v /etc/localtime:/etc/localtime:ro \
             -v "${DIRECTORY}"/config/welcoming_message.txt:/etc/motd \

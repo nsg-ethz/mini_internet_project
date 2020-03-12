@@ -1,5 +1,5 @@
 FROM debian:stretch
-RUN apt-get update && apt-get install -y rsyslog vim locales iputils-ping openssh-server less
+RUN apt-get update && apt-get install -y rsyslog vim locales iputils-ping openssh-server less zip
 
 # Set locale
 RUN sed -i -e 's/# \(en_US\.UTF-8 .*\)/\1/' /etc/locale.gen && \
