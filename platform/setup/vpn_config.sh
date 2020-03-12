@@ -11,7 +11,7 @@ readarray groups < "${DIRECTORY}"/config/AS_config.txt
 group_numbers=${#groups[@]}
 
 port_offset=0
-
+port_list=''
 # Create vpn a directory for each group
 for ((k=0;k<group_numbers;k++)); do
     group_k=(${groups[$k]})
@@ -146,9 +146,16 @@ for ((k=0;k<group_numbers;k++)); do
                 echo "openvpn --config $location/server.conf --log $location/log.txt &" >> "${DIRECTORY}"/groups/add_vpns.sh
                 echo "echo kill \$! >> groups/del_vpns.sh" >> "${DIRECTORY}"/groups/add_vpns.sh
 
+                port_list=${port_list}' '$(($port_offset+10000))
                 port_offset=$(($port_offset+1))
                 ip_range_offset=$(($ip_range_offset+10))
             fi
         done
     fi
+done
+
+location="${DIRECTORY}"/groups
+for port in $port_list
+do
+    echo "ufw allow $port" >> "${location}"/open_vpn_ports.sh
 done

@@ -208,6 +208,7 @@ echo "throughput.sh: "
 echo "throughput.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
 time ./groups/throughput.sh
 
+echo "Run ./groups/open_vpn_ports.sh to open the ports used by the vpn servers."
 echo "END $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
 
 echo ""

@@ -62,6 +62,7 @@ echo "#!/bin/bash" > "${location}"/delete_veth_pairs.sh
 echo "#!/bin/bash" > "${location}"/add_vpns.sh
 echo "#!/bin/bash" > "${location}"/del_vpns.sh
 echo "#!/bin/bash" > "${location}"/restart_container.sh
+echo "#!/bin/bash" > "${location}"/open_vpn_ports.sh
 
 chmod +x "${location}"/ip_setup.sh
 chmod +x "${location}"/add_ports.sh
@@ -73,6 +74,7 @@ chmod +x "${location}"/delete_veth_pairs.sh
 chmod +x "${location}"/add_vpns.sh
 chmod +x "${location}"/del_vpns.sh
 chmod +x "${location}"/restart_container.sh
+chmod +x "${location}"/open_vpn_ports.sh
 
 echo -n "ovs-vsctl " >> "${location}"/add_ports.sh
 echo -n "ovs-vsctl " >> "${location}"/add_bridges.sh
