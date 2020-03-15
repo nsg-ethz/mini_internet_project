@@ -107,16 +107,16 @@ for b in tier1:
 
     update_subnet_ebgp()
     fd.write(str(left)+'\tZURI\tProvider\t'+str(customer1)+'\tBOST\tCustomer\t'+str(throughput)+'\t'+str(delay)+'\t'+str(get_subnet_ebgp())+'\n')
-    # fd_students.write(str(left)+'\tZURI\tProvider\t'+str(customer1)+'\tMIAM\tCustomer\t'+str(subnet_ebgp())+'\n')
+    fd_students.write(str(left)+'\tZURI\tProvider\t'+str(customer1)+'\tBOST\tCustomer\t'+str(get_subnet_ebgp(1))+'\n')
     fd_students.write(str(customer1)+'\tBOST\tCustomer\t'+str(left)+'\tZURI\tProvider\t'+str(get_subnet_ebgp(2))+'\n')
     update_subnet_ebgp()
     fd.write(str(left)+'\tZURI\tProvider\t'+str(customer1)+'\tLOND\tCustomer\t'+str(throughput)+'\t'+str(delay)+'\t'+str(get_subnet_ebgp())+'\n')
-    # fd_students.write(str(left)+'\tZURI\tProvider\t'+str(customer1)+'\tGENE\tCustomer\t'+str(subnet_ebgp())+'\n')
+    fd_students.write(str(left)+'\tZURI\tProvider\t'+str(customer1)+'\tLOND\tCustomer\t'+str(get_subnet_ebgp(1))+'\n')
     fd_students.write(str(customer1)+'\tLOND\tCustomer\t'+str(left)+'\tZURI\tProvider\t'+str(get_subnet_ebgp(2))+'\n')
 
     update_subnet_ebgp()
     fd.write(str(left)+'\tZURI\tProvider\t'+str(customer2)+'\tZURI\tCustomer\t'+str(throughput)+'\t'+str(delay)+'\t'+str(get_subnet_ebgp())+'\n')
-    # fd_students.write(str(left)+'\tZURI\tProvider\t'+str(customer2)+'\tATLA\tCustomer\t'+str(subnet_ebgp())+'\n')
+    fd_students.write(str(left)+'\tZURI\tProvider\t'+str(customer2)+'\tZURI\tCustomer\t'+str(get_subnet_ebgp(1))+'\n')
     fd_students.write(str(customer2)+'\tZURI\tCustomer\t'+str(left)+'\tZURI\tProvider\t'+str(get_subnet_ebgp(2))+'\n')
 
     ixp1 = ixp_central
@@ -133,16 +133,16 @@ for b in tier1:
 
     update_subnet_ebgp()
     fd.write(str(right)+'\tZURI\tProvider\t'+str(customer1)+'\tBOST\tCustomer\t'+str(throughput)+'\t'+str(delay)+'\t'+str(get_subnet_ebgp())+'\n')
-    # fd_students.write(str(right)+'\tZURI\tProvider\t'+str(customer1)+'\tMIAM\tCustomer\t'+str(subnet_ebgp())+'\n')
+    fd_students.write(str(right)+'\tZURI\tProvider\t'+str(customer1)+'\tBOST\tCustomer\t'+str(get_subnet_ebgp(1))+'\n')
     fd_students.write(str(customer1)+'\tBOST\tCustomer\t'+str(right)+'\tZURI\tProvider\t'+str(get_subnet_ebgp(2))+'\n')
     update_subnet_ebgp()
     fd.write(str(right)+'\tZURI\tProvider\t'+str(customer1)+'\tLOND\tCustomer\t'+str(throughput)+'\t'+str(delay)+'\t'+str(get_subnet_ebgp())+'\n')
-    # fd_students.write(str(right)+'\tZURI\tProvider\t'+str(customer1)+'\tGENE\tCustomer\t'+str(subnet_ebgp())+'\n')
+    fd_students.write(str(right)+'\tZURI\tProvider\t'+str(customer1)+'\tLOND\tCustomer\t'+str(get_subnet_ebgp(1))+'\n')
     fd_students.write(str(customer1)+'\tLOND\tCustomer\t'+str(right)+'\tZURI\tProvider\t'+str(get_subnet_ebgp(2))+'\n')
 
     update_subnet_ebgp()
     fd.write(str(right)+'\tZURI\tProvider\t'+str(customer2)+'\tZURI\tCustomer\t'+str(throughput)+'\t'+str(delay)+'\t'+str(get_subnet_ebgp())+'\n')
-    # fd_students.write(str(right)+'\tZURI\tProvider\t'+str(customer2)+'\tATLA\tCustomer\t'+str(subnet_ebgp())+'\n')
+    fd_students.write(str(right)+'\tZURI\tProvider\t'+str(customer2)+'\tZURI\tCustomer\t'+str(get_subnet_ebgp(1))+'\n')
     fd_students.write(str(customer2)+'\tZURI\tCustomer\t'+str(right)+'\tZURI\tProvider\t'+str(get_subnet_ebgp(2))+'\n')
 
     ixp1 = ixp_central
@@ -209,15 +209,15 @@ for b in transit:
         update_subnet_ebgp()
         fd.write(str(a)+'\tMIAM\tProvider\t'+str(customer1)+'\tZURI\tCustomer\t'+str(throughput)+'\t'+str(delay)+'\t'+str(get_subnet_ebgp())+'\n')
         fd_students.write(str(a)+'\tMIAM\tProvider\t'+str(customer1)+'\tZURI\tCustomer\t'+str(get_subnet_ebgp(1))+'\n')
-        # fd_students.write(str(customer1)+'\tZURI\tCustomer\t'+str(a)+'\tBOST\tProvider\t'+str(subnet_ebgp2())+'\n')
+        fd_students.write(str(customer1)+'\tZURI\tCustomer\t'+str(a)+'\tMIAM\tProvider\t'+str(get_subnet_ebgp(2))+'\n')
         update_subnet_ebgp()
         fd.write(str(a)+'\tGENE\tProvider\t'+str(customer1)+'\tZURI\tCustomer\t'+str(throughput)+'\t'+str(delay)+'\t'+str(get_subnet_ebgp())+'\n')
         fd_students.write(str(a)+'\tGENE\tProvider\t'+str(customer1)+'\tZURI\tCustomer\t'+str(get_subnet_ebgp(1))+'\n')
-        # fd_students.write(str(customer1)+'\tZURI\tCustomer\t'+str(a)+'\tLOND\tProvider\t'+str(subnet_ebgp2())+'\n')
+        fd_students.write(str(customer1)+'\tZURI\tCustomer\t'+str(a)+'\tGENE\tProvider\t'+str(get_subnet_ebgp(2))+'\n')
         update_subnet_ebgp()
         fd.write(str(a)+'\tATLA\tProvider\t'+str(customer2)+'\tZURI\tCustomer\t'+str(throughput)+'\t'+str(delay)+'\t'+str(get_subnet_ebgp())+'\n')
         fd_students.write(str(a)+'\tATLA\tProvider\t'+str(customer2)+'\tZURI\tCustomer\t'+str(get_subnet_ebgp(1))+'\n')
-        # fd_students.write(str(customer2)+'\tZURI\tCustomer\t'+str(a)+'\tZURI\tProvider\t'+str(subnet_ebgp2())+'\n')
+        fd_students.write(str(customer2)+'\tZURI\tCustomer\t'+str(a)+'\tATLA\tProvider\t'+str(get_subnet_ebgp(2))+'\n')
 
         if i%2 == 0:
             peer1 = b[i+1]
