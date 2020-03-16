@@ -157,7 +157,7 @@ If you are the instructor and have access to the server hosting the mini-Interne
 If you are in the router container, run `vtysh` to access the CLI of that router.
 The following example show you how to access the switch IRCH in the L2 network ETH of AS1:
 
-`sudo docker exec -it 1_L2_ETH_IRCH`
+`sudo docker exec -it 1_L2_ETH_IRCH bash`
 
 Hosts and switches do not have a CLI, so once you are in the container, you can start configuring them. 
 
@@ -192,13 +192,13 @@ For instance to jump into the host connected to the router ABID, use the followi
 ./goto ABID host
 ```
 
-If you want to jump the the router connected to the router ABID, write:
+If you want to jump to the router connected to the router ABID, write:
 
 ```
 ./goto ABID router
 ```
 
-And if you to access the switch ETH-IRCH in the L2 network connected to the router ZURI, use the following command:
+And if you want to access the switch ETH-IRCH in the L2 network connected to the router ZURI, use the following command:
 
 ```
 ./goto ZURI ETH-IRCH
@@ -211,7 +211,7 @@ Important to note, as some of our students are not too familiar with SSH, we giv
 #### Student access with OpenVPN
 
 Finally, you can also access the mini-Internet through a VPN.
-In the file `config/layer2_hosts_config.txt`, the line starting with "vpn" corresponds to a L2-VPN server which will be automatically installed instead of normal host. A L2-VPN is connected to a L2 switch (the one written in the 2nd column), and every user connected to this L2-VPN will be virtually connected to that L2 switch.
+In the file `config/layer2_hosts_config.txt`, the line starting with "vpn" corresponds to a L2-VPN server which will be automatically installed instead of a normal host. A L2-VPN is connected to a L2 switch (the one written in the 2nd column), and every user connected to this L2-VPN will be virtually connected to that L2 switch.
 
 To use the VPN, a student must first install OpenVPN, and run it with the following command (in Ubuntu 18):
 
@@ -219,7 +219,7 @@ To use the VPN, a student must first install OpenVPN, and run it with the follow
 sudo openvpn --config client.conf
 ```
 
-We provide the `client.conf` file below, where VPN_IP must be replace by the IP address of the server hosting the mini-Internet. VPN_PORT defines to which VPN server we want to connect to.
+We provide the `client.conf` file below, where VPN_IP must be replaced by the IP address of the server hosting the mini-Internet. VPN_PORT defines to which VPN server we want to connect to.
 To find the port of a specific VPN server, we use the following convention: the port of the n-th VPN server in the X-th group (starting from 0) is 10000+(X\*m)+(n-1) where m is number of VPN servers per AS (i.e., 2 by default). For instance, to access `vpn_4` in group 11, the port is 10000+(11\*2)+1 = 10023.
 
 ```
@@ -238,7 +238,7 @@ auth-user-pass
 ```
 
 The file `ca.crt` is automatically generated during the mini-Internet setup. It is available in the directory `groups/gX/vpn/vpn_n` and must be given to the student.
-Finally, the username is `groupX` (X is the group number) and the password is the same than the one used to access the proxy container.
+Finally, the username is `groupX` (X is the group number) and the password is the same than the one used to access the proxy container through SSH.
 
 When connected, the student should have an interface called `tap` with a corresponding IP address. This interface is connected to the mini-Internet.
 
@@ -307,7 +307,7 @@ cd /home
 ./ping_all_groups.sh
 ```
 
-The connectivity matrix is then available in the file `/home/connectivity.txt`, where 1 means connectivity, and 0 means no connectivity. You can then periodically download this file and making it available to the students on e.g., a web interface.
+The connectivity matrix is then available in the file `/home/connectivity.txt`, where 1 means connectivity, and 0 means no connectivity. You can then periodically download this file and make it available to the students on e.g., a web interface.
 
 #### The DNS service
 
