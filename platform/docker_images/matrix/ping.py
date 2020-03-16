@@ -1,4 +1,4 @@
-qfrom subprocess import Popen, PIPE
+from subprocess import Popen, PIPE
 import shlex
 from time import sleep
 import time
@@ -152,15 +152,16 @@ while True:
 
             if to_g >= from_g:
 
-                cmd = "nping --dest-mac "+mac_dic[from_g]+" --source-ip "+str(from_g)+".0.198.2 --dest-ip "+str(as_list[to_g])+" --interface group_"+str(from_g)+" -c 3 --delay 250ms"
+                cmd = "nping --dest-mac "+mac_dic[from_g]+" --source-ip "+str(from_g)+".0.198.2 --dest-ip "+str(as_list[to_g])+" --interface group_"+str(from_g)+" -c 1 --tcp --delay 250ms"
                 print cmd
                 proc_dic[from_g][to_g] = Popen(shlex.split(cmd), stdout=PIPE)
-                time.sleep(0.1)
+                print 'sleep ', (113-from_g)*0.001
+                time.sleep((113-from_g)*0.001)
 
         for to_g in proc_dic[from_g]:
 
-            output_tmp = proc_dic[from_g][to_g].communicate()[0]
-            if "Echo reply" in output_tmp:
+            output_tmp = proc_dic[from_g][to_g].communicate()[0].split('\n')[3]
+            if "RCVD" in output_tmp and 'ICMP' not in output_tmp:
                 co_dic[from_g][to_g] = True
                 co_dic[to_g][from_g] = True
                 print "Connectivity Between "+str(from_g)+" and "+str(to_g)
