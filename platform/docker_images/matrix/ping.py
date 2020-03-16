@@ -1,4 +1,4 @@
-from subprocess import Popen, PIPE
+qfrom subprocess import Popen, PIPE
 import shlex
 from time import sleep
 import time

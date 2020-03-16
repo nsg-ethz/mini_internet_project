@@ -25,9 +25,17 @@ port1=$(cat groups/g$group_number/vpn/vpn_1/server.conf | grep port | cut -f 2 -
 port2=$(cat groups/g$group_number/vpn/vpn_3/server.conf | grep port | cut -f 2 -d ' ')
 
 echo ''
-echo "We have also attached the two ca.crt files you need to access your VPN servers (required for the bonus question)."
-echo "To access the VPN server connected to CERN, use ca_${group_number}_CERN.crt and the port $port1"
-echo "To access the VPN server connected to EPFL, use ca_${group_number}_EPFL.crt and the port $port2"
+echo "Below, you can find the content of the ca.crt files you need to access your VPN servers (required for the bonus question)."
+
+echo "To access the VPN server connected to CERN, copy the following text into the ca.crt file and use the port $port1."
+echo ''
+cat groups/g$group_number/vpn/vpn_1/ca.crt
+
+echo ''
+
+echo "To access the VPN server connected to EPFL, copy the following text into the ca.crt file and use the port $port2."
+echo ''
+cat groups/g$group_number/vpn/vpn_3/ca.crt
 
 echo ''
 echo 'Good luck with the project, and let us know if you have any question.'
