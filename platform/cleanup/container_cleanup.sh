@@ -21,8 +21,10 @@ for ((k=0;k<group_numbers;k++)); do
     group_as="${group_k[1]}"
     group_config="${group_k[2]}"
     group_router_config="${group_k[3]}"
-    group_internal_links="${group_k[4]}"
-    
+    group_layer2_switches="${group_k[5]}"
+    group_layer2_hosts="${group_k[6]}"
+    group_layer2_links="${group_k[7]}"
+        
     if [ "${group_as}" != "IXP" ];then
 
         readarray routers < "${DIRECTORY}"/config/$group_router_config
