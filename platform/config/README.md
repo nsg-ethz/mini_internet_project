@@ -1,6 +1,6 @@
 # The mini-Internet topology
 
-This directory contains the default configuration files which define the topology used when building the mini-Internet.
+This directory contains the configuration files which define the topology used when building the mini-Internet.
 The files `layer2_hosts_config.txt`, `layer2_switches_config.txt` and `layer2_links_config.txt` define the L2 topology in transit ASes.
 The L2 topology in transit ASes is the following one:
 
