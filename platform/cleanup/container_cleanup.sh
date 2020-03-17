@@ -11,21 +11,26 @@ source "${DIRECTORY}"/config/subnet_config.sh
 
 # read configs
 readarray groups < "${DIRECTORY}"/config/AS_config.txt
-readarray routers < "${DIRECTORY}"/config/router_config.txt
-readarray l2_switches < "${DIRECTORY}"/config/layer2_switches_config.txt
-readarray l2_hosts < "${DIRECTORY}"/config/layer2_hosts_config.txt
 
 group_numbers=${#groups[@]}
-n_routers=${#routers[@]}
-n_l2_switches=${#l2_switches[@]}
-n_l2_hosts=${#l2_hosts[@]}
+
 
 for ((k=0;k<group_numbers;k++)); do
     group_k=(${groups[$k]})
     group_number="${group_k[0]}"
     group_as="${group_k[1]}"
-
+    group_config="${group_k[2]}"
+    group_router_config="${group_k[3]}"
+    group_internal_links="${group_k[4]}"
+    
     if [ "${group_as}" != "IXP" ];then
+
+        readarray routers < "${DIRECTORY}"/config/$group_router_config
+        readarray l2_switches < "${DIRECTORY}"/config/$group_layer2_switches
+        readarray l2_hosts < "${DIRECTORY}"/config/$group_layer2_hosts
+        n_routers=${#routers[@]}
+        n_l2_switches=${#l2_switches[@]}
+        n_l2_hosts=${#l2_hosts[@]}
 
         # kill ssh container
         docker kill "${group_number}""_ssh" &>/dev/nul || true
