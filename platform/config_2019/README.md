@@ -1,3 +1,22 @@
+# The mini-Internet topology
+
+This directory contains the configuration files which define the topology used for the 2019 iteration of the the mini-Internet project.
+The files `layer2_hosts_config.txt`, `layer2_switches_config.txt` and `layer2_links_config.txt` define the L2 topology in transit ASes.
+The L2 topology in transit ASes is the following one:
+
+<img src="figures/l2network-crop.png" width="600" />
+meaning that Tier1 and Stub ASes do not have a L2 network.
+
+The files `router_config.txt` and `internal_links_config.txt` define the L3 topology in transit ASes.
+The L3 topology and the IP address allocation scheme for transit ASes is depicted in the figure below.
+
+<img src="figures/l3network-crop.png" width="800">
+
+Finally, by default a mini-Internet with 20 ASes is built. The figure below depicts the AS-level topology. There are Tier1 ASes, transit ASes, Stub ASes, as well as IXPs. ASes and IXPs are interconnected via peer-2-peer links or provider/customer links.
+
+<img src="figures/aslevel-crop.png" width="500">
+
+
 #### Additional topologies
 
 In this directory, we provide configuration files for different sizes of the mini-Internet.
