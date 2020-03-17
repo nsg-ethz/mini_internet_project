@@ -2,7 +2,9 @@
 
 This is the official mini-Internet repository. For more information please see our [technical report]( https://arxiv.org/pdf/1912.02031.pdf).\
 The documentation as well as the source code of the mini-Internet can be found in the [platform](platform) directory. \
-In [2019_assignement_eth](2019_assignement_eth) we describe how we used the mini-Internet at ETH in the 2019 iteration of our [Communication Networks](https://comm-net.ethz.ch/2019/) lecture.
+In [2020_assignement_eth](2020_assignement_eth) we describe how we used the mini-Internet at ETH in the 2020 iteration of our [Communication Networks](https://comm-net.ethz.ch/) lecture.
+
+For further information, you can watch our [talk](https://www.youtube.com/watch?v=8SRjTqH5Z8M&list=PLO8DR5ZGla8jSzWlrWt_cz13LLAz44rHY&index=11&t=0s) we gave at NANOG 78 (February 2020).
 
 ### Contacts
 
