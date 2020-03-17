@@ -1,0 +1,26 @@
++------------------------------------------------------+
+|                                                      |
+|   Communication Networks 2020  - Routing Project     |
+|             Build your mini-Internet!                |
+|                                                      |
+|                                                      |
+|   Team:                                              |
+|                                                      |
+|   Prof. L. Vanbever       @Laurent Vanbever          |
+|   TA T. Buhler            @Tobias Bühler (TA, head)  |
+|   TA R. Birkner           @Rüdiger (TA)              |
+|   TA T. Holterbach        @Thomas (TA)               |
+|   TA C. Busse-Grawitz     @Coralie (TA)              |
+|   TA E. Marty             @Eric Matry (TA)           |
+|   TA N. Hütter            @Noah Hütter (TA)          |
+|                                                      |
+|   Schedule:                                          |
+|                                                      |
+|   March 16: project start                            |
+|   Internet Hackathon cancelled!                      |
+|   April 9, 11.59pm: deadline                         |
+|                                                      |
+|                                                      |
+|   Have fun, and don't hesitate to ask questions!     |
+|                                                      |
++------------------------------------------------------+
