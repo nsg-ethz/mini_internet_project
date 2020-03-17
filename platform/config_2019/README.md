@@ -1,14 +1,13 @@
 # The mini-Internet topology
 
-This directory contains the configuration files which define the topology used for the 2019 iteration of the the mini-Internet project.
+This directory contains the configuration files for the topology we used in the 2019 iteration of the the mini-Internet project.
 The files `layer2_hosts_config.txt`, `layer2_switches_config.txt` and `layer2_links_config.txt` define the L2 topology in transit ASes.
-The L2 topology in transit ASes is the following one:
+The L2 topology in is the following one:
 
 <img src="figures/l2network-crop.png" width="600" />
-meaning that Tier1 and Stub ASes do not have a L2 network.
 
 The files `router_config.txt` and `internal_links_config.txt` define the L3 topology in transit ASes.
-The L3 topology and the IP address allocation scheme for transit ASes is depicted in the figure below.
+The L3 topology and the IP address allocation scheme for each AS is depicted in the figure below.
 
 <img src="figures/l3network-crop.png" width="800">
 
