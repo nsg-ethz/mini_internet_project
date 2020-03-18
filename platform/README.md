@@ -66,29 +66,29 @@ sudo ./startup.sh
 By default, this will run a mini-Internet with 20ASes.
 When building the mini-Internet, a directory called `groups` is created and all the configuration files, passwords, automatically-generated scripts, etc will be stored in this directorty.
 
-:warning: Make sure your server has enough resources to sustain this mini-Internet (around 64GB of memory and at least 8 CPU cores are recommended). Otherwise, look at section [configure the mini-Internet](https://github.com/nsg-ethz/mini_internet_project/blob/master/platform/README.md#configure-the-mini-internet-topology) for instructions on how to run a smaller mini-Internet.
+:warning: Make sure your server has enough resources to sustain this mini-Internet (around 32GB of memory and at least 4 CPU cores are recommended). Otherwise, look at section [configure the mini-Internet](https://github.com/nsg-ethz/mini_internet_project/blob/master/platform/README.md#configure-the-mini-internet-topology) for instructions on how to run a smaller mini-Internet.
 
 #### Hosts, switches and routers can be automatically pre-configured
 
-You can specify in the configuration files if you want the hosts, switches and routers to be pre-configured (with STP, OSPF, BGP, etc). In the sample configuration files that we provide (see [config_2019](config_2019) and [config_l2](config_l2)), all the ASes will be automatically pre-configured. If you want the hosts, switches and routers in an AS not to be automatically configured, just replace "Config" with "NoConfig" in the [AS_config.txt](config/AS_config.txt) configuration file.
+You can specify in the configuration files if you want the hosts, switches and routers to be pre-configured (with STP, OSPF, BGP, etc). In the sample configuration files that we provide (see [config_2020](config_2020), [config_2019](config_2019) and [config_l2](config_l2)), all the ASes will be automatically pre-configured. If you want the hosts, switches and routers in an AS not to be automatically configured, just replace "Config" with "NoConfig" in the [AS_config.txt](config/AS_config.txt) configuration file.
 
 ## Configure the mini-Internet topology
 
 In the [config](config) directory, you can find all the configuration files used to define the topology of the mini-Internet.
-In addition, we also provide multiple sample topologies (see [config_2019](config_2019) and [config_l2](config_l2)). Of course, you can also define your own topology using the configuration files.
+In addition, we also provide multiple sample topologies (see [config_2020](config_2020), [config_2019](config_2019) and [config_l2](config_l2)). Of course, you can also define your own topology using the configuration files.
 
 #### Layer 2 topology
 
-You can configure the layer topology with the following files. There can be several  L2 networks in each AS. 
-Each L2 network has a name. By default there is one L2 called ETH.
+You can configure the layer 2 topology with the following files. There can be several  L2 networks in each AS. 
+Each L2 network has a name. The one used by default in the [config](config) directory is called UNIV.
 
-`layer2_switches_config.txt`: This file lists the switches in the L2 network. The first column indicates the name of the L2 network. The second line indicates the name the switch. By default, there are four switches (ZENT, HONG, IRCH, OERL). The third column indicates whether one switch is connected to a L3 router, here by default ZENT is connected to the router ZURI. Finally the fourth column indicates the MAC address used as an 'ID' to configure the switch. Note that a router can only be connected to one L2 network, but a layer 2 network can be connected to one or more routers (see [config_l2](config_l2)). 
+`layer2_switches_config.txt`: This file lists the switches in the L2 networks. The first column indicates the name of the L2 network. The second line indicates the name the switch. By default, there are three switches (CERN, ETHZ and EPFL). The third column indicates whether one switch is connected to a L3 router, here by default CERN is connected to the router GENE and ETHZ is connected to the router ZURI. The fourth column indicates the MAC address used as an 'ID' to configure the switch. Finally, the fifth column indicates the bridge ID used in the Spanning Tree computation. Note that a router can only be connected to one L2 network, but a layer 2 network can be connected to one or more routers (see [config_l2](config_l2)). 
 
-`layer2_links_config.txt`: This file indicates how the l2 switches are interconnected. For instance by default ZENT is connected to IRCH, ZENT is connected to OERL, etc. The last two columns indicate the throughput and the delay of the link, respectively. The first and third columns indicate the name of the L2 network in which the switches in the second and fourth columns are, respectively. The L2 names should be identical since it is not possible to connect two switches that are in two different L2 network. 
+`layer2_links_config.txt`: This file indicates how the l2 switches are interconnected. For instance by default ETHZ is connected to CERN and EPFL, etc. The last two columns indicate the throughput and the delay of the link, respectively. The first and third columns indicate the name of the L2 network in which the switches in the second and fourth columns are, respectively. The L2 names should be identical since it is not possible to connect two switches that are in two different L2 network. 
 
-`layer2_hosts_config.txt`: This file indicates the hosts that are in the layer 2 network, and to which switch they are directly connected to. For instance the host student_1 is by default in the L2 network named ETH and is connected to IRCH. The next two columns indicate the throughout and delay, respectively. The last column indicates the VLAN the host belongs to. Observe that a host can be a VPN server, in which case it must start with "vpn_".
+`layer2_hosts_config.txt`: This file indicates the hosts that are in the layer 2 network, and to which switch they are directly connected to. For instance the host student_1 is by default in the L2 network named UNIV and is connected to CERN. The next two columns indicate the throughout and delay, respectively. The last column indicates the VLAN the host belongs to. Observe that a host can be a VPN server, in which case it must start with "vpn_".
 
-`router_config.txt`: This file lists all the routers. When a router is connected to a L2 network, it must be indicated in the third column. For instance by default the router ZURI is connected to the L2 network "ETH". Here, the name of the L2 network must always be preceded by "L2-".
+`router_config.txt`: This file lists all the routers. When a router is connected to a L2 network, it must be indicated in the third column. For instance by default both routers ZURI and GENE are connected to the L2 network "UNIV". Here, the name of the L2 network must always be preceded by "L2-".
 
 :information_source: Whenever you want to configure your own topology with your custom L2 network, you must follow the same naming convention. We recommend you to look into the directory [config_l2](config_l2) for more details. 
 
