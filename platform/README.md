@@ -187,22 +187,22 @@ Now, the students should be able to connect from the outside. First, the student
 with X their corresponding AS number (group number). The passwords of the groups are automatically generated with the `openssl`'s rand function and are available in the file `groups/ssh_passwords.txt`
 
 Once in a proxy container, a student can use the `goto.sh` script to access a host, switch or router.
-For instance to jump into the host connected to the router ABID, use the following command:
+For instance to jump into the host connected to the router MIAM, use the following command:
 
 ```
-./goto ABID host
+./goto.sh MIAM host
 ```
 
-If you want to jump to the router connected to the router ABID, write:
+If you want to access the router MIAM, write:
 
 ```
-./goto ABID router
+./goto.sh MIAM router
 ```
 
-And if you want to access the switch ETH-IRCH in the L2 network connected to the router ZURI, use the following command:
+And if you want to access the switch CERN in the L2 network UNIV, use the following command:
 
 ```
-./goto ZURI ETH-IRCH
+./goto.sh UNIV CERN
 ```
 
 Once in a host, switch or router, just type `exit` to go back to the proxy container.
@@ -221,7 +221,7 @@ sudo openvpn --config client.conf
 ```
 
 We provide the `client.conf` file below, where VPN_IP must be replaced by the IP address of the server hosting the mini-Internet. VPN_PORT defines to which VPN server we want to connect to.
-To find the port of a specific VPN server, we use the following convention: the port of the n-th VPN server in the X-th group (starting from 0) is 10000+(X\*m)+(n-1) where m is number of VPN servers per AS (i.e., 2 by default). For instance, to access `vpn_4` in group 11, the port is 10000+(11\*2)+1 = 10023.
+You can find the port of the VPN servers by looking at their configuration file, which is located here: `groups/gX/vpn/vpn_Y/server.conf` with X the group number of Y the VPN ID for that group. 
 
 ```
 client
@@ -238,7 +238,7 @@ verb 3
 auth-user-pass
 ```
 
-The file `ca.crt` is automatically generated during the mini-Internet setup. It is available in the directory `groups/gX/vpn/vpn_n` and must be given to the student.
+The file `ca.crt` is automatically generated during the mini-Internet setup. It is available in the directory `groups/gX/vpn/vpn_Y` and must be given to the student.
 Finally, the username is `groupX` (X is the group number) and the password is the same than the one used to access the proxy container through SSH.
 
 When connected, the student should have an interface called `tap` with a corresponding IP address. This interface is connected to the mini-Internet.
@@ -264,7 +264,7 @@ The following section explains how we build and use the different monitoring too
 #### Looking glass
 
 Every container which runs a router pulls the routing table from the FRRouting CLI every 30 seconds and stores it in `/home/looking_glass.txt`.
-You can then simply periodically copy this file from the container (e.g., using `docker cp 1_ABIDrouter:/home/looking_glass.txt .`) and make it available to the students for example over a web interface.
+You can then simply periodically copy this file from the container (e.g., using `docker cp 1_PARIrouter:/home/looking_glass.txt .`) and make it available to the students for example over a web interface.
 
 #### Active probing
 
@@ -276,44 +276,44 @@ ssh -p 2099 root@server.ethz.ch
 ```
 
 You can find the password in the file `groups/ssh_measurement.txt`. It should be distributed to all students such that they can access the MEASUREMENT container. \
-In the MEASUREMENT container, we provide a script called `launch_traceroute.sh` that relies on `nping` and which can be used to launch traceroutes between any pair of ASes. For example if you want to run a traceroute from AS 1 to AS 2, simply run the following command:
+In the MEASUREMENT container, we provide a script called `launch_traceroute.sh` that relies on `nping` and which can be used to launch traceroutes between any pair of ASes. For example if you want to run a traceroute from AS 3 to AS 4, simply run the following command:
 
 ```
-root@c7a60237994a:~# ./launch_traceroute.sh 1 2.101.0.1
-Hop 1:  1.0.199.1 TTL=0 during transit
-Hop 2:  1.0.8.2 TTL=0 during transit
+root@c7a60237994a:~# ./launch_traceroute.sh 3 4.101.0.1
+Hop 1:  3.0.199.1 TTL=0 during transit
+Hop 2:  3.0.8.2 TTL=0 during transit
 Hop 3:  179.24.1.2 TTL=0 during transit
-Hop 4:  2.0.8.1 TTL=0 during transit
-Hop 5:  2.0.1.1 TTL=0 during transit
-Hop 6:  2.101.0.1 Echo reply (type=0/code=0)
+Hop 4:  4.0.8.1 TTL=0 during transit
+Hop 5:  4.0.1.1 TTL=0 during transit
+Hop 6:  4.101.0.1 Echo reply (type=0/code=0)
 ```
 
-where 2.101.0.1 is an IP address of a host in AS2 (here we used the topology with 2 ASes). You can see the path used by the packets to reach the destination IP.
+where 4.101.0.1 is an IP address of a host in AS4. You can see the path used by the packets to reach the destination IP.
 
-By default, the measurement container is connected to the router ZURI in every AS. You can see this in the config file `config/router_config.txt`. The second column of the ZURI row is `MEASUREMENT` which means that the measurement container is connected to the ZURI router, but you can edit this file so that the measurement container is connected to another router instead.
+By default, the measurement container is connected to the router ZURI in every transit AS. You can see this in the config file `config/router_config_full.txt`. The second column of the ZURI row is `MEASUREMENT` which means that the measurement container is connected to the ZURI router, but you can edit this file so that the measurement container is connected to another router instead. If for an AS none of the routers is connected to the measurement container (e.g., like in `config/router_config_small.txt`) then you can't run a traceroute from that AS using the measurement container. 
 
 #### Connectivity matrix
 
-Another container called `MATRIX` is also connected to every AS. By looking at the config file `config/router_config.txt`, we can see to which router it is connected in every AS and towards which router it sends ping requests in every other AS. By default, the matrix container is connected to TOKY, and the pings are destined to the HOUS routers.
+Another container called `MATRIX` is also connected to every AS. By looking at the config file `config/router_config.txt`, we can see to which router it is connected in every AS (MATRIX) and towards which router it sends ping requests in every other AS (MATRIX_TARGET). By default, the matrix container is connected to PARI, and the pings are destined to the ATLA routers.
 Only the instructor can access the MATRIX container, from the server with:
 
 ```
 sudo docker exec -it MATRIX bash
 ```
 
-To generate the connectivity matrix, just run the following script:
+To generate the connectivity matrix, just run the following script (we recommend to run it from a tmux session so that it never stops):
 
 ```
 cd /home
-./ping_all_groups.sh
+python ping.py
 ```
 
-The connectivity matrix is then available in the file `/home/connectivity.txt`, where 1 means connectivity, and 0 means no connectivity. You can then periodically download this file and make it available to the students on e.g., a web interface.
+The html file `matrix.html` is then automatically generated and periodically updated. You can then download this file and make it available to the students on your website.
 
 #### The DNS service
 
 Finally, another container, connected to every AS and only available to the instructor runs a bind9 DNS server.
-By looking at the file `config/router_config.txt`, we can see that the DNS container is connected to every ROMA router.
+By looking at the file `config/router_config_full.txt`, we can see that the DNS container is connected to every LOND router.
 The DNS server has the IP address 198.0.0.100/24, as soon as the students have configured intra-domain routing and have advertised this subnet into OSPF, they should be able to reach the DNS server and use it.
 
 For instance, a traceroute from HOUS-host to ABID-host returns the following output:
