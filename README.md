@@ -4,9 +4,8 @@ This is the official mini-Internet repository.
 The documentation as well as the source code of the mini-Internet can be found in the [platform](platform) directory. \
 In [2020_assignement_eth](2020_assignement_eth) we describe how we used the mini-Internet at ETH in the 2020 iteration of our [Communication Networks](https://comm-net.ethz.ch/) lecture.
 
+Please cite our *[technical report]( https://arxiv.org/pdf/1912.02031.pdf)* if you use the platform. Here is the bibtex:
 ```
-Please cite our [technical report]( https://arxiv.org/pdf/1912.02031.pdf) if you use the platform. Here is the bibtex: \
-
 @article{Holterbach2019AnOP,
   title={An Open Platform to Teach How the Internet Practically Works},
   author={Thomas Holterbach and Tobias B{\"u}hler and Tino Rellstab and Laurent Vanbever},
