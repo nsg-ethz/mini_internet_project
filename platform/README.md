@@ -127,7 +127,7 @@ The file `subnet_config.sh` is used to configure the IP addresses following a pa
 #### Change the size of the mini-Internet
 
 You may want to run a smaller or larger mini-Internet. For instance, if you just want to quickly test the setup, or if you only have a small VM available, you should run a very small mini-Internet topology with only few ASes. Alternatively, if you want to run the mini-Internet for a class project, you may want to run a larger one with e.g., 60 ASes.
-In the directory `config_2019`, you find working configuration files for different sizes of the mini-Internet. To use them, copy them to the `config` directory. The AS-level topologies follow the structure we used in the 2019 iteration of the mini-Internet project. For each of the different mini-Internet AS-level topologies we use the same L3 and L2 topologies.
+In the directory `config_2020`, you find working configuration files for different sizes of the mini-Internet. To use them, copy them to the `config` directory. The AS-level topologies follow the structure we used in the 2020 iteration of the mini-Internet project. 
 
 To run a mini-Internet with only 1 AS, just copy the following files:
 
@@ -156,9 +156,9 @@ If you are the instructor and have access to the server hosting the mini-Interne
 `sudo docker exec -it 1_LONDrouter bash`
 
 If you are in the router container, run `vtysh` to access the CLI of that router.
-The following example show you how to access the switch IRCH in the L2 network ETH of AS1:
+The following example show you how to access the switch EPFL in the L2 network UNIV of AS3:
 
-`sudo docker exec -it 1_L2_ETH_IRCH bash`
+`sudo docker exec -it 3_L2_UNIV_EPFL bash`
 
 Hosts and switches do not have a CLI, so once you are in the container, you can start configuring them. 
 
