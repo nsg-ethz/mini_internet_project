@@ -276,19 +276,18 @@ ssh -p 2099 root@server.ethz.ch
 ```
 
 You can find the password in the file `groups/ssh_measurement.txt`. It should be distributed to all students such that they can access the MEASUREMENT container. \
-In the MEASUREMENT container, we provide a script called `launch_traceroute.sh` that relies on `nping` and which can be used to launch traceroutes between any pair of ASes. For example if you want to run a traceroute from AS 3 to AS 4, simply run the following command:
+In the MEASUREMENT container, we provide a script called `launch_traceroute.sh` that relies on `nping` and which can be used to launch traceroutes between any pair of ASes. For example if you want to run a traceroute from AS 1 to AS 2, simply run the following command:
 
 ```
-root@c7a60237994a:~# ./launch_traceroute.sh 3 4.101.0.1
-Hop 1:  3.0.199.1 TTL=0 during transit
-Hop 2:  3.0.8.2 TTL=0 during transit
-Hop 3:  179.24.1.2 TTL=0 during transit
-Hop 4:  4.0.8.1 TTL=0 during transit
-Hop 5:  4.0.1.1 TTL=0 during transit
-Hop 6:  4.101.0.1 Echo reply (type=0/code=0)
+root@ba1ccfaf2f55:~# ./launch_traceroute.sh 1 2.108.0.1
+Hop 1:  1.0.199.1 TTL=0 during transit
+Hop 2:  179.0.0.2 TTL=0 during transit
+Hop 3:  2.0.1.2 TTL=0 during transit
+Hop 4:  2.0.6.2 TTL=0 during transit
+Hop 5:  2.108.0.1 Echo reply (type=0/code=0)
 ```
 
-where 4.101.0.1 is an IP address of a host in AS4. You can see the path used by the packets to reach the destination IP.
+where 2.108.0.1 is an IP address of a host in AS2. You can see the path used by the packets to reach the destination IP.
 
 By default, the measurement container is connected to the router ZURI in every transit AS. You can see this in the config file `config/router_config_full.txt`. The second column of the ZURI row is `MEASUREMENT` which means that the measurement container is connected to the ZURI router, but you can edit this file so that the measurement container is connected to another router instead. If for an AS none of the routers is connected to the measurement container (e.g., like in `config/router_config_small.txt`) then you can't run a traceroute from that AS using the measurement container. 
 
@@ -316,16 +315,15 @@ Finally, another container, connected to every AS and only available to the inst
 By looking at the file `config/router_config_full.txt`, we can see that the DNS container is connected to every LOND router.
 The DNS server has the IP address 198.0.0.100/24, as soon as the students have configured intra-domain routing and have advertised this subnet into OSPF, they should be able to reach the DNS server and use it.
 
-For instance, a traceroute from HOUS-host to ABID-host returns the following output:
+For instance, a traceroute from ATLA-host to LOND-host returns the following output:
 
 ```
-root@HOUS_host:~# traceroute  1.108.0.1 --resolve-hostnames
-traceroute to 1.108.0.1 (1.108.0.1), 64 hops max
-  1   1.106.0.2 (HOUS-host.group1)  0.394ms  0.005ms  0.003ms
-  2   1.0.6.1 (LOND-HOUS.group1)  0.143ms  0.145ms  0.129ms
-  3   1.0.2.2 (BARC-LOND.group1)  2.159ms  2.168ms  2.150ms
-  4   1.0.11.2 (ABID-BARC.group1)  2.199ms  2.277ms  2.253ms
-  5   1.108.0.1 (host-ABID.group1)  2.383ms  2.289ms  2.290ms
+root@ATLA_host:/# traceroute 1.101.0.1
+traceroute to 1.101.0.1 (1.101.0.1), 30 hops max, 60 byte packets
+ 1  ATLA-host.group1 (1.107.0.2)  0.653 ms  0.625 ms  0.632 ms
+ 2  NEWY-ATLA.group1 (1.0.11.1)  0.868 ms  0.861 ms  0.740 ms
+ 3  LOND-NEWY.group1 (1.0.8.1)  1.145 ms  0.973 ms  1.119 ms
+ 4  host-LOND.group1 (1.101.0.1)  1.435 ms  1.458 ms  1.422 ms
+root@ATLA_host:/#
 ```
 
-Observe that we must use the option `--resolve-hostnames` to make traceroute resolve the hostnames.
