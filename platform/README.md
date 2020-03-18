@@ -88,26 +88,29 @@ Each L2 network has a name. The one used by default in the [config](config) dire
 
 `layer2_hosts_config.txt`: This file indicates the hosts that are in the layer 2 network, and to which switch they are directly connected to. For instance the host student_1 is by default in the L2 network named UNIV and is connected to CERN. The next two columns indicate the throughout and delay, respectively. The last column indicates the VLAN the host belongs to. Observe that a host can be a VPN server, in which case it must start with "vpn_".
 
-`router_config.txt`: This file lists all the routers. When a router is connected to a L2 network, it must be indicated in the third column. For instance by default both routers ZURI and GENE are connected to the L2 network "UNIV". Here, the name of the L2 network must always be preceded by "L2-".
+`router_config_full.txt (or router_config_small.txt)`: This file lists all the routers. When a router is connected to a L2 network, it must be indicated in the third column. For instance by default both routers ZURI and GENE are connected to the L2 network "UNIV". Here, the name of the L2 network must always be preceded by "L2-".
 
 :information_source: Whenever you want to configure your own topology with your custom L2 network, you must follow the same naming convention. We recommend you to look into the directory [config_l2](config_l2) for more details. 
 
 #### Layer 3 topology
 
-`router_config.txt`: This file contains all the routers in the L3 topology. In the default L3 topology there are 8 routers. The second column indicates if a tool or service (such as the connectivity matrix or the DNS server) is connected to the network through the corresponding router. For instance, the DNS server is connected to ROMA. Finally the last column indicates whether a single host or a L2 network is connected to the router. In the default topology, only the router ZURI is connected to a L2 network, all the others are connected to a single host.
+`router_config_full.txt (or router_config_small.txt)`: This file contains all the routers in the L3 topology. In the default L3 topology there are 8 routers. The second column indicates if a tool or service (such as the connectivity matrix or the DNS server) is connected to the network through the corresponding router. For instance, the DNS server is connected to LOND. Finally the last column indicates whether a single host or a L2 network is connected to the router. In the default topology, both routers ZURI and GENE are connected to a L2 network, all the others are connected to a single host.
 
-`internal_links_config.txt`: This is the internal topology. The first two columns indicate which pair of routers are interconnected, the last two columns indicate the throughput and delay of the link, respectively.
+`internal_links_config_full.txt (or internal_links_config_small.txt)`: This is the internal topology. The first two columns indicate which pair of routers are interconnected, the last two columns indicate the throughput and delay of the link, respectively.
 
 #### AS-level topology
 
 `AS_config.txt`: This file lists all the ASes and IXPs in the mini-Internet. By default, there are 20 ASes and 3 IXPs.
 "Config" in the third column indicates whether the components (hosts, switches and routers) in the corresponding AS should pre-configured, otherwise write "NoConfig". In the topologies we provide, all the ASes are pre-configured by default.
+The next columns allow to change the L2 and L3 topologies according to the AS.
+The fourth and fifth columns indicate the configuration files to use to build the L3 topology. For instance for AS 3 we use the L3 topology defined in the files `router_config_full.txt` and `internal_links_config.txt`. 
+The next columns indicate the configuration files to use to build the L2 topologies. For instance for AS 3 we use the L2 topology defined in the files `layer2_switches_config.txt`, `layer2_hosts_config.txt` and `layer2_links_config.txt`.
 
 `external_links_config.txt`: This file describes the AS-level topology, and which router in one AS is connected to which router in another AS. Let's take the following line as an example:
 
-`1	HOUS	Provider	3	LOND	Customer	10000	1000	N/A`
+`1	ZURI	Provider	3	BOST	Customer	10000	1000	179.0.3.0/24`
 
-This means that the router HOUS (2nd column) in AS 1 (1st column) is connected to the router LOND (5th column) in AS 3 (4th column). AS1 is the provider (3rd column) and AS3 is the customer (6th column).
+This means that the router ZURI (2nd column) in AS 1 (1st column) is connected to the router BOST (5th column) in AS 3 (4th column). AS1 is the provider (3rd column) and AS3 is the customer (6th column). As usual, the 7th and 8th columns indicate the throughput and the delay, respectively. The last columns indicate the subnet to use for the eBGP session when the AS comes pre-configured (you can also write N/A instead, thus the subnet used for the eBGP session will be arbitrary).
 
 Sometimes, an AS can also be connected to an IXP. To reduce the server load, an IXP AS contains only one router. Therefore, the 5th
 column indicates N/A. An example:
@@ -118,8 +121,6 @@ This configuration line shows that the BARC router in AS 2 is connected to the I
 The last column (1,2,11,12) indicates to which participants the routes advertised by AS 2 should be propagated.
 This last column is used when the configuration is automatically generated, otherwise it is the students that
 have to use the correct BGP community values in order for their routes to be advertised to certain ASes only.
-
-As usual, the 7th and 8th columns indicate the throughput and the bandwidth, respectively.
 
 The file `subnet_config.sh` is used to configure the IP addresses following a particular scheme (see our [2019 assignment](https://github.com/nsg-ethz/mini_internet_project/blob/master/2019_assignement_eth/mini_internet_project.pdf)), we recommend to not modify these file if you are using our topologies and want to use our IP address allocation scheme. In case you modify this file, you must keep the same name for each function, otherwise the mini-Internet will not start properly.
 
