@@ -4,6 +4,7 @@ from time import sleep
 import time
 import random
 from random import shuffle
+import datetime
 
 as_list = {}
 
@@ -39,7 +40,10 @@ def update_matrix(as_list, co_dic, t):
     fd.write('\t\t</div>\n')
     fd.write('\t\n')
     fd.write('\t\t<p>\n')
-    fd.write('\t\t\tThis connectivity matrix indicates the networks that each group can (<span class="connectivity-success">&nbsp;&nbsp;&nbsp;</span>) or cannot reach (<span class="connectivity-failure">&nbsp;&nbsp;&nbsp;</span>). The matrix took '+str(int(t))+'s to be updated.\n')
+    fd.write('\t\t\tThis connectivity matrix indicates the networks that each group \
+    can (<span class="connectivity-success">&nbsp;&nbsp;&nbsp;</span>) or cannot reach \
+    (<span class="connectivity-failure">&nbsp;&nbsp;&nbsp;</span>). \
+    It takes '+str(int(t))+'s to fully update the matrix. Last upload at '+str(datetime.datetime.now().strftime("%m/%d/%Y, %H:%M:%S"))+'\n')
     fd.write('\t\t</p>\n')
     fd.write('\t\n')
     fd.write('\t\t<div class="progress_container"></div>\n')
@@ -49,12 +53,10 @@ def update_matrix(as_list, co_dic, t):
     fd.write('\t\t\t\t<td></td>\n')
 
     for asn in sorted(as_list.keys()):
-        if asn < 10:
-            fd.write('\t\t\t\t<td> '+str(asn)+' </td>\n')
-        elif asn < 100:
-            fd.write('\t\t\t\t<td> '+str(asn)+'</td>\n')
+        if asn < 100:
+            fd.write('\t\t\t\t<td style="width: 15px;"> '+" ".join(str(asn))+'</td>\n')
         else:
-            fd.write('\t\t\t\t<td>'+str(asn)+'</td>\n')
+            fd.write('\t\t\t\t<td style="width: 15px;">'+" ".join(str(asn))+'</td>\n')
 
     fd.write('\t\t\t</thead>\n')
 
