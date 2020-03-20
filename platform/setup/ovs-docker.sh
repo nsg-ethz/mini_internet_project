@@ -17,12 +17,17 @@
 
 # original file at https://github.com/openvswitch/ovs/blob/master/utilities/ovs-docker
 #
-# changes:
+# Several changes have been made by Tino Rellstab and Thomas Holterbach
+#
+# The following changes have been made:
 #   append ovs-vsctl add-port to ../groups/add_ports.sh
 #   append all following comands to ../groups/ip_setup.sh
 # this way all ports can be added in one go -> speeds up process by hours!!!
-
-
+#
+# The function add_port has been extended quite a lot for out platform
+# We wrote the function connect_ports, so that a ovs switch can use to interconnect
+# several pairs of containers (instead of one ovs switch for each pair of containers).
+# Some other parts of the original file have been removed.
 
 # Check for programs we'll need.
 search_path () {
