@@ -242,7 +242,7 @@ for ((i=0;i<n_extern_links;i++)); do
             str_tmp=${str_tmp}${grp_2}:${peer}" "
         done
 
-        echo " -c 'ip community-list 1 permit $grp_1:10' \\" >> "${location}"
+        echo " -c 'bgp community-list 1 permit $grp_1:10' \\" >> "${location}"
         echo " -c 'route-map IXP_OUT_${grp_2} permit 10'\\" >> "${location}"
         echo " -c 'set community $str_tmp'\\" >> "${location}"
         echo " -c 'match ip address prefix-list OWN_PREFIX'\\" >> "${location}"
@@ -278,9 +278,9 @@ for ((i=0;i<n_extern_links;i++)); do
         echo " -c 'exit'\\" >> "${location1}"
 
         if [ $relation_grp_1 == 'Provider' ]; then
-            echo " -c 'ip community-list 2 permit $grp_1:10' \\" >> "${location1}"
-            echo " -c 'ip community-list 2 permit $grp_1:20' \\" >> "${location1}"
-            echo " -c 'ip community-list 2 permit $grp_1:30' \\" >> "${location1}"
+            echo " -c 'bgp community-list 2 permit $grp_1:10' \\" >> "${location1}"
+            echo " -c 'bgp community-list 2 permit $grp_1:20' \\" >> "${location1}"
+            echo " -c 'bgp community-list 2 permit $grp_1:30' \\" >> "${location1}"
             echo " -c 'route-map LOCAL_PREF_IN_${grp_2} permit 10' \\" >> "${location1}"
             echo " -c 'set community $grp_1:10' \\" >> "${location1}"
             echo " -c 'set local-preference 100' \\" >> "${location1}"
@@ -290,7 +290,7 @@ for ((i=0;i<n_extern_links;i++)); do
             echo " -c 'match community 2' \\" >> "${location1}"
             echo " -c 'exit' \\" >> "${location1}"
         elif [ $relation_grp_1 == 'Customer' ]; then
-            echo " -c 'ip community-list 1 permit $grp_1:10' \\" >> "${location1}"
+            echo " -c 'bgp community-list 1 permit $grp_1:10' \\" >> "${location1}"
             echo " -c 'route-map LOCAL_PREF_IN_${grp_2} permit 10' \\" >> "${location1}"
             echo " -c 'set community $grp_1:30' \\" >> "${location1}"
             echo " -c 'set local-preference 20' \\" >> "${location1}"
@@ -300,7 +300,7 @@ for ((i=0;i<n_extern_links;i++)); do
             echo " -c 'match community 1' \\" >> "${location1}"
             echo " -c 'exit' \\" >> "${location1}"
         elif [ $relation_grp_1 == 'Peer' ]; then
-            echo " -c 'ip community-list 1 permit $grp_1:10' \\" >> "${location1}"
+            echo " -c 'bgp community-list 1 permit $grp_1:10' \\" >> "${location1}"
             echo " -c 'route-map LOCAL_PREF_IN_${grp_2} permit 10' \\" >> "${location1}"
             echo " -c 'set community $grp_1:20' \\" >> "${location1}"
             echo " -c 'set local-preference 50' \\" >> "${location1}"
@@ -323,9 +323,9 @@ for ((i=0;i<n_extern_links;i++)); do
         echo " -c 'exit' \\" >> "${location2}"
 
         if [ $relation_grp_2 == 'Provider' ]; then
-            echo " -c 'ip community-list 2 permit $grp_2:10' \\" >> "${location2}"
-            echo " -c 'ip community-list 2 permit $grp_2:20' \\" >> "${location2}"
-            echo " -c 'ip community-list 2 permit $grp_2:30' \\" >> "${location2}"
+            echo " -c 'bgp community-list 2 permit $grp_2:10' \\" >> "${location2}"
+            echo " -c 'bgp community-list 2 permit $grp_2:20' \\" >> "${location2}"
+            echo " -c 'bgp community-list 2 permit $grp_2:30' \\" >> "${location2}"
             echo " -c 'route-map LOCAL_PREF_IN_${grp_1} permit 10' \\" >> "${location2}"
             echo " -c 'set community $grp_2:10' \\" >> "${location2}"
             echo " -c 'set local-preference 100' \\" >> "${location2}"
@@ -335,7 +335,7 @@ for ((i=0;i<n_extern_links;i++)); do
             echo " -c 'match community 2' \\" >> "${location2}"
             echo " -c 'exit' \\" >> "${location2}"
         elif [ $relation_grp_2 == 'Customer' ]; then
-            echo " -c 'ip community-list 1 permit $grp_2:10' \\" >> "${location2}"
+            echo " -c 'bgp community-list 1 permit $grp_2:10' \\" >> "${location2}"
             echo " -c 'route-map LOCAL_PREF_IN_${grp_1} permit 10' \\" >> "${location2}"
             echo " -c 'set community $grp_2:30' \\" >> "${location2}"
             echo " -c 'set local-preference 20' \\" >> "${location2}"
@@ -345,7 +345,7 @@ for ((i=0;i<n_extern_links;i++)); do
             echo " -c 'match community 1' \\" >> "${location2}"
             echo " -c 'exit' \\" >> "${location}"
         elif [ $relation_grp_2 == 'Peer' ]; then
-            echo " -c 'ip community-list 1 permit $grp_2:10' \\" >> "${location2}"
+            echo " -c 'bgp community-list 1 permit $grp_2:10' \\" >> "${location2}"
             echo " -c 'route-map LOCAL_PREF_IN_${grp_1} permit 10' \\" >> "${location2}"
             echo " -c 'set community $grp_2:20' \\" >> "${location2}"
             echo " -c 'set local-preference 50' \\" >> "${location2}"
