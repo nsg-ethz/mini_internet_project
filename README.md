@@ -2,7 +2,7 @@
 
 This is the official mini-Internet repository. \
 The documentation as well as the source code of the mini-Internet can be found in the [platform](platform) directory. \
-In [2020_assignement_eth](2020_assignement_eth) we describe how we used the mini-Internet at ETH in the 2020 iteration of our [Communication Networks](https://comm-net.ethz.ch/) lecture.
+In [2020_assignment_eth](2020_assignment_eth) we describe how we used the mini-Internet at ETH in the 2020 iteration of our [Communication Networks](https://comm-net.ethz.ch/) lecture.
 
 Please cite our **[technical report]( https://arxiv.org/pdf/1912.02031.pdf)** if you use the platform. Here is the bibtex:
 ```
@@ -30,6 +30,6 @@ Laurent Vanbever <lvanbever@ethz.ch> \
 
 This platform has been tailored to teach how the Internet works in our Communication Networks lecture at ETH Zurich. Although this platform may be useful for other kind of purposes (research, experiments, etc), it has not been designed for them.
 
-If you want to use this platform for your networking class, we recommend that you spent some time understanding the code and how we build the mini-Internet, and we recommand you to try it first before using it with actual students.
+If you want to use this platform for your networking class, we recommend that you spent some time understanding the code and how we build the mini-Internet, and we recommend you to try it first before using it with actual students.
 We assume no responsibility or liability for any problem you may encounter while using the platform.
 
