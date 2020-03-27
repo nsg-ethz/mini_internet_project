@@ -85,11 +85,11 @@ Each L2 network has a name. The one used by default in the [config](config) dire
 `layer2_switches_config.txt`: This file lists the switches in the L2 networks. The first column indicates the name of the L2 network. The second line indicates the name of the switch. By default, there are three switches (CERN, ETHZ and EPFL). The third column indicates whether one switch is connected to a L3 router, here by default CERN is connected to the router GENE and ETHZ is connected to the router ZURI. The fourth column indicates the MAC address used as an 'ID' to configure the switch. Finally, the fifth column indicates the bridge ID used in the Spanning Tree computation. Note that a router can only be connected to one L2 network, but a layer 2 network can be connected to one or more routers (see [config_l2](config_l2)). 
 When a switch is connected to a L3 router, it must also be indicated in the third column of the config file `router_config_full.txt (or router_config_small.txt)`, which list the L3 routers. In this config file, the name of the L2 network must always be preceded by "L2-".
 
+:information_source: Whenever you want to configure your own topology with your custom L2 network, you must follow the same naming convention. We recommend you to look into the directory [config_l2](config_l2) for more details. 
+
 `layer2_links_config.txt`: This file indicates how the l2 switches are interconnected. For instance by default ETHZ is connected to CERN and EPFL, etc. The last two columns indicate the throughput and the delay of the link, respectively. The first and third columns indicate the name of the L2 network in which the switches in the second and fourth columns are, respectively. The L2 names should be identical since it is not possible to connect two switches that are in two different L2 network. 
 
 `layer2_hosts_config.txt`: This file indicates the hosts that are in the layer 2 network, and to which switch they are directly connected to. For instance the host student_1 is by default in the L2 network named UNIV and is connected to CERN. The next two columns indicate the throughout and delay, respectively. The last column indicates the VLAN the host belongs to. Observe that a host can be a VPN server, in which case it must start with "vpn_".
-
-:information_source: Whenever you want to configure your own topology with your custom L2 network, you must follow the same naming convention. We recommend you to look into the directory [config_l2](config_l2) for more details. 
 
 #### Layer 3 topology
 
