@@ -288,7 +288,7 @@ Hop 5:  2.108.0.1 Echo reply (type=0/code=0)
 
 where 2.108.0.1 is an IP address of a host in AS2. You can see the path used by the packets to reach the destination IP.
 
-By default, the measurement container is connected to the router ZURI in every transit AS. You can see this in the config file `config/router_config_full.txt`. The second column of the ZURI row is `MEASUREMENT` which means that the measurement container is connected to the ZURI router, but you can edit this file so that the measurement container is connected to another router instead. If for an AS none of the routers is connected to the measurement container (e.g., like in `config/router_config_small.txt`) then you can't run a traceroute from that AS using the measurement container. 
+By default, the measurement container is connected to the router ZURI in every transit AS. You can see this in the config file `config/router_config_full.txt`. The second column of the ZURI row is `MEASUREMENT` which means that the measurement container is connected to the ZURI router, but you can edit this file so that the measurement container is connected to another router instead. If for an AS none of the routers is connected to the measurement container (e.g., like in `config/router_config_small.txt`) then you can't run a traceroute from that AS using the measurement container. For instance in [config_2020](config_2020) configuration files, you can't use the measurement platform to run a traceroute from a Tier1 or a Stub AS.
 
 #### Connectivity matrix
 
@@ -325,4 +325,18 @@ traceroute to 1.101.0.1 (1.101.0.1), 30 hops max, 60 byte packets
  4  host-LOND.group1 (1.101.0.1)  1.435 ms  1.458 ms  1.422 ms
 root@ATLA_host:/#
 ```
+The naming convention is quite straightforward: XXXX-YYYY.groupZ, where XXXX the router where this IP address is configured, YYYY is the name of the router on the other end of the link (or "host" if there is a host). Finally Z is the AS number. The IP addresses used on the links connecting two ASes are not translated.
 
+## Some additional useful tools
+
+It can happen that a container crashes while the mini-Internet is running. For instance we have observed that the SSH containers sometimes fail if a student starta more than 100 processes in it (100 is the max number of processes that can run in this container). It is a hassle to restart a container and connect it to the other containers according to the topology, thus the script `restart_container.sh` is automatically generated and can be used to reconnect a container to the other containers automatically.
+
+For instance if the container CONTAINER_NAME has crashed or has a problem, just run the following commands:
+
+```
+docker kill CONTAINER_NAME
+docker start CONTAINER_NAME
+./groups/restart_container.sh CONTAINER_NAME
+```
+
+Note: sometimes the MAC address on some interfaces must follow a particular scheme (for instance the ones connected to the MATRIX contaienr). Configuring these MAC addresses must be done manually.
