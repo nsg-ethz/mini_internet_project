@@ -329,7 +329,7 @@ The naming convention is quite straightforward: XXXX-YYYY.groupZ, where XXXX the
 
 ## Some additional useful tools
 
-It can happen that a container crashes while the mini-Internet is running. For instance we have observed that the SSH containers sometimes fail if a student starta more than 100 processes in it (100 is the max number of processes that can run in this container). It is a hassle to restart a container and connect it to the other containers according to the topology, thus the script `restart_container.sh` is automatically generated and can be used to reconnect a container to the other containers automatically.
+It can happen that a container crashes while the mini-Internet is running. For instance we have observed that the SSH containers sometimes fail if a student starts more than 100 processes in it (100 is the max number of processes that can run in this container). It is a hassle to restart a container and connect it to the other containers according to the topology, thus the script `restart_container.sh` is automatically generated and can be used to reconnect a container to the other containers automatically.
 
 For instance if the container CONTAINER_NAME has crashed or has a problem, just run the following commands:
 
@@ -339,4 +339,4 @@ docker start CONTAINER_NAME
 ./groups/restart_container.sh CONTAINER_NAME
 ```
 
-Note: sometimes the MAC address on some interfaces must follow a particular scheme (for instance the ones connected to the MATRIX contaienr). Configuring these MAC addresses must be done manually.
+Note: sometimes the MAC address on some interfaces must follow a particular scheme (for instance the ones connected to the MATRIX container). Configuring these MAC addresses must be done manually.
