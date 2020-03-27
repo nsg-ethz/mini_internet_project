@@ -119,7 +119,7 @@ for ((k=0;k<group_numbers;k++)); do
 
                 passwd_loc=$(pwd "${DIRECTORY}")/groups/ssh_passwords.txt
                 echo "#!/bin/bash" >> $location/cred.sh
-                echo "passwd=\$(awk '\$1 == \"$group_number\" { print \$0 }' /home/thomas/mini_internet_project/platform/groups/ssh_passwords.txt | cut -f 2 -d ' ')" >> $location/cred.sh
+                echo "passwd=\$(awk '\$1 == \"$group_number\" { print \$0 }' $passwd_loc | cut -f 2 -d ' ')" >> $location/cred.sh
                 echo "readarray -t lines < \$1" >> $location/cred.sh
                 echo "username=\${lines[0]}" >> $location/cred.sh
                 echo "password=\${lines[1]}" >> $location/cred.sh

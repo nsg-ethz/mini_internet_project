@@ -1,26 +1,16 @@
 +------------------------------------------------------+
 |                                                      |
-|   Communication Networks 2020  - Routing Project     |
+|   Communication Networks 20XX  - Routing Project     |
 |             Build your mini-Internet!                |
 |                                                      |
 |                                                      |
-|   Team:                                              |
+|   You can modify this welcoming message by           |
+|   modifying the file welcoming_message.txt           |
+|   in the config directory                            |
 |                                                      |
-|   Prof. L. Vanbever       @Laurent Vanbever          |
-|   TA T. Buhler            @Tobias Bühler (TA, head)  |
-|   TA R. Birkner           @Rüdiger (TA)              |
-|   TA T. Holterbach        @Thomas (TA)               |
-|   TA C. Busse-Grawitz     @Coralie (TA)              |
-|   TA E. Marty             @Eric Matry (TA)           |
-|   TA N. Hütter            @Noah Hütter (TA)          |
+|   From here, you can access your virtual devices     |
+|   with the goto.sh script. For instance:             |
 |                                                      |
-|   Schedule:                                          |
-|                                                      |
-|   March 16: project start                            |
-|   Internet Hackathon cancelled!                      |
-|   April 9, 11.59pm: deadline                         |
-|                                                      |
-|                                                      |
-|   Have fun, and don't hesitate to ask questions!     |
+|   ./goto.sh MIAM router                              |
 |                                                      |
 +------------------------------------------------------+

@@ -24,7 +24,7 @@ for ((k=0;k<group_numbers;k++)); do
     group_layer2_switches="${group_k[5]}"
     group_layer2_hosts="${group_k[6]}"
     group_layer2_links="${group_k[7]}"
-        
+
     if [ "${group_as}" != "IXP" ];then
 
         readarray routers < "${DIRECTORY}"/config/$group_router_config
@@ -53,11 +53,10 @@ for ((k=0;k<group_numbers;k++)); do
             elif [[ "${property2}" == *L2* ]];then
                 # kill switches
                 for ((l=0;l<n_l2_switches;l++)); do
-
                     switch_l=(${l2_switches[$l]})
-                    sname="${switch_l[0]}"
-                    docker kill ${group_number}_L2_${sname} &>/dev/nul || true &
-
+                    l2name="${switch_l[0]}"
+                    sname="${switch_l[1]}"
+                    docker kill ${group_number}_L2_${l2name}_${sname} &>/dev/nul || true &
                 done
 
                 # kill hosts
