@@ -120,7 +120,7 @@ This configuration line shows that the BARC router in AS 2 is connected to the I
 The last column (1,2,11,12) indicates to which participants the routes advertised by AS 2 should be propagated.
 This last column is used when the configuration is automatically generated, otherwise the students have to use the correct BGP community values in order for their routes to be advertised to certain ASes only.
 
-The file `subnet_config.sh` is used to configure the IP addresses following a particular scheme (see our [2019 assignment](https://github.com/nsg-ethz/mini_internet_project/blob/master/2019_assignment_eth/mini_internet_project.pdf)), we recommend to not modify these file if you are using our topologies and want to use our IP address allocation scheme. In case you modify this file, you must keep the same name for each function, otherwise the mini-Internet will not start properly.
+The file `subnet_config.sh` is used to configure the IP addresses following a particular scheme (see our [2020 assignment](../2020_assignment_eth/routing_project.pdf)), we recommend to not modify this file if you are using our topologies and want to use our IP address allocation scheme. In case you modify this file, you must keep the same name for each function, otherwise the mini-Internet will not start properly.
 
 #### Change the size of the mini-Internet
 
