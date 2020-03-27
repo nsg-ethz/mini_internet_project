@@ -30,3 +30,6 @@ done
 ufw allow 2099
 subnet=$(subnet_ext_sshContainer "${group_number}" "MEASUREMENT")
 ssh -i groups/id_rsa -o "StrictHostKeyChecking no" -f -N -L 0.0.0.0:2099:"${subnet%/*}":22 root@${subnet%/*}
+
+
+# for pid in $(ps aux | grep ssh | grep StrictHostKeyChecking | tr -s ' ' | cut -f 2 -d ' '); do sudo kill -9 $pid; done
