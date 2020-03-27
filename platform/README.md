@@ -82,7 +82,7 @@ In addition, we also provide multiple sample topologies (see [config_2020](confi
 You can configure the layer 2 topology with the following files. There can be several  L2 networks in each AS. 
 Each L2 network has a name. The one used by default in the [config](config) directory is called UNIV.
 
-`layer2_switches_config.txt`: This file lists the switches in the L2 networks. The first column indicates the name of the L2 network. The second line indicates the name the switch. By default, there are three switches (CERN, ETHZ and EPFL). The third column indicates whether one switch is connected to a L3 router, here by default CERN is connected to the router GENE and ETHZ is connected to the router ZURI. The fourth column indicates the MAC address used as an 'ID' to configure the switch. Finally, the fifth column indicates the bridge ID used in the Spanning Tree computation. Note that a router can only be connected to one L2 network, but a layer 2 network can be connected to one or more routers (see [config_l2](config_l2)). 
+`layer2_switches_config.txt`: This file lists the switches in the L2 networks. The first column indicates the name of the L2 network. The second line indicates the name of the switch. By default, there are three switches (CERN, ETHZ and EPFL). The third column indicates whether one switch is connected to a L3 router, here by default CERN is connected to the router GENE and ETHZ is connected to the router ZURI. The fourth column indicates the MAC address used as an 'ID' to configure the switch. Finally, the fifth column indicates the bridge ID used in the Spanning Tree computation. Note that a router can only be connected to one L2 network, but a layer 2 network can be connected to one or more routers (see [config_l2](config_l2)). 
 
 `layer2_links_config.txt`: This file indicates how the l2 switches are interconnected. For instance by default ETHZ is connected to CERN and EPFL, etc. The last two columns indicate the throughput and the delay of the link, respectively. The first and third columns indicate the name of the L2 network in which the switches in the second and fourth columns are, respectively. The L2 names should be identical since it is not possible to connect two switches that are in two different L2 network. 
 
@@ -119,10 +119,9 @@ column indicates N/A. An example:
 
 This configuration line shows that the BARC router in AS 2 is connected to the IXP with AS number 80.
 The last column (1,2,11,12) indicates to which participants the routes advertised by AS 2 should be propagated.
-This last column is used when the configuration is automatically generated, otherwise it is the students that
-have to use the correct BGP community values in order for their routes to be advertised to certain ASes only.
+This last column is used when the configuration is automatically generated, otherwise the students have to use the correct BGP community values in order for their routes to be advertised to certain ASes only.
 
-The file `subnet_config.sh` is used to configure the IP addresses following a particular scheme (see our [2019 assignment](https://github.com/nsg-ethz/mini_internet_project/blob/master/2019_assignement_eth/mini_internet_project.pdf)), we recommend to not modify these file if you are using our topologies and want to use our IP address allocation scheme. In case you modify this file, you must keep the same name for each function, otherwise the mini-Internet will not start properly.
+The file `subnet_config.sh` is used to configure the IP addresses following a particular scheme (see our [2019 assignment](https://github.com/nsg-ethz/mini_internet_project/blob/master/2019_assignment_eth/mini_internet_project.pdf)), we recommend to not modify these file if you are using our topologies and want to use our IP address allocation scheme. In case you modify this file, you must keep the same name for each function, otherwise the mini-Internet will not start properly.
 
 #### Change the size of the mini-Internet
 
@@ -156,7 +155,8 @@ If you are the instructor and have access to the server hosting the mini-Interne
 `sudo docker exec -it 1_LONDrouter bash`
 
 If you are in the router container, run `vtysh` to access the CLI of that router.
-The following example show you how to access the switch EPFL in the L2 network UNIV of AS3:
+The following example shows 
+you how to access the switch EPFL in the L2 network UNIV of AS3:
 
 `sudo docker exec -it 3_L2_UNIV_EPFL bash`
 
@@ -241,7 +241,7 @@ auth-user-pass
 The file `ca.crt` is automatically generated during the mini-Internet setup. It is available in the directory `groups/gX/vpn/vpn_Y` and must be given to the student.
 Finally, the username is `groupX` (X is the group number) and the password is the same than the one used to access the proxy container through SSH.
 
-When connected, the student should have an interface called `tap` with a corresponding IP address. This interface is connected to the mini-Internet.
+When connected, the student should have an interface called `tap0` with a corresponding IP address. This interface is connected to the mini-Internet.
 
 ## Delete the mini-Internet
 
@@ -272,7 +272,7 @@ To run measurements between any two ASes, we must use a dedicated container call
 By default, we can access the measurement container over port 2099:
 
 ```
-ssh -p 2099 root@server.ethz.ch
+ssh -p 2099 root@<your_server_domain>
 ```
 
 You can find the password in the file `groups/ssh_measurement.txt`. It should be distributed to all students such that they can access the MEASUREMENT container. \
@@ -313,7 +313,7 @@ The html file `matrix.html` is then automatically generated and periodically upd
 
 Finally, another container, connected to every AS and only available to the instructor runs a bind9 DNS server.
 By looking at the file `config/router_config_full.txt`, we can see that the DNS container is connected to every LOND router.
-The DNS server has the IP address 198.0.0.100/24, as soon as the students have configured intra-domain routing and have advertised this subnet into OSPF, they should be able to reach the DNS server and use it.
+The DNS server has the IP address 198.0.0.100/24 and as soon as the students have configured intra-domain routing and have advertised this subnet into OSPF, they should be able to reach the DNS server and use it.
 
 For instance, a traceroute from ATLA-host to LOND-host returns the following output:
 
