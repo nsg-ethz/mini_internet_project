@@ -83,14 +83,13 @@ You can configure the layer 2 topology with the following files. There can be se
 Each L2 network has a name. The one used by default in the [config](config) directory is called UNIV.
 
 `layer2_switches_config.txt`: This file lists the switches in the L2 networks. The first column indicates the name of the L2 network. The second line indicates the name of the switch. By default, there are three switches (CERN, ETHZ and EPFL). The third column indicates whether one switch is connected to a L3 router, here by default CERN is connected to the router GENE and ETHZ is connected to the router ZURI. The fourth column indicates the MAC address used as an 'ID' to configure the switch. Finally, the fifth column indicates the bridge ID used in the Spanning Tree computation. Note that a router can only be connected to one L2 network, but a layer 2 network can be connected to one or more routers (see [config_l2](config_l2)). 
+When a switch is connected to a L3 router, it must also be indicated in the third column of the config file `router_config_full.txt (or router_config_small.txt)`, which list the L3 routers. In this config file, the name of the L2 network must always be preceded by "L2-".
+
+:information_source: Whenever you want to configure your own topology with your custom L2 network, you must follow the same naming convention. We recommend you to look into the directory [config_l2](config_l2) for more details. 
 
 `layer2_links_config.txt`: This file indicates how the l2 switches are interconnected. For instance by default ETHZ is connected to CERN and EPFL, etc. The last two columns indicate the throughput and the delay of the link, respectively. The first and third columns indicate the name of the L2 network in which the switches in the second and fourth columns are, respectively. The L2 names should be identical since it is not possible to connect two switches that are in two different L2 network. 
 
 `layer2_hosts_config.txt`: This file indicates the hosts that are in the layer 2 network, and to which switch they are directly connected to. For instance the host student_1 is by default in the L2 network named UNIV and is connected to CERN. The next two columns indicate the throughout and delay, respectively. The last column indicates the VLAN the host belongs to. Observe that a host can be a VPN server, in which case it must start with "vpn_".
-
-`router_config_full.txt (or router_config_small.txt)`: This file lists all the routers. When a router is connected to a L2 network, it must be indicated in the third column. For instance by default both routers ZURI and GENE are connected to the L2 network "UNIV". Here, the name of the L2 network must always be preceded by "L2-".
-
-:information_source: Whenever you want to configure your own topology with your custom L2 network, you must follow the same naming convention. We recommend you to look into the directory [config_l2](config_l2) for more details. 
 
 #### Layer 3 topology
 
@@ -121,7 +120,7 @@ This configuration line shows that the BARC router in AS 2 is connected to the I
 The last column (1,2,11,12) indicates to which participants the routes advertised by AS 2 should be propagated.
 This last column is used when the configuration is automatically generated, otherwise the students have to use the correct BGP community values in order for their routes to be advertised to certain ASes only.
 
-The file `subnet_config.sh` is used to configure the IP addresses following a particular scheme (see our [2019 assignment](https://github.com/nsg-ethz/mini_internet_project/blob/master/2019_assignment_eth/mini_internet_project.pdf)), we recommend to not modify these file if you are using our topologies and want to use our IP address allocation scheme. In case you modify this file, you must keep the same name for each function, otherwise the mini-Internet will not start properly.
+The file `subnet_config.sh` is used to configure the IP addresses following a particular scheme (see our [2020 assignment](../2020_assignment_eth/routing_project.pdf)), we recommend to not modify this file if you are using our topologies and want to use our IP address allocation scheme. In case you modify this file, you must keep the same name for each function, otherwise the mini-Internet will not start properly.
 
 #### Change the size of the mini-Internet
 
@@ -289,7 +288,7 @@ Hop 5:  2.108.0.1 Echo reply (type=0/code=0)
 
 where 2.108.0.1 is an IP address of a host in AS2. You can see the path used by the packets to reach the destination IP.
 
-By default, the measurement container is connected to the router ZURI in every transit AS. You can see this in the config file `config/router_config_full.txt`. The second column of the ZURI row is `MEASUREMENT` which means that the measurement container is connected to the ZURI router, but you can edit this file so that the measurement container is connected to another router instead. If for an AS none of the routers is connected to the measurement container (e.g., like in `config/router_config_small.txt`) then you can't run a traceroute from that AS using the measurement container. 
+By default, the measurement container is connected to the router ZURI in every transit AS. You can see this in the config file `config/router_config_full.txt`. The second column of the ZURI row is `MEASUREMENT` which means that the measurement container is connected to the ZURI router, but you can edit this file so that the measurement container is connected to another router instead. If for an AS none of the routers is connected to the measurement container (e.g., like in `config/router_config_small.txt`) then you can't run a traceroute from that AS using the measurement container. For instance in [config_2020](config_2020) configuration files, you can't use the measurement platform to run a traceroute from a Tier1 or a Stub AS.
 
 #### Connectivity matrix
 
@@ -326,4 +325,18 @@ traceroute to 1.101.0.1 (1.101.0.1), 30 hops max, 60 byte packets
  4  host-LOND.group1 (1.101.0.1)  1.435 ms  1.458 ms  1.422 ms
 root@ATLA_host:/#
 ```
+The naming convention is quite straightforward: XXXX-YYYY.groupZ, where XXXX the router where this IP address is configured, YYYY is the name of the router on the other end of the link (or "host" if there is a host). Finally Z is the AS number. The IP addresses used on the links connecting two ASes are not translated.
 
+## Some additional useful tools
+
+It can happen that a container crashes while the mini-Internet is running. For instance we have observed that the SSH containers sometimes fail if a student starts more than 100 processes in it (100 is the max number of processes that can run in this container). It is a hassle to restart a container and connect it to the other containers according to the topology, thus the script `restart_container.sh` is automatically generated and can be used to reconnect a container to the other containers automatically.
+
+For instance if the container CONTAINER_NAME has crashed or has a problem, just run the following commands:
+
+```
+docker kill CONTAINER_NAME
+docker start CONTAINER_NAME
+./groups/restart_container.sh CONTAINER_NAME
+```
+
+Note: sometimes the MAC address on some interfaces must follow a particular scheme (for instance the ones connected to the MATRIX container). Configuring these MAC addresses must be done manually.
