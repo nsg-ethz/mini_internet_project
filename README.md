@@ -1,22 +1,25 @@
 # An Open Platform to Teach How the Internet Practically Works
 
-This is the official repositery of the mini-Internet project.
+Welcome in the official repositery of the mini-Internet project.
 
 ### The mini-Internet project
 
-A mini-Internet is a virtual network mimicking the real Internet. Among others, there are routers, switches and hosts that are divided in different ASes. A mini-Internet runs in a single server and is tailored to teach how the Internet practically works. Each components of the network is running in its own dedicated linux container, that are remotely accessible by the students with simple ssh connections. 
+A mini-Internet is a virtual network mimicking the real Internet. Among others, there are routers, switches and hosts that are located in different ASes. A mini-Internet runs in a single server and is tailored to teach how the Internet practically works. Each components of the network is running in its own dedicated linux container, that are remotely accessible by the students with simple ssh connections.
 
-We use the mini-Internet at ETH Zurich in our Communication Networks course since 2016. More precisely, we let each student group operate their own AS. Their goal? Enabling Internet-wide connectivity. \
-Our students learn how to configure the different routing protocols. Besides, they learn that the Internet is the result of a collective effort: they often have to collaborate and debug together. 
+The mini-Internet project is the flagship piece of our [Communication Networks course](https://comm-net.ethz.ch/) at ETH Zurich since 2016. The concept is rather simple: we let each student group operate their own AS. Their goal? Enabling Internet-wide connectivity.
 
-The mini-Internet project works well for our introductory class, yet it can be adapted for various teaching objectives.
+We find this class-wide project to be invaluable in teaching our students how the Internet infrastructure practically works. Among others, our students have a much deeper understanding of Internet operations alongside their pitfalls. Besides students tend to love the project: clearly the fact that all of them need to cooperate for the entire Internet to work is empowering
+
+In [2020_assignment_eth](2020_assignment_eth), we further describe how we used the mini-Internet at ETH in the 2020 iteration of our Communication Networks lecture.
+While the mini-Internet project works well for our introductory class, observe that it can be adapted for various teaching objectives.
 
 ### Build _your_ mini-Internet
 
-The documentation as well as the source code of the mini-Internet can be found in the [platform](platform) directory. \
-In [2020_assignment_eth](2020_assignment_eth) we describe how we used the mini-Internet at ETH in the 2020 iteration of our [Communication Networks](https://comm-net.ethz.ch/) lecture.
+With this platform, you can easily build your own mini-Internet, tailored for your teaching objectives.
+The documentation as well as the source code of the platform can be found in the [platform](platform) directory.
+In a nutshell, after defining your topology in configuration files, you can build your mini-Internet with a bash script and use it for your networking class. 
 
-Please cite our **[technical report]( https://arxiv.org/pdf/1912.02031.pdf)** if you use the platform. Here is the bibtex:
+If you use the platforn, please cite our **[technical report]( https://arxiv.org/pdf/1912.02031.pdf)**. Here is the bibtex:
 ```
 @article{Holterbach2019AnOP,
   title={An Open Platform to Teach How the Internet Practically Works},
@@ -27,8 +30,11 @@ Please cite our **[technical report]( https://arxiv.org/pdf/1912.02031.pdf)** if
 }
 ```
 
+### Useful links
 
-For further information, you can watch our [talk](https://www.youtube.com/watch?v=8SRjTqH5Z8M&list=PLO8DR5ZGla8jSzWlrWt_cz13LLAz44rHY&index=11&t=0s) we gave at NANOG 78 (February 2020).
+- We presented the mini-Internet at NANOG 78 in February 2020. The [talk](https://www.youtube.com/watch?v=8SRjTqH5Z8M&list=PLO8DR5ZGla8jSzWlrWt_cz13LLAz44rHY&index=11&t=0s) is available on youtube.
+
+- We wrote a [blogpost](https://blog.apnic.net/2020/04/14/develop-your-own-mini-internet-to-teach-students-virtually-about-network-operations/) on the APNIC website about the mini-Internet.
 
 ### Contacts
 
@@ -44,4 +50,3 @@ This platform has been tailored to teach how the Internet works in our Communica
 
 If you want to use this platform for your networking class, we recommend that you spent some time understanding the code and how we build the mini-Internet, and we recommend you to try it first before using it with actual students.
 We assume no responsibility or liability for any problem you may encounter while using the platform.
-
