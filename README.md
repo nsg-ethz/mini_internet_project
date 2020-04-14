@@ -32,7 +32,7 @@ If you use the platforn, please cite our **[technical report]( https://arxiv.org
 
 ### Useful links
 
-- We presented the mini-Internet at NANOG 78 in February 2020. The [talk]((https://www.youtube.com/watch?v=8SRjTqH5Z8M&list=PLO8DR5ZGla8jSzWlrWt_cz13LLAz44rHY&index=11&t=0s)) is available on youtube.
+- We presented the mini-Internet at NANOG 78 in February 2020. The [talk](https://www.youtube.com/watch?v=8SRjTqH5Z8M&list=PLO8DR5ZGla8jSzWlrWt_cz13LLAz44rHY&index=11&t=0s) is available on youtube.
 
 - We wrote a [blogpost](https://blog.apnic.net/2020/04/14/develop-your-own-mini-internet-to-teach-students-virtually-about-network-operations/) on the APNIC website about the mini-Internet. 
 
