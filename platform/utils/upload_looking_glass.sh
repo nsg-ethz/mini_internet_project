@@ -15,6 +15,7 @@ group_numbers=${#groups[@]}
 
 while true
 do
+    # mkdir tmp
     for ((k=0;k<group_numbers;k++)); do
         group_k=(${groups[$k]})
         group_number="${group_k[0]}"
@@ -35,18 +36,15 @@ do
                 property1="${router_i[1]}"
                 property2="${router_i[2]}"
 
-                #(sudo cp groups/g$group_number/$rname/frr.conf groups/g$group_number/$rname/tmp.conf; \
-                #sudo chown thomas:thomas groups/g$group_number/$rname/tmp.conf ;\
-
                 cp groups/g${group_number}/${rname}/looking_glass.txt G$group_number/${rname}.txt
-                # (sudo install -o thomas -g thomas groups/g${group_number}/${rname}/looking_glass.txt G$group_number/${rname}.txt) &
 
-                # (sudo install -o thomas -g thomas groups/g${group_number}/${rname}/frr.conf groups/g${group_number}/${rname}/tmp.conf; \
                 echo $group_number $rname
             done
             scp -r G$group_number thomahol@virt07.ethz.ch:/home/web_commnet/public_html/routing_project/looking_glass/
+
             rm -r G$group_number
             echo $group_number done
         fi
     done
+    sleep 120
 done
