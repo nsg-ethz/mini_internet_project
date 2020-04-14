@@ -7,7 +7,7 @@ This is the official repositery of the mini-Internet project.
 A mini-Internet is a virtual network mimicking the real Internet. Among others, there are routers, switches and hosts that are divided in different ASes. A mini-Internet runs in a single server and is tailored to teach how the Internet practically works. Each components of the network is running in its own dedicated linux container, that are remotely accessible by the students with simple ssh connections. 
 
 We use the mini-Internet at ETH Zurich in our Communication Networks course since 2016. More precisely, we let each student group operate their own AS. Their goal? Enabling Internet-wide connectivity. \
-Our students learn how to configure the different routing protocols. Besides, the learn that Internet is the result of a collective effort: they often have to collaborate and debug together. 
+Our students learn how to configure the different routing protocols. Besides, they learn that the Internet is the result of a collective effort: they often have to collaborate and debug together. 
 
 The mini-Internet project works well for our introductory class, yet it can be adapted for various teaching objectives.
 
