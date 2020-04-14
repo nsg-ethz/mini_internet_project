@@ -22,7 +22,7 @@ For further information, you can watch our [talk](https://www.youtube.com/watch?
 
 Thomas Holterbach <thomahol@ethz.ch> \
 Tobias Bühler <buehlert@ethz.ch> \
-Tino Rellstab <tinor@student.ethz.ch> \
+Tino Rellstab <tino.rellstab@gmail.com> \
 Laurent Vanbever <lvanbever@ethz.ch> \
 [NSG Group website](https://nsg.ee.ethz.ch/home/)
 
