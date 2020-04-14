@@ -40,7 +40,7 @@ for ((k=0;k<group_numbers;k++)); do
 
         # start ssh container
         docker run -itd --net='none'  --name="${group_number}""_ssh" \
-            --cpus=2 --pids-limit 100 --hostname="g${group_number}-proxy" --privileged \
+            --cpus=2 --pids-limit 100 --hostname="g${group_number}-proxy" --cap-add=NET_ADMIN \
             -v "${location}"/goto.sh:/root/goto.sh  \
             -v "${location}"/save_configs.sh:/root/save_configs.sh \
             -v /etc/timezone:/etc/timezone:ro \
@@ -55,7 +55,7 @@ for ((k=0;k<group_numbers;k++)); do
             l2name="${switch_l[0]}"
             sname="${switch_l[1]}"
 
-            docker run -itd --net='none' --dns="${subnet_dns%/*}" --privileged \
+            docker run -itd --net='none' --dns="${subnet_dns%/*}" --cap-add=NET_ADMIN \
                 --cpus=2 --pids-limit 100 --hostname "${sname}" \
                 --name=${group_number}_L2_${l2name}_${sname} \
                 -v /etc/timezone:/etc/timezone:ro \
@@ -70,7 +70,7 @@ for ((k=0;k<group_numbers;k++)); do
             sname="${host_l[2]}"
 
             if [[ $hname != vpn* ]]; then
-                docker run -itd --net='none' --dns="${subnet_dns%/*}" --privileged \
+                docker run -itd --net='none' --dns="${subnet_dns%/*}" --cap-add=NET_ADMIN \
                     --cpus=2 --pids-limit 100 --hostname "${hname}" \
                     --name="${group_number}""_L2_""${l2name}""_""${hname}" \
                     -v /etc/timezone:/etc/timezone:ro \
@@ -89,7 +89,7 @@ for ((k=0;k<group_numbers;k++)); do
 
             # start router
             docker run -itd --net='none'  --dns="${subnet_dns%/*}" \
-                --name="${group_number}""_""${rname}""router" --privileged \
+                --name="${group_number}""_""${rname}""router" --cap-add=ALL \
                 --cpus=2 --pids-limit 100 --hostname "${rname}""_router" \
                 -v "${location}"/looking_glass.txt:/home/looking_glass.txt \
                 -v "${location}"/daemons:/etc/frr/daemons \
@@ -100,11 +100,10 @@ for ((k=0;k<group_numbers;k++)); do
             # start host
             if [ "${property2}" == "host" ];then
                 docker run -itd --net='none' --dns="${subnet_dns%/*}"  \
-                    --name="${group_number}""_""${rname}""host" --privileged \
+                    --name="${group_number}""_""${rname}""host" --cap-add=NET_ADMIN \
                     --cpus=2 --pids-limit 100 --hostname "${rname}""_host" \
                     -v /etc/timezone:/etc/timezone:ro \
                     -v /etc/localtime:/etc/localtime:ro thomahol/d_host \
-                    # -v "${location}"/connectivity.txt:/home/connectivity.txt \
                     # add this for bgpsimple -v ${DIRECTORY}/docker_images/host/bgpsimple.pl:/home/bgpsimple.pl \
 
             fi

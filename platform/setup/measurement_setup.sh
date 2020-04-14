@@ -17,7 +17,7 @@ group_numbers=${#groups[@]}
 # start measurement container
 subnet_dns="$(subnet_router_DNS -1 "dns")"
 docker run -itd --net='none' --dns="${subnet_dns%/*}" \
-	--name="MEASUREMENT" --cpus=2 --pids-limit 100 --privileged thomahol/d_measurement
+	--name="MEASUREMENT" --cpus=2 --pids-limit 100 --cap-add=NET_ADMIN thomahol/d_measurement
 
 passwd="$(openssl rand -hex 8)"
 echo "${passwd}" >> "${DIRECTORY}"/groups/ssh_measurement.txt
