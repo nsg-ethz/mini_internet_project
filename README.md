@@ -1,6 +1,18 @@
 # An Open Platform to Teach How the Internet Practically Works
 
-This is the official mini-Internet repository. \
+This is the official repositery of the mini-Internet project.
+
+### The mini-Internet project
+
+A mini-Internet is a virtual network mimicking the real Internet. Among others, there are routers, switches and hosts that are divided in different ASes. A mini-Internet runs in a single server and is tailored to teach how the Internet practically works. Each components of the network is running in its own dedicated linux container, that are remotely accessible by the students with simple ssh connections. 
+
+The mini-Internet project is the flagship piece of our Communication Networks course at ETH Zurich since 2016. The concept is rather simple: we let each student group operate their own AS. Their goal? Enabling Internet-wide connectivity.
+We find this class-wide project to be invaluable in teaching our students how the Internet infrastructure practically works. Among others, our students have a much deeper understanding of Internet operations alongside their pitfalls. Besides students tend to love the project: clearly the fact that all of them need to cooperate for the entire Internet to work is empowering
+
+The mini-Internet project works well for our introductory class, yet it can be adapted for various teaching objectives.
+
+### Build _your_ mini-Internet
+
 The documentation as well as the source code of the mini-Internet can be found in the [platform](platform) directory. \
 In [2020_assignment_eth](2020_assignment_eth) we describe how we used the mini-Internet at ETH in the 2020 iteration of our [Communication Networks](https://comm-net.ethz.ch/) lecture.
 
