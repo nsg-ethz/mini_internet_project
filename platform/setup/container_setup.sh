@@ -89,7 +89,7 @@ for ((k=0;k<group_numbers;k++)); do
 
             # start router
             docker run -itd --net='none'  --dns="${subnet_dns%/*}" \
-                --name="${group_number}""_""${rname}""router" --cap-add=ALL \
+                --name="${group_number}""_""${rname}""router" --cap-add=SYS_ADMIN --cap-add=NET_ADMIN \
                 --cpus=2 --pids-limit 100 --hostname "${rname}""_router" \
                 -v "${location}"/looking_glass.txt:/home/looking_glass.txt \
                 -v "${location}"/daemons:/etc/frr/daemons \
