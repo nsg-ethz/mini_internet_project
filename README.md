@@ -32,7 +32,7 @@ If you use the platforn, please cite our **[technical report]( https://arxiv.org
 
 ### News
 
-*15/04/20:* Fixed a security issue with the docker containers. Now students' containers only run with limited capabilities. 
+*15/04/20:* Fixed a security issue with the docker containers. Now students' containers only run with limited capabilities. \
 *18/03/20:* Several fixes (e.g., prevent containers to crash because too many processes are running) and improvements (e.g., configure different internal topologies)
 
 ### Useful links
