@@ -30,6 +30,11 @@ If you use the platforn, please cite our **[technical report]( https://arxiv.org
 }
 ```
 
+### News
+
+*15/04/20:* Fixed a security issue with the docker containers. Now students' containers only run with limited capabilities. \
+*18/03/20:* Several fixes (e.g., prevent containers to crash because too many processes are running) and improvements (e.g., configure different internal topologies)
+
 ### Useful links
 
 - We presented the mini-Internet at NANOG 78 in February 2020. The [talk](https://www.youtube.com/watch?v=8SRjTqH5Z8M&list=PLO8DR5ZGla8jSzWlrWt_cz13LLAz44rHY&index=11&t=0s) is available on youtube.
