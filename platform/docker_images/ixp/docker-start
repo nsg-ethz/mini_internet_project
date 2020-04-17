@@ -18,6 +18,4 @@ mkdir -p /root/.ssh
 ovs-vsctl add-br IXP
 ovs-ofctl add-flow IXP action=NORMAL
 
-sysctl -w net.ipv4.icmp_ratelimit="0"
-
 tail -f /dev/null # To keep the container running forever

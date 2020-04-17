@@ -494,14 +494,6 @@ for ((k=0;k<group_numbers;k++)); do
                 docker exec -d "${group_number}"_"${rname}"router bash ./home/init_full_conf.sh &
             fi
 
-            #disable reverse path filtering
-            docker exec -d "${group_number}"_"${rname}"router bash -c 'for i in /proc/sys/net/ipv4/conf/*/rp_filter ; do echo 0 > $i ; done' &
-
-            # no icmp rate limiting
-            docker exec -d "${group_number}"_"${rname}"router bash -c 'sysctl -w net.ipv4.icmp_ratelimit="0" > /dev/null' &
-
-            # enable l3+l4 ecmp
-            docker exec -d "${group_number}"_"${rname}"router bash -c 'sysctl net.ipv4.fib_multipath_hash_policy=1 > /dev/null' &
         done
     else
         echo " -c 'exit' -c 'write' " >> "${DIRECTORY}"/groups/g"${group_number}"/init_full_conf.sh
@@ -509,15 +501,6 @@ for ((k=0;k<group_numbers;k++)); do
         docker exec -d "${group_number}"_IXP bash ./init_full_conf.sh &
 
         docker exec -d "${group_number}"_IXP bash -c "ifconfig IXP 180.${group_number}.0.${group_number}/24"
-
-        #disable reverse path filtering
-        docker exec -d "${group_number}"_IXP bash -c 'for i in /proc/sys/net/ipv4/conf/*/rp_filter ; do echo 0 > $i ; done' &
-
-        # no icmp rate limiting
-        docker exec -d "${group_number}"_IXP bash -c 'sysctl -w net.ipv4.icmp_ratelimit="0" > /dev/null' &
-
-        # enable l3+l4 ecmp
-        docker exec -d "${group_number}"_IXP bash -c 'sysctl net.ipv4.fib_multipath_hash_policy=1 > /dev/null' &
     fi
 done
 
