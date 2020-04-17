@@ -2,7 +2,4 @@
 
 set -e
 
-#ulimit -n 1024
-cd /home/ && python ./ping.py &
-
 tail -f /dev/null # To keep the container running forever
