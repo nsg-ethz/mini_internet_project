@@ -41,6 +41,8 @@ If you use the platforn, please cite our **[technical report]( https://arxiv.org
 
 - We wrote a [blogpost](https://blog.apnic.net/2020/04/14/develop-your-own-mini-internet-to-teach-students-virtually-about-network-operations/) on the APNIC website about the mini-Internet.
 
+- We presented the mini-Internet in the [AIMS-KISMET](https://www.caida.org/workshops/kismet/2002/) workshop. Our [slides](https://www.caida.org/workshops/kismet/2002/slides/kismet2002_tholterbach.pdf) are available online. 
+
 ### Contacts
 
 Thomas Holterbach <thomahol@ethz.ch> \
