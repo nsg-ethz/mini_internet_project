@@ -1,6 +1,6 @@
 # An Open Platform to Teach How the Internet Practically Works
 
-Welcome in the official repositery of the mini-Internet project.
+Welcome in the official repository of the mini-Internet project.
 
 ### The mini-Internet project
 
