@@ -21,12 +21,14 @@ In a nutshell, after defining your topology in configuration files, you can buil
 
 If you use the platforn, please cite our **[technical report]( https://arxiv.org/pdf/1912.02031.pdf)**. Here is the bibtex:
 ```
-@article{Holterbach2019AnOP,
-  title={An Open Platform to Teach How the Internet Practically Works},
-  author={Thomas Holterbach and Tobias B{\"u}hler and Tino Rellstab and Laurent Vanbever},
-  journal={ArXiv},
-  year={2019},
-  volume={abs/1912.02031}
+@article{10.1145/3402413.3402420,
+author = {Holterbach, Thomas and B\"{u}, Tobias and Rellstab, Tino and Vanbever, Laurent},
+title = {An Open Platform to Teach How the Internet Practically Works},
+year = {2020},
+issue_date = {April 2020},
+publisher = {Association for Computing Machinery},
+url = {https://doi.org/10.1145/3402413.3402420},
+journal = {SIGCOMM Comput. Commun. Rev.},
 }
 ```
 
