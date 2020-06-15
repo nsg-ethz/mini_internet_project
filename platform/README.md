@@ -2,7 +2,7 @@
 
 In this README, we first explain how to [install the required software](https://github.com/nsg-ethz/mini_internet_project/tree/master/platform#prerequisite). Then we show how to [build](https://github.com/nsg-ethz/mini_internet_project/tree/master/platform#build-the-mini-internet), [configure](https://github.com/nsg-ethz/mini_internet_project/tree/master/platform#configure-the-mini-internet-topology), [access](https://github.com/nsg-ethz/mini_internet_project/tree/master/platform#access-the-mini-internet) and [delete](https://github.com/nsg-ethz/mini_internet_project/tree/master/platform#delete-the-mini-internet) the mini-Internet. Finally, we explain the different [monitoring tools](https://github.com/nsg-ethz/mini_internet_project/tree/master/platform#use-the-monitoring-tools-and-services).
 
-We run our mini-Internet on a server with Ubuntu 18.04 and the Linux 4.15.0 kernel and on a Ubuntu 20.04 and the linux kernel 5.4.0.
+We run our mini-Internet on a server with Ubuntu 18.04 and the Linux 4.15.0 kernel (it also works on an Ubuntu 20.04 and the linux kernel 5.4.0).
 For more details about the used default topology as well as other example topologies, please refer to the [config](config) directory.
 
 For further information about how we use the mini-Internet at ETH Zurich, and how we implemented it, please see our [technical report](https://arxiv.org/pdf/1912.02031.pdf).
