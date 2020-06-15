@@ -93,7 +93,7 @@ for ((k=0;k<group_numbers;k++)); do
                         -CAcreateserial -CAserial $location/ca.srl 2>/dev/null
                 done
 
-                DH_KEY_SIZE=512
+                DH_KEY_SIZE=2048
                 openssl dhparam -out $location/dh.pem ${DH_KEY_SIZE} 2>/dev/null
 
 
