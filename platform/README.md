@@ -2,7 +2,7 @@
 
 In this README, we first explain how to [install the required software](https://github.com/nsg-ethz/mini_internet_project/tree/master/platform#prerequisite). Then we show how to [build](https://github.com/nsg-ethz/mini_internet_project/tree/master/platform#build-the-mini-internet), [configure](https://github.com/nsg-ethz/mini_internet_project/tree/master/platform#configure-the-mini-internet-topology), [access](https://github.com/nsg-ethz/mini_internet_project/tree/master/platform#access-the-mini-internet) and [delete](https://github.com/nsg-ethz/mini_internet_project/tree/master/platform#delete-the-mini-internet) the mini-Internet. Finally, we explain the different [monitoring tools](https://github.com/nsg-ethz/mini_internet_project/tree/master/platform#use-the-monitoring-tools-and-services).
 
-We run our mini-Internet on a server with Ubuntu 18.04 and the Linux 4.15.0 kernel.
+We run our mini-Internet on a server with Ubuntu 18.04 and the Linux 4.15.0 kernel and on a Ubuntu 20.04 and the linux kernel 5.4.0.
 For more details about the used default topology as well as other example topologies, please refer to the [config](config) directory.
 
 For further information about how we use the mini-Internet at ETH Zurich, and how we implemented it, please see our [technical report](https://arxiv.org/pdf/1912.02031.pdf).
@@ -15,12 +15,7 @@ To build the mini-Internet, you need to install the following software on the se
 
 To run all the different components in the mini-Internet (hosts, switches, routers, ...) we use Docker containers.
 
-```
-sudo apt-get update
-sudo apt install docker.io
-```
-
-For further information, see the [installation guide](https://docs.docker.com/install/linux/docker-ce/ubuntu/).
+Follow this [installation guide](https://docs.docker.com/install/linux/docker-ce/ubuntu/) to install docker.
 In the directory `docker_images` you can find all the Dockerfile and docker-start files used to build the containers.
 In case you want to add some functionalities into some of the docker containers, you can
 update these files and build you own docker images:
@@ -130,15 +125,15 @@ In the directory `config_2020`, you find working configuration files for differe
 To run a mini-Internet with only 1 AS, just copy the following files:
 
 ```
-cp config_2020/AS_config_1.txt config/AS_config.txt
-cp config_2020/external_links_config_1.txt config/external_links_config.txt
+cp config_2019/AS_config_1.txt config/AS_config.txt
+cp config_2019/external_links_config_1.txt config/external_links_config.txt
 ```
 
 To run a mini-Internet with 60 ASes, copy the following files:
 
 ```
-cp config_2020/AS_config_60.txt config/AS_config.txt
-cp config_2020/external_links_config_60.txt config/external_links_config.txt
+cp config_2019/AS_config_60.txt config/AS_config.txt
+cp config_2019/external_links_config_60.txt config/external_links_config.txt
 ```
 
 We also provide configuration files for a 2 ASes and a 40 ASes topology.
