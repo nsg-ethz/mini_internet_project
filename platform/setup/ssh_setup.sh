@@ -17,7 +17,7 @@ n_extern_links=${#extern_links[@]}
 echo -n "-- add-br ssh_to_group " >> "${DIRECTORY}"/groups/add_bridges.sh
 
 subnet_bridge="$(subnet_ext_sshContainer -1 "bridge")"
-echo "ifconfig ssh_to_group $subnet_bridge up" >> "${DIRECTORY}"/groups/ip_setup.sh
+echo "ip a add $subnet_bridge dev ssh_to_group" >> "${DIRECTORY}"/groups/ip_setup.sh
 
 # General a pair of keys for the server, and put the public in the proxy container
 ssh-keygen -t rsa -b 4096 -C "comment" -P "" -f "groups/id_rsa" -q
@@ -67,7 +67,8 @@ for ((k=0;k<group_numbers;k++)); do
         subnet_ssh_to_cont="$(subnet_sshContainer_groupContainer "${group_number}" -1 -1 "sshContainer")"
 
         echo -n "-- add-br "${group_number}"-ssh " >> "${DIRECTORY}"/groups/add_bridges.sh
-        echo "ifconfig "${group_number}"-ssh 0.0.0.0 up" >> "${DIRECTORY}"/groups/ip_setup.sh
+        echo "ip a add 0.0.0.0 dev "${group_number}"-ssh" >> "${DIRECTORY}"/groups/ip_setup.sh
+
 
         # Connect the proxy container to the virtual devices
         ./setup/ovs-docker.sh add-port "${group_number}"-ssh ssh "${group_number}"_ssh --ipaddress="${subnet_ssh_to_cont}"

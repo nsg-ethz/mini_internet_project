@@ -29,7 +29,7 @@ docker run -itd --net='none' --name="MATRIX" --privileged --pids-limit 500 \
 docker exec -d MATRIX bash -c 'sysctl -w net.ipv4.icmp_ratelimit="0" > /dev/null' &
 
 echo -n "-- add-br matrix " >> "${DIRECTORY}"/groups/add_bridges.sh
-echo "ifconfig matrix 0.0.0.0 up" >> "${DIRECTORY}"/groups/ip_setup.sh
+echo "ip a add 0.0.0.0 dev matrix" >> "${DIRECTORY}"/groups/ip_setup.sh
 
 for ((k=0;k<group_numbers;k++)); do
     group_k=(${groups[$k]})
