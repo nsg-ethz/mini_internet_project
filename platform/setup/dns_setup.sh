@@ -22,7 +22,7 @@ chmod +x "${DIRECTORY}"/groups/dns_routes.sh
 docker run -itd --net='none'  --name="DNS" --privileged thomahol/d_dns
 
 echo -n "-- add-br dns " >> "${DIRECTORY}"/groups/add_bridges.sh
-echo "ifconfig dns 0.0.0.0 up" >> "${DIRECTORY}"/groups/ip_setup.sh
+echo "ip a add 0.0.0.0 dev dns" >> "${DIRECTORY}"/groups/ip_setup.sh
 
 for ((k=0;k<group_numbers;k++)); do
     group_k=(${groups[$k]})
@@ -76,7 +76,7 @@ subnet_dns="$(subnet_router_DNS -1 "dns")"
 subnet_measurement="$(subnet_router_DNS -1 "measurement")"
 
 echo -n "-- add-br "${br_name}" ">> "${DIRECTORY}"/groups/add_bridges.sh
-echo "ifconfig "${br_name}" 0.0.0.0 up" >> "${DIRECTORY}"/groups/ip_setup.sh
+echo "ip a add 0.0.0.0 dev "${br_name} >> "${DIRECTORY}"/groups/ip_setup.sh
 ./setup/ovs-docker.sh add-port "${br_name}" measurement DNS --ipaddress="${subnet_dns}"
 ./setup/ovs-docker.sh add-port "${br_name}" dns MEASUREMENT --ipaddress="${subnet_measurement}"
 echo "docker exec -d DNS ip route add "${subnet_measurement%/*}" dev measurement " >> "${DIRECTORY}"/groups/dns_routes.sh
