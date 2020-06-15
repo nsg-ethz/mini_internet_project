@@ -48,7 +48,7 @@ sudo apt-get install openvpn
 
 #### Install openSSL
 
-Make sure to use [OpenSSL 1.1.1](https://www.openssl.org/source/old/1.1.1/). If you want to use the latest openSSL version, then you need to use DH keys of size 2048, see [here](https://github.com/nsg-ethz/mini_internet_project/blob/master/platform/setup/vpn_config.sh#L96).
+Make sure to use [OpenSSL 1.1.1](https://www.openssl.org/source/old/1.1.1/) (2018-Sep-11). If you want to use the latest openSSL version, then you need to use DH keys of size 2048, see [here](https://github.com/nsg-ethz/mini_internet_project/blob/master/platform/setup/vpn_config.sh#L96).
 
 ## Build the mini-Internet
 
