@@ -27,7 +27,7 @@ subnet_host_router () {
 
   elif [ "$device" = "bridge" ] ; then
 
-    echo "${n_grp}"".""$(($n_router+101))"".0.0 netmask 255.255.255.0"
+    echo "${n_grp}"".""$(($n_router+101))"".0.0/24"
 
   fi
 }
@@ -69,7 +69,7 @@ subnet_router_router_intern () {
 
   elif [ "${device}" = "bridge" ] ; then
 
-    echo "${n_grp}"".0."$((${n_net}+1))".0 netmask 255.255.255.0"
+    echo "${n_grp}"".0."$((${n_net}+1))".0/24"
 
   fi
 }
@@ -90,7 +90,7 @@ subnet_router_router_extern () {
 
     elif [ "${device}" = "bridge" ] ; then
 
-        echo "179."${div}"."${mod}".0 netmask 255.255.255.0"
+        echo "179."${div}"."${mod}".0/24"
 
     fi
 }
@@ -108,7 +108,7 @@ subnet_router_IXP () {
 
   elif [ "${device}" = "bridge" ] ; then
 
-    echo "180."${n_ixp}".0.0 netmask 255.255.255.0"
+    echo "180."${n_ixp}".0.0/24"
 
   fi
 }
@@ -126,7 +126,7 @@ subnet_router_MEASUREMENT () {
 
   elif [ "${device}" = "bridge" ] ; then
 
-    echo "${n_grp}"".0.199.0 netmask 255.255.255.0"
+    echo "${n_grp}"".0.199.0/24"
 
   fi
 }
@@ -144,7 +144,7 @@ elif [ "${device}" = "matrix" ] ; then
 
   elif [ "${device}" = "bridge" ] ; then
 
-    echo "${n_grp}"".0.198.0 netmask 255.255.255.0"
+    echo "${n_grp}"".0.198.0/24"
 
   fi
 }
@@ -166,7 +166,7 @@ elif [ "${device}" = "measurement" ] ; then
 
   elif [ "${device}" = "bridge" ] ; then
 
-    echo "198.0.0.0 netmask 255.255.255.0"
+    echo "198.0.0.0/24"
 
   fi
 }
@@ -184,7 +184,7 @@ elif [ "${device}" = "MEASUREMENT" ] ; then
 
   elif [ "${device}" = "bridge" ] ; then
 
-    echo "157.0.0.1 netmask 255.255.255.0"
+    echo "157.0.0.1/24"
 
   fi
 }
@@ -210,7 +210,7 @@ subnet_sshContainer_groupContainer () {
 
   elif [ "${device}" = "bridge" ] ; then
 
-    echo "158."$n_grp".0.1 netmask 255.255.0.0"
+    echo "158."$n_grp".0.1/16"
 
   fi
 }
