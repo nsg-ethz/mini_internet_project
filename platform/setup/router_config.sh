@@ -82,10 +82,10 @@ for ((k=0;k<group_numbers;k++));do
             echo " -c 'exit' \\" >> "${location}"
                 if [[ "${property2}" == "host" ]];then
                     echo " -c 'interface host' \\" >> "${location}"
-                    echo " -c 'ip address "$(subnet_host_router_hijack "${group_number}" "${i}" "router")"' \\" >> "${location}"
+                    echo " -c 'ip address "$(subnet_host_router "${group_number}" "${i}" "router")"' \\" >> "${location}"
                     echo " -c 'exit' \\" >> "${location}"
                     echo " -c 'router ospf' \\" >> "${location}"
-                    echo " -c 'network "$(subnet_host_router_hijack "${group_number}" "${i}" "router")" area 0' \\" >> "${location}"
+                    echo " -c 'network "$(subnet_host_router "${group_number}" "${i}" "router")" area 0' \\" >> "${location}"
                     echo " -c 'exit' \\" >> "${location}"
 
                 elif [[ "${property2}" == *L2* ]];then
