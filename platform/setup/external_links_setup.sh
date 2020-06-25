@@ -44,8 +44,8 @@ for ((i=0;i<n_extern_links;i++)); do
 
         # make sure grp_2 is the IXP
         if [ "${group_as_1}" = "IXP" ];then
-            grp_1="${row_i[2]}"
-            router_grp_1="${row_i[3]}"
+            grp_1="${row_i[3]}"
+            router_grp_1="${row_i[4]}"
             grp_2="${row_i[0]}"
             router_grp_2="${row_i[1]}"
         fi
@@ -56,9 +56,9 @@ for ((i=0;i<n_extern_links;i++)); do
         echo "ifconfig "${br_name}" 0.0.0.0 up" >> "${DIRECTORY}"/groups/ip_setup.sh
 
         ./setup/ovs-docker.sh add-port  "${br_name}" ixp_"${grp_2}" \
-          "${grp_1}"_"${router_grp_1}"router
+          "${grp_1}"_"${router_grp_1}"router --delay="${delay}" --throughput="${throughput}"
         ./setup/ovs-docker.sh add-port "${br_name}" grp_"${grp_1}" \
-          "${grp_2}""_IXP"
+          "${grp_2}""_IXP" --delay="${delay}" --throughput="${throughput}"
     else
         br_name="ext-""${i}"
 
