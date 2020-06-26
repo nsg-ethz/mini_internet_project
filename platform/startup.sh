@@ -26,6 +26,11 @@ sysctl -p
 # Increase the max number of running processes
 sysctl kernel.pid_max=4194304
 
+# Load MPLS kernel modules
+modprobe mpls_router
+modprobe mpls_gso
+modprobe mpls_iptunnel
+
 echo "folder_setup.sh $(($(date +%s%N)/1000000))" > "${DIRECTORY}"/log.txt
 echo "folder_setup.sh: "
 time ./setup/folder_setup.sh "${DIRECTORY}"
@@ -192,6 +197,13 @@ echo ""
 echo "router_config.sh: "
 echo "router_config.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
 time ./setup/router_config.sh "${DIRECTORY}"
+
+echo ""
+echo ""
+
+echo "mpls.sh: "
+echo "mpls.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
+time ./setup/mpls_setup.sh "${DIRECTORY}"
 
 echo ""
 echo ""
