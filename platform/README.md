@@ -130,15 +130,15 @@ In the directory `config_2020`, you find working configuration files for differe
 To run a mini-Internet with only 1 AS, just copy the following files:
 
 ```
-cp config_2019/AS_config_1.txt config/AS_config.txt
-cp config_2019/external_links_config_1.txt config/external_links_config.txt
+cp config_2020/AS_config_1.txt config/AS_config.txt
+cp config_2020/external_links_config_1.txt config/external_links_config.txt
 ```
 
 To run a mini-Internet with 60 ASes, copy the following files:
 
 ```
-cp config_2019/AS_config_60.txt config/AS_config.txt
-cp config_2019/external_links_config_60.txt config/external_links_config.txt
+cp config_2020/AS_config_60.txt config/AS_config.txt
+cp config_2020/external_links_config_60.txt config/external_links_config.txt
 ```
 
 We also provide configuration files for a 2 ASes and a 40 ASes topology.
