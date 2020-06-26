@@ -86,11 +86,11 @@ for ((k=0;k<n_groups;k++)); do
             echo "fi" >> "${file_loc}"
 
             #shh to router container
-            echo "if [ \"\${location}\" == \"$rname\" ] && [ \"\${device}\" == \""container"\" ]; then" >> "${file_loc}"
-            echo "  subnet=""$(subnet_sshContainer_groupContainer "${group_number}" "${i}" -1  "router")" >> "${file_loc}"
-            echo "  ssh -t -o "StrictHostKeyChecking=no" root@\"\${subnet%???}\"" >> "${file_loc}" >> "${file_loc}"
-            echo "  exit" >> "${file_loc}"
-            echo "fi" >> "${file_loc}"
+            # echo "if [ \"\${location}\" == \"$rname\" ] && [ \"\${device}\" == \""container"\" ]; then" >> "${file_loc}"
+            # echo "  subnet=""$(subnet_sshContainer_groupContainer "${group_number}" "${i}" -1  "router")" >> "${file_loc}"
+            # echo "  ssh -t -o "StrictHostKeyChecking=no" root@\"\${subnet%???}\"" >> "${file_loc}" >> "${file_loc}"
+            # echo "  exit" >> "${file_loc}"
+            # echo "fi" >> "${file_loc}"
 
         done
 

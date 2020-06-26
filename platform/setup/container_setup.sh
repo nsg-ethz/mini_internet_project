@@ -64,6 +64,7 @@ for ((k=0;k<group_numbers;k++)); do
                 --sysctl net.ipv4.conf.all.rp_filter=0 \
                 --sysctl net.ipv4.conf.default.rp_filter=0 \
                 --sysctl net.ipv4.conf.lo.rp_filter=0 \
+                --sysctl net.ipv4.icmp_echo_ignore_broadcasts=0 \
                 -v /etc/timezone:/etc/timezone:ro \
                 -v /etc/localtime:/etc/localtime:ro thomahol/d_switch
         done
@@ -80,6 +81,7 @@ for ((k=0;k<group_numbers;k++)); do
                     --cpus=2 --pids-limit 100 --hostname "${hname}" \
                     --name="${group_number}""_L2_""${l2name}""_""${hname}" \
                     --sysctl net.ipv4.icmp_ratelimit=0 \
+                    --sysctl net.ipv4.icmp_echo_ignore_broadcasts=0 \
                     -v /etc/timezone:/etc/timezone:ro \
                     -v /etc/localtime:/etc/localtime:ro thomahol/d_host
             fi
@@ -96,13 +98,17 @@ for ((k=0;k<group_numbers;k++)); do
 
             # start router
             docker run -itd --net='none'  --dns="${subnet_dns%/*}" \
-                --name="${group_number}""_""${rname}""router" --cap-add=SYS_ADMIN --cap-add=NET_ADMIN \
+                --name="${group_number}""_""${rname}""router" \
                 --sysctl net.ipv4.ip_forward=1 \
                 --sysctl net.ipv4.icmp_ratelimit=0 \
                 --sysctl net.ipv4.fib_multipath_hash_policy=1 \
                 --sysctl net.ipv4.conf.all.rp_filter=0 \
                 --sysctl net.ipv4.conf.default.rp_filter=0 \
                 --sysctl net.ipv4.conf.lo.rp_filter=0 \
+                --sysctl net.mpls.conf.lo.input=1 \
+                --sysctl net.ipv4.icmp_echo_ignore_broadcasts=0 \
+                --sysctl net.mpls.platform_labels=1048575 \
+                --privileged \
                 --cpus=2 --pids-limit 100 --hostname "${rname}""_router" \
                 -v "${location}"/looking_glass.txt:/home/looking_glass.txt \
                 -v "${location}"/daemons:/etc/frr/daemons \
@@ -116,6 +122,7 @@ for ((k=0;k<group_numbers;k++)); do
                     --name="${group_number}""_""${rname}""host" --cap-add=NET_ADMIN \
                     --cpus=2 --pids-limit 100 --hostname "${rname}""_host" \
                     --sysctl net.ipv4.icmp_ratelimit=0 \
+                    --sysctl net.ipv4.icmp_echo_ignore_broadcasts=0 \
                     -v /etc/timezone:/etc/timezone:ro \
                     -v /etc/localtime:/etc/localtime:ro thomahol/d_host \
                     # add this for bgpsimple -v ${DIRECTORY}/docker_images/host/bgpsimple.pl:/home/bgpsimple.pl \
@@ -136,6 +143,7 @@ for ((k=0;k<group_numbers;k++)); do
             --sysctl net.ipv4.conf.all.rp_filter=0 \
             --sysctl net.ipv4.conf.default.rp_filter=0 \
             --sysctl net.ipv4.conf.lo.rp_filter=0 \
+            --sysctl net.ipv4.icmp_echo_ignore_broadcasts=0 \
             -v /etc/timezone:/etc/timezone:ro \
             -v /etc/localtime:/etc/localtime:ro \
             thomahol/d_ixp
