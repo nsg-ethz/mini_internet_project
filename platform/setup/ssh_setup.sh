@@ -51,6 +51,7 @@ for ((k=0;k<group_numbers;k++)); do
 
         # genarate key pair for authentification between ssh container and group containers
         ssh-keygen -t rsa -b 4096 -C "comment" -P "" -f "groups/g"${group_number}"/id_rsa" -q
+        echo 'command="vtysh" '$(cat "${DIRECTORY}"/groups/g"${group_number}"/id_rsa.pub) > "${DIRECTORY}"/groups/g"${group_number}"/id_rsa_command.pub
 
         # copy private key to container and change access rights
         docker cp "${DIRECTORY}"/groups/g"${group_number}"/id_rsa "${group_number}"_ssh:/root/.ssh/id_rsa
@@ -87,7 +88,7 @@ for ((k=0;k<group_numbers;k++)); do
             #ssh login for router"
             subnet_router="$(subnet_sshContainer_groupContainer "${group_number}" "${i}" -1 "router")"
             ./setup/ovs-docker.sh add-port "${group_number}"-ssh ssh "${group_number}"_"${rname}"router --ipaddress="${subnet_router}"
-            docker cp "${DIRECTORY}"/groups/g"${group_number}"/id_rsa.pub "${group_number}"_"${rname}"router:/root/.ssh/authorized_keys
+            docker cp "${DIRECTORY}"/groups/g"${group_number}"/id_rsa_command.pub "${group_number}"_"${rname}"router:/root/.ssh/authorized_keys
 
             if [ "${property2}" == "host" ];then
                 #ssh login for host
