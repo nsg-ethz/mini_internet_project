@@ -93,8 +93,12 @@ for ((k=0;k<group_numbers;k++)); do
                         -CAcreateserial -CAserial $location/ca.srl 2>/dev/null
                 done
 
-                DH_KEY_SIZE=512
-                openssl dhparam -out $location/dh.pem ${DH_KEY_SIZE} 2>/dev/null
+                if grep "SECLEVEL=2" /etc/ssl/openssl.cnf ; then
+                    DH_KEY_SIZE=2048
+                else
+                    DH_KEY_SIZE=512
+                fi
+                openssl dhparam -dsaparam -out $location/dh.pem ${DH_KEY_SIZE} 2>/dev/null
 
 
                 echo "proto udp" >> $location/server.conf
