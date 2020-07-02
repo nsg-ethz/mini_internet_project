@@ -1,2 +1,2 @@
-LOND    MATRIX host
-ZURI    MATRIX_TARGET host
+LOND    MATRIX host:thomahol/d_host
+ZURI    MATRIX_TARGET host:thomahol/d_host

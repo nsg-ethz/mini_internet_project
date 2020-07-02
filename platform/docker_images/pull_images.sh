@@ -6,7 +6,7 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
-for name in router ixp host ssh measurement dns switch matrix vpn; do
+for name in router ixp host ssh measurement dns switch matrix vpn vlc hostm; do
     echo docker pull thomahol/d_$name
     docker pull thomahol/d_$name
 done

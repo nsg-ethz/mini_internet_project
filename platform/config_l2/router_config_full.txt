@@ -1,8 +1,8 @@
-LOND	DNS	host
+LOND	DNS	host:thomahol/d_host
 ZURI	MEASUREMENT	L2-UNIV
-PARI	MATRIX host
+PARI	MATRIX host:thomahol/d_host
 GENE	N/A	L2-UNIV
 NEWY	N/A	L2-NEWYCITY
-BOST	N/A	host
-ATLA	MATRIX_TARGET  host
-MIAM	N/A	host
+BOST	N/A	host:thomahol/d_host
+ATLA	MATRIX_TARGET  host:thomahol/d_host
+MIAM	N/A	host:thomahol/d_host

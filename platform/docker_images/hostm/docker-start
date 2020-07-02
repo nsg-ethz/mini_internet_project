@@ -1,0 +1,13 @@
+#!/bin/sh
+
+set -e
+
+sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/g' /etc/ssh/sshd_config
+
+mkdir -p /var/run/sshd
+chmod 0755 /var/run/sshd
+/usr/sbin/sshd
+
+mkdir -p /root/.ssh
+
+tail -f /dev/null # To keep the container running forever
