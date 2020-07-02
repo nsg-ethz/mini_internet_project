@@ -67,6 +67,11 @@ for ((k=0;k<group_numbers;k++));do
             rname="${router_i[0]}"
             property1="${router_i[1]}"
             property2="${router_i[2]}"
+
+            if [ ${#rname} -gt 15 ]; then
+                echo 'WARNING: Router names must have a length lower than 16'
+            fi
+
             touch "${DIRECTORY}"/groups/g"${group_number}"/"${rname}"/init_conf.sh
             chmod +x "${DIRECTORY}"/groups/g"${group_number}"/"${rname}"/init_conf.sh
 
@@ -80,7 +85,7 @@ for ((k=0;k<group_numbers;k++));do
             echo " -c 'interface lo' \\" >> "${location}"
             echo " -c '"ip address "$(subnet_router "${group_number}" "${i}")""' \\" >> "${location}"
             echo " -c 'exit' \\" >> "${location}"
-                if [[ "${property2}" == "host" ]];then
+                if [[ "${property2}" == host* ]];then
                     echo " -c 'interface host' \\" >> "${location}"
                     echo " -c '"ip address "$(subnet_host_router "${group_number}" "${i}" "router")""'\\" >> "${location}"
                     echo " -c 'exit' \\" >> "${location}"

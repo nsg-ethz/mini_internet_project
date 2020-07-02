@@ -68,7 +68,7 @@ for ((k=0;k<n_groups;k++)); do
                 l2_id[$l2_name]=$i
             fi
 
-            if [ "${property2}" == "host" ];then
+            if [[ "${property2}" == host* ]];then
 
                 # ssh to host
                 echo "if [ \"\${location}\" == \"$rname\" ] && [ \"\${device}\" == \""host"\" ]; then" >> "${file_loc}"
@@ -119,7 +119,7 @@ for ((k=0;k<n_groups;k++)); do
             hname="${host_l[0]}"
 
             if [[ "$hname" != *vpn* ]];then
-                l2_name="${host_l[1]}"
+                l2_name="${host_l[2]}"
 
                 echo "if [ \"\${location}\" == \"$l2_name\" ] && [ \"\${device}\" == \""$hname"\" ]; then" >> "${file_loc}"
                 echo "  subnet=""$(subnet_sshContainer_groupContainer "${group_number}" "${l2_id[$l2_name]}" "${l2_cur[$l2_name]}" "L2")" >> "${file_loc}"

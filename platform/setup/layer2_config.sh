@@ -57,7 +57,7 @@ for ((k=0;k<group_numbers;k++)); do
                 declare -A vlanl2set
                 for ((l=0;l<n_l2_hosts;l++)); do
                     host_l=(${l2_hosts[$l]})
-                    vlan="${host_l[5]}"
+                    vlan="${host_l[6]}"
                     vlanset[$vlan]=0
                     vlanl2set[${property2}-${vlan}]=0
                 done
@@ -87,11 +87,12 @@ for ((k=0;k<group_numbers;k++)); do
         for ((l=0;l<n_l2_hosts;l++)); do
             host_l=(${l2_hosts[$l]})
             hname="${host_l[0]}"
-            l2name="${host_l[1]}"
-            sname="${host_l[2]}"
-            throughput="${host_l[3]}"
-            delay="${host_l[4]}"
-            vlan="${host_l[5]}"
+            dname="${host_l[1]}"
+            l2name="${host_l[2]}"
+            sname="${host_l[3]}"
+            throughput="${host_l[4]}"
+            delay="${host_l[5]}"
+            vlan="${host_l[6]}"
 
             if [ "$group_config" == "Config" ]; then
                 docker exec -d "${group_number}""_L2_""${l2name}_${sname}" \

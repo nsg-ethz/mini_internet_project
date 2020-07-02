@@ -39,7 +39,7 @@ for ((k=0;k<group_numbers;k++)); do
             property1="${router_i[1]}"
             property2="${router_i[2]}"
 
-            if [ "${property2}" == "host" ];then
+            if [[ "${property2}" == host* ]];then
 
                 subnet_bridge="$(subnet_host_router "${group_number}" "${i}" "bridge")"
                 subnet_router="$(subnet_host_router "${group_number}" "${i}" "router")"

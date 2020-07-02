@@ -73,8 +73,9 @@ for ((k=0;k<group_numbers;k++)); do
         for ((l=0;l<n_l2_hosts;l++)); do
             host_l=(${l2_hosts[$l]})
             hname="${host_l[0]}"
-            l2name="${host_l[1]}"
-            sname="${host_l[2]}"
+            dname="${host_l[1]}"
+            l2name="${host_l[2]}"
+            sname="${host_l[3]}"
 
             if [[ $hname != vpn* ]]; then
                 docker run -itd --net='none' --dns="${subnet_dns%/*}" --cap-add=NET_ADMIN \
@@ -83,7 +84,7 @@ for ((k=0;k<group_numbers;k++)); do
                     --sysctl net.ipv4.icmp_ratelimit=0 \
                     --sysctl net.ipv4.icmp_echo_ignore_broadcasts=0 \
                     -v /etc/timezone:/etc/timezone:ro \
-                    -v /etc/localtime:/etc/localtime:ro thomahol/d_host
+                    -v /etc/localtime:/etc/localtime:ro $dname
             fi
         done
 
@@ -93,6 +94,7 @@ for ((k=0;k<group_numbers;k++)); do
             rname="${router_i[0]}"
             property1="${router_i[1]}"
             property2="${router_i[2]}"
+            dname=$(echo $property2 | cut -d ':' -f 2)
 
             location="${DIRECTORY}"/groups/g"${group_number}"/"${rname}"
 
@@ -117,14 +119,14 @@ for ((k=0;k<group_numbers;k++)); do
                 -v /etc/localtime:/etc/localtime:ro thomahol/d_router
 
             # start host
-            if [ "${property2}" == "host" ];then
+            if [[ "${property2}" == host* ]];then
                 docker run -itd --net='none' --dns="${subnet_dns%/*}"  \
                     --name="${group_number}""_""${rname}""host" --cap-add=NET_ADMIN \
                     --cpus=2 --pids-limit 100 --hostname "${rname}""_host" \
                     --sysctl net.ipv4.icmp_ratelimit=0 \
                     --sysctl net.ipv4.icmp_echo_ignore_broadcasts=0 \
                     -v /etc/timezone:/etc/timezone:ro \
-                    -v /etc/localtime:/etc/localtime:ro thomahol/d_host \
+                    -v /etc/localtime:/etc/localtime:ro $dname
                     # add this for bgpsimple -v ${DIRECTORY}/docker_images/host/bgpsimple.pl:/home/bgpsimple.pl \
 
             fi
