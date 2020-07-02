@@ -57,7 +57,8 @@ for ((k=0;k<group_numbers;k++)); do
 
                 # set default ip address and default gw in host
                 if [ "$group_config" == "Config" ]; then
-                    echo "docker exec -d "${group_number}"_"${rname}"host ifconfig "${rname}"router "${subnet_host}" up" >> "${DIRECTORY}"/groups/ip_setup.sh
+                    echo "docker exec -d "${group_number}"_"${rname}"host ip a add "${subnet_host}" dev "${rname}"router" >> "${DIRECTORY}"/groups/ip_setup.sh
+                    echo "docker exec -d "${group_number}"_"${rname}"host ip link set dev "${rname}"router up" >> "${DIRECTORY}"/groups/ip_setup.sh
                     echo "docker exec -d "${group_number}"_"${rname}"host ip route add default via "${subnet_router%/*} >> "${DIRECTORY}"/groups/ip_setup.sh
                 fi
             fi
