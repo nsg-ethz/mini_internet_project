@@ -306,7 +306,7 @@ cd /home
 python ping.py
 ```
 
-The html file `matrix.html` is then automatically generated and periodically updated. You can then download this file and make it available to the students on your website.
+The html file `matrix.html` is then automatically generated and periodically updated. You can then download this file and make it available to the students on your website. We share the CSS files in the directory `docker_images/matrix/css`.
 
 #### The DNS service
 
