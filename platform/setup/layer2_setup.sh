@@ -44,6 +44,11 @@ for ((k=0;k<group_numbers;k++)); do
         n_l2_hosts=${#l2_hosts[@]}
         n_l2_links=${#l2_links[@]}
 
+        if [ "${n_l2_links}" = "0" -a "${n_l2_links}" = "0" -a "${n_l2_links}" = "0" ]; then
+            # No L2 config, skip
+            continue
+        fi
+
         br_name="l2-"${group_number}
         echo -n "-- add-br "${br_name}" " >> "${DIRECTORY}"/groups/add_bridges.sh
         echo "ovs-vsctl set bridge "${br_name}" other-config:forward-bpdu=true" >> "${DIRECTORY}"/groups/l2_init_switch.sh
