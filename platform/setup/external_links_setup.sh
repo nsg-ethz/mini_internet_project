@@ -53,7 +53,7 @@ for ((i=0;i<n_extern_links;i++)); do
         br_name="ixp-""${grp_2}""-""${grp_1}"
 
         echo -n "-- add-br "${br_name}" " >> "${DIRECTORY}"/groups/add_bridges.sh
-        echo "ip a add 0.0.0.0 dev ${br_name}" >> "${DIRECTORY}"/groups/ip_setup.sh
+        echo "ip link set dev ${br_name} up" >> "${DIRECTORY}"/groups/ip_setup.sh
 
         ./setup/ovs-docker.sh add-port  "${br_name}" ixp_"${grp_2}" \
           "${grp_1}"_"${router_grp_1}"router --delay="${delay}" --throughput="${throughput}"
@@ -63,7 +63,7 @@ for ((i=0;i<n_extern_links;i++)); do
         br_name="ext-""${i}"
 
         echo -n "-- add-br "${br_name}" " >> "${DIRECTORY}"/groups/add_bridges.sh
-        echo "ip a add 0.0.0.0 dev ${br_name}" >> "${DIRECTORY}"/groups/ip_setup.sh
+        echo "ip link set dev ${br_name} up" >> "${DIRECTORY}"/groups/ip_setup.sh
 
         ./setup/ovs-docker.sh add-port  "${br_name}" ext_"${grp_2}"_"${router_grp_2}" \
         "${grp_1}"_"${router_grp_1}"router --delay="${delay}" --throughput="${throughput}"

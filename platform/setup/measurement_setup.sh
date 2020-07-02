@@ -29,7 +29,7 @@ subnet_ssh_measurement="$(subnet_ext_sshContainer -1 "MEASUREMENT")"
 ./setup/ovs-docker.sh add-port ssh_to_group ssh_in MEASUREMENT --ipaddress="${subnet_ssh_measurement}"
 
 echo -n "-- add-br measurement " >> "${DIRECTORY}"/groups/add_bridges.sh
-echo "ip a add 0.0.0.0 dev measurement" >> "${DIRECTORY}"/groups/ip_setup.sh
+echo "ip link set dev measurement up" >> "${DIRECTORY}"/groups/ip_setup.sh
 
 for ((k=0;k<group_numbers;k++)); do
     group_k=(${groups[$k]})
