@@ -19,7 +19,7 @@ With this platform, you can easily build your own mini-Internet, tailored for yo
 The documentation as well as the source code of the platform can be found in the [platform](platform) directory.
 In a nutshell, after defining your topology in configuration files, you can build your mini-Internet with a bash script and use it for your networking class. 
 
-If you use the platforn, please cite our SIGCOMM CCR'20 **[paper](https://dl.acm.org/doi/pdf/10.1145/3402413.3402420)**. Here is the bibtex:
+If you use the platform, please cite our SIGCOMM CCR'20 **[paper](https://dl.acm.org/doi/pdf/10.1145/3402413.3402420)**. Here is the bibtex:
 ```
 @article{10.1145/3402413.3402420,
 author = {Holterbach, Thomas and B\"{u}, Tobias and Rellstab, Tino and Vanbever, Laurent},
@@ -34,6 +34,7 @@ journal = {SIGCOMM Comput. Commun. Rev.},
 
 ### News
 
+*29/06/20:* Added support for MPLS and Multicast \
 *15/04/20:* Fixed a security issue with the docker containers. Now students' containers only run with limited capabilities. \
 *18/03/20:* Several fixes (e.g., prevent containers to crash because too many processes are running) and improvements (e.g., configure different internal topologies)
 

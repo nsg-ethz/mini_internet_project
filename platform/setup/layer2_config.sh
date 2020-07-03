@@ -104,7 +104,9 @@ for ((k=0;k<group_numbers;k++)); do
                     subnet_host=$(subnet_l2 $group_number $((${l2_id["L2-"$l2name]}-1)) $vlan $((${vlanl2set["L2-"${l2name}-${vlan}]}+${l2_routerid["L2-"$l2name]})))
 
                     docker exec -d ${group_number}_L2_${l2name}_${hname} \
-                        ifconfig ${group_number}-${sname} $subnet_host up
+                        ip a add $subnet_host dev ${group_number}-${sname}
+                    docker exec -d ${group_number}_L2_${l2name}_${hname} \
+                        ip link set dev ${group_number}-${sname} up
 
                     subnet_gw="$(subnet_l2 ${group_number} $((${l2_id["L2-"$l2name]}-1)) ${vlan} 1)"
 

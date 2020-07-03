@@ -20,14 +20,18 @@ for ((k=0;k<group_numbers;k++)); do
     group_as="${group_k[1]}"
 
     if [ "${group_as}" != "IXP" ];then
-        ufw allow "$((group_number+2000))"
+        if command -v ufw > /dev/null 2>&1; then
+            ufw allow "$((group_number+2000))"
+        fi
         subnet=$(subnet_ext_sshContainer "${group_number}" "sshContainer")
         ssh -i groups/id_rsa -o "StrictHostKeyChecking no" -f -N -L 0.0.0.0:"$((group_number+2000))":"${subnet%/*}":22 root@${subnet%/*}
     fi
 done
 
 # measurement
-ufw allow 2099
+if command -v ufw > /dev/null 2>&1; then
+    ufw allow 2099
+fi
 subnet=$(subnet_ext_sshContainer "${group_number}" "MEASUREMENT")
 ssh -i groups/id_rsa -o "StrictHostKeyChecking no" -f -N -L 0.0.0.0:2099:"${subnet%/*}":22 root@${subnet%/*}
 

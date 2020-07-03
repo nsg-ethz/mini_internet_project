@@ -18,6 +18,7 @@ echo -n "-- add-br ssh_to_group " >> "${DIRECTORY}"/groups/add_bridges.sh
 
 subnet_bridge="$(subnet_ext_sshContainer -1 "bridge")"
 echo "ip a add $subnet_bridge dev ssh_to_group" >> "${DIRECTORY}"/groups/ip_setup.sh
+echo "ip link set dev ssh_to_group up" >> "${DIRECTORY}"/groups/ip_setup.sh
 
 # General a pair of keys for the server, and put the public in the proxy container
 ssh-keygen -t rsa -b 4096 -C "comment" -P "" -f "groups/id_rsa" -q
@@ -68,7 +69,7 @@ for ((k=0;k<group_numbers;k++)); do
         subnet_ssh_to_cont="$(subnet_sshContainer_groupContainer "${group_number}" -1 -1 "sshContainer")"
 
         echo -n "-- add-br "${group_number}"-ssh " >> "${DIRECTORY}"/groups/add_bridges.sh
-        echo "ip a add 0.0.0.0 dev "${group_number}"-ssh" >> "${DIRECTORY}"/groups/ip_setup.sh
+        echo "ip link set dev ${group_number}-ssh up" >> "${DIRECTORY}"/groups/ip_setup.sh
 
 
         # Connect the proxy container to the virtual devices
