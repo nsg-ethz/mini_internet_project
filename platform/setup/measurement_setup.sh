@@ -18,7 +18,9 @@ group_numbers=${#groups[@]}
 subnet_dns="$(subnet_router_DNS -1 "dns")"
 docker run -itd --net='none' --dns="${subnet_dns%/*}" \
     --sysctl net.ipv4.icmp_ratelimit=0 \
-	--name="MEASUREMENT" --cpus=2 --pids-limit 100 \
+    --name="MEASUREMENT" --cpus=2 --pids-limit 100 \
+    -v /etc/timezone:/etc/timezone:ro \
+    -v /etc/localtime:/etc/localtime:ro \
     --cap-add=NET_ADMIN thomahol/d_measurement
 
 # cache the docker pid for ovs-docker.sh

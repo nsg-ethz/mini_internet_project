@@ -20,7 +20,10 @@ echo "source \"${DIRECTORY}/setup/ovs-docker.sh\"" >> "${DIRECTORY}"/groups/dns_
 chmod +x "${DIRECTORY}"/groups/dns_routes.sh
 
 # dns
-docker run -itd --net='none'  --name="DNS" --privileged thomahol/d_dns
+docker run -itd --net='none' --name="DNS" --privileged \
+    -v /etc/timezone:/etc/timezone:ro \
+    -v /etc/localtime:/etc/localtime:ro \
+    thomahol/d_dns
 
 # cache the container pid for ovs-docker.sh
 source "${DIRECTORY}/groups/docker_pid.map"
