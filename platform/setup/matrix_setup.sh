@@ -23,10 +23,13 @@ chmod +x "${location}"/destination_ips.txt
 
 # start matrix container
 docker run -itd --net='none' --name="MATRIX" --privileged --pids-limit 500 \
+    --sysctl net.ipv4.icmp_ratelimit=0 \
     -v "${location}"/destination_ips.txt:/home/destination_ips.txt thomahol/d_matrix
 
-# no icmp rate limiting
-docker exec -d MATRIX bash -c 'sysctl -w net.ipv4.icmp_ratelimit="0" > /dev/null' &
+# cache the docker pid for ovs-docker.sh
+source ${DIRECTORY}/groups/docker_pid.map
+DOCKER_TO_PID['MATRIX']=$(docker inspect -f '{{.State.Pid}}' MATRIX)
+declare -p DOCKER_TO_PID > ${DIRECTORY}/groups/docker_pid.map
 
 echo -n "-- add-br matrix " >> "${DIRECTORY}"/groups/add_bridges.sh
 echo "ip link set dev matrix up" >> "${DIRECTORY}"/groups/ip_setup.sh

@@ -21,6 +21,11 @@ docker run -itd --net='none' --dns="${subnet_dns%/*}" \
 	--name="MEASUREMENT" --cpus=2 --pids-limit 100 \
     --cap-add=NET_ADMIN thomahol/d_measurement
 
+# cache the docker pid for ovs-docker.sh
+source ${DIRECTORY}/groups/docker_pid.map
+DOCKER_TO_PID['MEASUREMENT']=$(docker inspect -f '{{.State.Pid}}' MEASUREMENT)
+declare -p DOCKER_TO_PID > ${DIRECTORY}/groups/docker_pid.map
+
 passwd="$(openssl rand -hex 8)"
 echo "${passwd}" >> "${DIRECTORY}"/groups/ssh_measurement.txt
 echo -e ""${passwd}"\n"${passwd}"" | docker exec -i MEASUREMENT passwd root

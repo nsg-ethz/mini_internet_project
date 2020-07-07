@@ -49,7 +49,9 @@ ovs_vsctl () {
 }
 
 create_netns_link () {
-    mkdir -p /var/run/netns
+    if [ ! -e /var/run/netns ]; then
+        mkdir -p /var/run/netns
+    fi
     if [ ! -e /var/run/netns/"$PID" ]; then
         ln -s /proc/"$PID"/ns/net /var/run/netns/"$PID"
         trap 'delete_netns_link' 0
@@ -61,6 +63,19 @@ create_netns_link () {
 
 delete_netns_link () {
     rm -f /var/run/netns/"$PID"
+}
+
+source ./groups/docker_pid.map
+get_docker_pid() {
+    if [[ -v "DOCKER_TO_PID[$1]" ]]; then
+        DOCKER_PID="${DOCKER_TO_PID[$1]}"
+    else
+        echo >&2 "WARNING: get_docker_pid $1 not found in cache"
+        if DOCKER_PID=`docker inspect -f '{{.State.Pid}}' "$1"`; then :; else
+           echo >&2 "$UTIL: Failed to get the PID of the container"
+           exit 1
+        fi
+    fi
 }
 
 add_port () {
@@ -77,27 +92,27 @@ add_port () {
     while [ $# -ne 0 ]; do
         case $1 in
             --ipaddress=*)
-                ADDRESS=`expr X"$1" : 'X[^=]*=\(.*\)'`
+                ADDRESS=${1#*=}
                 shift
                 ;;
             --macaddress=*)
-                MACADDRESS=`expr X"$1" : 'X[^=]*=\(.*\)'`
+                MACADDRESS=${1#*=}
                 shift
                 ;;
             --gateway=*)
-                GATEWAY=`expr X"$1" : 'X[^=]*=\(.*\)'`
+                GATEWAY=${1#*=}
                 shift
                 ;;
             --mtu=*)
-                MTU=`expr X"$1" : 'X[^=]*=\(.*\)'`
+                MTU=${1#*=}
                 shift
                 ;;
             --delay=*)
-                DELAY=`expr X"$1" : 'X[^=]*=\(.*\)'`
+                DELAY=${1#*=}
                 shift
                 ;;
             --throughput=*)
-                THROUGHPUT=`expr X"$1" : 'X[^=]*=\(.*\)'`
+                THROUGHPUT=${1#*=}
                 shift
                 ;;
             *)
@@ -107,10 +122,8 @@ add_port () {
         esac
     done
 
-    if PID=`docker inspect -f '{{.State.Pid}}' "$CONTAINER"`; then :; else
-        echo >&2 "$UTIL: Failed to get the PID of the container"
-        exit 1
-    fi
+    get_docker_pid $CONTAINER
+    PID=$DOCKER_PID
 
     create_netns_link
 
@@ -140,7 +153,7 @@ add_port () {
     echo "  ip link set "${PORTNAME}_l" up" >> groups/restart_container.sh
 
     # Move "${PORTNAME}_c" inside the container and changes its name.
-    echo "PID=$(docker inspect -f '{{.State.Pid}}' "$CONTAINER")">> groups/ip_setup.sh
+    echo "PID=$PID">> groups/ip_setup.sh
     echo "create_netns_link" >> groups/ip_setup.sh
     echo "ip link set "${PORTNAME}_c" netns "\$PID"" >> groups/ip_setup.sh
     echo "ip netns exec "\$PID" ip link set dev "${PORTNAME}_c" name "$INTERFACE"" >> groups/ip_setup.sh
@@ -222,21 +235,12 @@ connect_ports () {
 
 }
 
-UTIL=$(basename $0)
-search_path ovs-vsctl
-search_path docker
-search_path uuidgen
-
-if (ip netns) > /dev/null 2>&1; then :; else
-    echo >&2 "$UTIL: ip utility not found (or it does not support netns),"\
-             "cannot proceed"
-    exit 1
-fi
+UTIL=${0##*/}
 
 if [ "$1" == "add-port" ]; then
     shift
-    $(add_port "$@")
+    add_port "$@"
 elif [ "$1" == "connect-ports" ]; then
     shift
-    $(connect_ports "$@")
+    connect_ports "$@"
 fi
