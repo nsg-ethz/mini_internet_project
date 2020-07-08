@@ -88,11 +88,11 @@ When a switch is connected to a L3 router, it must also be indicated in the thir
 
 `layer2_links_config.txt`: This file indicates how the l2 switches are interconnected. For instance by default ETHZ is connected to CERN and EPFL, etc. The last two columns indicate the throughput and the delay of the link, respectively. The first and third columns indicate the name of the L2 network in which the switches in the second and fourth columns are, respectively. The L2 names should be identical since it is not possible to connect two switches that are in two different L2 network. 
 
-`layer2_hosts_config.txt`: This file indicates the hosts that are in the layer 2 network, and to which switch they are directly connected to. For instance the host student_1 is by default in the L2 network named UNIV and is connected to CERN. The next two columns indicate the throughout and delay, respectively. The last column indicates the VLAN the host belongs to. Observe that a host can be a VPN server, in which case it must start with "vpn_".
+`layer2_hosts_config.txt`: This file indicates the hosts that are in the layer 2 network, the docker image they are running and to which switch they are directly connected to. For instance the host student_1 is by default in the L2 network named UNIV, runs the docker image `thomahol/d_host` and is connected to CERN. The next two columns indicate the throughout and delay, respectively. The last column indicates the VLAN the host belongs to. Observe that a host can be a VPN server, in which case it must start with "vpn_".
 
 #### Layer 3 topology
 
-`router_config_full.txt (or router_config_small.txt)`: This file contains all the routers in the L3 topology. In the default L3 topology there are 8 routers. The second column indicates if a tool or service (such as the connectivity matrix or the DNS server) is connected to the network through the corresponding router. For instance, the DNS server is connected to LOND. Finally the last column indicates whether a single host or a L2 network is connected to the router. In the default topology, both routers ZURI and GENE are connected to a L2 network, all the others are connected to a single host.
+`router_config_full.txt (or router_config_small.txt)`: This file contains all the routers in the L3 topology. In the default L3 topology there are 8 routers. The second column indicates if a tool or service (such as the connectivity matrix or the DNS server) is connected to the network through the corresponding router. For instance, the DNS server is connected to LOND. Finally the last column indicates whether a single host or a L2 network is connected to the router. In the default topology, both routers ZURI and GENE are connected to a L2 network, all the others are connected to a single host. In case a router is connected to a single host, the third column indicates which docker image the host is running. 
 
 `internal_links_config_full.txt (or internal_links_config_small.txt)`: This is the internal topology. The first two columns indicate which pair of routers are interconnected, the last two columns indicate the throughput and delay of the link, respectively.
 
@@ -345,3 +345,5 @@ Note: sometimes the MAC address on some interfaces must follow a particular sche
 #### MPLS and Multicast
 
 The mini-Internet can support MPLS and Multicast. To activate MPLS you must turn on the ldp daemon by replacing `ldpd=no` with `ldpd=yes` in `config/daemons`. Similarly, for Multicast you need to replace `pimd=no` with `pimd=yes`. 
+The [`hostm`](docker_images/hostm/Dockerfile) docker image comes with multicast tools such as `smcroute` or `mtools` and can be used to test multicast. The `vlc` docker image comes vlc and can stream a multicast video.
+
