@@ -68,8 +68,9 @@ for ((k=0;k<group_numbers;k++));do
             property1="${router_i[1]}"
             property2="${router_i[2]}"
 
-            if [ ${#rname} -gt 15 ]; then
-                echo 'WARNING: Router names must have a length lower than 16'
+            if [ ${#rname} -gt 10 ]; then
+                echo 'ERROR: Router names must have a length lower or equal than 10'
+                exit 1
             fi
 
             touch "${DIRECTORY}"/groups/g"${group_number}"/"${rname}"/init_conf.sh
