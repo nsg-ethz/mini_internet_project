@@ -17,10 +17,11 @@ for ((k=0;k<group_numbers;k++)); do
     group_layer2_hosts="${group_k[6]}"
     group_layer2_links="${group_k[7]}"
 
-    readarray l2_hosts < "${DIRECTORY}"/config/$group_layer2_hosts
-    n_l2_hosts=${#l2_hosts[@]}
-
     if [ "${group_as}" != "IXP" ];then
+
+        readarray l2_hosts < "${DIRECTORY}"/config/$group_layer2_hosts
+        n_l2_hosts=${#l2_hosts[@]}
+
         for ((l=0;l<n_l2_hosts;l++)); do
             host_l=(${l2_hosts[$l]})
             hname="${host_l[0]}"
