@@ -291,7 +291,7 @@ By default, the measurement container is connected to the router ZURI in every t
 
 #### Connectivity matrix
 
-Another container called `MATRIX` is also connected to every AS. By looking at the config file `config/router_config.txt`, we can see to which router it is connected in every AS (MATRIX) and towards which router it sends ping requests in every other AS (MATRIX_TARGET). By default, the matrix container is connected to PARI, and the pings are destined to the ATLA routers.
+Another container called `MATRIX` is also connected to every AS. By looking at the config file `config/router_config_full.txt`, we can see to which router it is connected in every AS (MATRIX) and towards which router it sends ping requests in every other AS (MATRIX_TARGET). By default, the matrix container is connected to PARI, and the pings are destined to the ATLA routers.
 Only the instructor can access the MATRIX container, from the server with:
 
 ```
