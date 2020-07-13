@@ -82,7 +82,7 @@ for ((j=0;j<n_groups;j++)); do
         readarray intern_links < "${DIRECTORY}"/config/$group_internal_links
         n_routers=${#routers[@]}
         n_intern_links=${#intern_links[@]}
-        
+
         echo ";" >> "${location_db}"
         echo "; BIND reverse data file for local loopback interface" >> "${location_db}"
         echo ";" >> "${location_db}"
@@ -125,7 +125,7 @@ for ((j=0;j<n_groups;j++)); do
             property1="${router_i[1]}"
             property2="${router_i[2]}"
 
-            if [ "${property2}" == "host" ];then
+            if [[ "${property2}" == host* ]];then
                 subnet1="$(subnet_host_router "${group_number}" "$i" "host")"
                 subnet2="$(subnet_host_router "${group_number}" "$i" "router")"
 

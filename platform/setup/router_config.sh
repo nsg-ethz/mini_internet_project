@@ -100,7 +100,10 @@ for ((k=0;k<group_numbers;k++));do
                         echo " -c 'exit'\\" >> "${location}"
                 fi
 
+            router_id=$(subnet_router "${group_number}" "${i}")
+
             echo " -c 'router ospf' \\" >> "${location}"
+            echo " -c 'ospf router-id "${router_id%/*}"' \\" >> "${location}"
             echo " -c 'network "$(subnet_router "${group_number}" "${i}")" area 0' \\" >> "${location}"
             echo " -c 'exit'\\" >> "${location}"
             echo " -c 'ip route "$(subnet_group "${group_number}")" null0' \\" >> "${location}"

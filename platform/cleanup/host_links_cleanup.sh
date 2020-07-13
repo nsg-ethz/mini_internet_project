@@ -11,9 +11,7 @@ DIRECTORY="$1"
 source "${DIRECTORY}"/config/subnet_config.sh
 
 readarray groups < "${DIRECTORY}"/config/AS_config.txt
-readarray routers < "${DIRECTORY}"/config/router_config.txt
 group_numbers=${#groups[@]}
-n_routers=${#routers[@]}
 
 for ((k=0;k<group_numbers;k++)); do
     group_k=(${groups[$k]})

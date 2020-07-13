@@ -24,19 +24,22 @@ for ((k=0;k<group_numbers;k++)); do
     group_router_config="${group_k[3]}"
     group_internal_links="${group_k[4]}"
 
-    readarray intern_links < "${DIRECTORY}"/config/$group_internal_links
-    n_intern_links=${#intern_links[@]}
+    if [ "${group_as}" != "IXP" ];then
 
-    for ((i=0;i<n_intern_links;i++)); do
-        row_i=(${intern_links[$i]})
-        router1="${row_i[0]}"
-        router2="${row_i[1]}"
-        IFS=',' read -r -a throughput_array <<< "${row_i[2]}"
-        IFS=',' read -r -a delay_array <<< "${row_i[3]}"
-        throughput_array_index=$((group_number%${#throughput_array[@]}))
-        throughput="${throughput_array[$throughput_array_index]}"
+        readarray intern_links < "${DIRECTORY}"/config/$group_internal_links
+        n_intern_links=${#intern_links[@]}
 
-        docker exec -d ${group_number}_${router1}router sysctl -w net.mpls.conf."port_${router2}".input=1
-        docker exec -d ${group_number}_${router2}router sysctl -w net.mpls.conf."port_${router1}".input=1
-    done
+        for ((i=0;i<n_intern_links;i++)); do
+            row_i=(${intern_links[$i]})
+            router1="${row_i[0]}"
+            router2="${row_i[1]}"
+            IFS=',' read -r -a throughput_array <<< "${row_i[2]}"
+            IFS=',' read -r -a delay_array <<< "${row_i[3]}"
+            throughput_array_index=$((group_number%${#throughput_array[@]}))
+            throughput="${throughput_array[$throughput_array_index]}"
+
+            docker exec -d ${group_number}_${router1}router sysctl -w net.mpls.conf."port_${router2}".input=1
+            docker exec -d ${group_number}_${router2}router sysctl -w net.mpls.conf."port_${router1}".input=1
+        done
+    fi
 done
