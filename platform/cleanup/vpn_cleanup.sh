@@ -7,10 +7,7 @@ set -o nounset
 DIRECTORY="$1"
 
 readarray groups < "${DIRECTORY}"/config/AS_config.txt
-readarray l2_hosts < "${DIRECTORY}"/config/layer2_hosts_config.txt
-
 group_numbers=${#groups[@]}
-n_l2_hosts=${#l2_hosts[@]}
 
 for ((k=0;k<group_numbers;k++)); do
     group_k=(${groups[$k]})
@@ -19,6 +16,9 @@ for ((k=0;k<group_numbers;k++)); do
     group_layer2_switches="${group_k[5]}"
     group_layer2_hosts="${group_k[6]}"
     group_layer2_links="${group_k[7]}"
+
+    readarray l2_hosts < "${DIRECTORY}"/config/$group_layer2_hosts
+    n_l2_hosts=${#l2_hosts[@]}
 
     if [ "${group_as}" != "IXP" ];then
         for ((l=0;l<n_l2_hosts;l++)); do
