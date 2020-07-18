@@ -26,6 +26,7 @@ docker run -itd --net='none' --name="MATRIX" --privileged --pids-limit 500 \
     --sysctl net.ipv4.icmp_ratelimit=0 \
     -v /etc/timezone:/etc/timezone:ro \
     -v /etc/localtime:/etc/localtime:ro \
+    -v "${DIRECTORY}"/config/welcoming_message.txt:/etc/motd:rw \
     -v "${location}"/destination_ips.txt:/home/destination_ips.txt thomahol/d_matrix
 
 # cache the docker pid for ovs-docker.sh
