@@ -52,7 +52,7 @@ for ((k=0;k<group_numbers;k++)); do
 
         # genarate key pair for authentification between ssh container and group containers
         ssh-keygen -t rsa -b 4096 -C "comment" -P "" -f "groups/g"${group_number}"/id_rsa" -q
-        echo 'command="vtysh" '$(cat "${DIRECTORY}"/groups/g"${group_number}"/id_rsa.pub) > "${DIRECTORY}"/groups/g"${group_number}"/id_rsa_command.pub
+        echo 'command="vtysh \"${SSH_ORIGINAL_COMMAND}\"" '$(cat "${DIRECTORY}"/groups/g"${group_number}"/id_rsa.pub) > "${DIRECTORY}"/groups/g"${group_number}"/id_rsa_command.pub
 
         # copy private key to container and change access rights
         docker cp "${DIRECTORY}"/groups/g"${group_number}"/id_rsa "${group_number}"_ssh:/root/.ssh/id_rsa
