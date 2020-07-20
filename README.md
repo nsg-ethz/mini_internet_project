@@ -34,6 +34,7 @@ journal = {SIGCOMM Comput. Commun. Rev.},
 
 ### News
 
+*08/07/20:* Added the docker image to use for the hosts in the config files \
 *29/06/20:* Added support for MPLS and Multicast \
 *15/04/20:* Fixed a security issue with the docker containers. Now students' containers only run with limited capabilities. \
 *18/03/20:* Several fixes (e.g., prevent containers to crash because too many processes are running) and improvements (e.g., configure different internal topologies)
