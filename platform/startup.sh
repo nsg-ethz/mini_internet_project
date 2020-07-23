@@ -126,13 +126,6 @@ echo "matrix_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
 echo "matrix_setup.sh: "
 time ./setup/matrix_setup.sh "${DIRECTORY}"
 
-# echo ""
-# echo ""
-#
-# echo "create__scripts.sh: "
-# echo "create_ping_scripts.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
-# time ./setup/create_ping_scripts.sh "${DIRECTORY}"
-
 echo ""
 echo ""
 
