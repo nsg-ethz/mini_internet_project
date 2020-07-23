@@ -64,7 +64,7 @@ for ((k=0;k<group_numbers;k++)); do
 
                     host_l=(${l2_hosts[$l]})
                     hname="${host_l[0]}"
-                    sname="${host_l[1]}"
+                    sname="${host_l[2]}"
 
                     docker kill ${group_number}_L2_${sname}_${hname} &>/dev/nul || true &
 
