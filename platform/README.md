@@ -82,21 +82,25 @@ The config files are organized as follow:
 config/
 ├── external_links_config.txt    [inter-AS links and policies] 
 └── AS_config.txt                [per-AS topology & config]
-    ├── router_config_small.txt              ^
-    ├── router_config_full.txt               |   L3 internal
-    ├── internal_links_config_small.txt      |   topology
-    ├── internal_links_config.txt            v
-    ├── layer2_switch_config_empty.txt       ^
-    ├── layer2_hosts_config_empty.txt        |
-    ├── layer2_links_config_empty.txt        |   L2 
-    ├── layer2_switches_config.txt           |   topology
-    ├── layer2_hosts_config.txt              |
-    └── layer2_links_config.txt              v
+    ├── router_config.txt                    [L3 internal topology]
+    ├── internal_links_config.txt            [L3 internal topology]
+    ├── layer2_switch_config.txt             ^
+    ├── layer2_links_config.txt              |   [L2 topology]
+    └── layer2_switches_config.txt           v   
 ```
+
+#### List of ASes, with their L2 and L3 topologies
+
+`AS_config.txt`: This file lists all the ASes and IXPs in the mini-Internet. By default, there are 20 ASes and 3 IXPs.
+"Config" in the third column indicates whether the components (hosts, switches and routers) in the corresponding AS should pre-configured, otherwise write "NoConfig". In the topologies we provide, all the ASes are pre-configured by default.
+
+The next columns allow to change the L2 and L3 topologies according to the AS.
+More precisely, the fourth and fifth columns indicate the configuration files to use to build the L3 topology. For instance for AS 3 we use the L3 topology defined in the files `router_config_full.txt` and `internal_links_config.txt`. 
+The next columns indicate the configuration files to use to build the L2 topologies. For instance for AS 3 we use the L2 topology defined in the files `layer2_switches_config.txt`, `layer2_hosts_config.txt` and `layer2_links_config.txt`.
 
 #### Layer 2 topology
 
-You can configure the layer 2 topology with the files `layer2_switches_config.txt`, `layer2_links_config.txt`, `layer2_hosts_config.txt`. Note that there can be several  L2 networks in each AS. Each L2 network has a name. The one used by default in the [config](config) directory is called `UNIV`.
+You can configure the layer 2 topology with the files `layer2_switches_config.txt`, `layer2_links_config.txt`, `layer2_hosts_config.txt`. Note that there can be several L2 networks in each AS. Each L2 network has a name. The one used by default in the [config](config) directory is called `UNIV`.
 
 `layer2_switches_config.txt`: This file lists the switches in the L2 networks. The first column indicates the name of the L2 network. The second line indicates the name of the switch. By default, there are three switches (CERN, ETHZ and EPFL). The third column indicates whether one switch is connected to a L3 router, here by default CERN is connected to the router GENE and ETHZ is connected to the router ZURI. The fourth column indicates the MAC address used as an 'ID' to configure the switch. Finally, the fifth column indicates the bridge ID used in the Spanning Tree computation. Note that a router can only be connected to one L2 network, but a layer 2 network can be connected to one or more routers (see [config_l2](config_l2)). 
 When a switch is connected to a L3 router, it must also be indicated in the third column of the config file `router_config_full.txt (or router_config_small.txt)`, which list the L3 routers. In this config file, the name of the L2 network must always be preceded by "L2-".
@@ -114,12 +118,6 @@ When a switch is connected to a L3 router, it must also be indicated in the thir
 `internal_links_config_full.txt (or internal_links_config_small.txt)`: This is the internal topology. The first two columns indicate which pair of routers are interconnected, the last two columns indicate the throughput and delay of the link, respectively.
 
 #### AS-level topology and policies
-
-`AS_config.txt`: This file lists all the ASes and IXPs in the mini-Internet. By default, there are 20 ASes and 3 IXPs.
-"Config" in the third column indicates whether the components (hosts, switches and routers) in the corresponding AS should pre-configured, otherwise write "NoConfig". In the topologies we provide, all the ASes are pre-configured by default.
-The next columns allow to change the L2 and L3 topologies according to the AS.
-The fourth and fifth columns indicate the configuration files to use to build the L3 topology. For instance for AS 3 we use the L3 topology defined in the files `router_config_full.txt` and `internal_links_config.txt`. 
-The next columns indicate the configuration files to use to build the L2 topologies. For instance for AS 3 we use the L2 topology defined in the files `layer2_switches_config.txt`, `layer2_hosts_config.txt` and `layer2_links_config.txt`.
 
 `external_links_config.txt`: This file describes the inter-AS links and policies, and which router in one AS is connected to which router in another AS. Let's take the following line as an example:
 
