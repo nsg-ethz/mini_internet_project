@@ -4,7 +4,7 @@ In this README, we first explain how to [install the required software](https://
 
 We run our mini-Internet on a server with Ubuntu 18.04 and the Linux 4.15.0 kernel (it also works on an Ubuntu 20.04 and the linux kernel 5.4.0).
 For more details about the used default topology as well as other example topologies, please refer to the [config](config) directory. \
-:information_source: We allocate two cores to the docker containers, thus the server hosting the mini-Internet needs at least two cores. If you want to try it out with one core, you will have to update the file [container_setup.sh](https://github.com/nsg-ethz/mini_internet_project/blob/master/platform/setup/container_setup.sh) script.
+:information_source:  We allocate two cores to the docker containers, thus the server hosting the mini-Internet needs at least two cores. If you want to try it out with one core, you will have to update the [container_setup.sh](https://github.com/nsg-ethz/mini_internet_project/blob/master/platform/setup/container_setup.sh) script.
 
 For further information about how we use the mini-Internet at ETH Zurich, and how we implemented it, please see our [technical report](https://arxiv.org/pdf/1912.02031.pdf).
 
