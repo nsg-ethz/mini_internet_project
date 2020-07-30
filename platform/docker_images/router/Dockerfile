@@ -25,5 +25,7 @@ ENV LC_ALL en_US.UTF-8
 # Add startup script and set it as entrypoint
 COPY docker-start /usr/sbin/docker-start
 COPY looking_glass.sh /home/.looking_glass.sh
+
+RUN mkdir -p /root/.ssh
 RUN chmod +x /usr/sbin/docker-start
 ENTRYPOINT ["/usr/sbin/docker-start"]

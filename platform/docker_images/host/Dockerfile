@@ -16,5 +16,7 @@ ENV LC_ALL en_US.UTF-8
 
 # Add startup script and set it as entrypoint
 ADD docker-start /usr/sbin/docker-start
+
+RUN mkdir -p /root/.ssh
 RUN chmod +x /usr/sbin/docker-start
 ENTRYPOINT ["/usr/sbin/docker-start"]

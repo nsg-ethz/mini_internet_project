@@ -8,6 +8,4 @@ mkdir -p /var/run/sshd
 chmod 0755 /var/run/sshd
 /usr/sbin/sshd
 
-mkdir -p /root/.ssh
-
 tail -f /dev/null # To keep the container running forever
