@@ -73,7 +73,7 @@ for ((k=0;k<n_groups;k++)); do
 
             #ssh to router vtysh
             echo "  subnet=""$(subnet_sshContainer_groupContainer "${group_number}" "${i}" -1  "router")" >> "${file_loc}"
-            echo "  ssh -t -o "StrictHostKeyChecking=no" root@\"\${subnet%???}\" \"vtysh -c 'sh run'\" >> \$dirname/$rname.txt" >> "${file_loc}"
+            echo "  ssh -t -o "StrictHostKeyChecking=no" root@\"\${subnet%???}\" -- -c 'sh run' >> \$dirname/$rname.txt" >> "${file_loc}"
         done
 
         for ((l=0;l<n_l2_switches;l++)); do
