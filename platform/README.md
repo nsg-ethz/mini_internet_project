@@ -360,7 +360,7 @@ Note: sometimes the MAC address on some interfaces must follow a particular sche
 
 #### Saving routers and switches configuration
 
-When building the mini-Internet, a script called `save_configs.sh` is automatically generated and aims at saving all the routers and switches configuration in a zip file. There is one `save_configs.sh` script for each, which is available in the SSH proxy container of the corresponding group. 
+When building the mini-Internet, a script called `save_configs.sh` is automatically generated and aims at saving all the routers and switches configuration in a zip file. There is one `save_configs.sh` script for each group, which is available in the SSH proxy container of the corresponding group. 
 
 #### MPLS and Multicast
 
