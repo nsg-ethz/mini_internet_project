@@ -6,6 +6,7 @@ set -o nounset
 
 DIRECTORY="$1"
 source "${DIRECTORY}"/config/subnet_config.sh
+source "${DIRECTORY}"/setup/ovs-docker.sh
 
 # read configs
 readarray groups < "${DIRECTORY}"/config/AS_config.txt
@@ -70,9 +71,11 @@ for ((k=0;k<group_numbers;k++)); do
                 for vlan in "${!vlanset[@]}"
                 do
                     subnet_router="$(subnet_l2 ${group_number} $((${l2_id[$property2]}-1)) ${vlan} ${l2_routerid[$property2]})"
-
-                    docker exec -d ${group_number}_${rname}router \
-                        vconfig add ${rname}-L2 $vlan
+                    get_docker_pid ${group_number}_${rname}router
+                    PID=$DOCKER_PID
+                    create_netns_link
+                    ip netns exec $PID \
+                        ip link add link ${rname}-L2 name ${rname}-L2.$vlan type vlan id $vlan
 
                     if [ "$group_config" == "Config" ]; then
                         docker exec -d ${group_number}_${rname}router \
@@ -103,14 +106,17 @@ for ((k=0;k<group_numbers;k++)); do
                 if [ "$group_config" == "Config" ]; then
                     subnet_host=$(subnet_l2 $group_number $((${l2_id["L2-"$l2name]}-1)) $vlan $((${vlanl2set["L2-"${l2name}-${vlan}]}+${l2_routerid["L2-"$l2name]})))
 
-                    docker exec -d ${group_number}_L2_${l2name}_${hname} \
+                    get_docker_pid ${group_number}_L2_${l2name}_${hname}
+                    PID=$DOCKER_PID
+                    create_netns_link
+                    ip netns exec $PID \
                         ip a add $subnet_host dev ${group_number}-${sname}
-                    docker exec -d ${group_number}_L2_${l2name}_${hname} \
+                    ip netns exec $PID \
                         ip link set dev ${group_number}-${sname} up
 
                     subnet_gw="$(subnet_l2 ${group_number} $((${l2_id["L2-"$l2name]}-1)) ${vlan} 1)"
 
-                    docker exec -d ${group_number}_L2_${l2name}_${hname} \
+                    ip netns exec $PID \
                         route add default gw ${subnet_gw%/*}
                 fi
             fi

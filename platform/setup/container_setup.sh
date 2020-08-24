@@ -13,6 +13,8 @@ source "${DIRECTORY}"/config/subnet_config.sh
 readarray groups < "${DIRECTORY}"/config/AS_config.txt
 group_numbers=${#groups[@]}
 
+declare -a CONTAINERS
+
 #create all container
 for ((k=0;k<group_numbers;k++)); do
     group_k=(${groups[$k]})
@@ -45,11 +47,13 @@ for ((k=0;k<group_numbers;k++)); do
             -v "${location}"/save_configs.sh:/root/save_configs.sh \
             -v /etc/timezone:/etc/timezone:ro \
             -v /etc/localtime:/etc/localtime:ro \
-            -v "${DIRECTORY}"/config/welcoming_message.txt:/etc/motd \
+            -v "${DIRECTORY}"/config/welcoming_message.txt:/etc/motd:ro \
             thomahol/d_ssh
 
-    	# start switches
-    	for ((l=0;l<n_l2_switches;l++)); do
+        CONTAINERS+=("${group_number}_ssh")
+
+        # start switches
+        for ((l=0;l<n_l2_switches;l++)); do
 
             switch_l=(${l2_switches[$l]})
             l2name="${switch_l[0]}"
@@ -67,6 +71,8 @@ for ((k=0;k<group_numbers;k++)); do
                 --sysctl net.ipv4.icmp_echo_ignore_broadcasts=0 \
                 -v /etc/timezone:/etc/timezone:ro \
                 -v /etc/localtime:/etc/localtime:ro thomahol/d_switch
+
+            CONTAINERS+=(${group_number}_L2_${l2name}_${sname})
         done
 
         # start hosts in l2 network
@@ -85,6 +91,8 @@ for ((k=0;k<group_numbers;k++)); do
                     --sysctl net.ipv4.icmp_echo_ignore_broadcasts=0 \
                     -v /etc/timezone:/etc/timezone:ro \
                     -v /etc/localtime:/etc/localtime:ro $dname
+
+                CONTAINERS+=("${group_number}""_L2_""${l2name}""_""${hname}")
             fi
         done
 
@@ -118,6 +126,8 @@ for ((k=0;k<group_numbers;k++)); do
                 -v /etc/timezone:/etc/timezone:ro \
                 -v /etc/localtime:/etc/localtime:ro thomahol/d_router
 
+            CONTAINERS+=("${group_number}""_""${rname}""router")
+
             # start host
             if [[ "${property2}" == host* ]];then
                 docker run -itd --net='none' --dns="${subnet_dns%/*}"  \
@@ -128,6 +138,7 @@ for ((k=0;k<group_numbers;k++)); do
                     -v /etc/localtime:/etc/localtime:ro $dname
                     # add this for bgpsimple -v ${DIRECTORY}/docker_images/host/bgpsimple.pl:/home/bgpsimple.pl \
 
+                CONTAINERS+=("${group_number}""_""${rname}""host")
             fi
         done
 
@@ -149,6 +160,15 @@ for ((k=0;k<group_numbers;k++)); do
             -v /etc/localtime:/etc/localtime:ro \
             thomahol/d_ixp
 
+       CONTAINERS+=("${group_number}""_IXP")
     fi
-
 done
+
+# Cache the docker pid to avoid calling docker inspect multiple times
+# Access via setup/ovs-docker.sh get_docker_pid
+readarray -t PIDS <<< $(docker inspect -f '{{.State.Pid}}' "${CONTAINERS[@]}")
+declare -A DOCKER_TO_PID
+for ((i=0;i<${#CONTAINERS[@]};++i)); do
+    DOCKER_TO_PID["${CONTAINERS[$i]}"]=${PIDS[$i]}
+done
+declare -p DOCKER_TO_PID > ${DIRECTORY}/groups/docker_pid.map

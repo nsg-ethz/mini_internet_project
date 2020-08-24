@@ -10,6 +10,7 @@ set -o nounset
 
 DIRECTORY="$1"
 source "${DIRECTORY}"/config/subnet_config.sh
+source "${DIRECTORY}"/setup/ovs-docker.sh
 
 readarray groups < "${DIRECTORY}"/config/AS_config.txt
 
@@ -57,9 +58,12 @@ for ((k=0;k<group_numbers;k++)); do
 
                 # set default ip address and default gw in host
                 if [ "$group_config" == "Config" ]; then
-                    echo "docker exec -d "${group_number}"_"${rname}"host ip a add "${subnet_host}" dev "${rname}"router" >> "${DIRECTORY}"/groups/ip_setup.sh
-                    echo "docker exec -d "${group_number}"_"${rname}"host ip link set dev "${rname}"router up" >> "${DIRECTORY}"/groups/ip_setup.sh
-                    echo "docker exec -d "${group_number}"_"${rname}"host ip route add default via "${subnet_router%/*} >> "${DIRECTORY}"/groups/ip_setup.sh
+                    get_docker_pid "${group_number}"_"${rname}"host
+                    echo "PID=$DOCKER_PID" >> "${DIRECTORY}"/groups/ip_setup.sh
+                    echo "create_netns_link" >> "${DIRECTORY}"/groups/ip_setup.sh
+                    echo "ip netns exec \$PID ip a add "${subnet_host}" dev "${rname}"router" >> "${DIRECTORY}"/groups/ip_setup.sh
+                    echo "ip netns exec \$PID ip link set dev "${rname}"router up" >> "${DIRECTORY}"/groups/ip_setup.sh
+                    echo "ip netns exec \$PID ip route add default via "${subnet_router%/*} >> "${DIRECTORY}"/groups/ip_setup.sh
                 fi
             fi
         done

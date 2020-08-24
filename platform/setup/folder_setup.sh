@@ -80,20 +80,8 @@ echo -n "ovs-vsctl " >> "${location}"/add_ports.sh
 echo -n "ovs-vsctl " >> "${location}"/add_bridges.sh
 echo -n "ovs-vsctl " >> "${location}"/throughput.sh
 
-echo "create_netns_link () { ">> "${location}"/ip_setup.sh
-echo "  mkdir -p /var/run/netns">> "${location}"/ip_setup.sh
-echo "  if [ ! -e /var/run/netns/"\$PID" ]; then">> "${location}"/ip_setup.sh
-echo "    ln -s /proc/"\$PID"/ns/net /var/run/netns/"\$PID"">> "${location}"/ip_setup.sh
-echo "    trap 'delete_netns_link' 0">> "${location}"/ip_setup.sh
-echo "    for signal in 1 2 3 13 14 15; do">> "${location}"/ip_setup.sh
-echo "      trap 'delete_netns_link; trap - \$signal; kill -\$signal \$\$' \$signal">> "${location}"/ip_setup.sh
-echo "     done">> "${location}"/ip_setup.sh
-echo "  fi">> "${location}"/ip_setup.sh
-echo "}">> "${location}"/ip_setup.sh
-echo " ">> "${location}"/ip_setup.sh
-echo "delete_netns_link () {">> "${location}"/ip_setup.sh
-echo "  rm -f /var/run/netns/"\$PID"">> "${location}"/ip_setup.sh
-echo "}">> "${location}"/ip_setup.sh
+echo "source \"${DIRECTORY}/setup/ovs-docker.sh\"" >> "${location}"/ip_setup.sh
+echo "source \"${DIRECTORY}/setup/ovs-docker.sh\"" >> "${location}"/add_vpns.sh
 
 if [ $# -ne 1 ]; then
     echo $0: usage ./make_vms dst_grp
@@ -105,17 +93,4 @@ echo "  echo \$0: usage ./restart_container.sh container_name" >> "${location}"/
 echo "  exit 1" >> "${location}"/restart_container.sh
 echo "fi" >> "${location}"/restart_container.sh
 echo "container_name=\$1" >> "${location}"/restart_container.sh
-echo "create_netns_link () { ">> "${location}"/restart_container.sh
-echo "  mkdir -p /var/run/netns">> "${location}"/restart_container.sh
-echo "  if [ ! -e /var/run/netns/"\$PID" ]; then">> "${location}"/restart_container.sh
-echo "    ln -s /proc/"\$PID"/ns/net /var/run/netns/"\$PID"">> "${location}"/restart_container.sh
-echo "    trap 'delete_netns_link' 0">> "${location}"/restart_container.sh
-echo "    for signal in 1 2 3 13 14 15; do">> "${location}"/restart_container.sh
-echo "      trap 'delete_netns_link; trap - \$signal; kill -\$signal \$\$' \$signal">> "${location}"/restart_container.sh
-echo "     done">> "${location}"/restart_container.sh
-echo "  fi">> "${location}"/restart_container.sh
-echo "}">> "${location}"/restart_container.sh
-echo " ">> "${location}"/restart_container.sh
-echo "delete_netns_link () {">> "${location}"/restart_container.sh
-echo "  rm -f /var/run/netns/"\$PID"">> "${location}"/restart_container.sh
-echo "}">> "${location}"/restart_container.sh
+echo "source \"${DIRECTORY}/setup/ovs-docker.sh\"" >> "${location}"/restart_container.sh
