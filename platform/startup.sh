@@ -6,6 +6,30 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
+# Check for programs we'll need.
+search_path () {
+    save_IFS=$IFS
+    IFS=:
+    for dir in $PATH; do
+        IFS=$save_IFS
+        if test -x "$dir/$1"; then
+            return 0
+        fi
+    done
+    IFS=$save_IFS
+    echo >&2 "$0: $1 not found in \$PATH, please install and try again"
+    exit 1
+}
+
+search_path ovs-vsctl
+search_path docker
+search_path uuidgen
+
+if (ip netns) > /dev/null 2>&1; then :; else
+    echo >&2 "${0##*/}: ip utility not found (or it does not support netns),"\
+             "cannot proceed"
+    exit 1
+fi
 
 DIRECTORY=$(cd `dirname $0` && pwd)
 

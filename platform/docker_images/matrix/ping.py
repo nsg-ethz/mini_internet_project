@@ -66,9 +66,9 @@ def update_matrix(as_list, co_dic, t):
         fd.write('\t\t\t<td>G'+str(asn_from)+'</td>\n')
         for asn_to in sorted(as_list.keys()):
             if co_dic[asn_from][asn_to]:
-                fd.write('\t\t\t\t<td class="connectivity-success"><span class="glyphicon glyphicon-ok text-success"></td>\n')
+                fd.write('\t\t\t\t<td class="connectivity-success" title="AS{} <-> AS{}: Reachable"><span class="glyphicon glyphicon-ok text-success"></td>\n'.format(asn_from, asn_to))
             else:
-                fd.write('\t\t\t\t<td class="connectivity-failure"><span class="glyphicon glyphicon-remove text-danger"></td>\n')
+                fd.write('\t\t\t\t<td class="connectivity-failure" title="AS{} <-> AS{}: Not Reachable"><span class="glyphicon glyphicon-remove text-danger"></td>\n'.format(asn_from, asn_to))
         fd.write('\t\t\t</tr>\n')
 
     # fd.write('\t\t\t<thread>\n')

@@ -358,6 +358,10 @@ docker start CONTAINER_NAME
 
 Note: sometimes the MAC address on some interfaces must follow a particular scheme (for instance the ones connected to the MATRIX container). Configuring these MAC addresses must be done manually.
 
+#### Saving routers and switches configuration
+
+When building the mini-Internet, a script called `save_configs.sh` is automatically generated and aims at saving all the routers and switches configuration in a zip file. There is one `save_configs.sh` script for each group, which is available in the SSH proxy container of the corresponding group. 
+
 #### MPLS and Multicast
 
 The mini-Internet can support MPLS and Multicast. To activate MPLS you must turn on the ldp daemon by replacing `ldpd=no` with `ldpd=yes` in `config/daemons`. Similarly, for Multicast you need to replace `pimd=no` with `pimd=yes`. 
