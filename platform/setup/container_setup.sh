@@ -110,6 +110,7 @@ for ((k=0;k<group_numbers;k++)); do
                 --sysctl net.mpls.conf.lo.input=1 \
                 --sysctl net.ipv4.icmp_echo_ignore_broadcasts=0 \
                 --sysctl net.mpls.platform_labels=1048575 \
+                --sysctl net.ipv4.tcp_l3mdev_accept=1 \
                 --privileged \
                 --cpus=2 --pids-limit 100 --hostname "${rname}""_router" \
                 -v "${location}"/looking_glass.txt:/home/looking_glass.txt \
