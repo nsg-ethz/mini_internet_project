@@ -47,7 +47,7 @@ for ((k=0;k<group_numbers;k++)); do
             docker kill "${group_number}""_""${rname}""router" &>/dev/nul || true &
 
             # kill host or layer 2
-            if [[ "${property2}" == host* ]];then
+            if [ "$(echo ${property2} | sed 's/:.*//g')" == "host" ]; then
                 docker kill "${group_number}""_""${rname}""host" &>/dev/nul || true &
 
             elif [[ "${property2}" == *L2* ]];then
