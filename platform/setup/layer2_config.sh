@@ -87,7 +87,7 @@ for ((k=0;k<group_numbers;k++)); do
                     else
                         if [ "$group_config" == "Config" ]; then
                             docker exec -d ${group_number}_${rname}router \
-                                vtysh -c 'conf t' -c 'interface '${rname}'-L2.'$vlan -c 'ip address '$subnet_router
+                                vtysh -c 'conf t' -c 'interface '${rname}'-L2' -c 'ip address '$subnet_router
                         fi
                     fi
                 done
