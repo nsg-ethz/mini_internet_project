@@ -74,7 +74,6 @@ for ((k=0;k<group_numbers;k++)); do
                     get_docker_pid ${group_number}_${rname}router
                     PID=$DOCKER_PID
                     create_netns_link
-                    echo $vlan
 
                     if [ "$vlan" != "0" ]; then # VLAN 0 means there is no VLAN
                         ip netns exec $PID \
