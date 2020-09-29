@@ -2,18 +2,15 @@
 
 set -e
 
-chown -R frr:frr /etc/frr
-/etc/init.d/frr start
+/usr/lib/frr/frrinit.sh start
 
 sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/g' /etc/ssh/sshd_config
 
 mkdir -p /var/run/sshd
 chmod 0755 /var/run/sshd
 
+
 /usr/sbin/sshd
 
-
-chmod 0755 /home/.looking_glass.sh
-/home/.looking_glass.sh &
 
 tail -f /dev/null # To keep the container running forever
