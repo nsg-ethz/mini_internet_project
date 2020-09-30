@@ -34,6 +34,7 @@ journal = {SIGCOMM Comput. Commun. Rev.},
 
 ### News
 
+*29/09/20:* Changed the Dockerfile for the router image. Now FRR is compiled from the source with a particular version of the libyang library so that VRF are supported \
 *08/07/20:* Added the docker image to use for the hosts in the config files \
 *29/06/20:* Added support for MPLS and Multicast \
 *15/04/20:* Fixed a security issue with the docker containers. Now students' containers only run with limited capabilities. \
