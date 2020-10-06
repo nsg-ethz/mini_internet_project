@@ -74,6 +74,7 @@ RUN usermod -a -G frrvty frr
 RUN mkdir /frr
 #RUN git clone --depth 1 --branch frr-7.2.1 https://github.com/FRRouting/frr.git /frr
 RUN git clone --branch frr-7.4 https://github.com/FRRouting/frr.git /frr
+#RUN git clone --branch frr-7.3.1 https://github.com/FRRouting/frr.git /frr
 RUN ldconfig
 WORKDIR /frr
 RUN ./bootstrap.sh
