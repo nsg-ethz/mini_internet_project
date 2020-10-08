@@ -22,7 +22,7 @@ In a nutshell, after defining your topology in configuration files, you can buil
 If you use the platform, please cite our SIGCOMM CCR'20 **[paper](https://dl.acm.org/doi/pdf/10.1145/3402413.3402420)**. Here is the bibtex:
 ```
 @article{10.1145/3402413.3402420,
-author = {Holterbach, Thomas and B\"{u}, Tobias and Rellstab, Tino and Vanbever, Laurent},
+author = {Holterbach, Thomas and B\"{u}hler, Tobias and Rellstab, Tino and Vanbever, Laurent},
 title = {An Open Platform to Teach How the Internet Practically Works},
 year = {2020},
 issue_date = {April 2020},
