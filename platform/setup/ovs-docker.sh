@@ -131,7 +131,7 @@ add_port () {
     echo "  echo \"Create Link for $CONTAINER ($INTERFACE) on bridge $BIRDGE\"" >> groups/restart_container.sh
 
     # Create a veth pair.
-    if [[ $(lsb_release -rs) =~ 16* ]]; then
+    if [[ $(lsb_release -rs) == ^16* ]]; then
         ID=`echo "${BRIDGE}_${INTERFACE}_${CONTAINER}" | sha1sum | sed 's/-//g'`
     else
         ID=`uuidgen -s --namespace @url --name "${BRIDGE}_${INTERFACE}_${CONTAINER}" | sed 's/-//g'`
@@ -215,14 +215,14 @@ connect_ports () {
         exit 1
     fi
 
-    if [[ $(lsb_release -rs) =~ 16* ]]; then
+    if [[ $(lsb_release -rs) == 16* ]]; then
         ID1=`echo ${BRIDGE}_${INTERFACE1}_${CONTAINER1} | sha1sum | sed 's/-//g'`
     else
         ID1=`uuidgen -s --namespace @url --name ${BRIDGE}_${INTERFACE1}_${CONTAINER1} | sed 's/-//g'`
     fi
     PORTNAME1="${ID1:0:13}"
 
-    if [[ $(lsb_release -rs) =~ 16* ]]; then
+    if [[ $(lsb_release -rs) == 16* ]]; then
         ID2=`echo ${BRIDGE}_${INTERFACE2}_${CONTAINER2} | sha1sum | sed 's/-//g'`
     else
         ID2=`uuidgen -s --namespace @url --name ${BRIDGE}_${INTERFACE2}_${CONTAINER2} | sed 's/-//g'`

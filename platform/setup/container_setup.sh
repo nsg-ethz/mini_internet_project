@@ -170,7 +170,7 @@ done
 readarray -t PIDS <<< $(docker inspect -f '{{.State.Pid}}' "${CONTAINERS[@]}")
 declare -A DOCKER_TO_PID
 for ((i=0;i<${#CONTAINERS[@]};++i)); do
-    if [[ $(lsb_release -rs) =~ 16* ]]; then
+    if [[ $(lsb_release -rs) == 16* ]]; then
         DOCKER_TO_PID["${CONTAINERS[$i]}"]=$(echo $PIDS | cut -f $(($i+1)) -d ' ')
     else
         DOCKER_TO_PID["${CONTAINERS[$i]}"]=${PIDS[$i]}
