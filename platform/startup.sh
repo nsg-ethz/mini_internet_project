@@ -244,6 +244,8 @@ echo ""
 echo ""
 
 # restart dns server with new configs
-docker exec -d DNS service bind9 restart
+if docker ps | grep -q "DNS"; then
+    docker exec -d DNS service bind9 restart
+fi
 
 echo "$(date +%Y-%m-%d_%H-%M-%S)"
