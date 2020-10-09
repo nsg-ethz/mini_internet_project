@@ -29,15 +29,14 @@ for ((k=0;k<group_numbers;k++)); do
     fi
 done
 
+echo "#!/bin/bash" > "${DIRECTORY}"/groups/dns_routes.sh
+echo "source \"${DIRECTORY}/setup/ovs-docker.sh\"" >> "${DIRECTORY}"/groups/dns_routes.sh
+chmod +x "${DIRECTORY}"/groups/dns_routes.sh
+
 # Stop the script if there is no DNS server
 if [[ "$is_dns" -eq 0 ]]; then
     echo "There is no DNS server, skipping dns_setup.sh"
 else
-
-    echo "#!/bin/bash" > "${DIRECTORY}"/groups/dns_routes.sh
-    echo "source \"${DIRECTORY}/setup/ovs-docker.sh\"" >> "${DIRECTORY}"/groups/dns_routes.sh
-    chmod +x "${DIRECTORY}"/groups/dns_routes.sh
-
     # dns
     docker run -itd --net='none' --name="DNS" --privileged \
         -v /etc/timezone:/etc/timezone:ro \

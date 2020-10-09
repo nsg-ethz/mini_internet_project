@@ -24,7 +24,7 @@ echo "ip link set dev ssh_to_group up" >> "${DIRECTORY}"/groups/ip_setup.sh
 ssh-keygen -t rsa -b 4096 -C "comment" -P "" -f "groups/id_rsa" -q
 cp groups/id_rsa.pub groups/authorized_keys
 
-docker cp "${DIRECTORY}"/groups/authorized_keys MEASUREMENT:/root/.ssh/authorized_keys &
+docker cp "${DIRECTORY}"/groups/authorized_keys MEASUREMENT:/root/.ssh/authorized_keys &>/dev/nul
 
 for ((k=0;k<group_numbers;k++)); do
     group_k=(${groups[$k]})
