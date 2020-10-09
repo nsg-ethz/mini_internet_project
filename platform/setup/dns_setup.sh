@@ -19,6 +19,7 @@ group_numbers=${#groups[@]}
 is_dns=0
 for ((k=0;k<group_numbers;k++)); do
     group_k=(${groups[$k]})
+    group_as="${group_i[1]}"
     group_router_config="${group_k[3]}"
 
     if [ "${group_as}" != "IXP" ];then
