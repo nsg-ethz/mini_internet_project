@@ -244,7 +244,7 @@ echo ""
 echo ""
 
 # restart dns server with new configs
-if docker ps | grep -q "DNS"; then
+if [ -n "$(docker ps | grep "DNS")" ]; then
     docker exec -d DNS service bind9 restart
 fi
 
