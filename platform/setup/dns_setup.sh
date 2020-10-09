@@ -15,6 +15,25 @@ source "${DIRECTORY}"/config/subnet_config.sh
 readarray groups < "${DIRECTORY}"/config/AS_config.txt
 group_numbers=${#groups[@]}
 
+# Check if there is a DNS server
+is_dns=0
+for ((k=0;k<group_numbers;k++)); do
+    group_k=(${groups[$k]})
+    group_router_config="${group_k[3]}"
+
+    if [ "${group_as}" != "IXP" ];then
+        if grep -Fq "DNS" "${DIRECTORY}"/config/$group_router_config; then
+            is_dns=1
+        fi
+    fi
+done
+
+# Stop the script if there is no DNS server
+if [[ "$is_dns" -eq 0 ]]; then
+    echo "There is no DNS server, skipping dns_setup.sh"
+    exit 1
+fi
+
 echo "#!/bin/bash" > "${DIRECTORY}"/groups/dns_routes.sh
 echo "source \"${DIRECTORY}/setup/ovs-docker.sh\"" >> "${DIRECTORY}"/groups/dns_routes.sh
 chmod +x "${DIRECTORY}"/groups/dns_routes.sh

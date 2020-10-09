@@ -14,6 +14,25 @@ source "${DIRECTORY}"/config/subnet_config.sh
 readarray groups < "${DIRECTORY}"/config/AS_config.txt
 group_numbers=${#groups[@]}
 
+# Check if there is a DNS server
+is_matrix=0
+for ((k=0;k<group_numbers;k++)); do
+    group_k=(${groups[$k]})
+    group_router_config="${group_k[3]}"
+
+    if [ "${group_as}" != "IXP" ];then
+        if grep -Fq "MATRIX" "${DIRECTORY}"/config/$group_router_config; then
+            is_matrix=1
+        fi
+    fi
+done
+
+# Stop the script if there is no DNS server
+if [[ "$is_matrix" -eq 0 ]]; then
+    echo "There is no matrix container, skipping matrix_setup.sh"
+    exit 1
+fi
+
 location="${DIRECTORY}"/groups/matrix/
 mkdir $location
 

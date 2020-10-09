@@ -14,6 +14,25 @@ source "${DIRECTORY}"/config/subnet_config.sh
 readarray groups < "${DIRECTORY}"/config/AS_config.txt
 group_numbers=${#groups[@]}
 
+# Check if there is a DNS server
+is_msm=0
+for ((k=0;k<group_numbers;k++)); do
+    group_k=(${groups[$k]})
+    group_router_config="${group_k[3]}"
+
+    if [ "${group_as}" != "IXP" ];then
+        if grep -Fq "MEASUREMENT" "${DIRECTORY}"/config/$group_router_config; then
+            is_msm=1
+        fi
+    fi
+done
+
+# Stop the script if there is no DNS server
+if [[ "$is_msm" -eq 0 ]]; then
+    echo "There is no measurement container, skipping measurement_setup.sh"
+    exit 1
+fi
+
 # start measurement container
 subnet_dns="$(subnet_router_DNS -1 "dns")"
 docker run -itd --net='none' --dns="${subnet_dns%/*}" \
