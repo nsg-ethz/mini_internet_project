@@ -56,7 +56,7 @@ RUN apt-get update && \
     apt-get install -y autoconf autogen && \
     add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
     apt-get update && \
-    apt-get install -y --no-install-recommends $BM_DEPS $BM_RUNTIME_DEPS
+    apt-get install -y --no-install-recommends $BM_DEPS $BM_RUNTIME_DEPS && \
     ./autogen.sh && \
     ./configure --enable-debugger && \
     make && \
