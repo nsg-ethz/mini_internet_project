@@ -57,16 +57,14 @@ RUN apt-get update && \
     add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
     apt-get update && \
     apt-get install -y --no-install-recommends $BM_DEPS $BM_RUNTIME_DEPS
-#    ./autogen.sh && \
-#    ./configure --enable-debugger && \
-#    make && \
-#    make install-strip && \
-#    ldconfig && \
-#    apt-get purge -y $BM_DEPS && \
-#    apt-get autoremove --purge -y && \
-#    rm -rf /behavioral-model /var/cache/apt/* /var/lib/apt/lists/* && \
-#    echo 'Build image ready'
-
+    ./autogen.sh && \
+    ./configure --enable-debugger && \
+    make && \
+    make install-strip && \
+    ldconfig && \
+    apt-get purge -y $BM_DEPS && \
+    apt-get autoremove --purge -y && \
+    rm -rf /behavioral-model /var/cache/apt/* /var/lib/apt/lists/*
 WORKDIR /
 
 COPY docker-start /usr/sbin/docker-start
