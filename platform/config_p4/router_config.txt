@@ -1,3 +1,3 @@
-R1	N/A	host:thomahol/d_host
-P4SWITCH	N/A	host:thomahol/d_host
-R2	N/A host:thomahol/d_host
+R1	frr  N/A	host:thomahol/d_host
+P4SWITCH    bmv2_simple_switch	N/A	host:thomahol/d_host
+R2	frr  N/A host:thomahol/d_host
