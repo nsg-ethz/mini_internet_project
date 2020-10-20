@@ -528,12 +528,14 @@ for ((k=0;k<group_numbers;k++)); do
             #run initial config
             echo " -c 'exit' -c 'write' " >> "${DIRECTORY}"/groups/g"${group_number}"/"${rname}"/init_full_conf.sh
 
-            docker cp "${DIRECTORY}"/groups/g"${group_number}"/"${rname}"/init_conf.sh "${group_number}"_"${rname}"router:/home/init_conf.sh
-            docker exec -d "${group_number}"_"${rname}"router bash ./home/init_conf.sh &
+            if [ "$rtype" == "frr" ]; then
+                docker cp "${DIRECTORY}"/groups/g"${group_number}"/"${rname}"/init_conf.sh "${group_number}"_"${rname}"router:/home/init_conf.sh
+                docker exec -d "${group_number}"_"${rname}"router bash ./home/init_conf.sh &
 
-            if [ "$group_config" == "Config" ]; then
-                docker cp "${DIRECTORY}"/groups/g"${group_number}"/"${rname}"/init_full_conf.sh "${group_number}"_"${rname}"router:/home/init_full_conf.sh
-                docker exec -d "${group_number}"_"${rname}"router bash ./home/init_full_conf.sh &
+                if [ "$group_config" == "Config" ]; then
+                    docker cp "${DIRECTORY}"/groups/g"${group_number}"/"${rname}"/init_full_conf.sh "${group_number}"_"${rname}"router:/home/init_full_conf.sh
+                    docker exec -d "${group_number}"_"${rname}"router bash ./home/init_full_conf.sh &
+                fi
             fi
 
         done
