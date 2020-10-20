@@ -122,8 +122,9 @@ for ((j=0;j<n_groups;j++)); do
         for ((i=0;i<n_routers;i++)); do
             router_i=(${routers[$i]})
             rname="${router_i[0]}"
-            property1="${router_i[1]}"
-            property2="${router_i[2]}"
+            rtype="${router_i[1]}"
+            property1="${router_i[2]}"
+            property2="${router_i[3]}"
 
             if [[ "${property2}" == host* ]];then
                 subnet1="$(subnet_host_router "${group_number}" "$i" "host")"

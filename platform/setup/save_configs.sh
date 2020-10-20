@@ -53,8 +53,9 @@ for ((k=0;k<n_groups;k++)); do
         for ((i=0;i<n_routers;i++)); do
             router_i=(${routers[$i]})
             rname="${router_i[0]}"
-            property1="${router_i[1]}"
-            property2="${router_i[2]}"
+            rtype="${router_i[1]}"
+            property1="${router_i[2]}"
+            property2="${router_i[3]}"
             l2_name=$(echo $property2 | cut -f 2 -d '-')
             l2_id[$l2_name]=1000000
             l2_cur[$l2_name]=0
@@ -63,8 +64,9 @@ for ((k=0;k<n_groups;k++)); do
         for ((i=0;i<n_routers;i++)); do
             router_i=(${routers[$i]})
             rname="${router_i[0]}"
-            property1="${router_i[1]}"
-            property2="${router_i[2]}"
+            rtype="${router_i[1]}"
+            property1="${router_i[2]}"
+            property2="${router_i[3]}"
             l2_name=$(echo $property2 | cut -f 2 -d '-')
 
             if [[ ${l2_id[$l2_name]} == 1000000 ]]; then

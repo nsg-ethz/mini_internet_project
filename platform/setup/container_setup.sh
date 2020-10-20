@@ -100,32 +100,52 @@ for ((k=0;k<group_numbers;k++)); do
         for ((i=0;i<n_routers;i++)); do
             router_i=(${routers[$i]})
             rname="${router_i[0]}"
-            property1="${router_i[1]}"
-            property2="${router_i[2]}"
+            rtype="${router_i[1]}"
+            property1="${router_i[2]}"
+            property2="${router_i[3]}"
             dname=$(echo $property2 | cut -d ':' -f 2)
 
             location="${DIRECTORY}"/groups/g"${group_number}"/"${rname}"
 
-            # start router
-            docker run -itd --net='none'  --dns="${subnet_dns%/*}" \
-                --name="${group_number}""_""${rname}""router" \
-                --sysctl net.ipv4.ip_forward=1 \
-                --sysctl net.ipv4.icmp_ratelimit=0 \
-                --sysctl net.ipv4.fib_multipath_hash_policy=1 \
-                --sysctl net.ipv4.conf.all.rp_filter=0 \
-                --sysctl net.ipv4.conf.default.rp_filter=0 \
-                --sysctl net.ipv4.conf.lo.rp_filter=0 \
-                --sysctl net.mpls.conf.lo.input=1 \
-                --sysctl net.ipv4.icmp_echo_ignore_broadcasts=0 \
-                --sysctl net.mpls.platform_labels=1048575 \
-                --sysctl net.ipv4.tcp_l3mdev_accept=1 \
-                --privileged \
-                --cpus=2 --pids-limit 100 --hostname "${rname}""_router" \
-                -v "${location}"/looking_glass.txt:/home/looking_glass.txt \
-                -v "${location}"/daemons:/etc/frr/daemons \
-                -v "${location}"/frr.conf:/etc/frr/frr.conf \
-                -v /etc/timezone:/etc/timezone:ro \
-                -v /etc/localtime:/etc/localtime:ro thomahol/d_router
+            if [ "$rtype" == "frr" ]; then
+                # start router
+                docker run -itd --net='none'  --dns="${subnet_dns%/*}" \
+                    --name="${group_number}""_""${rname}""router" \
+                    --sysctl net.ipv4.ip_forward=1 \
+                    --sysctl net.ipv4.icmp_ratelimit=0 \
+                    --sysctl net.ipv4.fib_multipath_hash_policy=1 \
+                    --sysctl net.ipv4.conf.all.rp_filter=0 \
+                    --sysctl net.ipv4.conf.default.rp_filter=0 \
+                    --sysctl net.ipv4.conf.lo.rp_filter=0 \
+                    --sysctl net.mpls.conf.lo.input=1 \
+                    --sysctl net.ipv4.icmp_echo_ignore_broadcasts=0 \
+                    --sysctl net.mpls.platform_labels=1048575 \
+                    --sysctl net.ipv4.tcp_l3mdev_accept=1 \
+                    --privileged \
+                    --cpus=2 --pids-limit 100 --hostname "${rname}""_router" \
+                    -v "${location}"/looking_glass.txt:/home/looking_glass.txt \
+                    -v "${location}"/daemons:/etc/frr/daemons \
+                    -v "${location}"/frr.conf:/etc/frr/frr.conf \
+                    -v /etc/timezone:/etc/timezone:ro \
+                    -v /etc/localtime:/etc/localtime:ro thomahol/d_router
+            elif [ "$rtype" == "bmv2_simple_switch" ]; then
+                docker run -itd --net='none'  --dns="${subnet_dns%/*}" \
+                    --name="${group_number}""_""${rname}""router" \
+                    --sysctl net.ipv4.ip_forward=1 \
+                    --sysctl net.ipv4.icmp_ratelimit=0 \
+                    --sysctl net.ipv4.fib_multipath_hash_policy=1 \
+                    --sysctl net.ipv4.conf.all.rp_filter=0 \
+                    --sysctl net.ipv4.conf.default.rp_filter=0 \
+                    --sysctl net.ipv4.conf.lo.rp_filter=0 \
+                    --sysctl net.mpls.conf.lo.input=1 \
+                    --sysctl net.ipv4.icmp_echo_ignore_broadcasts=0 \
+                    --sysctl net.mpls.platform_labels=1048575 \
+                    --sysctl net.ipv4.tcp_l3mdev_accept=1 \
+                    --privileged \
+                    --cpus=2 --pids-limit 100 --hostname "${rname}""_router" \
+                    -v /etc/timezone:/etc/timezone:ro \
+                    -v /etc/localtime:/etc/localtime:ro thomahol/d_p4
+            fi
 
             CONTAINERS+=("${group_number}""_""${rname}""router")
 

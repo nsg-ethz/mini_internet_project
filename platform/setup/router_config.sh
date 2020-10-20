@@ -46,14 +46,20 @@ for ((k=0;k<group_numbers;k++));do
         idtmp=1
         for ((i=0;i<n_routers;i++)); do
             router_i=(${routers[$i]})
-            property2="${router_i[2]}"
+            rname="${router_i[0]}"
+            rtype="${router_i[1]}"
+            property1="${router_i[2]}"
+            property2="${router_i[3]}"
             if [[ "${property2}" == *L2* ]];then
                 l2_id[$property2]=0
             fi
         done
         for ((i=0;i<n_routers;i++)); do
             router_i=(${routers[$i]})
-            property2="${router_i[2]}"
+            rname="${router_i[0]}"
+            rtype="${router_i[1]}"
+            property1="${router_i[2]}"
+            property2="${router_i[3]}"
             if [[ "${property2}" == *L2* ]];then
                 if [[ "${l2_id[$property2]}" -eq "0" ]]; then
                     l2_id[$property2]=$idtmp
@@ -65,8 +71,9 @@ for ((k=0;k<group_numbers;k++));do
         for ((i=0;i<n_routers;i++)); do
             router_i=(${routers[$i]})
             rname="${router_i[0]}"
-            property1="${router_i[1]}"
-            property2="${router_i[2]}"
+            rtype="${router_i[1]}"
+            property1="${router_i[2]}"
+            property2="${router_i[3]}"
 
             if [ ${#rname} -gt 10 ]; then
                 echo 'ERROR: Router names must have a length lower or equal than 10'
@@ -402,7 +409,9 @@ for ((k=0;k<group_numbers;k++)); do
         for ((i=0;i<n_routers;i++)); do
             router_i=(${routers[$i]})
             rname="${router_i[0]}"
-            property1="${router_i[1]}"
+            rtype="${router_i[1]}"
+            property1="${router_i[2]}"
+            property2="${router_i[3]}"
 
             if [ "${property1}" = "MEASUREMENT"  ];then
                 location="${DIRECTORY}"/groups/g"${group_number}"/"${rname}"/init_conf.sh
@@ -436,7 +445,9 @@ for ((k=0;k<group_numbers;k++)); do
         for ((i=0;i<n_routers;i++)); do
             router_i=(${routers[$i]})
             rname="${router_i[0]}"
-            property1="${router_i[1]}"
+            rtype="${router_i[1]}"
+            property1="${router_i[2]}"
+            property2="${router_i[3]}"
 
             if [ "${property1}" = "MATRIX"  ];then
                     location="${DIRECTORY}"/groups/g"${group_number}"/"${rname}"/init_conf.sh
@@ -471,7 +482,9 @@ for ((k=0;k<group_numbers;k++)); do
         for ((i=0;i<n_routers;i++)); do
             router_i=(${routers[$i]})
             rname="${router_i[0]}"
-            property1="${router_i[1]}"
+            rtype="${router_i[1]}"
+            property1="${router_i[2]}"
+            property2="${router_i[3]}"
 
             if [ "${property1}" = "DNS"  ];then
                 location="${DIRECTORY}"/groups/g"${group_number}"/"${rname}"/init_conf.sh
@@ -508,7 +521,9 @@ for ((k=0;k<group_numbers;k++)); do
         for ((i=0;i<n_routers;i++)); do
             router_i=(${routers[$i]})
             rname="${router_i[0]}"
-            property1="${router_i[1]}"
+            rtype="${router_i[1]}"
+            property1="${router_i[2]}"
+            property2="${router_i[3]}"
 
             #run initial config
             echo " -c 'exit' -c 'write' " >> "${DIRECTORY}"/groups/g"${group_number}"/"${rname}"/init_full_conf.sh
