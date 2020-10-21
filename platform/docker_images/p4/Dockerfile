@@ -62,12 +62,12 @@ RUN apt-get update && \
     make && \
     make install-strip && \
     ldconfig && \
-    cp -r tools/ /home/ && \
     apt-get purge -y $BM_DEPS && \
     apt-get autoremove --purge -y && \
     rm -rf /behavioral-model /var/cache/apt/* /var/lib/apt/lists/*
 WORKDIR /
 
+COPY nanomsg_client.py /home/nanomsg_client.py
 COPY docker-start /usr/sbin/docker-start
 RUN chmod +x /usr/sbin/docker-start
 ENTRYPOINT ["/usr/sbin/docker-start"]
