@@ -63,7 +63,7 @@ RUN apt-get update && \
     make install-strip && \
     ldconfig && \
     apt-get purge -y $BM_DEPS && \
-    apt-get autoremove --purge -y &&
+    apt-get autoremove --purge -y && \
     rm -rf /var/cache/apt/* /var/lib/apt/lists/*
     #rm -rf /behavioral-model /var/cache/apt/* /var/lib/apt/lists/*
 WORKDIR /
