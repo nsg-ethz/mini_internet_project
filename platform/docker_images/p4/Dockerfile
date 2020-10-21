@@ -16,7 +16,8 @@ RUN apt-get update && apt-get install -y git \
     vim \
     tcpdump \
     net-tools \
-    dnsutils
+    dnsutils \
+    build-essential
 
 # Set locale
 RUN sed -i -e 's/# \(en_US\.UTF-8 .*\)/\1/' /etc/locale.gen && \
@@ -28,7 +29,6 @@ ENV LC_ALL en_US.UTF-8
 ARG MAKEFLAGS=-j2
 
 ENV BM_DEPS automake \
-            build-essential \
             curl \
             git \
             libjudy-dev \
@@ -63,11 +63,12 @@ RUN apt-get update && \
     make install-strip && \
     ldconfig && \
     apt-get purge -y $BM_DEPS && \
-    apt-get autoremove --purge -y && \
-    rm -rf /behavioral-model /var/cache/apt/* /var/lib/apt/lists/*
+    apt-get autoremove --purge -y &&
+    rm -rf /var/cache/apt/* /var/lib/apt/lists/*
+    #rm -rf /behavioral-model /var/cache/apt/* /var/lib/apt/lists/*
 WORKDIR /
 
-COPY nanomsg_client.py /home/nanomsg_client.py
+#COPY nanomsg_client.py /home/nanomsg_client.py
 COPY docker-start /usr/sbin/docker-start
 RUN chmod +x /usr/sbin/docker-start
 ENTRYPOINT ["/usr/sbin/docker-start"]
