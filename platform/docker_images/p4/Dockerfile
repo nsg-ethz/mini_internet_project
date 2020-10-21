@@ -62,10 +62,13 @@ RUN apt-get update && \
     make && \
     make install-strip && \
     ldconfig && \
-    apt-get purge -y $BM_DEPS && \
+    #apt-get purge -y $BM_DEPS && \
+    #apt-get autoremove --purge -y && \
+    #rm -rf /var/cache/apt/* /var/lib/apt/lists/*
+    #rm -rf /behavioral-model /var/cache/apt/* /var/lib/apt/lists/*
+RUN apt-get purge -y $BM_DEPS && \
     apt-get autoremove --purge -y && \
     rm -rf /var/cache/apt/* /var/lib/apt/lists/*
-    #rm -rf /behavioral-model /var/cache/apt/* /var/lib/apt/lists/*
 WORKDIR /
 
 #COPY nanomsg_client.py /home/nanomsg_client.py
