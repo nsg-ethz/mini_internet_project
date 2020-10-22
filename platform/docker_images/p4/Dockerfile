@@ -61,7 +61,7 @@ RUN apt-get update && \
     ./configure --enable-debugger && \
     make && \
     make install-strip && \
-    ldconfig && \
+    ldconfig &&
     #apt-get purge -y $BM_DEPS && \
     #apt-get autoremove --purge -y && \
     #rm -rf /var/cache/apt/* /var/lib/apt/lists/*
