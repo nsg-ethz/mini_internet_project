@@ -1,0 +1,2 @@
+host_1   thomahol/d_host	TEST   P4SWITCH    10000    1000    0
+host_2   thomahol/d_host	TEST   S1    10000    1000    0

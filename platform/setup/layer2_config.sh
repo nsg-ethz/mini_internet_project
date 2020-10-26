@@ -163,7 +163,6 @@ for ((k=0;k<group_numbers;k++)); do
             l2name="${switch_l[0]}"
             sname="${switch_l[1]}"
             connected="${switch_l[2]}"
-            sys_id="${switch_l[3]}"
 
             if [ "$group_config" == "Config" ]; then
                 if [[ $connected != "N/A" ]]; then

@@ -59,8 +59,9 @@ for ((k=0;k<group_numbers;k++)); do
             l2name="${switch_l[0]}"
             sname="${switch_l[1]}"
             connected="${switch_l[2]}"
-            sys_id="${switch_l[3]}"
-            stp_prio="${switch_l[4]}"
+            stype="${switch_l[3]}"
+            sys_id="${switch_l[4]}"
+            stp_prio="${switch_l[5]}"
 
             docker exec -d "${group_number}""_L2_""${l2name}"_${sname} ovs-vsctl \
                 -- add-br br0 \

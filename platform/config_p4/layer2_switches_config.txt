@@ -1,0 +1,2 @@
+TEST    P4SWITCH    R1  bmv2_simple_switch	aa:aa:aa:aa:aa:aa  1
+TEST    S1    N/A  ovs	bb:bb:bb:bb:bb:bb  1
