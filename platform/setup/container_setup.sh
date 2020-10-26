@@ -58,8 +58,9 @@ for ((k=0;k<group_numbers;k++)); do
             switch_l=(${l2_switches[$l]})
             l2name="${switch_l[0]}"
             sname="${switch_l[1]}"
+            stype="${switch_l[3]}"
 
-            if [ "$rtype" == "ovs" ]; then
+            if [ "$stype" == "ovs" ]; then
                 docker run -itd --net='none' --dns="${subnet_dns%/*}" --cap-add=NET_ADMIN \
                     --cpus=2 --pids-limit 100 --hostname "${sname}" \
                     --name=${group_number}_L2_${l2name}_${sname} \
@@ -72,7 +73,7 @@ for ((k=0;k<group_numbers;k++)); do
                     --sysctl net.ipv4.icmp_echo_ignore_broadcasts=0 \
                     -v /etc/timezone:/etc/timezone:ro \
                     -v /etc/localtime:/etc/localtime:ro thomahol/d_switch
-            elif [ "$rtype" == "bmv2_simple_switch" ]; then
+            elif [ "$stype" == "bmv2_simple_switch" ]; then
                 docker run -itd --net='none' --dns="${subnet_dns%/*}" --cap-add=NET_ADMIN \
                     --cpus=2 --pids-limit 100 --hostname "${sname}" \
                     --name=${group_number}_L2_${l2name}_${sname} \
