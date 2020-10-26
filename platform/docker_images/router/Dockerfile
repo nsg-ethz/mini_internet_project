@@ -86,20 +86,20 @@ RUN make
 RUN make check
 RUN make install
 
-RUN install -m 755 -o frr -g frr -d /var/log/frr
-RUN install -m 755 -o frr -g frr -d /var/opt/frr
-RUN install -m 775 -o frr -g frrvty -d /etc/frr
-RUN install -m 640 -o frr -g frr /dev/null /etc/frr/zebra.conf
-RUN install -m 640 -o frr -g frr /dev/null /etc/frr/bgpd.conf
-RUN install -m 640 -o frr -g frr /dev/null /etc/frr/ospfd.conf
-RUN install -m 640 -o frr -g frr /dev/null /etc/frr/ospf6d.conf
-RUN install -m 640 -o frr -g frr /dev/null /etc/frr/isisd.conf
-RUN install -m 640 -o frr -g frr /dev/null /etc/frr/ripd.conf
-RUN install -m 640 -o frr -g frr /dev/null /etc/frr/ripngd.conf
-RUN install -m 640 -o frr -g frr /dev/null /etc/frr/pimd.conf
-RUN install -m 640 -o frr -g frr /dev/null /etc/frr/ldpd.conf
-RUN install -m 640 -o frr -g frr /dev/null /etc/frr/nhrpd.conf
-RUN install -m 640 -o frr -g frrvty /dev/null /etc/frr/vtysh.conf
+RUN install -m 755 -o frr -g frr -d /var/log/frr && \
+    install -m 755 -o frr -g frr -d /var/opt/frr && \
+    install -m 775 -o frr -g frrvty -d /etc/frr && \
+    install -m 640 -o frr -g frr /dev/null /etc/frr/zebra.conf && \
+    install -m 640 -o frr -g frr /dev/null /etc/frr/bgpd.conf && \
+    install -m 640 -o frr -g frr /dev/null /etc/frr/ospfd.conf && \
+    install -m 640 -o frr -g frr /dev/null /etc/frr/ospf6d.conf && \
+    install -m 640 -o frr -g frr /dev/null /etc/frr/isisd.conf && \
+    install -m 640 -o frr -g frr /dev/null /etc/frr/ripd.conf && \
+    install -m 640 -o frr -g frr /dev/null /etc/frr/ripngd.conf && \
+    install -m 640 -o frr -g frr /dev/null /etc/frr/pimd.conf && \
+    install -m 640 -o frr -g frr /dev/null /etc/frr/ldpd.conf && \
+    install -m 640 -o frr -g frr /dev/null /etc/frr/nhrpd.conf && \
+    install -m 640 -o frr -g frrvty /dev/null /etc/frr/vtysh.conf
 WORKDIR /
 
 # Set locale
@@ -118,5 +118,6 @@ RUN mkdir -p /root/.ssh
 # Add startup script and set it as entrypoint
 COPY docker-start /usr/sbin/docker-start
 COPY looking_glass.sh /home/.looking_glass.sh
+COPY daemons_default /etc/frr/daemons
 RUN chmod +x /usr/sbin/docker-start
 ENTRYPOINT ["/usr/sbin/docker-start"]
