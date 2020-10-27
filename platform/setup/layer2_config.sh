@@ -139,6 +139,25 @@ for ((k=0;k<group_numbers;k++)); do
             trunk_string=${trunk_string}${v},
         done
 
+        declare -A switch_type
+
+        for ((l=0;l<n_l2_switches;l++)); do
+            switch_l=(${l2_switches[$l]})
+            l2name="${switch_l[0]}"
+            sname="${switch_l[1]}"
+            connected="${switch_l[2]}"
+            stype="${switch_l[3]}"
+
+            switch_type[$sname]=$stype
+
+            if [ "$group_config" == "Config" ] && [ "$stype" == "ovs" ]; then
+                if [[ $connected != "N/A" ]]; then
+                    docker exec -d "${group_number}""_L2_""${l2name}_${sname}" \
+                        ovs-vsctl set port ${connected}router trunks=${trunk_string::-1}
+                fi
+            fi
+        done
+
         for ((l=0;l<n_l2_links;l++)); do
             row_l=(${l2_links[$l]})
             l2name1="${row_l[0]}"
@@ -149,27 +168,17 @@ for ((k=0;k<group_numbers;k++)); do
             delay="${row_l[5]}"
 
             if [ "$group_config" == "Config" ]; then
-                docker exec -d "${group_number}""_L2_""${l2name1}_${switch1}" \
-                    ovs-vsctl set port ${group_number}-${switch2} trunks=${trunk_string::-1}
+                if [ ${switch_type["$switch1"]} == "ovs" ]; then
+                    docker exec -d "${group_number}""_L2_""${l2name1}_${switch1}" \
+                        ovs-vsctl set port ${group_number}-${switch2} trunks=${trunk_string::-1}
+                fi
 
-                docker exec -d "${group_number}""_L2_""${l2name2}_${switch2}" \
-                    ovs-vsctl set port ${group_number}-${switch1} trunks=${trunk_string::-1}
-            fi
-        done
-
-        for ((l=0;l<n_l2_switches;l++)); do
-            switch_l=(${l2_switches[$l]})
-            switch_l=(${l2_switches[$l]})
-            l2name="${switch_l[0]}"
-            sname="${switch_l[1]}"
-            connected="${switch_l[2]}"
-
-            if [ "$group_config" == "Config" ]; then
-                if [[ $connected != "N/A" ]]; then
-                    docker exec -d "${group_number}""_L2_""${l2name}_${sname}" \
-                        ovs-vsctl set port ${connected}router trunks=${trunk_string::-1}
+                if [ ${switch_type["$switch2"]} == "ovs" ]; then
+                    docker exec -d "${group_number}""_L2_""${l2name2}_${switch2}" \
+                        ovs-vsctl set port ${group_number}-${switch1} trunks=${trunk_string::-1}
                 fi
             fi
         done
+
     fi
 done
