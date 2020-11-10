@@ -50,25 +50,19 @@ for ((i=0;i<n_extern_links;i++)); do
             router_grp_2="${row_i[1]}"
         fi
 
-        br_name="ixp-""${grp_2}""-""${grp_1}"
+        ./setup/ovs-docker.sh add-link ixp_"${grp_2}" "${grp_1}"_"${router_grp_1}"router \
+            grp_"${grp_1}" "${grp_2}""_IXP"
+        ./setup/ovs-docker.sh mod-link ixp_"${grp_2}" "${grp_1}"_"${router_grp_1}"router \
+            --delay="${delay}" --throughput="${throughput}"
+        ./setup/ovs-docker.sh mod-link grp_"${grp_1}" "${grp_2}""_IXP" \
+            --delay="${delay}" --throughput="${throughput}"
 
-        echo -n "-- add-br "${br_name}" " >> "${DIRECTORY}"/groups/add_bridges.sh
-        echo "ip link set dev ${br_name} up" >> "${DIRECTORY}"/groups/ip_setup.sh
-
-        ./setup/ovs-docker.sh add-port  "${br_name}" ixp_"${grp_2}" \
-          "${grp_1}"_"${router_grp_1}"router --delay="${delay}" --throughput="${throughput}"
-        ./setup/ovs-docker.sh add-port "${br_name}" grp_"${grp_1}" \
-          "${grp_2}""_IXP" --delay="${delay}" --throughput="${throughput}"
     else
-        br_name="ext-""${i}"
-
-        echo -n "-- add-br "${br_name}" " >> "${DIRECTORY}"/groups/add_bridges.sh
-        echo "ip link set dev ${br_name} up" >> "${DIRECTORY}"/groups/ip_setup.sh
-
-        ./setup/ovs-docker.sh add-port  "${br_name}" ext_"${grp_2}"_"${router_grp_2}" \
-        "${grp_1}"_"${router_grp_1}"router --delay="${delay}" --throughput="${throughput}"
-
-        ./setup/ovs-docker.sh add-port "${br_name}" ext_"${grp_1}"_"${router_grp_1}" \
-        "${grp_2}"_"${router_grp_2}"router  --delay="${delay}" --throughput="${throughput}"
+        ./setup/ovs-docker.sh add-link ext_"${grp_2}"_"${router_grp_2}" "${grp_1}"_"${router_grp_1}"router \
+            ext_"${grp_1}"_"${router_grp_1}" "${grp_2}"_"${router_grp_2}"router
+        ./setup/ovs-docker.sh mod-link ext_"${grp_2}"_"${router_grp_2}" "${grp_1}"_"${router_grp_1}"router \
+            --delay="${delay}" --throughput="${throughput}"
+        ./setup/ovs-docker.sh mod-link ext_"${grp_1}"_"${router_grp_1}" "${grp_2}"_"${router_grp_2}"router \
+            --delay="${delay}" --throughput="${throughput}"
     fi
 done

@@ -32,11 +32,6 @@ for ((k=0;k<group_numbers;k++)); do
 
         if [ "$n_intern_links" != "0" ]; then
 
-            br_name="int-""${group_number}"
-
-            echo -n "-- add-br "${br_name}" " >> "${DIRECTORY}"/groups/add_bridges.sh
-            echo "ip link set dev ${br_name} up" >> "${DIRECTORY}"/groups/ip_setup.sh
-
             for ((i=0;i<n_intern_links;i++)); do
                 row_i=(${intern_links[$i]})
                 router1="${row_i[0]}"
@@ -52,15 +47,13 @@ for ((k=0;k<group_numbers;k++)); do
                 subnet_router1="$(subnet_router_router_intern ${group_number} ${i} 1)"
                 subnet_router2="$(subnet_router_router_intern ${group_number} ${i} 2)"
 
-                ./setup/ovs-docker.sh add-port "${br_name}" "port_""${router2}" \
-                "${group_number}"_"${router1}"router --delay="${delay}" --throughput="${throughput}"
+                ./setup/ovs-docker.sh add-link "port_""${router2}" "${group_number}"_"${router1}"router \
+                    "port_""${router1}" "${group_number}"_"${router2}"router
+                ./setup/ovs-docker.sh mod-link "port_""${router2}" "${group_number}"_"${router1}"router \
+                    --delay="${delay}" --throughput="${throughput}"
+                ./setup/ovs-docker.sh mod-link "port_""${router1}" "${group_number}"_"${router2}"router \
+                    --delay="${delay}" --throughput="${throughput}"
 
-                ./setup/ovs-docker.sh add-port "${br_name}" "port_""${router1}" \
-                "${group_number}"_"${router2}"router --delay="${delay}" --throughput="${throughput}"
-
-                ./setup/ovs-docker.sh connect-ports "${br_name}" \
-                "port_""${router2}" "${group_number}"_"${router1}"router \
-                "port_""${router1}" "${group_number}"_"${router2}"router
             done
         fi
     fi

@@ -29,11 +29,6 @@ for ((k=0;k<group_numbers;k++)); do
         readarray routers < "${DIRECTORY}"/config/$group_router_config
         n_routers=${#routers[@]}
 
-        br_name="${group_number}"-host
-
-        echo -n "-- add-br "${br_name}" " >> "${DIRECTORY}"/groups/add_bridges.sh
-        echo "ip a add 0.0.0.0 dev ${br_name}" >> "${DIRECTORY}"/groups/ip_setup.sh
-
         for ((i=0;i<n_routers;i++)); do
             router_i=(${routers[$i]})
             rname="${router_i[0]}"
@@ -47,15 +42,12 @@ for ((k=0;k<group_numbers;k++)); do
                 subnet_router="$(subnet_host_router "${group_number}" "${i}" "router")"
                 subnet_host="$(subnet_host_router "${group_number}" "${i}" "host")"
 
-                ./setup/ovs-docker.sh add-port ${br_name} "host"  \
-                "${group_number}"_"${rname}"router
+                ./setup/ovs-docker.sh add-link "host" "${group_number}"_"${rname}"router \
+                    "${rname}""router" "${group_number}"_"${rname}"host
 
-                ./setup/ovs-docker.sh add-port ${br_name} "${rname}""router" \
-                "${group_number}"_"${rname}"host
-
-                ./setup/ovs-docker.sh connect-ports "${br_name}" \
-                "host" "${group_number}"_"${rname}"router \
-                "${rname}""router" "${group_number}"_"${rname}"host
+                # here would be a good place to add delay/rate limiting for host links
+                ./setup/ovs-docker.sh mod-link "host" "${group_number}"_"${rname}"router
+                ./setup/ovs-docker.sh mod-link "${rname}""router" "${group_number}"_"${rname}"host
 
                 # set default ip address and default gw in host
                 if [ "$group_config" == "Config" ]; then
