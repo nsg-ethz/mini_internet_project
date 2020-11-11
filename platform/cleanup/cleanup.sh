@@ -15,8 +15,8 @@ DIRECTORY="$1"
 # remove all container & restart docker
 docker system prune -f
 
+# remove all OvS switches
 echo -n "ovs-vsctl " > ovs_command.txt
-
 ./cleanup/host_links_cleanup.sh "${DIRECTORY}"
 ./cleanup/layer2_cleanup.sh "${DIRECTORY}"
 ./cleanup/internal_links_cleanup.sh "${DIRECTORY}"
@@ -27,9 +27,13 @@ echo -n "ovs-vsctl " > ovs_command.txt
 ./cleanup/ssh_cleanup.sh "${DIRECTORY}"
 ./cleanup/vpn_cleanup.sh "${DIRECTORY}"
 
-
 bash  < ovs_command.txt || true
 rm -f ovs_command.txt
+
+# remove remaining veth pairs (if file available)
+if [ -f groups/delete_veth_pairs.sh ]; then
+    ./groups/delete_veth_pairs.sh || true
+fi
 
 # delete old running config files
 if [ -e groups ]; then

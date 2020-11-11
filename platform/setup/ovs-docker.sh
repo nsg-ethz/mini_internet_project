@@ -141,7 +141,7 @@ add_port () {
     echo "#ip link add "${PORTNAME}_l" type veth peer name "${PORTNAME}_c >> groups/ip_setup.sh
 
     ip link add "${PORTNAME}_l" type veth peer name "${PORTNAME}_c"
-    echo "ip link delete "${PORTNAME}_l >> groups/delete_veth_pairs.sh
+    echo "ip link delete ${PORTNAME}_l 2> /dev/null" >> groups/delete_veth_pairs.sh
 
     # echo "  ip link delete "${PORTNAME}_l >> groups/restart_container.sh
     echo "  ip link add "${PORTNAME}_l" type veth peer name "${PORTNAME}_c >> groups/restart_container.sh
@@ -264,7 +264,6 @@ add_link () {
     fi
 
     IP_FILE="groups/ip_setup.sh"
-    DEL_FILE="groups/delete_veth_pairs.sh"
 
     # make sure we can find PID of both containers and save them
     get_docker_pid $CONTAINER_IN
@@ -292,7 +291,9 @@ add_link () {
     echo "#ip link add "${PORTNAME}_i" type veth peer name "${PORTNAME}_o"" >> $IP_FILE
 
     ip link add "${PORTNAME}_i" type veth peer name "${PORTNAME}_o"
-    echo "ip link delete "${PORTNAME}_i >> $DEL_FILE
+
+    # adding the links to the deletion file is not required as they are removed once the containers are deleted
+    # echo "ip link delete "${PORTNAME}_i >> groups/delete_veth_pairs.sh
 
     # move PORTNAME_i inside CONTAINER_IN and rename to INTERFACE_IN
     echo "PID=$PID_IN">> $IP_FILE

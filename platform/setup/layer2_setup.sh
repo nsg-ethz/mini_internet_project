@@ -122,6 +122,7 @@ for ((k=0;k<group_numbers;k++)); do
 
             if [[ $hname == vpn* ]]; then
                 echo "ip link add ${group_number}-$hname type veth peer name g${group_number}_$hname" >> "${DIRECTORY}"/groups/add_vpns.sh
+                echo "ip link delete g${group_number}_$hname 2> /dev/null" >> groups/delete_veth_pairs.sh
                 get_docker_pid "${group_number}_L2_${l2name}_${sname}"
                 echo "PID=$DOCKER_PID" >> "${DIRECTORY}"/groups/add_vpns.sh
                 echo "create_netns_link" >> "${DIRECTORY}"/groups/add_vpns.sh
