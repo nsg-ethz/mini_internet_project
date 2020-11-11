@@ -135,6 +135,7 @@ for ((k=0;k<group_numbers;k++)); do
                     --name="${group_number}""_""${rname}""host" --cap-add=NET_ADMIN \
                     --cpus=2 --pids-limit 100 --hostname "${rname}""_host" \
                     --sysctl net.ipv4.icmp_ratelimit=0 \
+                    --sysctl net.ipv4.icmp_echo_ignore_broadcasts=0 \
                     -v /etc/timezone:/etc/timezone:ro \
                     -v /etc/localtime:/etc/localtime:ro $dname
                     # add this for bgpsimple -v ${DIRECTORY}/docker_images/host/bgpsimple.pl:/home/bgpsimple.pl \
