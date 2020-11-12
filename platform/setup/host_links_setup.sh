@@ -40,6 +40,8 @@ for ((k=0;k<group_numbers;k++)); do
             rtype="${router_i[1]}"
             property1="${router_i[2]}"
             property2="${router_i[3]}"
+            throughput="${router_i[4]}"
+            delay="${router_i[5]}"
 
             if [[ "${property2}" == host* ]];then
 
@@ -48,10 +50,10 @@ for ((k=0;k<group_numbers;k++)); do
                 subnet_host="$(subnet_host_router "${group_number}" "${i}" "host")"
 
                 ./setup/ovs-docker.sh add-port ${br_name} "host"  \
-                "${group_number}"_"${rname}"router
+                "${group_number}"_"${rname}"router --throughput="${throughput}"
 
                 ./setup/ovs-docker.sh add-port ${br_name} "${rname}""router" \
-                "${group_number}"_"${rname}"host
+                "${group_number}"_"${rname}"host --throughput="${throughput}"
 
                 ./setup/ovs-docker.sh connect-ports "${br_name}" \
                 "host" "${group_number}"_"${rname}"router \
