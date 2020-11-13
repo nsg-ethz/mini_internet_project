@@ -50,10 +50,10 @@ for ((k=0;k<group_numbers;k++)); do
                 subnet_host="$(subnet_host_router "${group_number}" "${i}" "host")"
 
                 ./setup/ovs-docker.sh add-port ${br_name} "host"  \
-                "${group_number}"_"${rname}"router --throughput="${throughput}"
+                "${group_number}"_"${rname}"router --delay="${delay}" --throughput="${throughput}"
 
                 ./setup/ovs-docker.sh add-port ${br_name} "${rname}""router" \
-                "${group_number}"_"${rname}"host --throughput="${throughput}"
+                "${group_number}"_"${rname}"host --delay="${delay}" --throughput="${throughput}"
 
                 ./setup/ovs-docker.sh connect-ports "${br_name}" \
                 "host" "${group_number}"_"${rname}"router \

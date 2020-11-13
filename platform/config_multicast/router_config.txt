@@ -1,6 +1,6 @@
-TOP frr    MATRIX host:thomahol/d_vlc
-LEFT    frr    MATRIX_TARGET host:thomahol/d_hostm
-RIGHT   frr   N/A host:thomahol/d_hostm
-BOTTOML frr N/A L2-BLL2
-BOTTOMR frr    N/A L2-BRL2
-CENTER  frr  N/A host:thomahol/d_hostm
+TOP frr    MATRIX host:thomahol/d_vlc    100000  10
+LEFT    frr    MATRIX_TARGET host:thomahol/d_hostm    100000  10
+RIGHT   frr   N/A host:thomahol/d_hostm    100000  10
+BOTTOML frr N/A L2-BLL2    100000  10
+BOTTOMR frr    N/A L2-BRL2    100000  10
+CENTER  frr  N/A host:thomahol/d_hostm    100000  10

@@ -1,8 +1,8 @@
-LOND    frr	DNS host:thomahol/d_host
-ZURI    frr	MEASUREMENT L2-UNIV
-PARI    frr	MATRIX  host:thomahol/d_host
-GENE    frr	N/A L2-UNIV
-NEWY    frr	N/A host:thomahol/d_host
-BOST    frr	N/A host:thomahol/d_host
-ATLA    frr	MATRIX_TARGET   host:thomahol/d_host
-MIAM    frr	N/A host:thomahol/d_host
+LOND    frr	DNS host:thomahol/d_host    100000  10
+ZURI    frr	MEASUREMENT L2-UNIV    100000  10
+PARI    frr	MATRIX  host:thomahol/d_host    100000  10
+GENE    frr	N/A L2-UNIV    100000  10
+NEWY    frr	N/A host:thomahol/d_host    100000  10
+BOST    frr	N/A host:thomahol/d_host    100000  10
+ATLA    frr	MATRIX_TARGET   host:thomahol/d_host    100000  10
+MIAM    frr	N/A host:thomahol/d_host    100000  10

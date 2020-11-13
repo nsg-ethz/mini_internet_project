@@ -1,3 +1,3 @@
-R1	frr  N/A	L2-TEST
-P4ROUTER    bmv2_simple_switch	N/A	host:thomahol/d_host
-R2	frr  N/A host:thomahol/d_host
+R1	frr  N/A	L2-TEST    100000  10
+P4ROUTER    bmv2_simple_switch	N/A	host:thomahol/d_host    100000  10
+R2	frr  N/A host:thomahol/d_host    100000  10

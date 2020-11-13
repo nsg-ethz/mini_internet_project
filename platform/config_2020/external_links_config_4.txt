@@ -1,0 +1,6 @@
+2	BOST	Provider	1	MIAM	Customer	100000	1000	N/A
+2	LOND	Provider	1	GENE	Customer	100000	1000	N/A
+3	BOST	Provider	2	MIAM	Customer	100000	1000	N/A
+3	LOND	Provider	2	GENE	Customer	100000	1000	N/A
+4	BOST	Provider	3	MIAM	Customer	100000	1000	N/A
+4	LOND	Provider	3	GENE	Customer	100000	1000	N/A

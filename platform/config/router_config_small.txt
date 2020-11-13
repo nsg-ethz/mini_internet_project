@@ -1,2 +1,2 @@
-LOND    frr MATRIX  host:thomahol/d_host
-ZURI    frr MATRIX_TARGET   host:thomahol/d_host
+LOND    frr MATRIX  host:thomahol/d_host    100000  10
+ZURI    frr MATRIX_TARGET   host:thomahol/d_host    100000  10

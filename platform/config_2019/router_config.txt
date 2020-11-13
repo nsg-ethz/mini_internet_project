@@ -1,8 +1,8 @@
-LOND    frr	N/A	host:thomahol/d_host
-ZURI    frr	MEASUREMENT	L2-ETH
-BARC    frr	N/A	host:thomahol/d_host
-ROMA    frr	DNS	host:thomahol/d_host
-NEWY    frr	N/A	host:thomahol/d_host
-HOUS    frr	MATRIX_TARGET	host:thomahol/d_host
-TOKY    frr	MATRIX	host:thomahol/d_host
-ABID    frr	N/A	host:thomahol/d_host
+LOND    frr	N/A	host:thomahol/d_host    100000  10
+ZURI    frr	MEASUREMENT	L2-ETH    100000  10
+BARC    frr	N/A	host:thomahol/d_host    100000  10
+ROMA    frr	DNS	host:thomahol/d_host    100000  10
+NEWY    frr	N/A	host:thomahol/d_host    100000  10
+HOUS    frr	MATRIX_TARGET	host:thomahol/d_host    100000  10
+TOKY    frr	MATRIX	host:thomahol/d_host    100000  10
+ABID    frr	N/A	host:thomahol/d_host    100000  10

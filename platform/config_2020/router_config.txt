@@ -1,8 +1,8 @@
-LOND    frr DNS	host
-ZURI    frr	MEASUREMENT	L2-UNIV
-PARI    frr	MATRIX host
-GENE    frr	N/A	L2-UNIV
-NEWY    frr	N/A	host
-BOST    frr	N/A	host
-ATLA    frr	MATRIX_TARGET  host
-MIAM    frr	N/A	host
+LOND    frr DNS	host    100000  10
+ZURI    frr	MEASUREMENT	L2-UNIV    100000  10
+PARI    frr	MATRIX host    100000  10
+GENE    frr	N/A	L2-UNIV    100000  10
+NEWY    frr	N/A	host    100000  10
+BOST    frr	N/A	host    100000  10
+ATLA    frr	MATRIX_TARGET  host    100000  10
+MIAM    frr	N/A	host    100000  10
