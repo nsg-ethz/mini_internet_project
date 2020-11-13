@@ -58,7 +58,7 @@ RUN apt-get update && \
     apt-get update && \
     apt-get install -y --no-install-recommends $BM_DEPS $BM_RUNTIME_DEPS && \
     ./autogen.sh && \
-    ./configure --enable-debugger --enable-elogger --with-thrift --with-nanomsg  "CXXFLAGS=-O0 -g" && \
+    ./configure --without-nanomsg --disable-elogger --disable-logging-macros 'CFLAGS=-g -O2' 'CXXFLAGS=-g -O2' && \
     make && \
     make install-strip && \
     ldconfig && \
