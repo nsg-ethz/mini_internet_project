@@ -6,4 +6,4 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
-docker pull thomahol/d_p4
+docker pull thomahol/d_p4_opt

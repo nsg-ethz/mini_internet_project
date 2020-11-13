@@ -17,6 +17,8 @@ docker build --tag=d_matrix docker_images/matrix/
 docker build --tag=d_vpn docker_images/vpn/
 docker build --tag=d_vlc docker_images/vlc/
 docker build --tag=d_hostm docker_images/hostm/
+docker build --tag=d_p4 docker_images/p4/
+docker build --tag=d_p4_opt docker_images/p4_opt/
 
 
 docker login
@@ -66,5 +68,13 @@ docker tag "${container_name}" "${docker_name}"/"${container_name}"
 docker push "${docker_name}"/"${container_name}"
 
 container_name=d_hostm
+docker tag "${container_name}" "${docker_name}"/"${container_name}"
+docker push "${docker_name}"/"${container_name}"
+
+container_name=d_p4
+docker tag "${container_name}" "${docker_name}"/"${container_name}"
+docker push "${docker_name}"/"${container_name}"
+
+container_name=d_p4_opt
 docker tag "${container_name}" "${docker_name}"/"${container_name}"
 docker push "${docker_name}"/"${container_name}"
