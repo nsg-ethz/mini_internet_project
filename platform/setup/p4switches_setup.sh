@@ -28,7 +28,10 @@ for ((k=0;k<group_numbers;k++)); do
         readarray routers < "${DIRECTORY}"/config/$group_router_config
         n_routers=${#routers[@]}
 
-        br_name=${group_number}"-p4controller"
+        br_name_api=${group_number}"-p4api"
+        echo -n "-- add-br "${br_name}" " >> "${DIRECTORY}"/groups/add_bridges.sh
+
+        br_name_cpu=${group_number}"-p4cpu"
         echo -n "-- add-br "${br_name}" " >> "${DIRECTORY}"/groups/add_bridges.sh
 
         # start routers and hosts
@@ -41,9 +44,14 @@ for ((k=0;k<group_numbers;k++)); do
             dname=$(echo $property2 | cut -d ':' -f 2)
 
             if [ "$rtype" == "bmv2_simple_switch" ]; then
-                subnet_p4="$(subnet_p4router "${group_number}" "p4router" "${i}")"
+                subnet_p4api="$(subnet_p4api "${group_number}" "p4router" "${i}")"
 
-                ./setup/ovs-docker.sh add-port "${br_name}" "${group_number}"-${rname} \
+                ./setup/ovs-docker.sh add-port "${br_name_api}" "switch-api" \
+                "${group_number}""_""${rname}""router" --ipaddress="${subnet_p4}"
+
+                subnet_p4cpu="$(subnet_p4cpu "${group_number}" "p4router" "${i}")"
+
+                ./setup/ovs-docker.sh add-port "${br_name_api}" "switch-cpu" \
                 "${group_number}""_""${rname}""router" --ipaddress="${subnet_p4}"
             fi
         done

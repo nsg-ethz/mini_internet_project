@@ -215,7 +215,7 @@ subnet_sshContainer_groupContainer () {
   fi
 }
 
-subnet_p4router () {
+subnet_p4api () {
     local n_grp="$1" type="$2" n_router="$3"
 
     if [ "$type" = "controller" ] ; then
@@ -225,6 +225,20 @@ subnet_p4router () {
     elif [ "$type" = "p4router" ] ; then
 
         echo "159."${n_grp}"."$(($n_router+101))".1/24"
+
+    fi
+}
+
+subnet_p4cpu () {
+    local n_grp="$1" type="$2" n_router="$3"
+
+    if [ "$type" = "controller" ] ; then
+
+        echo "160."${n_grp}".0.1/24"
+
+    elif [ "$type" = "p4router" ] ; then
+
+        echo "160."${n_grp}"."$(($n_router+101))".1/24"
 
     fi
 }
