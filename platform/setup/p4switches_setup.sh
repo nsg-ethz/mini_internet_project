@@ -47,12 +47,12 @@ for ((k=0;k<group_numbers;k++)); do
                 subnet_p4api="$(subnet_p4api "${group_number}" "p4router" "${i}")"
 
                 ./setup/ovs-docker.sh add-port "${br_name_api}" "switch-api" \
-                "${group_number}""_""${rname}""router" --ipaddress="${subnet_p4}"
+                "${group_number}""_""${rname}""router" --ipaddress="${subnet_p4api}"
 
                 subnet_p4cpu="$(subnet_p4cpu "${group_number}" "p4router" "${i}")"
 
-                ./setup/ovs-docker.sh add-port "${br_name_api}" "switch-cpu" \
-                "${group_number}""_""${rname}""router" --ipaddress="${subnet_p4}"
+                ./setup/ovs-docker.sh add-port "${br_name_cpu}" "switch-cpu" \
+                "${group_number}""_""${rname}""router" --ipaddress="${subnet_p4cpu}"
             fi
         done
     fi
