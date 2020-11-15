@@ -28,7 +28,7 @@ for ((k=0;k<group_numbers;k++)); do
         readarray routers < "${DIRECTORY}"/config/$group_router_config
         n_routers=${#routers[@]}
 
-        br_name="p4controller-"${group_number}
+        br_name=${group_number}"-p4controller"
         echo -n "-- add-br "${br_name}" " >> "${DIRECTORY}"/groups/add_bridges.sh
 
         # start routers and hosts
