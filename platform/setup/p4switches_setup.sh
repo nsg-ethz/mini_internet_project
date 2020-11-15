@@ -29,10 +29,10 @@ for ((k=0;k<group_numbers;k++)); do
         n_routers=${#routers[@]}
 
         br_name_api=${group_number}"-p4api"
-        echo -n "-- add-br "${br_name}" " >> "${DIRECTORY}"/groups/add_bridges.sh
+        echo -n "-- add-br "${br_name_api}" " >> "${DIRECTORY}"/groups/add_bridges.sh
 
         br_name_cpu=${group_number}"-p4cpu"
-        echo -n "-- add-br "${br_name}" " >> "${DIRECTORY}"/groups/add_bridges.sh
+        echo -n "-- add-br "${br_name_cpu}" " >> "${DIRECTORY}"/groups/add_bridges.sh
 
         # start routers and hosts
         for ((i=0;i<n_routers;i++)); do
