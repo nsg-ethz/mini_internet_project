@@ -222,7 +222,7 @@ subnet_p4router () {
 
         echo "159."${n_grp}".0.1/24"
 
-    elif [ "$device" = "p4router" ] ; then
+    elif [ "$type" = "p4router" ] ; then
 
         echo "159."${n_grp}"."$(($n_router+101))".1/24"
 
