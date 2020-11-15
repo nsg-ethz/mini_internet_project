@@ -224,7 +224,7 @@ subnet_p4api () {
 
     elif [ "$type" = "p4router" ] ; then
 
-        echo "159."${n_grp}"."$(($n_router+101))".1/24"
+        echo "159."${n_grp}".0."$(($n_router+101))"/24"
 
     fi
 }
@@ -238,7 +238,7 @@ subnet_p4cpu () {
 
     elif [ "$type" = "p4router" ] ; then
 
-        echo "160."${n_grp}"."$(($n_router+101))".1/24"
+        echo "160."${n_grp}".0."$(($n_router+101))"/24"
 
     fi
 }
