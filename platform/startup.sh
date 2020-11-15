@@ -225,6 +225,13 @@ time ./setup/mpls_setup.sh "${DIRECTORY}"
 echo ""
 echo ""
 
+echo "p4switches_setup.sh: "
+echo "p4switches_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
+time ./setup/p4switches_setup.sh "${DIRECTORY}"
+
+echo ""
+echo ""
+
 echo "wait" >> "${DIRECTORY}"/groups/delay_throughput.sh
 echo "delay_throughput.sh: "
 echo "delay_throughput.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
