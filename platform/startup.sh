@@ -170,7 +170,7 @@ echo ""
 
 echo "p4switches_setup.sh: "
 echo "p4switches_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
-time ./setup/p4switches_setups.sh "${DIRECTORY}"
+time ./setup/p4switches_setup.sh "${DIRECTORY}"
 
 echo ""
 echo ""
