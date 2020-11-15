@@ -161,16 +161,16 @@ time ./setup/dns_setup.sh "${DIRECTORY}"
 echo ""
 echo ""
 
-echo "add_bridges.sh: "
-echo "add_bridges.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
-time ./groups/add_bridges.sh
-
-echo ""
-echo ""
-
 echo "p4switches_setup.sh: "
 echo "p4switches_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
 time ./setup/p4switches_setup.sh "${DIRECTORY}"
+
+echo ""
+echo ""
+
+echo "add_bridges.sh: "
+echo "add_bridges.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
+time ./groups/add_bridges.sh
 
 echo ""
 echo ""
