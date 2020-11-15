@@ -55,5 +55,15 @@ for ((k=0;k<group_numbers;k++)); do
                 "${group_number}""_""${rname}""router" --ipaddress="${subnet_p4cpu}"
             fi
         done
+
+        echo "ip link add ${group_number}-$rname-api type veth peer name g${group_number}_$rname-api" >> "${DIRECTORY}"/groups/ip_setup.sh
+        echo "ip link set dev ${group_number}-$rname-api up" >> "${DIRECTORY}"/groups/ip_setup.sh
+        echo "ip link set dev g${group_number}_$rname-api up" >> "${DIRECTORY}"/groups/ip_setup.sh
+        echo "ovs-vsctl add-port "${br_name_api}" g${group_number}_$rname-api" >> "${DIRECTORY}"/groups/ip_setup.sh
+
+        echo "ip link add ${group_number}-$rname-cpu type veth peer name g${group_number}_$rname-cpu" >> "${DIRECTORY}"/groups/ip_setup.sh
+        echo "ip link set dev ${group_number}-$rname-cpu up" >> "${DIRECTORY}"/groups/ip_setup.sh
+        echo "ip link set dev g${group_number}_$rname-cpu up" >> "${DIRECTORY}"/groups/ip_setup.sh
+        echo "ovs-vsctl add-port "${br_name_api}" g${group_number}_$rname-cpu" >> "${DIRECTORY}"/groups/ip_setup.sh
     fi
 done
