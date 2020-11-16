@@ -161,6 +161,23 @@ for ((k=0;k<group_numbers;k++)); do
                     --cpus=2 --pids-limit 100 --hostname "${rname}""_router" \
                     -v /etc/timezone:/etc/timezone:ro \
                     -v /etc/localtime:/etc/localtime:ro thomahol/d_p4
+            elif [ "$rtype" == "bmv2_simple_switch_opt" ]; then
+                docker run -itd --net='none'  --dns="${subnet_dns%/*}" \
+                    --name="${group_number}""_""${rname}""router" \
+                    --sysctl net.ipv4.ip_forward=1 \
+                    --sysctl net.ipv4.icmp_ratelimit=0 \
+                    --sysctl net.ipv4.fib_multipath_hash_policy=1 \
+                    --sysctl net.ipv4.conf.all.rp_filter=0 \
+                    --sysctl net.ipv4.conf.default.rp_filter=0 \
+                    --sysctl net.ipv4.conf.lo.rp_filter=0 \
+                    --sysctl net.mpls.conf.lo.input=1 \
+                    --sysctl net.ipv4.icmp_echo_ignore_broadcasts=0 \
+                    --sysctl net.mpls.platform_labels=1048575 \
+                    --sysctl net.ipv4.tcp_l3mdev_accept=1 \
+                    --privileged \
+                    --cpus=2 --pids-limit 100 --hostname "${rname}""_router" \
+                    -v /etc/timezone:/etc/timezone:ro \
+                    -v /etc/localtime:/etc/localtime:ro thomahol/d_p4_opt
             fi
 
             CONTAINERS+=("${group_number}""_""${rname}""router")
