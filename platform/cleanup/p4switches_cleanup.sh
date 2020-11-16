@@ -19,9 +19,6 @@ for ((k=0;k<group_numbers;k++)); do
 
     if [ "${group_as}" != "IXP" ];then
 
-        readarray routers < "${DIRECTORY}"/config/$group_router_config
-        n_routers=${#routers[@]}
-
         echo -n "-- --if-exists del-br ${group_number}-p4api" >> "${DIRECTORY}"/ovs_command.txt
 
     fi
