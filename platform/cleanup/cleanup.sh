@@ -26,6 +26,7 @@ echo -n "ovs-vsctl " > ovs_command.txt
 ./cleanup/dns_cleanup.sh "${DIRECTORY}"
 ./cleanup/ssh_cleanup.sh "${DIRECTORY}"
 ./cleanup/vpn_cleanup.sh "${DIRECTORY}"
+./cleanup/p4switches_cleanup.sh "${DIRECTORY}"
 
 
 bash  < ovs_command.txt || true
