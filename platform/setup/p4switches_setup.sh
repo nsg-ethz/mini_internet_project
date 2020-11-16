@@ -31,9 +31,6 @@ for ((k=0;k<group_numbers;k++)); do
         br_name_api=${group_number}"-p4api"
         echo -n "-- add-br "${br_name_api}" " >> "${DIRECTORY}"/groups/add_bridges.sh
 
-        br_name_cpu=${group_number}"-p4cpu"
-        echo -n "-- add-br "${br_name_cpu}" " >> "${DIRECTORY}"/groups/add_bridges.sh
-
         # start routers and hosts
         for ((i=0;i<n_routers;i++)); do
             router_i=(${routers[$i]})
@@ -49,25 +46,23 @@ for ((k=0;k<group_numbers;k++)); do
                 ./setup/ovs-docker.sh add-port "${br_name_api}" "switch-api" \
                 "${group_number}""_""${rname}""router" --ipaddress="${subnet_p4api}"
 
-                subnet_p4cpu="$(subnet_p4cpu "${group_number}" "p4router" "${i}")"
-
-                ./setup/ovs-docker.sh add-port "${br_name_cpu}" "switch-cpu" \
-                "${group_number}""_""${rname}""router"
-
-                subnet_p4api_controller="$(subnet_p4api "${group_number}" "controller" "${i}")"
-
-                echo "ip link add ${group_number}-$rname-api type veth peer name g${group_number}_$rname-api" >> "${DIRECTORY}"/groups/ip_setup.sh
-                echo "ip link set dev ${group_number}-$rname-api up" >> "${DIRECTORY}"/groups/ip_setup.sh
-                echo "ip link set dev g${group_number}_$rname-api up" >> "${DIRECTORY}"/groups/ip_setup.sh
-                echo "ovs-vsctl add-port "${br_name_api}" g${group_number}_$rname-api" >> "${DIRECTORY}"/groups/ip_setup.sh
-                echo "ip addr add "$subnet_p4api_controller" dev ${group_number}-$rname-api" >> "${DIRECTORY}"/groups/ip_setup.sh
-
-                echo "ip link add ${group_number}-$rname-cpu type veth peer name g${group_number}_$rname-cpu" >> "${DIRECTORY}"/groups/ip_setup.sh
+                echo "ip link add ${group_number}-$rname-cpu type veth peer name switch-cpu" >> "${DIRECTORY}"/groups/ip_setup.sh
                 echo "ip link set dev ${group_number}-$rname-cpu up" >> "${DIRECTORY}"/groups/ip_setup.sh
-                echo "ip link set dev g${group_number}_$rname-cpu up" >> "${DIRECTORY}"/groups/ip_setup.sh
-                echo "ovs-vsctl add-port "${br_name_cpu}" g${group_number}_$rname-cpu" >> "${DIRECTORY}"/groups/ip_setup.sh
+                echo "ip link set dev switch-cpu up" >> "${DIRECTORY}"/groups/ip_setup.sh
+                get_docker_pid "${group_number}""_""${rname}""router"
+                echo "PID=$DOCKER_PID" >> "${DIRECTORY}"/groups/ip_setup.sh
+                echo "create_netns_link" >> "${DIRECTORY}"/groups/ip_setup.sh
+                echo "ip link set switch-cpu netns \$PID" >> "${DIRECTORY}"/groups/ip_setup.sh
             fi
 
         done
+
+        subnet_p4api_controller="$(subnet_p4api "${group_number}" "controller" "${i}")"
+
+        echo "ip link add ${group_number}-p4switch-api type veth peer name g${group_number}-p4switch-api" >> "${DIRECTORY}"/groups/ip_setup.sh
+        echo "ip link set dev ${group_number}-p4switch-api up" >> "${DIRECTORY}"/groups/ip_setup.sh
+        echo "ip link set dev g${group_number}-p4switch-api up" >> "${DIRECTORY}"/groups/ip_setup.sh
+        echo "ovs-vsctl add-port "${br_name_api}" g${group_number}-p4switch-api" >> "${DIRECTORY}"/groups/ip_setup.sh
+        echo "ip addr add "$subnet_p4api_controller" dev ${group_number}-$rname-api" >> "${DIRECTORY}"/groups/ip_setup.sh
     fi
 done
