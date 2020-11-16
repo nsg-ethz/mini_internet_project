@@ -53,7 +53,7 @@ for ((k=0;k<group_numbers;k++)); do
                 echo "create_netns_link" >> "${DIRECTORY}"/groups/ip_setup.sh
                 echo "ip link set switch-cpu netns \$PID" >> "${DIRECTORY}"/groups/ip_setup.sh
                 echo "ip link set dev ${group_number}-$rname-cpu up" >> "${DIRECTORY}"/groups/ip_setup.sh
-                echo "docker exec -d "${group_number}""_""${rname}" ip link set dev switch-cpu up" >> "${DIRECTORY}"/groups/ip_setup.sh
+                echo "docker exec -d "${group_number}"_"${rname}"router ip link set dev switch-cpu up" >> "${DIRECTORY}"/groups/ip_setup.sh
             fi
 
         done
