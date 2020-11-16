@@ -21,6 +21,6 @@ for ((k=0;k<group_numbers;k++)); do
 
         echo -n "-- --if-exists del-br ${group_number}-p4api" >> "${DIRECTORY}"/ovs_command.txt
 
-        ip link del ${group_number}"-p4switch-api"
+        # ip link del ${group_number}"-p4switch-api"
     fi
 done
