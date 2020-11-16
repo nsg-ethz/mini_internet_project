@@ -63,6 +63,6 @@ for ((k=0;k<group_numbers;k++)); do
         echo "ip link set dev ${group_number}-p4switch-api up" >> "${DIRECTORY}"/groups/ip_setup.sh
         echo "ip link set dev g${group_number}-p4switch-api up" >> "${DIRECTORY}"/groups/ip_setup.sh
         echo "ovs-vsctl add-port "${br_name_api}" g${group_number}-p4switch-api" >> "${DIRECTORY}"/groups/ip_setup.sh
-        echo "ip addr add "$subnet_p4api_controller" dev ${group_number}-$rname-api" >> "${DIRECTORY}"/groups/ip_setup.sh
+        echo "ip addr add "$subnet_p4api_controller" dev ${group_number}-p4switch-api" >> "${DIRECTORY}"/groups/ip_setup.sh
     fi
 done
