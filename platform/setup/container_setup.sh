@@ -183,6 +183,7 @@ for ((k=0;k<group_numbers;k++)); do
             else
                 echo "Error: Unknown router docker image!"
 
+            fi
             CONTAINERS+=("${group_number}""_""${rname}""router")
 
             # start host
