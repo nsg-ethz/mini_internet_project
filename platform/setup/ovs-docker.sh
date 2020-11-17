@@ -149,8 +149,6 @@ add_port () {
     echo "-- add-port "$BRIDGE" "${PORTNAME}_l" \\" >> groups/add_ports.sh
     echo "-- set interface "${PORTNAME}_l" external_ids:container_id="$CONTAINER" external_ids:container_iface="$INTERFACE" \\" >> groups/add_ports.sh
 
-    echo "${BRIDGE} ${PORTNAME}_l ${CONTAINER} ${INTERFACE}" >> groups/link_info.txt
-
     echo "  ovs-vsctl del-port "$BRIDGE" "${PORTNAME}_l >> groups/restart_container.sh
     echo "  ovs-vsctl add-port "$BRIDGE" "${PORTNAME}_l >> groups/restart_container.sh
     echo "  ovs-vsctl set interface "${PORTNAME}_l" external_ids:container_id="$CONTAINER" external_ids:container_iface="$INTERFACE >> groups/restart_container.sh
@@ -230,6 +228,8 @@ connect_ports () {
         ID2=`uuidgen -s --namespace @url --name ${BRIDGE}_${INTERFACE2}_${CONTAINER2} | sed 's/-//g'`
     fi
     PORTNAME2="${ID2:0:13}"
+
+    echo "${BRIDGE} ${CONTAINER1} ${INTERFACE1} ${PORTNAME1}_l ${CONTAINER2} ${INTERFACE2} ${PORTNAME2}_l" >> groups/link_info.txt
 
     echo "port_id1=\`ovs-vsctl get Interface ${PORTNAME1}_l ofport\`" >> groups/ip_setup.sh
     echo "port_id2=\`ovs-vsctl get Interface ${PORTNAME2}_l ofport\`" >> groups/ip_setup.sh
