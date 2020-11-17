@@ -142,6 +142,7 @@ for ((k=0;k<group_numbers;k++)); do
                     -v "${location}"/looking_glass.txt:/home/looking_glass.txt \
                     -v "${location}"/daemons:/etc/frr/daemons \
                     -v "${location}"/frr.conf:/etc/frr/frr.conf \
+                    -v /home/adv-net/infrastructure/logs/${rname}:/home/ \
                     -v /etc/timezone:/etc/timezone:ro \
                     -v /etc/localtime:/etc/localtime:ro thomahol/d_router
             elif [ "$rtype" == "bmv2_simple_switch" ]; then
@@ -159,7 +160,7 @@ for ((k=0;k<group_numbers;k++)); do
                     --sysctl net.ipv4.tcp_l3mdev_accept=1 \
                     --privileged \
                     --cpus=2 --pids-limit 100 --hostname "${rname}""_router" \
-                    -v /home/adv-net/infrastructure/logs/:/home/ \
+                    -v /home/adv-net/infrastructure/logs/${rname}:/home/ \
                     -v /etc/timezone:/etc/timezone:ro \
                     -v /etc/localtime:/etc/localtime:ro thomahol/d_p4
             elif [ "$rtype" == "bmv2_simple_switch_opt" ]; then
@@ -177,7 +178,7 @@ for ((k=0;k<group_numbers;k++)); do
                     --sysctl net.ipv4.tcp_l3mdev_accept=1 \
                     --privileged \
                     --cpus=2 --pids-limit 100 --hostname "${rname}""_router" \
-                    -v /home/adv-net/infrastructure/logs/:/home/ \
+                    -v /home/adv-net/infrastructure/logs/${rname}:/home/ \
                     -v /etc/timezone:/etc/timezone:ro \
                     -v /etc/localtime:/etc/localtime:ro thomahol/d_p4_opt
             else
@@ -193,6 +194,7 @@ for ((k=0;k<group_numbers;k++)); do
                     --cpus=2 --pids-limit 100 --hostname "${rname}""_host" \
                     --sysctl net.ipv4.icmp_ratelimit=0 \
                     -v /etc/timezone:/etc/timezone:ro \
+                    -v /home/adv-net/infrastructure/logs/${rname}:/home/ \
                     -v /etc/localtime:/etc/localtime:ro $dname
                     # add this for bgpsimple -v ${DIRECTORY}/docker_images/host/bgpsimple.pl:/home/bgpsimple.pl \
 
