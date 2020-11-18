@@ -1,11 +1,7 @@
 FROM debian:stretch
 RUN apt-get update && apt-get install -y rsyslog locales iputils-ping traceroute \
-  openssh-server vim tcpdump net-tools dnsutils iperf3 build-essential nload
-# Install cpanminus for bgpsimple
-
-# cpanminus and build-essential needed for this
-# RUN cpanm Net::BGP
-
+  vim tcpdump net-tools dnsutils iperf3 build-essential nload python2.7 python3-dev \
+  less 
 
 # Set locale
 RUN sed -i -e 's/# \(en_US\.UTF-8 .*\)/\1/' /etc/locale.gen && \
