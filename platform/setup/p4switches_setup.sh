@@ -40,7 +40,7 @@ for ((k=0;k<group_numbers;k++)); do
             property2="${router_i[3]}"
             dname=$(echo $property2 | cut -d ':' -f 2)
 
-            if [ "$rtype" == "bmv2_simple_switch" ]; then
+            if [ "$rtype" == "bmv2_simple_switch" ] || [ "$rtype" == "bmv2_simple_switch_opt" ]; then
                 subnet_p4api="$(subnet_p4api "${group_number}" "p4router" "${i}")"
 
                 ./setup/ovs-docker.sh add-port "${br_name_api}" "switch-api" \
