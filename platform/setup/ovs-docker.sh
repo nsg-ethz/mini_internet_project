@@ -234,8 +234,8 @@ connect_ports () {
     echo "port_id1=\`ovs-vsctl get Interface ${PORTNAME1}_l ofport\`" >> groups/ip_setup.sh
     echo "port_id2=\`ovs-vsctl get Interface ${PORTNAME2}_l ofport\`" >> groups/ip_setup.sh
 
-    echo "ovs-ofctl add-flow $BRIDGE in_port=\$port_id1,priority=10,actions=output:\$port_id2" >> groups/ip_setup.sh
-    echo "ovs-ofctl add-flow $BRIDGE in_port=\$port_id2,priority=10,actions=output:\$port_id1" >> groups/ip_setup.sh
+    echo "ovs-ofctl add-flow $BRIDGE in_port=\$port_id1,actions=output:\$port_id2" >> groups/ip_setup.sh
+    echo "ovs-ofctl add-flow $BRIDGE in_port=\$port_id2,actions=output:\$port_id1" >> groups/ip_setup.sh
 
     echo "if [ \"$CONTAINER1\" == \$container_name ] || [ \"$CONTAINER2\" == \$container_name ]; then" >> groups/restart_container.sh
     echo "  echo \"Link between $CONTAINER1 ($INTERFACE1) and $CONTAINER2 ($INTERFACE2)\"" >> groups/restart_container.sh
@@ -243,8 +243,8 @@ connect_ports () {
     echo "  port_id1=\`ovs-vsctl get Interface ${PORTNAME1}_l ofport\`" >> groups/restart_container.sh
     echo "  port_id2=\`ovs-vsctl get Interface ${PORTNAME2}_l ofport\`" >> groups/restart_container.sh
 
-    echo "  ovs-ofctl add-flow $BRIDGE in_port=\$port_id1,priority=10,actions=output:\$port_id2" >> groups/restart_container.sh
-    echo "  ovs-ofctl add-flow $BRIDGE in_port=\$port_id2,priority=10,actions=output:\$port_id1" >> groups/restart_container.sh
+    echo "  ovs-ofctl add-flow $BRIDGE in_port=\$port_id1,actions=output:\$port_id2" >> groups/restart_container.sh
+    echo "  ovs-ofctl add-flow $BRIDGE in_port=\$port_id2,actions=output:\$port_id1" >> groups/restart_container.sh
 
     echo "fi" >> groups/restart_container.sh
 
