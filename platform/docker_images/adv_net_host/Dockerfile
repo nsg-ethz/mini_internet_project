@@ -1,7 +1,7 @@
 FROM debian:stretch
 RUN apt-get update && apt-get install -y rsyslog locales iputils-ping traceroute \
   vim tcpdump net-tools dnsutils iperf3 build-essential nload python2.7 python3-dev \
-  less 
+  less
 
 # Set locale
 RUN sed -i -e 's/# \(en_US\.UTF-8 .*\)/\1/' /etc/locale.gen && \
