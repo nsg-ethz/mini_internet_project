@@ -193,7 +193,7 @@ for ((k=0;k<group_numbers;k++)); do
                     --cpus=2 --pids-limit 100 --hostname "${rname}""_host" \
                     --sysctl net.ipv4.icmp_ratelimit=0 \
                     -v /etc/timezone:/etc/timezone:ro \
-                    -v /home/adv-net/infrastructure/shared/$(echo ${rname} | sed -r 's/S/h/g')"-host":/home/ \
+                    -v /home/adv-net/infrastructure/shared/$(echo ${rname} | sed -r 's/S/h/g'):/home/ \
                     -v /etc/localtime:/etc/localtime:ro $dname
                     # add this for bgpsimple -v ${DIRECTORY}/docker_images/host/bgpsimple.pl:/home/bgpsimple.pl \
 
