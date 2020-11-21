@@ -17,7 +17,8 @@ RUN apt-get update && apt-get install -y git \
     tcpdump \
     net-tools \
     dnsutils \
-    build-essential
+    build-essential \
+    iperf3
 
 # Set locale
 RUN sed -i -e 's/# \(en_US\.UTF-8 .*\)/\1/' /etc/locale.gen && \
