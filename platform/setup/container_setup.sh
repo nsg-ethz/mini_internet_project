@@ -138,7 +138,7 @@ for ((k=0;k<group_numbers;k++)); do
                     --sysctl net.mpls.platform_labels=1048575 \
                     --sysctl net.ipv4.tcp_l3mdev_accept=1 \
                     --privileged \
-                    --cpus=4 --pids-limit 100 --hostname "${rname}""_router" \
+                    --cpus=2 --pids-limit 100 --hostname "${rname}""_router" \
                     -v "${location}"/looking_glass.txt:/home/looking_glass.txt \
                     -v "${location}"/daemons:/etc/frr/daemons \
                     -v "${location}"/frr.conf:/etc/frr/frr.conf \
@@ -190,7 +190,7 @@ for ((k=0;k<group_numbers;k++)); do
             if [[ "${property2}" == host* ]];then
                 docker run -itd --net='none' --dns="${subnet_dns%/*}"  \
                     --name="${group_number}""_""${rname}""host" --cap-add=NET_ADMIN \
-                    --cpus=4 --pids-limit 100 --hostname "${rname}""_host" \
+                    --pids-limit 100 --hostname "${rname}""_host" \
                     --sysctl net.ipv4.icmp_ratelimit=0 \
                     -v /etc/timezone:/etc/timezone:ro \
                     -v /home/adv-net/infrastructure/shared/$(echo ${rname} | sed -r 's/S/h/g'):/home/ \
