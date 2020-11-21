@@ -62,7 +62,7 @@ for ((k=0;k<group_numbers;k++)); do
 
             if [ "$stype" == "ovs" ]; then
                 docker run -itd --net='none' --dns="${subnet_dns%/*}" --cap-add=NET_ADMIN \
-                    --cpus=2 --pids-limit 100 --hostname "${sname}" \
+                    --pids-limit 100 --hostname "${sname}" \
                     --name=${group_number}_L2_${l2name}_${sname} \
                     --sysctl net.ipv4.ip_forward=1 \
                     --sysctl net.ipv4.icmp_ratelimit=0 \
@@ -138,7 +138,7 @@ for ((k=0;k<group_numbers;k++)); do
                     --sysctl net.mpls.platform_labels=1048575 \
                     --sysctl net.ipv4.tcp_l3mdev_accept=1 \
                     --privileged \
-                    --cpus=4 --pids-limit 100 --hostname "${rname}""_router" \
+                    --cpus=2 --pids-limit 100 --hostname "${rname}""_router" \
                     -v "${location}"/looking_glass.txt:/home/looking_glass.txt \
                     -v "${location}"/daemons:/etc/frr/daemons \
                     -v "${location}"/frr.conf:/etc/frr/frr.conf \
@@ -158,7 +158,7 @@ for ((k=0;k<group_numbers;k++)); do
                     --sysctl net.mpls.platform_labels=1048575 \
                     --sysctl net.ipv4.tcp_l3mdev_accept=1 \
                     --privileged \
-                    --cpus=16 --pids-limit 100 --hostname "${rname}""_router" \
+                    --pids-limit 100 --hostname "${rname}""_router" \
                     -v /home/adv-net/infrastructure/shared/${rname}:/home/ \
                     -v /etc/timezone:/etc/timezone:ro \
                     -v /etc/localtime:/etc/localtime:ro thomahol/d_p4
@@ -176,7 +176,7 @@ for ((k=0;k<group_numbers;k++)); do
                     --sysctl net.mpls.platform_labels=1048575 \
                     --sysctl net.ipv4.tcp_l3mdev_accept=1 \
                     --privileged \
-                    --cpus=16 --pids-limit 100 --hostname "${rname}""_router" \
+                    --pids-limit 100 --hostname "${rname}""_router" \
                     -v /home/adv-net/infrastructure/shared/${rname}:/home/ \
                     -v /etc/timezone:/etc/timezone:ro \
                     -v /etc/localtime:/etc/localtime:ro thomahol/d_p4_opt
@@ -190,7 +190,7 @@ for ((k=0;k<group_numbers;k++)); do
             if [[ "${property2}" == host* ]];then
                 docker run -itd --net='none' --dns="${subnet_dns%/*}"  \
                     --name="${group_number}""_""${rname}""host" --cap-add=NET_ADMIN \
-                    --cpus=4 --pids-limit 100 --hostname "${rname}""_host" \
+                    --pids-limit 100 --hostname "${rname}""_host" \
                     --sysctl net.ipv4.icmp_ratelimit=0 \
                     -v /etc/timezone:/etc/timezone:ro \
                     -v /home/adv-net/infrastructure/shared/$(echo ${rname} | sed -r 's/S/h/g'):/home/ \
