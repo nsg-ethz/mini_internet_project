@@ -158,7 +158,7 @@ for ((k=0;k<group_numbers;k++)); do
                     --sysctl net.mpls.platform_labels=1048575 \
                     --sysctl net.ipv4.tcp_l3mdev_accept=1 \
                     --privileged \
-                    --cpus=16 --pids-limit 100 --hostname "${rname}""_router" \
+                    --pids-limit 100 --hostname "${rname}""_router" \
                     -v /home/adv-net/infrastructure/shared/${rname}:/home/ \
                     -v /etc/timezone:/etc/timezone:ro \
                     -v /etc/localtime:/etc/localtime:ro thomahol/d_p4
@@ -176,7 +176,7 @@ for ((k=0;k<group_numbers;k++)); do
                     --sysctl net.mpls.platform_labels=1048575 \
                     --sysctl net.ipv4.tcp_l3mdev_accept=1 \
                     --privileged \
-                    --cpus=16 --pids-limit 100 --hostname "${rname}""_router" \
+                    --pids-limit 100 --hostname "${rname}""_router" \
                     -v /home/adv-net/infrastructure/shared/${rname}:/home/ \
                     -v /etc/timezone:/etc/timezone:ro \
                     -v /etc/localtime:/etc/localtime:ro thomahol/d_p4_opt
