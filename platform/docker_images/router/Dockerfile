@@ -115,8 +115,6 @@ RUN ldconfig
 
 RUN mkdir -p /root/.ssh
 
-RUN apt-get install -y iperf3 python3-dev
-
 # Add startup script and set it as entrypoint
 COPY docker-start /usr/sbin/docker-start
 COPY looking_glass.sh /home/.looking_glass.sh

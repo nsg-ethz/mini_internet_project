@@ -195,10 +195,10 @@ add_port () {
     fi
 
     if [ -n "$THROUGHPUT" ]; then
-        echo "echo -n \" -- set interface "${PORTNAME}"_l ingress_policing_rate="${THROUGHPUT}" \" >> groups/throughput.sh " >> groups/delay_throughput.sh
-        echo "echo -n \" -- set interface "${PORTNAME}"_l ingress_policing_burst=100000 \" >> groups/throughput.sh " >> groups/delay_throughput.sh
-        echo "  ovs-vsctl set interface ${PORTNAME}_l ingress_policing_rate=${THROUGHPUT}" >> groups/restart_container.sh
-        echo "  ovs-vsctl set interface ${PORTNAME}_l ingress_policing_burst=100000" >> groups/restart_container.sh
+        #echo "echo -n \" -- set interface "${PORTNAME}"_l ingress_policing_rate="${THROUGHPUT}" \" >> groups/throughput.sh " >> groups/delay_throughput.sh
+        #echo "echo -n \" -- set interface "${PORTNAME}"_l ingress_policing_burst=100000 \" >> groups/throughput.sh " >> groups/delay_throughput.sh
+        #echo "  ovs-vsctl set interface ${PORTNAME}_l ingress_policing_rate=${THROUGHPUT}" >> groups/restart_container.sh
+        #echo "  ovs-vsctl set interface ${PORTNAME}_l ingress_policing_burst=100000" >> groups/restart_container.sh
     fi
 
     echo "fi" >> groups/restart_container.sh
