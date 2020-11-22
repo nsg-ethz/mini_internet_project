@@ -76,13 +76,13 @@ RUN ./bootstrap.sh
 ## For some reasons we need to install libyang here and not around line 50 otherwise the configure fails.
 WORKDIR /libyang/build
 RUN cmake -DENABLE_LYD_PRIV=ON -DCMAKE_INSTALL_PREFIX:PATH=/usr -D CMAKE_BUILD_TYPE:String="Release" ..
-RUN make -j10
+RUN make 
 RUN make install
 RUN ldconfig
 WORKDIR /frr
 
 RUN ./configure --enable-exampledir=/usr/share/doc/frr/examples/ --localstatedir=/var/opt/frr --enable-user=frr --enable-group=frr --enable-vty-group=frrvty --disable-doc --localstatedir=/var/run/frr --sbindir=/usr/lib/frr --sysconfdir=/etc/frr --enable-systemd
-RUN make -j10
+RUN make 
 RUN make check
 RUN make install
 
