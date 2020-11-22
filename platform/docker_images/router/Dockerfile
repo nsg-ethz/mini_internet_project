@@ -76,13 +76,13 @@ RUN ./bootstrap.sh
 ## For some reasons we need to install libyang here and not around line 50 otherwise the configure fails.
 WORKDIR /libyang/build
 RUN cmake -DENABLE_LYD_PRIV=ON -DCMAKE_INSTALL_PREFIX:PATH=/usr -D CMAKE_BUILD_TYPE:String="Release" ..
-RUN make
+RUN make -j10
 RUN make install
 RUN ldconfig
 WORKDIR /frr
 
 RUN ./configure --enable-exampledir=/usr/share/doc/frr/examples/ --localstatedir=/var/opt/frr --enable-user=frr --enable-group=frr --enable-vty-group=frrvty --disable-doc --localstatedir=/var/run/frr --sbindir=/usr/lib/frr --sysconfdir=/etc/frr --enable-systemd
-RUN make
+RUN make -j10
 RUN make check
 RUN make install
 
@@ -114,6 +114,8 @@ RUN echo include /usr/local/lib >> /etc/ld.so.conf
 RUN ldconfig
 
 RUN mkdir -p /root/.ssh
+
+RUN apt-get install -y ethtool iperf3
 
 # Add startup script and set it as entrypoint
 COPY docker-start /usr/sbin/docker-start

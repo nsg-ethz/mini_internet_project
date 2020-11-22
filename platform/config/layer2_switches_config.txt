@@ -1,3 +1,0 @@
-UNIV    CERN    GENE    ovs    11:11:11:11:11:11   1
-UNIV    ETHZ    ZURI    ovs	22:22:22:22:22:22  2
-UNIV    EPFL    N/A ovs     33:33:33:33:33:33   3
