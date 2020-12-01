@@ -19,7 +19,8 @@ RUN apt-get update && apt-get install -y git \
     dnsutils \
     build-essential \
     iperf3 \
-    ethtool
+    ethtool \
+    iptables
 
 # Set locale
 RUN sed -i -e 's/# \(en_US\.UTF-8 .*\)/\1/' /etc/locale.gen && \
