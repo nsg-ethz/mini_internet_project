@@ -10,8 +10,11 @@ The mini-Internet project is the flagship piece of our [Communication Networks c
 
 We find this class-wide project to be invaluable in teaching our students how the Internet infrastructure practically works. Among others, our students have a much deeper understanding of Internet operations alongside their pitfalls. Besides students tend to love the project: clearly the fact that all of them need to cooperate for the entire Internet to work is empowering
 
-In [2020_assignment_eth](2020_assignment_eth), we further describe how we used the mini-Internet at ETH in the 2020 iteration of our Communication Networks lecture.
-While the mini-Internet project works well for our introductory class, observe that it can be adapted for various teaching objectives.
+### How we use the platform at ETH
+
+- We use the platform in our introductory course to [Communication Networks](https://comm-net.ethz.ch/). In the [communication_networks_course](communication_networks_course) directory, we detail the mini-Internet project and show what we ask our students to do. We also show the configuration files that we used so that you can run the same project in your computer networks class.
+
+- We use the platform in our [Advanced Topics in Communication Networks course](https://adv-net.ethz.ch/) so that students can have hands on experience on more advanced concepts and protocols such as MPLS, LDP, BGP Free Core, BGP VPN and Multicast. In the [advanced_networks_course](advanced_networks_course) directory, we detail the different mini-Internet-based exercises that we give to our students.
 
 ### Build _your_ mini-Internet
 
