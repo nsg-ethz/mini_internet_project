@@ -37,6 +37,7 @@ journal = {SIGCOMM Comput. Commun. Rev.},
 
 ### News
 
+*3/12/20:* Added the BGP VPN MPLS and Multicast exercises of our Advanced Topic in Computer Networks course \
 *29/09/20:* Changed the Dockerfile for the router image. Now FRR is compiled from the source with a particular version of the libyang library so that VRF are supported \
 *08/07/20:* Added the docker image to use for the hosts in the config files \
 *29/06/20:* Added support for MPLS and Multicast \
