@@ -1,0 +1,4 @@
+UBS1    BELLE   R1  aa:aa:aa:aa:aa:aa   1
+UBS2    BAHN   R4  bb:bb:bb:bb:bb:bb   2
+CS1 OERL    R2    cc:cc:cc:cc:cc:cc   3
+CS2 PARA    R3    dd:dd:dd:dd:dd:dd   4

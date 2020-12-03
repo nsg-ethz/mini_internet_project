@@ -1,0 +1,4 @@
+belle_host   thomahol/d_host UBS1    BELLE   10000   1000    0
+bahn_host   thomahol/d_host UBS2    BAHN   10000   1000    0
+oerl_host   thomahol/d_host CS1    OERL   10000   1000    0
+para_host   thomahol/d_host CS2    PARA   10000   1000    0

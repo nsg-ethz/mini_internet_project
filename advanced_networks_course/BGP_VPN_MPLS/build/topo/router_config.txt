@@ -1,0 +1,5 @@
+R1  N\A L2-UBS1
+R2  N\A L2-CS1
+R3  N/A L2-CS2
+R4  N/A L2-UBS2
+R5  N/A host:thomahol/d_host

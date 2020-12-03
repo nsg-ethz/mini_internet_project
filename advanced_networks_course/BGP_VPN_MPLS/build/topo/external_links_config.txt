@@ -1,0 +1,2 @@
+1   R1  Provider    20  CENT1   Customer	100000	1000	179.0.0.0/24
+1   R4  Provider    30 S1  Customer    100000  100 179.0.1.0/24
