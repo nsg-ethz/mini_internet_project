@@ -14,7 +14,7 @@ We find this class-wide project to be invaluable in teaching our students how th
 
 - We use the platform in our introductory course to [Communication Networks](https://comm-net.ethz.ch/). In the [communication_networks_course](communication_networks_course) directory, we detail the mini-Internet project and show what we ask our students to do. We also show the configuration files that we used so that you can run the same project in your computer networks class.
 
-- We use the platform in our [Advanced Topics in Communication Networks course](https://adv-net.ethz.ch/) so that students can have hands on experience on more advanced concepts and protocols such as MPLS, LDP, BGP Free Core, BGP VPN and Multicast. In the [advanced_networks_course](advanced_networks_course) directory, we detail the different mini-Internet-based exercises that we give to our students.
+- We use the platform in our [Advanced Topics in Communication Networks course](https://adv-net.ethz.ch/) so that students can have hands on experience on more advanced concepts and protocols such as MPLS, LDP, BGP Free Core, BGP VPN, VRF and Multicast. In the [advanced_networks_course](advanced_networks_course) directory, we detail the different mini-Internet-based exercises that we give to our students.
 
 ### Build _your_ mini-Internet
 
