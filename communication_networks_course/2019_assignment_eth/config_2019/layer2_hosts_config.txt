@@ -1,0 +1,10 @@
+student_1   thomahol/d_host	ETH   IRCH	1000	1000    10
+staff_1 thomahol/d_host		ETH   IRCH        1000    1000   20
+vpn_1   thomahol/d_host		ETH   IRCH        1000    1000   30
+student_2   thomahol/d_host	ETH   HONG        1000    1000  10
+staff_2 thomahol/d_host		ETH   HONG        1000    1000   20
+student_3   thomahol/d_host	ETH   OERL        1000    1000  10
+staff_3 thomahol/d_host		ETH   OERL        1000    1000   20
+student_4   thomahol/d_host	ETH   ZENT        1000    1000  10
+staff_4 thomahol/d_host		ETH   ZENT        1000    1000   20
+vpn_4   thomahol/d_host		ETH   ZENT        1000    1000   30
