@@ -2,7 +2,10 @@
 
 We designed two exercises based on the mini-Internet to teach our students about advanced concepts and protocols such as MPLS, LDP, BGP Free Core, BGP VPN, VRF and Multicast.
 Note unlike for the mini-Internet project, here each student has its own mini-Internet running its VM. 
-To run those exercises, you need to clone the mini-Internet github repository in the $HOME directory, then you need can run the script `build/build.sh` (available in the directory of the exercise).
+
+To run those exercises, you need to clone the mini-Internet github repository in the $HOME directory, then you can run the script `build/build.sh` to build the topology (available in the directory of the exercise).
+
+More detail on how to run the exercises can be found in their pdf assignment.
 
 ### BGP VPN MPLS
 
