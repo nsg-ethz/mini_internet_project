@@ -4,7 +4,7 @@ Welcome in the official repository of the mini-Internet project.
 
 ### The mini-Internet project
 
-A mini-Internet is a virtual network mimicking the real Internet. Among others, there are routers, switches and hosts that are located in different ASes. A mini-Internet runs in a single server and is tailored to teach how the Internet practically works. Each components of the network is running in its own dedicated linux container, that are remotely accessible by the students with simple ssh connections.
+A mini-Internet is a virtual network mimicking the real Internet. Among others, there are routers, switches and hosts that are located in different ASes. A mini-Internet runs in a single server and is tailored to teach how the Internet practically works. Each component of the network is running in its own dedicated linux container, that are remotely accessible by the students with simple ssh connections.
 
 The mini-Internet project is the flagship piece of our [Communication Networks course](https://comm-net.ethz.ch/) at ETH Zurich since 2016. The concept is rather simple: we let each student group operate their own AS. Their goal? Enabling Internet-wide connectivity.
 
@@ -12,7 +12,7 @@ We find this class-wide project to be invaluable in teaching our students how th
 
 ### How we use the platform at ETH
 
-- We use the platform in our introductory course to [Communication Networks](https://comm-net.ethz.ch/). In the [communication_networks_course](communication_networks_course) directory, we detail the mini-Internet project and show what we ask our students to do. We also show the configuration files that we used so that you can run the same project in your computer networks class.
+- We use the platform in our introductory course to [Communication Networks](https://comm-net.ethz.ch/). In the [communication_networks_course](communication_networks_course) directory, we detail the mini-Internet project and show what we ask our students to do. We also show the configuration files that we used so that you can run the same project in your computer network classes.
 
 - We use the platform in our [Advanced Topics in Communication Networks course](https://adv-net.ethz.ch/) so that students can have hands on experience on more advanced concepts and protocols such as MPLS, LDP, BGP Free Core, BGP VPN, VRF and Multicast. In the [advanced_networks_course](advanced_networks_course) directory, we detail the different mini-Internet-based exercises that we give to our students.
 
