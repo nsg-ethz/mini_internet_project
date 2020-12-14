@@ -1,10 +1,6 @@
 # BGP Free Core + BGP VPN over MPLS
 
-In this exercise we won't be coding in P4, but we will work with the mini-Internet, a virtual network mimicking the real Internet. We also use this platform to teach how the Internet works during the *Communication Networks* course (CommNet), so some of you are already familiar with it. Don't worry if you are not, we'll explain everything you need to know. In contrast to CommNet, there won't be a shared mini-Internet that is accessed remotely via `ssh`. Instead, you will operate your own mini-Internet in your VM and access it locally.
-
-We will provide more detail on the mini-Internet and how to *use* it below, but if you want to learn more about how it is implemented, have a look at our [GitHub repo](https://github.com/nsg-ethz/mini_internet_project).
-
-But first, let's have a high-level look at the exercise at hand.
+In this exercise we will work with the mini-Internet, a virtual network mimicking the real Internet.
 
 
 ## Introduction
@@ -15,7 +11,7 @@ Let's have a look at the network topology before we detail your tasks.
 
 ### The Network
 
-The topology of the network we will use follows the topology in slide 63 of the first lecture.
+The network uses the following topology:
 
 <img src="figures/topology.png" width="800" alt="centered image" />
 
@@ -62,11 +58,10 @@ To simplify your life, you won't have to do anything in the `mini_internet_proje
 
 ### How does it work?
 
-The mini-Internet is a virtual network that mimics the Internet and that can run on a single computer (or a VM). It consists of virtual devices which run in their own dedicated [docker containers](https://www.docker.com/resources/what-container). The containers are interconnected with virtual links to form the virtual network. The topology of the mini-Internet can be specified in configuration files.
+The mini-Internet is a virtual network that mimics the Internet and can run on a single computer (or a VM). It consists of virtual devices which run in their own dedicated [docker containers](https://www.docker.com/resources/what-container). The containers are interconnected with virtual links to form the virtual network. The topology of the mini-Internet can be specified in configuration files.
 
 A virtual device can either be a router, a switch or a host. For the routers, we use [FRRouting](https://frrouting.org/), a well-known software suite that provides a CLI similar to the one provided by actual IP routers. For the switches, we use [Open vSwitch](https://www.openvswitch.org/), a popular software switch often used in production. Finally, the hosts are Linux hosts running Debian Stretch.
 
-If you participated in CommNet, you might remember that we provided the mini-Internet for you. This time, you will run your own mini-Internet in your VM.
 Below, we describe how you can build and configure the network and virtual devices.
 
 ### Build the mini-Internet
@@ -115,7 +110,7 @@ To access the CLI of a router, you can write `sudo docker exec -it 1_R1router vt
 
 ### Configure the virtual devices
 
-In this exercise, you will have to _only_ configure the routers. Switches are pre-configured when the mini-Internet is built, and we also provide the host configuration.
+In this exercise, you will have to configure _only_ the routers. Switches are pre-configured when the mini-Internet is built, and we also provide the host configuration.
 
 #### Load the default configuration
 
@@ -126,9 +121,9 @@ The default configuration is automatically loaded when building the mini-Interne
 
 #### Using the Command Line Interface (CLI)
 
-After loading the default configuration, you need to configure the routers. The first way to configure the routers is through their CLI. If you followed CommNet with us, you should be familiar with the CLI of the routers. Otherwise, please look at **section 5** of the mini-Internet [tutorial][tutorial] from CommNet. Some of the most important commands are `conf t` to enter configuration mode (you can abbreviate commands; this one stands for `configure terminal`), which you can leave with `exit`; and `show run` to show the complete configuration.
+After loading the default configuration, you need to configure the routers. The first way to configure the routers is through their CLI. Please look at **Section 5** of the mini-Internet [tutorial][tutorial] from our Communication Networks lecture for a short introduction. Some of the most important commands are `conf t` to enter configuration mode (you can abbreviate commands; this one stands for `configure terminal`), which you can leave with `exit`; and `show run` to show the complete configuration.
 
-[tutorial]: https://github.com/nsg-ethz/mini_internet_project/blob/master/2020_assignment_eth/tutorial.pdf
+[tutorial]: https://github.com/nsg-ethz/mini_internet_project/blob/master/communication_networks_course/2020_assignment_eth/tutorial.pdf
 
 #### Configure using scripts
 
@@ -144,7 +139,7 @@ Additionally, when you type `write` in the CLI of a router, the running configur
 
 #### Debug with tcpdump
 
-To verify that your configuration works properly, you may want to run a `tcpdump` on some interfaces. For instance, this could help you to verify the MPLS labels that are used in each packet. To do that, you can access the docker container of a router with `docker exec -it 1_R1router bash` (here for router R1). Observe that we run `bash` now instead of `vtysh` (which is used to directly access the CLI of the router). Once in the docker container, you can list the interfaces with `ifconfig`, and you can run a `tcpdump` on one of them with e.g., `tcpdump -i port_R2 -n` (the `-n` option tells `tcpdump` not to convert IP addresses into names).
+To verify that your configuration works properly, you may want to run `tcpdump` on some interfaces. For instance, this could help you to verify the MPLS labels that are used in each packet. To do that, you can access the docker container of a router with `docker exec -it 1_R1router bash` (here for router R1). Observe that we run `bash` now instead of `vtysh` (which is used to directly access the CLI of the router). Once in the docker container, you can list the interfaces with `ifconfig`, and you can run a `tcpdump` on one of them with e.g., `tcpdump -i port_R2 -n` (the `-n` option tells `tcpdump` not to convert IP addresses into names).
 You can also use the `./access.sh` as a shortcut, e.g. `./access.sh R1 tcpdump -i port_R2 -n`.
 
 
@@ -168,22 +163,22 @@ traceroute to 1.154.0.1 (1.154.0.1), 64 hops max
 
 Now it is up to you to solve the challenges above by following the tasks below.
 
-1. [Configure BGP and a BGP Free Core](#task-1-configure-bgp-and-a-bgp-free-core)
-   * [Configure the iBGP sessions](#configure-the-ibgp-sessions)
-   * [Configure the eBGP sessions](#configure-the-ebgp-sessions)
-   * [Configure MPLS forwarding with LDP](#configure-mpls-forwarding-with-ldp)
-2. [Configure the VPN over BGP using VRF](#task-2-configure-the-vpn-over-bgp-using-vrf)
-   * [Configuring eBGP in a VRF](#configuring-ebgp-in-a-vrf)
-   * [Configure the VPNs](#configure-the-vpns)
-3. [Configure advanced routing policies](#task-3-configure-advanced-routing-policies)
-   * [Configure routing policies between the Credit Suisse sites](#configure-routing-policies-between-the-credit-suisse-sites)
-   * [Configure routing for external prefixes in the Swisscom network](#configure-routing-for-external-prefixes-in-the-swisscom-network)
+  - [Task 1: Configure BGP and a BGP Free Core](#task-1-configure-bgp-and-a-bgp-free-core)
+    - [Configure the iBGP sessions](#configure-the-ibgp-sessions)
+    - [Configure the eBGP sessions](#configure-the-ebgp-sessions)
+    - [Configure MPLS forwarding with LDP](#configure-mpls-forwarding-with-ldp)
+  - [Task 2: Configure the VPN over BGP using VRF](#task-2-configure-the-vpn-over-bgp-using-vrf)
+    - [Configuring eBGP in a VRF](#configuring-ebgp-in-a-vrf)
+    - [Configure the VPNs](#configure-the-vpns)
+  - [Task 3: Configure advanced routing policies](#task-3-configure-advanced-routing-policies)
+    - [Configure routing policies between the Credit Suisse sites](#configure-routing-policies-between-the-credit-suisse-sites)
+    - [Configure routing for external prefixes in the Swisscom network](#configure-routing-for-external-prefixes-in-the-swisscom-network)
 
 ## Task 1: Configure BGP and a BGP Free Core
 
 ### Configure the iBGP sessions
 
-The first step is to configure the iBGP sessions between the routers in the Swisscom network so that the external routes learned via the eBGP sessions are distributed internally and then announced to the other ASes connected to Swisscom network.
+The first step is to configure the iBGP sessions between the routers in the Swisscom network so that the external routes learned via the eBGP sessions are distributed internally and then announced to the other ASes connected to the Swisscom network.
 Below, you can find the commands to configure iBGP for the router `R4`.
 In particular, you need to use the `next-hop-self` as well as the `update-source` commands and make sure to use the loopback interface address for each neighbor. Remember to check the [tutorial][tutorial] if you need to look up any commands.
 
@@ -208,7 +203,7 @@ exit
 
 :information_source: Some BGP settings are per-session, e.g. which neighbors exist. Other settings are related to the BGP advertisements. These settings can be different for each address-family, e.g. IPv4 and IPv6. For that reason, we need to first enter `address-family ipv4 unicast` before we can specify `network` and `next-hop-self`! In tasks 2 and 3 you will see some other families, but for now just use `ipv4 unicast`.
 
-Importantly, do **not** configure as iBGP full mesh, as you might be used to from CommNet.
+Importantly, do **not** configure an iBGP full mesh.
 We are going to set up a BGP free core; only border routers are running BGP.
 This means that you have to configure the iBGP sessions between R1, R2, R3 and R4 but **not** R5.
 
@@ -231,7 +226,7 @@ Neighbor        V         AS MsgRcvd MsgSent   TblVer  InQ OutQ  Up/Down State/P
 
 ### Configure the eBGP sessions
 
-Now that the iBGP is configured, we need to connect AS 1 to its neighbor, AS 30. For now, do not worry about the eBGP session with AS 20, we'll get to that later.
+Now that iBGP is configured, we need to connect AS 1 to its neighbor, AS 30. For now, do not worry about the eBGP session with AS 20, we'll get to that later.
 Configuring eBGP is much like iBGP, with one important difference:
 By default, the latest versions of FRR drop all external traffic.
 Thus, we need to define a default route-map that accepts everything, or the router will neither advertise nor distribute anything received via eBGP. In addition, `next-hop-self` and `update-source` are set automatically for eBGP and you can skip them.
@@ -282,7 +277,7 @@ From 1.0.2.2 icmp_seq=1 Destination Net Unreachable
 ```
 
 As you can see, the shortest path to AS 30 goes over `R5`, our BGP-free core.
-We have (intentionally) not set up any iBGP sessions on `R5`, so it does not know how to reach the prefix `30.0.0.0/8`, which is reports back to `R1` (`Destination Net Unreachable`).
+We have (intentionally) not set up any iBGP sessions on `R5`, so it does not know how to reach the prefix `30.0.0.0/8`, which it reports back to `R1` (`Destination Net Unreachable`).
 
 In the next part, we will fix this by configuring LDP to forward traffic using MPLS in the Swisscom network.
 
@@ -330,7 +325,7 @@ R1_router# show mpls table
  4294967295     LDP   0.0.0.0  implicit-null
 ```
 
-Now, Lets ping from `S1-host` from `R1` again:
+Now, let's ping from `S1-host` from `R1` again:
 
 ```
 R1_router# ping 30.101.0.1
@@ -358,12 +353,12 @@ It works too! And you can see that the first hop is hidden, as the packet is in 
 Now that the BGP free core is configured and that the Swisscom network can forward traffic between its neighbors, it is time to configure the VPNs such that Credit Suisse and UBS can _only_ talk to each other. Note that Swisscom has two types of connection to neighboring sites: the central branch of Credit Suisse is connected to Swisscom via BGP whereas the other branches are directly connected via a L2 switch (both of these connections do occur in practice).
 For this, we will use VRF.
 
-In order to use VRF, the router interfaces (in AS 1) connected to a bank site need to be assigned to particular VRF.
+In order to use VRF, the router interfaces (in AS 1) connected to a bank site need to be assigned to a particular VRF.
 FRRouting builds on Linux VRF, and the VRF interfaces need to be created in Linux before we can configure them in FRRouting. For your convenience, this is automatically done in the default configuration when building the mini-Internet,
 so you do not have to worry about configuring them correctly.
 
 You can see a list of the interfaces in the `default` VRF with the command `show interface brief`.
-To show interfaces in another VRFs, you need to use the command `show interface vrf VRF_NAME brief`, where you can either enter a specific VRF, or use `all`.
+To show interfaces in other VRFs, you need to use the command `show interface vrf VRF_NAME brief`, where you can either enter a specific VRF, or use `all`.
 For example, this is the output for `show interface vrf all brief` on `R1`:
 
 
@@ -407,8 +402,8 @@ The first entry is the virtual interface used by the VRF, you do not have to use
 ### Configuring eBGP in a VRF
 
 Your first step is to configure eBGP between Swisscom and the central branch of Credit Suisse (AS20).
-Importantly, you have to run the BGP session in the VRF `VRF_CS`.
-To do that, use the command `router bgp 1 vrf VRF_CS` when to configure this BGP session on `R1`.
+Important, you have to run the BGP session in the VRF `VRF_CS`.
+To do that, use the command `router bgp 1 vrf VRF_CS` when configuring this BGP session on `R1`.
 You can find more information on how to configure BGP in a VRF in [the FRR docs](http://docs.frrouting.org/en/latest/bgp.html).
 Do not forget that you also need to configure the session in the router `CENT1`.
 You do not need to specify a `VRF` in `CENT1`. Can you explain why?
@@ -496,7 +491,7 @@ To maintain separation between traffic from the different banks, we will now con
 2. You need to enable BGP to advertise the prefixes over the VPN using MPLS. You can do that using the command [`label vpn export auto`](http://docs.frrouting.org/en/latest/bgp.html#clicmd-labelvpnexport(0..1048575)|auto).
 3. You must enable the [import and export](http://docs.frrouting.org/en/latest/bgp.html#clicmd-import|exportvpn) of the routes between the VRF and the VPN.
 4. You need to configure a [_route distinguisher_](http://docs.frrouting.org/en/latest/bgp.html#clicmd-rdvpnexportAS:NN|IP:nn). You can use for instance `rd vpn export 192.168.1.0:1` in R2 to advertise the prefix `192.168.1.0` with the route distinguisher `1`. Note that you still need the command `network 192.168.1.0/24` in BGP for `VRF_CS` to advertise that prefix (you can also use `redistribute connected` in which case the command `rd vpn export 20:1` is enough to apply that route distinguisher to all advertised prefixes).
-5. You need to configure a a [_route target_](http://docs.frrouting.org/en/latest/bgp.html#clicmd-rtvpnimport|export|bothRTLIST...). For now, always use the same route target for import _and_ export for each VRF, so that the prefixes in one site are advertised to all the other sites of the same bank.
+5. You need to configure a [_route target_](http://docs.frrouting.org/en/latest/bgp.html#clicmd-rtvpnimport|export|bothRTLIST...). For now, always use the same route target for import _and_ export for each VRF, so that the prefixes in one site are advertised to all the other sites of the same bank.
 
 Now, we can run the command `sh ip bgp vrf VRF_CS` in the router `R3` to verify that the routes are correctly announced between the `VRF_CS` in `R3` and the `VRF_CS` in routers `R1` and `R2`.
 

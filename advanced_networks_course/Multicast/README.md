@@ -1,6 +1,5 @@
 # IP Multicast
 
-
 In this exercise, we will use the mini-Internet platform for IP multicast, and observe how the routers efficiently negotiate multicast trees on demand.
 
 As a bonus task, we will stream an actual video using multicast in the mini-Internet!
@@ -11,7 +10,7 @@ The purpose of IP multicast can be summarized in two words: *Avoid broadcasting*
 Broadcasting, or flooding, means sending out an incoming packet on all other interfaces.
 Broadcasting has issues related to both performance and security:
 On the one hand, it wastes a lot of bandwidth and can easily overload networks, as packets get replicated many times.
-On the other hand, packets get forwarded everywhere, even to destination they were not intended for.
+On the other hand, packets get forwarded everywhere, even to destinations they were not intended for.
 
 IP multicast attempts to mitigate these problems with two core mechanisms:
 1.  Receivers (hosts) must explicitly join *multicast groups* to receive multicast messages (from the joined groups only).
@@ -31,7 +30,7 @@ In this exercise, we will set up both IGMP and PIM for the topology shown below 
 
 ## Setup
 
-The setup for these exerise is, aside from the different topology, the same as for the [BGP VPN exercise](../07-MPLS_VPN_VRF/).
+The setup for these exercises is, aside from the different topology, the same as for the [BGP VPN exercise](../BGP_VPN_MPLS/).
 Have a look there if you need detailed setup instructions, but we'll give you a short summary below:
 
 -   To create your mini-Internet, run `./build/build.sh`.
@@ -129,12 +128,12 @@ Notice that both routers are sending their messages to `224.0.0.13`, a special m
 
 If you have enabled PIM on all interfaces, you can continue with configuring PIM-SM.
 To establish multicast trees, PIM-SM requires one router to act as a *rendezvous point (rp)* for each multicast group.
-Whenever a new source or new receivers join a multicast group, this `rp` coordinates the setup of new multicast trees.
+Whenever a new source or a new receiver joins a multicast group, this `rp` coordinates the setup of new multicast trees.
 You need to configure this `rp` on all routers.
 You could pick any router as `rp`, but use the `CENTER` router for this exercise.
 Additionally, for the range of multicast groups this `rp` is responsible for, pick `237.0.0.0/24`.
 
-:information_source: As for BGP sessions, it's usually a good idea to use the loopback interface address for the `rp` (Otherwise, the `rp` would be unavailable if the physical interface goes down, even if other paths to the router are still available).
+:information_source: As for BGP sessions, it's usually a good idea to use the loopback interface address for the `rp` (otherwise, the `rp` would be unavailable if the physical interface goes down, even if other paths to the router are still available).
 
 You can verify the `rp` configuration using `show ip pim rp-info`. For example, compare the output of `TOP` and `CENTER`:
 
@@ -262,7 +261,7 @@ root@TOP_host:/# ping -t10 237.0.0.10
 You should receive responses from `1.103.0.1`, i.e. `RIGHT-host`.
 It may take a few seconds until the first responses arrive -- PIM can be a bit slow.
 
-In the `tcpdump`, you should observe PIM `Register` and `Join / Prune` messages.
+In the `tcpdump` output, you should observe PIM `Register` and `Join / Prune` messages.
 Before we take a closer look at the messages, have a look at the PIM state and multicast routes, e.g. at `RIGHT`:
 
 ```
@@ -282,10 +281,10 @@ Source          Group           Proto  Input            Output           TTL  Up
 Now that we have *both* a source and receiver, you can see that a new multicast tree has been computed, the `(S, G)` tree or *PIM Shortest Path Tree*.
 As the name implies, this is the tree of shortest paths from the source (in this case `TOP-host`) to all receivers (here only `RIGHT-host`).
 Check `ip pim state` on other routers, such as `CENTER` or `BOTTOML`.
-You will notice that `CENTER` knows about the tree (as it's the `rp`), but is not part of it (there is no outgoing interface), while `BOTTOML` has not even learned of the tree.
+You will notice that `CENTER` knows about the tree (as it's the `rp`), but is not part of it (there is no outgoing interface), while `BOTTOML` has not even learned anything about the tree.
 
-Let's get back to the PIM messages in your `tcpdump` to understand how this `(S, G)` tree is established.
-You should see the similar messages to this:
+Let's get back to the PIM messages in your `tcpdump` output to understand how this `(S, G)` tree is established.
+You should see similar messages to the ones below.
 Note that they are not necessarily in that order, as there can be some delays in the `tcpdump` processing.
 
 ```
