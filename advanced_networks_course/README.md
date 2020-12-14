@@ -5,6 +5,8 @@ Note unlike for the mini-Internet project, here each student has its own mini-In
 
 To run those exercises, you need to clone the mini-Internet github repository in the $HOME directory, then you can run the script `build/build.sh` to build the topology (available in the directory of the exercise).
 
+More detail on how to run the exercises can be found in their pdf assignment.
+
 ### BGP VPN MPLS
 
 In the directory [BGP_VPN_MPLS](BGP_VPN_MPLS) we show the exercise we give to our students and where the goal is to implement a BGP VPN with MPLS and some additional policies. 
