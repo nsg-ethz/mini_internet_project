@@ -70,12 +70,12 @@ When building the mini-Internet, a directory called `groups` is created and all 
 
 #### Hosts, switches and routers can be automatically pre-configured
 
-You can specify in the configuration files if you want the hosts, switches and routers to be pre-configured (with STP, OSPF, BGP, etc). In the sample configuration files that we provide (see [config_2020](config_2020), [config_2019](config_2019) and [config_l2](config_l2)), all the ASes will be automatically pre-configured. If you want the hosts, switches and routers in an AS not to be automatically configured, just replace "Config" with "NoConfig" in the [AS_config.txt](config/AS_config.txt) configuration file.
+You can specify in the configuration files if you want the hosts, switches and routers to be pre-configured (with STP, OSPF, BGP, etc). In the sample configuration files that we provide (see [examples/config_2020](examples/config_2020), [examples/config_2019](examples/config_2019) and [examples/config_l2](examples/config_l2)), all the ASes will be automatically pre-configured. If you want the hosts, switches and routers in an AS not to be automatically configured, just replace "Config" with "NoConfig" in the [AS_config.txt](config/AS_config.txt) configuration file.
 
 ## Configure the mini-Internet topology
 
 In the [config](config) directory, you can find all the configuration files used to define the topology of the mini-Internet.
-In addition, we also provide multiple sample topologies (see [config_2020](config_2020), [config_2019](config_2019) and [config_l2](config_l2)). Of course, you can also define your own topology using the configuration files.
+In addition, we also provide multiple sample topologies (see [examples/config_2020](examples/config_2020), [examples/config_2019](examples/config_2019) and [examples/config_l2](examples/config_l2)). Of course, you can also define your own topology using the configuration files.
 
 The config files are organized as follow:
 
