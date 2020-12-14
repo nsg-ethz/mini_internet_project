@@ -1,8 +1,0 @@
-vpn_1   thomahol/d_host		UNIV   CERN    10000    1000    30
-student_1   thomahol/d_host	UNIV   CERN    10000    1000    10
-staff_1 thomahol/d_host		UNIV   CERN    10000    1000    20
-student_2   thomahol/d_host	UNIV   ETHZ    10000	1000    10
-staff_2 thomahol/d_host		UNIV   ETHZ    10000    1000    20
-student_3   thomahol/d_host	UNIV   EPFL    10000    1000    10
-staff_3 thomahol/d_host		UNIV   EPFL    10000    1000    20
-vpn_3   thomahol/d_host		UNIV   EPFL    10000    1000    30

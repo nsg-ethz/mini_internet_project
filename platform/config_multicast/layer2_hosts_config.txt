@@ -1,2 +1,0 @@
-vpn_1		thomahol/d_host  BLL2   S1    10000    1000    30
-vpn_2		thomahol/d_host  BRL2   S2    10000    1000    30

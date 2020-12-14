@@ -1,4 +1,0 @@
-ETH   ZENT	ZURI	aa:aa:aa:aa:aa:aa   3
-ETH   HONG	N/A	bb:bb:bb:bb:bb:bb    2
-ETH   OERL	N/A	cc:cc:cc:cc:cc:cc    4
-ETH   IRCH	N/A	dd:dd:dd:dd:dd:dd    1

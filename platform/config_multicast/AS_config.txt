@@ -1,1 +1,0 @@
-1	AS	Config	router_config.txt	internal_links_config.txt	layer2_switches_config.txt	layer2_hosts_config.txt	layer2_links_config.txt
