@@ -70,12 +70,12 @@ When building the mini-Internet, a directory called `groups` is created and all 
 
 #### Hosts, switches and routers can be automatically pre-configured
 
-You can specify in the configuration files if you want the hosts, switches and routers to be pre-configured (with STP, OSPF, BGP, etc). In the sample configuration files that we provide (see [config_2020](config_2020), [config_2019](config_2019) and [config_l2](config_l2)), all the ASes will be automatically pre-configured. If you want the hosts, switches and routers in an AS not to be automatically configured, just replace "Config" with "NoConfig" in the [AS_config.txt](config/AS_config.txt) configuration file.
+You can specify in the configuration files if you want the hosts, switches and routers to be pre-configured (with STP, OSPF, BGP, etc). In the sample configuration files that we provide (see [examples/config_2020](examples/config_2020), [examples/config_2019](examples/config_2019) and [examples/config_l2](examples/config_l2)), all the ASes will be automatically pre-configured. If you want the hosts, switches and routers in an AS not to be automatically configured, just replace "Config" with "NoConfig" in the [AS_config.txt](config/AS_config.txt) configuration file.
 
 ## Configure the mini-Internet topology
 
 In the [config](config) directory, you can find all the configuration files used to define the topology of the mini-Internet.
-In addition, we also provide multiple sample topologies (see [config_2020](config_2020), [config_2019](config_2019) and [config_l2](config_l2)). Of course, you can also define your own topology using the configuration files.
+In addition, we also provide multiple sample topologies (see [examples/config_2020](examples/config_2020), [examples/config_2019](examples/config_2019) and [examples/config_l2](examples/config_l2)). Of course, you can also define your own topology using the configuration files.
 
 The config files are organized as follow:
 
@@ -103,10 +103,10 @@ The next columns indicate the configuration files to use to build the L2 topolog
 
 You can configure the layer 2 topology with the files `layer2_switches_config.txt`, `layer2_links_config.txt`, `layer2_hosts_config.txt`. Note that there can be several L2 networks in each AS. Each L2 network has a name. The one used by default in the [config](config) directory is called `UNIV`.
 
-`layer2_switches_config.txt`: This file lists the switches in the L2 networks. The first column indicates the name of the L2 network. The second line indicates the name of the switch. By default, there are three switches (CERN, ETHZ and EPFL). The third column indicates whether one switch is connected to a L3 router, here by default CERN is connected to the router GENE and ETHZ is connected to the router ZURI. The fourth column indicates the MAC address used as an 'ID' to configure the switch. Finally, the fifth column indicates the bridge ID used in the Spanning Tree computation. Note that a router can only be connected to one L2 network, but a layer 2 network can be connected to one or more routers (see [config_l2](config_l2)). 
+`layer2_switches_config.txt`: This file lists the switches in the L2 networks. The first column indicates the name of the L2 network. The second line indicates the name of the switch. By default, there are three switches (CERN, ETHZ and EPFL). The third column indicates whether one switch is connected to a L3 router, here by default CERN is connected to the router GENE and ETHZ is connected to the router ZURI. The fourth column indicates the MAC address used as an 'ID' to configure the switch. Finally, the fifth column indicates the bridge ID used in the Spanning Tree computation. Note that a router can only be connected to one L2 network, but a layer 2 network can be connected to one or more routers (see [examples/config_l2](examples/config_l2)). 
 When a switch is connected to a L3 router, it must also be indicated in the third column of the config file `router_config_full.txt (or router_config_small.txt)`, which list the L3 routers. In this config file, the name of the L2 network must always be preceded by "L2-".
 
-:information_source: Whenever you want to configure your own topology with your custom L2 network, you must follow the same naming convention. We recommend you to look into the directory [config_l2](config_l2) for more details. 
+:information_source: Whenever you want to configure your own topology with your custom L2 network, you must follow the same naming convention. We recommend you to look into the directory [examples/config_l2](examples/config_l2) for more details. 
 
 `layer2_links_config.txt`: This file indicates how the l2 switches are interconnected. For instance by default ETHZ is connected to CERN and EPFL, etc. The last two columns indicate the throughput and the delay of the link, respectively. The first and third columns indicate the name of the L2 network in which the switches in the second and fourth columns are, respectively. The L2 names should be identical since it is not possible to connect two switches that are in two different L2 network. 
 
@@ -303,7 +303,7 @@ Hop 5:  2.108.0.1 Echo reply (type=0/code=0)
 
 where 2.108.0.1 is an IP address of a host in AS2. You can see the path used by the packets to reach the destination IP.
 
-By default, the measurement container is connected to the router ZURI in every transit AS. You can see this in the config file `config/router_config_full.txt`. The second column of the ZURI row is `MEASUREMENT` which means that the measurement container is connected to the ZURI router, but you can edit this file so that the measurement container is connected to another router instead. If for an AS none of the routers is connected to the measurement container (e.g., like in `config/router_config_small.txt`) then you can't run a traceroute from that AS using the measurement container. For instance in [config_2020](config_2020) configuration files, you can't use the measurement platform to run a traceroute from a Tier1 or a Stub AS.
+By default, the measurement container is connected to the router ZURI in every transit AS. You can see this in the config file `config/router_config_full.txt`. The second column of the ZURI row is `MEASUREMENT` which means that the measurement container is connected to the ZURI router, but you can edit this file so that the measurement container is connected to another router instead. If for an AS none of the routers is connected to the measurement container (e.g., like in `config/router_config_small.txt`) then you can't run a traceroute from that AS using the measurement container. For instance in [examples/config_2020](examples/config_2020) configuration files, you can't use the measurement platform to run a traceroute from a Tier1 or a Stub AS.
 
 #### Connectivity matrix
 
