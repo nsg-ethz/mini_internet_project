@@ -67,6 +67,7 @@ By default, this will run a mini-Internet with 20ASes.
 When building the mini-Internet, a directory called `groups` is created and all the configuration files, passwords, automatically-generated scripts, etc will be stored in this directorty.
 
 :warning: Make sure your server has enough resources to sustain this mini-Internet (around 32GB of memory and at least 4 CPU cores are recommended). Otherwise, look at section [configure the mini-Internet](https://github.com/nsg-ethz/mini_internet_project/blob/master/platform/README.md#configure-the-mini-internet-topology) for instructions on how to run a smaller mini-Internet.
+
 :information_source: You may need to increase the number of INotify instances that can be created per real user ID with the command `fs.inotify.max_user_instances = 1024`.
 
 
