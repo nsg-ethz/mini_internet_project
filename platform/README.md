@@ -68,6 +68,9 @@ When building the mini-Internet, a directory called `groups` is created and all 
 
 :warning: Make sure your server has enough resources to sustain this mini-Internet (around 32GB of memory and at least 4 CPU cores are recommended). Otherwise, look at section [configure the mini-Internet](https://github.com/nsg-ethz/mini_internet_project/blob/master/platform/README.md#configure-the-mini-internet-topology) for instructions on how to run a smaller mini-Internet.
 
+:information_source: You may need to increase the number of INotify instances that can be created per real user ID with the command `fs.inotify.max_user_instances = 1024`.
+
+
 #### Hosts, switches and routers can be automatically pre-configured
 
 You can specify in the configuration files if you want the hosts, switches and routers to be pre-configured (with STP, OSPF, BGP, etc). In the sample configuration files that we provide (see [examples/config_2020](examples/config_2020), [examples/config_2019](examples/config_2019) and [examples/config_l2](examples/config_l2)), all the ASes will be automatically pre-configured. If you want the hosts, switches and routers in an AS not to be automatically configured, just replace "Config" with "NoConfig" in the [AS_config.txt](config/AS_config.txt) configuration file.
