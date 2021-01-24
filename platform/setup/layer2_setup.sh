@@ -160,14 +160,13 @@ for ((k=0;k<group_numbers;k++)); do
 
                         if [ "${connected}" == "$rname" ];then
                             ./setup/ovs-docker.sh add-port "${br_name}" "${rname}""-L2" \
-                              "${group_number}""_""${rname}""router"
+                              "${group_number}""_""${rname}""router" --throughput=10000
                             ./setup/ovs-docker.sh add-port "${br_name}" "${rname}""router" \
-                              "${group_number}""_L2_""${l2name}_${sname}"
-
+                              "${group_number}""_L2_""${l2name}_${sname}" --throughput=10000
+                           
                             ./setup/ovs-docker.sh connect-ports "${br_name}" \
                             "${rname}""-L2" "${group_number}""_""${rname}""router" \
                             "${rname}""router" "${group_number}""_L2_""${l2name}_${sname}" \
-                            --throughput=10000
 
                             echo "docker exec -d "${group_number}""_L2_""${l2name}_${sname}" ovs-vsctl add-port br0 "${rname}""router"" >> "${DIRECTORY}"/groups/l2_init_switch.sh
                         fi
