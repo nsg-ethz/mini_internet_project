@@ -69,6 +69,14 @@ for ((k=0;k<group_numbers;k++)); do
                 --sysctl net.ipv4.conf.default.rp_filter=0 \
                 --sysctl net.ipv4.conf.lo.rp_filter=0 \
                 --sysctl net.ipv4.icmp_echo_ignore_broadcasts=0 \
+                --sysctl net.ipv6.conf.all.disable_ipv6=0 \
+                --sysctl net.ipv6.ip_forward=1 \
+                --sysctl net.ipv6.icmp_ratelimit=0 \
+                --sysctl net.ipv6.fib_multipath_hash_policy=1 \
+                --sysctl net.ipv6.conf.all.rp_filter=0 \
+                --sysctl net.ipv6.conf.default.rp_filter=0 \
+                --sysctl net.ipv6.conf.lo.rp_filter=0 \
+                --sysctl net.ipv6.icmp_echo_ignore_broadcasts=0 \
                 -v /etc/timezone:/etc/timezone:ro \
                 -v /etc/localtime:/etc/localtime:ro thomahol/d_switch
 
@@ -89,6 +97,9 @@ for ((k=0;k<group_numbers;k++)); do
                     --name="${group_number}""_L2_""${l2name}""_""${hname}" \
                     --sysctl net.ipv4.icmp_ratelimit=0 \
                     --sysctl net.ipv4.icmp_echo_ignore_broadcasts=0 \
+                    --sysctl net.ipv6.conf.all.disable_ipv6=0 \
+                    --sysctl net.ipv6.icmp_ratelimit=0 \
+                    --sysctl net.ipv6.icmp_echo_ignore_broadcasts=0 \
                     -v /etc/timezone:/etc/timezone:ro \
                     -v /etc/localtime:/etc/localtime:ro $dname
 
@@ -115,10 +126,19 @@ for ((k=0;k<group_numbers;k++)); do
                 --sysctl net.ipv4.conf.all.rp_filter=0 \
                 --sysctl net.ipv4.conf.default.rp_filter=0 \
                 --sysctl net.ipv4.conf.lo.rp_filter=0 \
-                --sysctl net.mpls.conf.lo.input=1 \
                 --sysctl net.ipv4.icmp_echo_ignore_broadcasts=0 \
-                --sysctl net.mpls.platform_labels=1048575 \
                 --sysctl net.ipv4.tcp_l3mdev_accept=1 \
+                --sysctl net.ipv6.conf.all.disable_ipv6=0 \
+                --sysctl net.ipv6.ip_forward=1 \
+                --sysctl net.ipv6.icmp_ratelimit=0 \
+                --sysctl net.ipv6.fib_multipath_hash_policy=1 \
+                --sysctl net.ipv6.conf.all.rp_filter=0 \
+                --sysctl net.ipv6.conf.default.rp_filter=0 \
+                --sysctl net.ipv6.conf.lo.rp_filter=0 \
+                --sysctl net.ipv6.icmp_echo_ignore_broadcasts=0 \
+                --sysctl net.ipv6.tcp_l3mdev_accept=1 \
+                --sysctl net.mpls.conf.lo.input=1 \
+                --sysctl net.mpls.platform_labels=1048575 \
                 --privileged \
                 --cpus=2 --pids-limit 100 --hostname "${rname}""_router" \
                 -v "${location}"/looking_glass.txt:/home/looking_glass.txt \
@@ -136,6 +156,9 @@ for ((k=0;k<group_numbers;k++)); do
                     --cpus=2 --pids-limit 100 --hostname "${rname}""_host" \
                     --sysctl net.ipv4.icmp_ratelimit=0 \
                     --sysctl net.ipv4.icmp_echo_ignore_broadcasts=0 \
+                    --sysctl net.ipv6.conf.all.disable_ipv6=0 \
+                    --sysctl net.ipv6.icmp_ratelimit=0 \
+                    --sysctl net.ipv6.icmp_echo_ignore_broadcasts=0 \
                     -v /etc/timezone:/etc/timezone:ro \
                     -v /etc/localtime:/etc/localtime:ro $dname
                     # add this for bgpsimple -v ${DIRECTORY}/docker_images/host/bgpsimple.pl:/home/bgpsimple.pl \
@@ -158,6 +181,14 @@ for ((k=0;k<group_numbers;k++)); do
             --sysctl net.ipv4.conf.default.rp_filter=0 \
             --sysctl net.ipv4.conf.lo.rp_filter=0 \
             --sysctl net.ipv4.icmp_echo_ignore_broadcasts=0 \
+            --sysctl net.ipv6.conf.all.disable_ipv6=0 \
+            --sysctl net.ipv6.ip_forward=1 \
+            --sysctl net.ipv6.icmp_ratelimit=0 \
+            --sysctl net.ipv6.fib_multipath_hash_policy=1 \
+            --sysctl net.ipv6.conf.all.rp_filter=0 \
+            --sysctl net.ipv6.conf.default.rp_filter=0 \
+            --sysctl net.ipv6.conf.lo.rp_filter=0 \
+            --sysctl net.ipv6.icmp_echo_ignore_broadcasts=0 \
             -v /etc/timezone:/etc/timezone:ro \
             -v /etc/localtime:/etc/localtime:ro \
             thomahol/d_ixp
