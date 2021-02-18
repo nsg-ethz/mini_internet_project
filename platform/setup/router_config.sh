@@ -122,6 +122,9 @@ for ((k=0;k<group_numbers;k++));do
                     echo " -c 'neighbor "${subnet%???}" remote-as "${group_number}"' \\" >> "${location}"
                     echo " -c 'neighbor "${subnet%???}" update-source lo' \\" >> "${location}"
                     echo " -c 'neighbor "${subnet%???}" next-hop-self' \\" >> "${location}"
+                    echo " -c 'address-family ipv6 unicast' \\" >> "${location}"
+                    echo " -c 'neighbor "${subnet%???}" activate' \\" >> "${location}"
+                    echo " -c 'exit' \\" >> "${location}"
                     echo " -c 'exit' \\" >> "${location}"
                 fi
             done
