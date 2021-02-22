@@ -125,7 +125,7 @@ for ((k=0;k<group_numbers;k++)); do
                     subnet_gw="$(subnet_l2 ${group_number} $((${l2_id["L2-"$l2name]}-1)) ${vlan} 1)"
 
                     ip netns exec $PID \
-                        route add default gw ${subnet_gw%/*}
+                        ip route add default via ${subnet_gw%/*}
                 fi
             fi
 
