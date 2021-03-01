@@ -138,7 +138,7 @@ for ((k=0;k<group_numbers;k++)); do
             CONTAINERS+=("${group_number}""_""${rname}""router")
 
             # start host
-            if [[ "${property2}" == host* ]];then
+            if [[ ! -z "${dname}" ]];then
                 docker run -itd --net='none' --dns="${subnet_dns%/*}"  \
                     --name="${group_number}""_""${rname}""host" --cap-add=NET_ADMIN \
                     --cpus=2 --pids-limit 100 --hostname "${rname}""_host" \

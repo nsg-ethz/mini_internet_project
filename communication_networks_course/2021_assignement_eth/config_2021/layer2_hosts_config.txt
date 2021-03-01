@@ -1,0 +1,12 @@
+vpn_1   thomahol/d_host		DC1   S1    10000   1000    30
+compA_1   thomahol/d_host	DC1   S1    10000   1000    10
+compB_1 thomahol/d_host		DC1   S1    10000   1000    20
+compA_2   thomahol/d_host	DC1   S2    10000   1000    10
+compB_2 thomahol/d_host		DC1   S2    10000   1000    20
+vpn_2   thomahol/d_host		DC1   S2    10000   1000    30
+compA_3   thomahol/d_host	DC1   S3    10000   1000    10
+compB_3 thomahol/d_host		DC1   S3    10000   1000    20
+vpn_3   thomahol/d_host		DC1   S3    10000   1000    30
+compC thomahol/d_host		DC2   S4    10000   1000    0
+compD thomahol/d_host		DC2   S4    10000   1000    0
+vpn   thomahol/d_host		DC2   S4    10000   1000    0

@@ -52,7 +52,7 @@ for ((k=0;k<n_groups;k++)); do
             rname="${router_i[0]}"
             property1="${router_i[1]}"
             property2="${router_i[2]}"
-            l2_name=$(echo $property2 | cut -f 2 -d '-')
+            l2_name=$(echo $property2 | cut -d ':' -f 1 | cut -f 2 -d '-')
             l2_id[$l2_name]=1000000
             l2_cur[$l2_name]=0
         done
@@ -62,7 +62,7 @@ for ((k=0;k<n_groups;k++)); do
             rname="${router_i[0]}"
             property1="${router_i[1]}"
             property2="${router_i[2]}"
-            l2_name=$(echo $property2 | cut -f 2 -d '-')
+            l2_name=$(echo $property2 | cut -d ':' -f 1 | cut -f 2 -d '-')
 
             if [[ ${l2_id[$l2_name]} == 1000000 ]]; then
                 l2_id[$l2_name]=$i

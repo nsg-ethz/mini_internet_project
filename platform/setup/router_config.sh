@@ -67,6 +67,7 @@ for ((k=0;k<group_numbers;k++));do
             rname="${router_i[0]}"
             property1="${router_i[1]}"
             property2="${router_i[2]}"
+            dname=$(echo $property2 | cut -d ':' -f 2)
 
             if [ ${#rname} -gt 10 ]; then
                 echo 'ERROR: Router names must have a length lower or equal than 10'
@@ -86,19 +87,20 @@ for ((k=0;k<group_numbers;k++));do
             echo " -c 'interface lo' \\" >> "${location}"
             echo " -c 'ip address "$(subnet_router "${group_number}" "${i}")"' \\" >> "${location}"
             echo " -c 'exit' \\" >> "${location}"
-                if [[ "${property2}" == host* ]];then
-                    echo " -c 'interface host' \\" >> "${location}"
-                    echo " -c 'ip address "$(subnet_host_router "${group_number}" "${i}" "router")"' \\" >> "${location}"
-                    echo " -c 'exit' \\" >> "${location}"
-                    echo " -c 'router ospf' \\" >> "${location}"
-                    echo " -c 'network "$(subnet_host_router "${group_number}" "${i}" "router")" area 0' \\" >> "${location}"
-                    echo " -c 'exit' \\" >> "${location}"
+            if [[ ! -z "${dname}" ]];then
+                echo " -c 'interface host' \\" >> "${location}"
+                echo " -c 'ip address "$(subnet_host_router "${group_number}" "${i}" "router")"' \\" >> "${location}"
+                echo " -c 'exit' \\" >> "${location}"
+                echo " -c 'router ospf' \\" >> "${location}"
+                echo " -c 'network "$(subnet_host_router "${group_number}" "${i}" "router")" area 0' \\" >> "${location}"
+                echo " -c 'exit' \\" >> "${location}"
+            fi
 
-                elif [[ "${property2}" == *L2* ]];then
-                        echo " -c 'router ospf' \\" >> "${location}"
-                        echo " -c 'network "$(subnet_l2_router "${group_number}" $((${l2_id[$property2]}-1)))" area 0' \\" >> "${location}"
-                        echo " -c 'exit'\\" >> "${location}"
-                fi
+            if [[ "${property2}" == *L2* ]];then
+                    echo " -c 'router ospf' \\" >> "${location}"
+                    echo " -c 'network "$(subnet_l2_router "${group_number}" $((${l2_id[$property2]}-1)))" area 0' \\" >> "${location}"
+                    echo " -c 'exit'\\" >> "${location}"
+            fi
 
             router_id=$(subnet_router "${group_number}" "${i}")
 

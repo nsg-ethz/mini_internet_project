@@ -41,7 +41,7 @@ for ((k=0;k<group_numbers;k++)); do
         # Initialization of the associative arrays
         for ((i=0;i<n_routers;i++)); do
             router_i=(${routers[$i]})
-            property2="${router_i[2]}"
+            property2="$(echo ${router_i[2]} | cut -d ':' -f 1)"
             l2_id[$property2]=0
             l2_routerid[$property2]=1
         done
@@ -51,7 +51,7 @@ for ((k=0;k<group_numbers;k++)); do
             router_i=(${routers[$i]})
             rname="${router_i[0]}"
             property1="${router_i[1]}"
-            property2="${router_i[2]}"
+            property2="$(echo ${router_i[2]} | cut -d ':' -f 1)"
             if [[ "${property2}" == *L2* ]];then
 
                 declare -A vlanset
