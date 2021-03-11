@@ -7,6 +7,11 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
+if [ "$#" != 1 ]; then
+  echo "usage: ${0##*/} directory" 2>&1
+  exit 1
+fi
+
 DIRECTORY="$1"
 
 # kill all container

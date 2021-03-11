@@ -20,7 +20,7 @@ subnet_bridge="$(subnet_ext_sshContainer -1 "bridge")"
 echo "ip a add $subnet_bridge dev ssh_to_group" >> "${DIRECTORY}"/groups/ip_setup.sh
 echo "ip link set dev ssh_to_group up" >> "${DIRECTORY}"/groups/ip_setup.sh
 
-# General a pair of keys for the server, and put the public in the proxy container
+# Generate a pair of keys for the server, and put the public in the proxy container
 ssh-keygen -t rsa -b 4096 -C "comment" -P "" -f "groups/id_rsa" -q
 cp groups/id_rsa.pub groups/authorized_keys
 

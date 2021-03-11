@@ -37,7 +37,7 @@ for ((k=0;k<group_numbers;k++)); do
 
             location="${DIRECTORY}"/groups/g"${group_number}"/"${rname}"
             mkdir "${location}"
-            # router configs are safe periodically in frr.con
+            # router configs are saved periodically in frr.con
             touch  "${location}"/frr.conf
             cp config/daemons "${location}"/daemons
             touch  "${location}"/connectivity.txt

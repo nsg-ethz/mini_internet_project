@@ -281,7 +281,13 @@ The following section explains how we build and use the different monitoring too
 #### Looking glass
 
 Every container which runs a router pulls the routing table from the FRRouting CLI every 30 seconds and stores it in `/home/looking_glass.txt`.
-You can then simply periodically copy this file from the container (e.g., using `docker cp 1_PARIrouter:/home/looking_glass.txt .`) and make it available to the students for example over a web interface.
+This file is bound to a file in the local filesystem according to this scheme: `groups/gX/<location>/looking_glass.txt` where X is the group
+number and `<location>` is e.g. PARI.
+
+Alternativley you can then simply periodically copy this file from the container (e.g., using `docker cp 1_PARIrouter:/home/looking_glass.txt .`) and make it available to the students for example over a web interface.
+
+See `utils/upload_looking_glass.sh`.
+
 
 #### Active probing
 
