@@ -79,18 +79,15 @@ for ((k=0;k<group_numbers;k++)); do
                     if [ "${group_as_tunnel}" != "IXP" ] && [ "${group_number_tunnel}" != "${group_number}" ];then
                         subnet_remote_router=$(subnet_router $group_number_tunnel $i)
 
-                        docker exec -d ${group_number}_${rname}router \
-                            ip tunnel add tun6to4_${group_number_tunnel} mode sit remote ${subnet_remote_router%/*} local ${subnet_local_router%/*} ttl 255
+                        echo "docker exec -d ${group_number}_${rname}router ip tunnel add tun6to4_${group_number_tunnel} mode sit remote ${subnet_remote_router%/*} local ${subnet_local_router%/*} ttl 255" >> "${DIRECTORY}"/groups/g"${group_number}"/6in4_setup.sh
 
-                        docker exec -d ${group_number}_${rname}router \
-                            ip link set tun6to4_${group_number_tunnel} up
+                        echo "docker exec -d ${group_number}_${rname}router ip link set tun6to4_${group_number_tunnel} up" >> "${DIRECTORY}"/groups/g"${group_number}"/6in4_setup.sh
 
                         for vlan in "${!vlanset[@]}"
                         do
                             subnet_remote_router_l2=$(subnet_l2_ipv6 $group_number_tunnel $((${l2_id[$property2]}-1)) $vlan 0)
 
-                            docker exec -d ${group_number}_${rname}router \
-                                ip route add ${subnet_remote_router_l2} dev tun6to4_${group_number_tunnel}
+                            echo "docker exec -d ${group_number}_${rname}router ip route add ${subnet_remote_router_l2} dev tun6to4_${group_number_tunnel}" >> "${DIRECTORY}"/groups/g"${group_number}"/6in4_setup.sh
                         done
                     fi
                 done

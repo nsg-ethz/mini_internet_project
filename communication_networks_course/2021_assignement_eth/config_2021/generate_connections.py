@@ -9,6 +9,14 @@ import string
 # ixp_central = 80
 # ixp_out = [81,82,83,84,85,86]
 
+# 72 ASes
+# tier1 = [[1,2],[21,22],[41,42],[61,62],[81,82],[101,102]]
+# transit = [[1,2,3,4,5,6,7,8,9,10,11,12],[21,22,23,24,25,26,27,28,29,30,31,32], \
+# [41,42,43,44,45,46,47,48,49,50,51,52], [61,62,63,64,65,66,67,68,69,70,71,72], \
+# [81,82,83,84,85,86,87,88,89,90,91,92],[101,102,103,104,105,106,107,108,109,110,111,112]]
+# ixp_central = 120
+# ixp_out = [121,122,123,124,125,126]
+
 # 78 ASes
 # tier1 = [[1,2],[21,22],[41,42],[61,62],[81,82],[101,102]]
 # transit = [[1,2,3,4,5,6,7,8,9,10,11,12,13,14],[21,22,23,24,25,26,27,28,29,30,31,32,33,34], \
@@ -30,10 +38,10 @@ import string
 # ixp_out = [81,82]
 
 # 20 ASes
-tier1 = [[1,2],[11,12]]
-transit = [[1,2,3,4,5,6,7,8,9,10],[11,12,13,14,15,16,17,18,19,20]]
-ixp_central = 80
-ixp_out = [81,82]
+# tier1 = [[1,2],[11,12]]
+# transit = [[1,2,3,4,5,6,7,8,9,10],[11,12,13,14,15,16,17,18,19,20]]
+# ixp_central = 80
+# ixp_out = [81,82]
 
 # 40 ASes
 # tier1 = [[1,2],[11,12],[21,22],[31,32]]
@@ -274,7 +282,7 @@ with open('AS_config.txt', 'w') as fd:
         fd.write(str(asn)+'\tAS\tConfig\trouter_config_small.txt\tinternal_links_config_small.txt\tlayer2_switches_config_empty.txt\tlayer2_hosts_config_empty.txt\tlayer2_links_config_empty.txt\n')
 
     for asn in all_transit:
-        fd.write(str(asn)+'\tAS\tConfig\trouter_config_full.txt\tinternal_links_config.txt\tlayer2_switches_config.txt\tlayer2_hosts_config.txt\tlayer2_links_config.txt\n')
+        fd.write(str(asn)+'\tAS\tConfig\trouter_config_full.txt\tinternal_links_config_full.txt\tlayer2_switches_config.txt\tlayer2_hosts_config.txt\tlayer2_links_config.txt\n')
 
     for asn in all_ixp:
         fd.write(str(asn)+'\tIXP\tConfig\tN/A\tN/A\tN/A\tN/A\tN/A\n')

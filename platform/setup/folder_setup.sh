@@ -43,6 +43,11 @@ for ((k=0;k<group_numbers;k++)); do
             touch  "${location}"/connectivity.txt
             touch  "${location}"/looking_glass.txt
         done
+
+        echo "#!/bin/bash" > "${DIRECTORY}"/groups/g"${group_number}"/6in4_setup.sh
+        chmod +x "${DIRECTORY}"/groups/g"${group_number}"/6in4_setup.sh
+
+
     else
         location="${DIRECTORY}"/groups/g"${group_number}"
         touch  "${location}"/frr.conf
@@ -63,6 +68,7 @@ echo "#!/bin/bash" > "${location}"/add_vpns.sh
 echo "#!/bin/bash" > "${location}"/del_vpns.sh
 echo "#!/bin/bash" > "${location}"/restart_container.sh
 echo "#!/bin/bash" > "${location}"/open_vpn_ports.sh
+
 
 chmod +x "${location}"/ip_setup.sh
 chmod +x "${location}"/add_ports.sh

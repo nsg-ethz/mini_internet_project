@@ -12,12 +12,12 @@ source "${DIRECTORY}"/config/subnet_config.sh
 
 # read configs
 readarray groups < "${DIRECTORY}"/config/AS_config.txt
-readarray intern_links < "${DIRECTORY}"/config/internal_links_config.txt
-readarray extern_links < "${DIRECTORY}"/config/external_links_config.txt
+# readarray intern_links < "${DIRECTORY}"/config/internal_links_config.txt
+# readarray extern_links < "${DIRECTORY}"/config/external_links_config.txt
 
 group_numbers=${#groups[@]}
-n_intern_links=${#intern_links[@]}
-n_extern_links=${#extern_links[@]}
+# n_intern_links=${#intern_links[@]}
+# n_extern_links=${#extern_links[@]}
 
 # bridge for connection from host to ssh containers
 echo -n "-- --if-exists del-br ssh_to_group " >> "${DIRECTORY}"/ovs_command.txt
