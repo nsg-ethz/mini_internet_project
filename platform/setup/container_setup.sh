@@ -127,7 +127,8 @@ for ((k=0;k<group_numbers;k++)); do
                 --sysctl net.ipv6.icmp.ratelimit=0 \
                 --sysctl net.mpls.conf.lo.input=1 \
                 --sysctl net.mpls.platform_labels=1048575 \
-                --privileged \
+                --cap-add=ALL \
+                --cap-drop=SYS_RESOURCE \
                 --cpus=2 --pids-limit 100 --hostname "${rname}""_router" \
                 -v "${location}"/looking_glass.txt:/home/looking_glass.txt \
                 -v "${location}"/daemons:/etc/frr/daemons \
