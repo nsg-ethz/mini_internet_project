@@ -1,2 +1,2 @@
-BROO    MATRIX host:thomahol/d_host
-NEWY    MATRIX_TARGET host:thomahol/d_host
+BROO    MATRIX host:thomahol/d_host vtysh
+NEWY    MATRIX_TARGET host:thomahol/d_host  vtysh

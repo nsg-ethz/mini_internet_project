@@ -1,8 +1,8 @@
-BROO	N/A L2-DC1:thomahol/d_host
-NEWY	N/A L2-DC1:thomahol/d_host
-CHAR	MATRIX  host:thomahol/d_host
-PITT	N/A host:thomahol/d_host
-DETR	DNS host:thomahol/d_host
-CHIC	MATRIX_TARGET   host:thomahol/d_host
-STLO	N/A L2-DC2:thomahol/d_host
-NASH	MEASUREMENT host:thomahol/d_host
+BROO	N/A L2-DC1:thomahol/d_host  linux
+NEWY	N/A L2-DC1:thomahol/d_host  vtysh
+CHAR	MATRIX  host:thomahol/d_host    vtysh
+PITT	N/A host:thomahol/d_host    vtysh
+DETR	DNS host:thomahol/d_host    vtysh
+CHIC	MATRIX_TARGET   host:thomahol/d_host    vtysh
+STLO	N/A L2-DC2:thomahol/d_host  linux
+NASH	MEASUREMENT host:thomahol/d_host    vtysh

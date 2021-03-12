@@ -85,13 +85,19 @@ for ((k=0;k<group_numbers;k++)); do
             rname="${router_i[0]}"
             property1="${router_i[1]}"
             property2="${router_i[2]}"
+            rcmd="${router_i[3]}"
             l2_switch_cur=0
             l2_host_cur=0
 
             #ssh login for router"
             subnet_router="$(subnet_sshContainer_groupContainer "${group_number}" "${i}" -1 "router")"
             ./setup/ovs-docker.sh add-port "${group_number}"-ssh ssh "${group_number}"_"${rname}"router --ipaddress="${subnet_router}"
-            docker cp "${DIRECTORY}"/groups/g"${group_number}"/id_rsa_command.pub "${group_number}"_"${rname}"router:/root/.ssh/authorized_keys
+
+            if [ "${rcmd}" == "vtysh" ]; then
+                docker cp "${DIRECTORY}"/groups/g"${group_number}"/id_rsa_command.pub "${group_number}"_"${rname}"router:/root/.ssh/authorized_keys
+            else
+                docker cp "${DIRECTORY}"/groups/g"${group_number}"/id_rsa.pub "${group_number}"_"${rname}"router:/root/.ssh/authorized_keys
+            fi
 
             if [[ "${property2}" == host* ]];then
                 #ssh login for host
