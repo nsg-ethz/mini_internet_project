@@ -131,6 +131,7 @@ for ((k=0;k<group_numbers;k++)); do
                 --cap-drop=SYS_RESOURCE \
                 --cpus=2 --pids-limit 100 --hostname "${rname}""_router" \
                 -v "${location}"/looking_glass.txt:/home/looking_glass.txt \
+                -v "${location}"/looking_glass_json.txt:/home/looking_glass_json.txt \
                 -v "${location}"/daemons:/etc/frr/daemons \
                 -v "${location}"/frr.conf:/etc/frr/frr.conf \
                 -v /etc/timezone:/etc/timezone:ro \
