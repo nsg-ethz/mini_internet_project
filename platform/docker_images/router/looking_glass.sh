@@ -5,6 +5,7 @@ do
   for i in {0..$duration..30}; do
     date "+%FT%T" > /home/looking_glass.txt
     vtysh -c 'show ip bgp' >> /home/looking_glass.txt
+    vtysh -c 'show ip bgp json' > /home/looking_glass_json.txt
     sleep 30
   done
 
