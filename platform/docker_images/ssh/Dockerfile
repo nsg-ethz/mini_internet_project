@@ -10,5 +10,7 @@ ENV LC_ALL en_US.UTF-8
 
 # Add startup script and set it as entrypoint
 ADD docker-start /usr/sbin/docker-start
+ADD goto_completion /root/.goto_completion
+RUN echo "source ~/.goto_completion" >> /root/.bashrc
 RUN chmod +x /usr/sbin/docker-start
 ENTRYPOINT ["/usr/sbin/docker-start"]

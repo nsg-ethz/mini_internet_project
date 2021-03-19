@@ -1,0 +1,24 @@
+goto_complete() {
+	local narg="${#COMP_WORDS[@]}" regex
+	locations=$(sed -n 's/^if.*location}" == "\(.*\)" ] &&.*/\1/p' "$1" | sort -u)
+	# First argument is being completed
+	if [ "$narg" = 2 ]
+	then
+		l=$(echo "$locations" | grep -- "^$2")
+		COMPREPLY=($l)
+		return
+	fi
+
+	# is the first argument valid?
+	if ! echo "$locations" | grep -- "^$3\$" > /dev/null 2>&1
+	then
+		return
+	fi
+
+	regex=$(printf 's/.*location}" == "%s".*device}" == "\\(.*\\)" ].*/\\1/p' $3)
+	destinations=$(sed -n "$regex" "$1" | grep -- "^$2")
+	COMPREPLY=($destinations)
+}
+
+complete -F goto_complete goto.sh
+
