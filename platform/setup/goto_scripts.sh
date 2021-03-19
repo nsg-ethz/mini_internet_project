@@ -63,13 +63,14 @@ for ((k=0;k<n_groups;k++)); do
             property1="${router_i[1]}"
             property2="${router_i[2]}"
             rcmd="${router_i[3]}"
+            dname=$(echo $property2 | cut -d ':' -f 2)
             l2_name=$(echo $property2 | cut -d ':' -f 1 | cut -f 2 -d '-')
 
             if [[ ${l2_id[$l2_name]} == 1000000 ]]; then
                 l2_id[$l2_name]=$i
             fi
 
-            if [[ "${property2}" == host* ]];then
+            if [[ ! -z "${dname}" ]];then
                 # ssh to host
                 echo "if [ \"\${location}\" == \"$rname\" ] && [ \"\${device}\" == \""host"\" ]; then" >> "${file_loc}"
                 echo "	subnet=""$(subnet_sshContainer_groupContainer "${group_number}" "${i}" -1  "host")" >> "${file_loc}"
