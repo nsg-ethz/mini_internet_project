@@ -218,7 +218,7 @@ subnet_sshContainer_groupContainer () {
 
   elif [ "${device}" = "L2" ] ; then
 
-    echo "158."$n_grp".$((n_router+10)).$((n_layer2+2))/16"
+    echo "158."$n_grp".$((n_router+10)).$((n_layer2+3))/16"
 
   elif [ "${device}" = "bridge" ] ; then
 
