@@ -117,7 +117,6 @@ for ((k=0;k<group_numbers;k++)); do
                 echo "ip link set ${group_number}-$hname netns \$PID" >> "${DIRECTORY}"/groups/add_vpns.sh
                 echo "ip netns exec \$PID ip link set dev ${group_number}-$hname up" >> "${DIRECTORY}"/groups/add_vpns.sh
                 echo "docker exec -d "${group_number}""_L2_""${l2name}_${sname}" ovs-vsctl add-port br0 ${group_number}-$hname" >> "${DIRECTORY}"/groups/add_vpns.sh
-
                 echo "ip link set dev g${group_number}_$hname up" >> groups/add_vpns.sh
                 echo "ip link set dev tap_g${group_number}_$hname up" >> groups/add_vpns.sh
 
