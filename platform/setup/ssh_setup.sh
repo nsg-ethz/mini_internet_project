@@ -100,8 +100,6 @@ for ((k=0;k<group_numbers;k++)); do
                 docker cp "${DIRECTORY}"/groups/g"${group_number}"/id_rsa.pub "${group_number}"_"${rname}"router:/root/.ssh/authorized_keys
             fi
 
-            echo $dname $property2
-
             if [[ ! -z "${dname}" ]];then
                 #ssh login for host
                 subnet_host="$(subnet_sshContainer_groupContainer "${group_number}" "${i}" -1 "host")"
@@ -111,7 +109,6 @@ for ((k=0;k<group_numbers;k++)); do
 
             if [[ "${property2}" == *L2* ]]; then
                 l2_name=$(echo $property2 | cut -d ':' -f 1 | cut -f 2 -d '-')
-                echo $l2_name
 
                 if [[ ! $l2_done =~ (^| )$l2_name($| ) ]]; then
                     for ((l=0;l<n_l2_switches;l++)); do
