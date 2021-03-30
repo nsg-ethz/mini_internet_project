@@ -59,9 +59,11 @@ for ((k=0;k<group_numbers;k++)); do
             l2name="${switch_l[0]}"
             sname="${switch_l[1]}"
 
-            docker run -itd --net='none' --dns="${subnet_dns%/*}" --cap-add=NET_ADMIN \
+            docker run -itd --net='none' --dns="${subnet_dns%/*}" \
                 --cpus=2 --pids-limit 100 --hostname "${sname}" \
                 --name=${group_number}_L2_${l2name}_${sname} \
+                --cap-add=ALL \
+                --cap-drop=SYS_RESOURCE \
                 --sysctl net.ipv4.ip_forward=1 \
                 --sysctl net.ipv4.icmp_ratelimit=0 \
                 --sysctl net.ipv4.fib_multipath_hash_policy=1 \
