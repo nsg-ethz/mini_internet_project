@@ -67,8 +67,8 @@ Laurent Vanbever <lvanbever@ethz.ch> \
 We are grateful to everyone who contributed to improve the platform.
 
 We are especially thankful to the following ETH students who helped us developping the platform during their studies:
-- Martin Vahlensieck (BGP policy analyzer)
-- Denis Mikhaylov (Implemenation of RPKI)
+- Martin Vahlensieck, 2021 (BGP policy analyzer)
+- Denis Mikhaylov, 2020 (Implemenation of RPKI)
 
 ### Disclaimer
 
