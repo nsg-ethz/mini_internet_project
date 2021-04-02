@@ -62,6 +62,14 @@ Tino Rellstab <tino.rellstab@gmail.com> \
 Laurent Vanbever <lvanbever@ethz.ch> \
 [NSG Group website](https://nsg.ee.ethz.ch/home/)
 
+### Acknowledgment
+
+We are grateful to everyone who contributed to improve the platform.
+
+We are especially thankful to the following ETH students who helped us developping the platform during their studies:
+- Martin Vahlensieck (BGP policy analyzer)
+- Denis Mikhaylov (Implemenation of RPKI)
+
 ### Disclaimer
 
 This platform has been tailored to teach how the Internet works in our Communication Networks lecture at ETH Zurich. Although this platform may be useful for other kind of purposes (research, experiments, etc), it has not been designed for them.
