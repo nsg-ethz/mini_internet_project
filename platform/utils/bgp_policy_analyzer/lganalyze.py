@@ -13,7 +13,8 @@ def providers(c, nr):
 def peers(c, nr):
     """ Returns a list of peers for AS nr """
     res = c.execute("""SELECT DISTINCT t_as FROM all_links
-                       WHERE f_as = ? AND f_role = 'Peer'""",
+                       WHERE f_as = ? AND f_role = 'Peer'
+                       AND t_as IN (SELECT asnumber FROM asnumbers)""",
                     (nr,))
     return map(lambda x: x[0], res.fetchall())
 
@@ -25,12 +26,10 @@ def customers(c, nr):
     return map(lambda x: x[0], res.fetchall())
 
 def get_relationship(c, f, t):
-    print (f, t)
-
     r = c.execute("""SELECT DISTINCT f_role || '-' || t_role FROM all_links
                         WHERE f_as = ? AND t_as = ?""", (f, t)).fetchall()
 
-    print (r)
+
     if len(r) != 1:
         print("Expected unique relationship between AS {} and {}".format(
             f, t), file=sys.stderr)

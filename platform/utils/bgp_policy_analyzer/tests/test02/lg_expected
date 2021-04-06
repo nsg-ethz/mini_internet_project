@@ -1,0 +1,2 @@
+ERROR: AS 2 should have an announcement for 5.0.0.0/8 from AS 3
+ERROR: AS 2 should have an announcement for 6.0.0.0/8 from AS 3

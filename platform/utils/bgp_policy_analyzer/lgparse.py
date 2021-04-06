@@ -6,9 +6,6 @@ import os
 import sys
 import sqlite3
 
-LOCATIONS = ["BROO", "NEWY", "CHAR", "PITT", "DETR", "CHIC", "STLO", "NASH"]
-GROUPS = [3, 4, 5, 6]
-
 def parse_lg(f, g, l, c):
     lg = json.load(f)
     tv = lg['tableVersion']
@@ -69,18 +66,35 @@ c.execute("""CREATE TABLE IF NOT EXISTS looking_glass (
         path STRING NOT NULL,
         nexthop STRING NOT NULL
         )""")
-c.execute("DELETE FROM looking_glass")
 db.commit()
 
+GROUPS = map(lambda x: x[0],
+        c.execute("SELECT asnumber FROM asnumbers ORDER BY asnumber ASC").fetchall())
+
 for g in GROUPS:
+    LOCATIONS = map(lambda x: x[0],
+            c.execute("""SELECT DISTINCT f_loc
+                         FROM all_links
+                         WHERE f_loc IS NOT NULL AND f_as = ?""", (g,)).fetchall())
+
     for l in LOCATIONS:
         p = os.path.join(sys.argv[1], "g{:d}".format(g), l, "looking_glass_json.txt")
-        if os.path.isfile(p):
+        try:
             c = db.cursor()
-            print (p)
+            c.execute("DELETE FROM looking_glass WHERE asnumber = ? AND location = ?",
+                    (g, l))
             with open(p) as f:
                 parse_lg(f, g, l, c)
             db.commit()
+        except json.JSONDecodeError:
+            print("Could not read looking glass {} for group {} (probably being updated right now)".format(l, g), file=sys.stderr)
+            db.rollback()
+        except:
+            e = sys.exc_info()
+            print("Failed to parse looking glass for AS {} location {}: {}".format(
+                g, l, e), file=sys.stderr)
+            db.rollback()
+            sys.exit(1)
 
 sys.exit(0)
 print(lg['vrfName'])
