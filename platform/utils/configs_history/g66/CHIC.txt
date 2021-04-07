@@ -1,0 +1,89 @@
+frr version 7.5
+frr defaults traditional
+hostname CHIC_router
+!
+ip route 66.0.0.0/8 Null0
+!
+interface ext_64_NASH
+ ip address 179.1.0.2/24
+!
+interface host
+ ip address 66.106.0.2/24
+!
+interface lo
+ ip address 66.156.0.1/24
+!
+interface port_DETR
+ ip address 66.0.10.2/24
+ ip ospf cost 1
+!
+interface port_STLO
+ ip address 66.0.11.1/24
+ ip ospf cost 1
+!
+router bgp 66
+ neighbor 66.151.0.1 remote-as 66
+ neighbor 66.151.0.1 update-source lo
+ neighbor 66.152.0.1 remote-as 66
+ neighbor 66.152.0.1 update-source lo
+ neighbor 66.153.0.1 remote-as 66
+ neighbor 66.153.0.1 update-source lo
+ neighbor 66.154.0.1 remote-as 66
+ neighbor 66.154.0.1 update-source lo
+ neighbor 66.155.0.1 remote-as 66
+ neighbor 66.155.0.1 update-source lo
+ neighbor 66.157.0.1 remote-as 66
+ neighbor 66.157.0.1 update-source lo
+ neighbor 66.158.0.1 remote-as 66
+ neighbor 66.158.0.1 update-source lo
+ neighbor 179.1.0.1 remote-as 64
+ !
+ address-family ipv4 unicast
+  network 66.0.0.0/8
+  neighbor 66.151.0.1 next-hop-self
+  neighbor 66.152.0.1 next-hop-self
+  neighbor 66.153.0.1 next-hop-self
+  neighbor 66.154.0.1 next-hop-self
+  neighbor 66.155.0.1 next-hop-self
+  neighbor 66.157.0.1 next-hop-self
+  neighbor 66.158.0.1 next-hop-self
+  neighbor 179.1.0.1 route-map LOCAL_PREF_IN_64 in
+  neighbor 179.1.0.1 route-map LOCAL_PREF_OUT_64 out
+ exit-address-family
+ !
+ address-family ipv6 unicast
+  neighbor 66.151.0.1 activate
+  neighbor 66.152.0.1 activate
+  neighbor 66.153.0.1 activate
+  neighbor 66.154.0.1 activate
+  neighbor 66.155.0.1 activate
+  neighbor 66.157.0.1 activate
+  neighbor 66.158.0.1 activate
+ exit-address-family
+!
+router ospf
+ ospf router-id 66.156.0.1
+ network 66.0.10.0/24 area 0
+ network 66.0.11.0/24 area 0
+ network 66.106.0.0/24 area 0
+ network 66.156.0.0/24 area 0
+!
+ip prefix-list OWN_PREFIX seq 5 permit 66.0.0.0/8
+!
+bgp community-list 1 seq 5 permit 66:10
+!
+route-map OWN_PREFIX permit 10
+ match ip address prefix-list OWN_PREFIX
+!
+route-map LOCAL_PREF_IN_64 permit 10
+ set community 66:30
+ set local-preference 20
+!
+route-map LOCAL_PREF_OUT_64 permit 5
+ match ip address prefix-list OWN_PREFIX
+!
+route-map LOCAL_PREF_OUT_64 permit 10
+ match community 1
+!
+line vty
+!

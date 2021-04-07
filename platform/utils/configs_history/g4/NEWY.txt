@@ -1,0 +1,89 @@
+frr version 7.5
+frr defaults traditional
+hostname NEWY_router
+!
+ip route 4.0.0.0/8 Null0
+!
+interface NEWY-L2.10
+ ip address 4.200.10.2/24
+ ipv6 address 4:200:10::2/48
+!
+interface NEWY-L2.20
+ ip address 4.200.20.2/24
+ ipv6 address 4:200:20::2/48
+!
+interface NEWY-L2.30
+ ip address 4.200.30.2/24
+ ipv6 address 4:200:30::2/48
+!
+interface host
+ ip address 4.102.0.2/24
+!
+interface lo
+ ip address 4.152.0.1/24
+!
+interface port_BROO
+ ip address 4.0.1.2/24
+ ip ospf cost 1
+!
+interface port_CHAR
+ ip address 4.0.4.1/24
+ ip ospf cost 1
+!
+interface port_PITT
+ ip address 4.0.3.1/24
+ ip ospf cost 1
+!
+router bgp 4
+ neighbor 4.151.0.1 remote-as 4
+ neighbor 4.151.0.1 update-source lo
+ neighbor 4.153.0.1 remote-as 4
+ neighbor 4.153.0.1 update-source lo
+ neighbor 4.154.0.1 remote-as 4
+ neighbor 4.154.0.1 update-source lo
+ neighbor 4.155.0.1 remote-as 4
+ neighbor 4.155.0.1 update-source lo
+ neighbor 4.156.0.1 remote-as 4
+ neighbor 4.156.0.1 update-source lo
+ neighbor 4.157.0.1 remote-as 4
+ neighbor 4.157.0.1 update-source lo
+ neighbor 4.158.0.1 remote-as 4
+ neighbor 4.158.0.1 update-source lo
+ !
+ address-family ipv4 unicast
+  network 4.0.0.0/8
+  neighbor 4.151.0.1 next-hop-self
+  neighbor 4.153.0.1 next-hop-self
+  neighbor 4.154.0.1 next-hop-self
+  neighbor 4.155.0.1 next-hop-self
+  neighbor 4.156.0.1 next-hop-self
+  neighbor 4.157.0.1 next-hop-self
+  neighbor 4.158.0.1 next-hop-self
+ exit-address-family
+ !
+ address-family ipv6 unicast
+  neighbor 4.151.0.1 activate
+  neighbor 4.153.0.1 activate
+  neighbor 4.154.0.1 activate
+  neighbor 4.155.0.1 activate
+  neighbor 4.156.0.1 activate
+  neighbor 4.157.0.1 activate
+  neighbor 4.158.0.1 activate
+ exit-address-family
+!
+router ospf
+ ospf router-id 4.152.0.1
+ network 4.0.1.0/24 area 0
+ network 4.0.3.0/24 area 0
+ network 4.0.4.0/24 area 0
+ network 4.102.0.0/24 area 0
+ network 4.152.0.0/24 area 0
+ network 4.200.0.0/16 area 0
+!
+ip prefix-list OWN_PREFIX seq 5 permit 4.0.0.0/8
+!
+route-map OWN_PREFIX permit 10
+ match ip address prefix-list OWN_PREFIX
+!
+line vty
+!

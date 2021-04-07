@@ -1,0 +1,12 @@
+frr version 7.5
+frr defaults traditional
+hostname CHAR_router
+!
+interface matrix_85
+ ip address 85.0.198.1/24
+!
+router ospf
+ network 85.0.198.0/24 area 0
+!
+line vty
+!

@@ -1,0 +1,6 @@
+frr version 7.5
+frr defaults traditional
+hostname CHIC_router
+!
+line vty
+!

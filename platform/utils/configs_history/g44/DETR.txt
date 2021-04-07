@@ -1,0 +1,98 @@
+frr version 7.5
+frr defaults traditional
+hostname DETR_router
+!
+ip route 44.0.0.0/8 Null0
+!
+interface dns_44
+ ip address 198.0.0.44/24
+!
+interface ext_41_BROO
+ ip address 179.0.16.2/24
+!
+interface host
+ ip address 44.105.0.2/24
+!
+interface lo
+ ip address 44.155.0.1/24
+!
+interface port_BROO
+ ip address 44.0.2.2/24
+ ip ospf cost 1
+!
+interface port_CHIC
+ ip address 44.0.10.1/24
+ ip ospf cost 1
+!
+interface port_PITT
+ ip address 44.0.7.2/24
+ ip ospf cost 1
+!
+router bgp 44
+ neighbor 44.151.0.1 remote-as 44
+ neighbor 44.151.0.1 update-source lo
+ neighbor 44.152.0.1 remote-as 44
+ neighbor 44.152.0.1 update-source lo
+ neighbor 44.153.0.1 remote-as 44
+ neighbor 44.153.0.1 update-source lo
+ neighbor 44.154.0.1 remote-as 44
+ neighbor 44.154.0.1 update-source lo
+ neighbor 44.156.0.1 remote-as 44
+ neighbor 44.156.0.1 update-source lo
+ neighbor 44.157.0.1 remote-as 44
+ neighbor 44.157.0.1 update-source lo
+ neighbor 44.158.0.1 remote-as 44
+ neighbor 44.158.0.1 update-source lo
+ neighbor 179.0.16.1 remote-as 41
+ !
+ address-family ipv4 unicast
+  network 44.0.0.0/8
+  neighbor 44.151.0.1 next-hop-self
+  neighbor 44.152.0.1 next-hop-self
+  neighbor 44.153.0.1 next-hop-self
+  neighbor 44.154.0.1 next-hop-self
+  neighbor 44.156.0.1 next-hop-self
+  neighbor 44.157.0.1 next-hop-self
+  neighbor 44.158.0.1 next-hop-self
+  neighbor 179.0.16.1 route-map LOCAL_PREF_IN_41 in
+  neighbor 179.0.16.1 route-map LOCAL_PREF_OUT_41 out
+ exit-address-family
+ !
+ address-family ipv6 unicast
+  neighbor 44.151.0.1 activate
+  neighbor 44.152.0.1 activate
+  neighbor 44.153.0.1 activate
+  neighbor 44.154.0.1 activate
+  neighbor 44.156.0.1 activate
+  neighbor 44.157.0.1 activate
+  neighbor 44.158.0.1 activate
+ exit-address-family
+!
+router ospf
+ ospf router-id 44.155.0.1
+ network 44.0.2.0/24 area 0
+ network 44.0.7.0/24 area 0
+ network 44.0.10.0/24 area 0
+ network 44.105.0.0/24 area 0
+ network 44.155.0.0/24 area 0
+ network 198.0.0.0/24 area 0
+!
+ip prefix-list OWN_PREFIX seq 5 permit 44.0.0.0/8
+!
+bgp community-list 1 seq 5 permit 44:10
+!
+route-map OWN_PREFIX permit 10
+ match ip address prefix-list OWN_PREFIX
+!
+route-map LOCAL_PREF_IN_41 permit 10
+ set community 44:30
+ set local-preference 20
+!
+route-map LOCAL_PREF_OUT_41 permit 5
+ match ip address prefix-list OWN_PREFIX
+!
+route-map LOCAL_PREF_OUT_41 permit 10
+ match community 1
+!
+line vty
+!

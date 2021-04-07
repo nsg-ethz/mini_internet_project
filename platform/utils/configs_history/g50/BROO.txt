@@ -1,0 +1,104 @@
+frr version 7.5
+frr defaults traditional
+hostname BROO_router
+!
+ip route 50.0.0.0/8 Null0
+!
+interface BROO-L2.10
+ ip address 50.200.10.1/24
+ ipv6 address 50:200:10::1/48
+!
+interface BROO-L2.20
+ ip address 50.200.20.1/24
+ ipv6 address 50:200:20::1/48
+!
+interface BROO-L2.30
+ ip address 50.200.30.1/24
+ ipv6 address 50:200:30::1/48
+!
+interface host
+ ip address 50.101.0.2/24
+!
+interface ixp_122
+ ip address 180.122.0.50/24
+!
+interface lo
+ ip address 50.151.0.1/24
+!
+interface port_DETR
+ ip address 50.0.2.1/24
+ ip ospf cost 1
+!
+interface port_NEWY
+ ip address 50.0.1.1/24
+ ip ospf cost 1
+!
+router bgp 50
+ neighbor 50.152.0.1 remote-as 50
+ neighbor 50.152.0.1 update-source lo
+ neighbor 50.153.0.1 remote-as 50
+ neighbor 50.153.0.1 update-source lo
+ neighbor 50.154.0.1 remote-as 50
+ neighbor 50.154.0.1 update-source lo
+ neighbor 50.155.0.1 remote-as 50
+ neighbor 50.155.0.1 update-source lo
+ neighbor 50.156.0.1 remote-as 50
+ neighbor 50.156.0.1 update-source lo
+ neighbor 50.157.0.1 remote-as 50
+ neighbor 50.157.0.1 update-source lo
+ neighbor 50.158.0.1 remote-as 50
+ neighbor 50.158.0.1 update-source lo
+ neighbor 180.122.0.122 remote-as 122
+ !
+ address-family ipv4 unicast
+  network 50.0.0.0/8
+  neighbor 50.152.0.1 next-hop-self
+  neighbor 50.153.0.1 next-hop-self
+  neighbor 50.154.0.1 next-hop-self
+  neighbor 50.155.0.1 next-hop-self
+  neighbor 50.156.0.1 next-hop-self
+  neighbor 50.157.0.1 next-hop-self
+  neighbor 50.158.0.1 next-hop-self
+  neighbor 180.122.0.122 route-map IXP_IN_122 in
+  neighbor 180.122.0.122 route-map IXP_OUT_122 out
+ exit-address-family
+ !
+ address-family ipv6 unicast
+  neighbor 50.152.0.1 activate
+  neighbor 50.153.0.1 activate
+  neighbor 50.154.0.1 activate
+  neighbor 50.155.0.1 activate
+  neighbor 50.156.0.1 activate
+  neighbor 50.157.0.1 activate
+  neighbor 50.158.0.1 activate
+ exit-address-family
+!
+router ospf
+ ospf router-id 50.151.0.1
+ network 50.0.1.0/24 area 0
+ network 50.0.2.0/24 area 0
+ network 50.101.0.0/24 area 0
+ network 50.151.0.0/24 area 0
+ network 50.200.0.0/16 area 0
+!
+ip prefix-list OWN_PREFIX seq 5 permit 50.0.0.0/8
+!
+bgp community-list 1 seq 5 permit 50:10
+!
+route-map OWN_PREFIX permit 10
+ match ip address prefix-list OWN_PREFIX
+!
+route-map IXP_OUT_122 permit 10
+ match ip address prefix-list OWN_PREFIX
+ set community 122:21 122:22 122:23 122:24 122:25 122:26 122:27 122:28 122:29 122:30 122:31 122:32
+!
+route-map IXP_OUT_122 permit 20
+ match community 1
+ set community 122:21 122:22 122:23 122:24 122:25 122:26 122:27 122:28 122:29 122:30 122:31 122:32
+!
+route-map IXP_IN_122 permit 10
+ set community 50:20
+ set local-preference 50
+!
+line vty
+!

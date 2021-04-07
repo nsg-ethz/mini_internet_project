@@ -1,0 +1,133 @@
+frr version 7.5
+frr defaults traditional
+hostname BROO_router
+!
+ip route 101.0.0.0/8 Null0
+!
+interface ext_2_BROO
+ ip address 179.0.32.1/24
+!
+interface ext_102_BROO
+ ip address 179.0.31.1/24
+!
+interface ext_103_CHIC
+ ip address 179.0.33.1/24
+!
+interface ext_104_DETR
+ ip address 179.0.34.1/24
+!
+interface host
+ ip address 101.101.0.2/24
+!
+interface ixp_126
+ ip address 180.126.0.101/24
+!
+interface lo
+ ip address 101.151.0.1/24
+!
+interface matrix_101
+ ip address 101.0.198.1/24
+!
+interface port_NEWY
+ ip address 101.0.1.1/24
+ ip ospf cost 1
+!
+router bgp 101
+ neighbor 101.152.0.1 remote-as 101
+ neighbor 101.152.0.1 update-source lo
+ neighbor 179.0.31.2 remote-as 102
+ neighbor 179.0.32.2 remote-as 2
+ neighbor 179.0.33.2 remote-as 103
+ neighbor 179.0.34.2 remote-as 104
+ neighbor 180.126.0.126 remote-as 126
+ !
+ address-family ipv4 unicast
+  network 101.0.0.0/8
+  neighbor 101.152.0.1 next-hop-self
+  neighbor 179.0.31.2 route-map LOCAL_PREF_IN_102 in
+  neighbor 179.0.31.2 route-map LOCAL_PREF_OUT_102 out
+  neighbor 179.0.32.2 route-map LOCAL_PREF_IN_2 in
+  neighbor 179.0.32.2 route-map LOCAL_PREF_OUT_2 out
+  neighbor 179.0.33.2 route-map LOCAL_PREF_IN_103 in
+  neighbor 179.0.33.2 route-map LOCAL_PREF_OUT_103 out
+  neighbor 179.0.34.2 route-map LOCAL_PREF_IN_104 in
+  neighbor 179.0.34.2 route-map LOCAL_PREF_OUT_104 out
+  neighbor 180.126.0.126 route-map IXP_IN_126 in
+  neighbor 180.126.0.126 route-map IXP_OUT_126 out
+ exit-address-family
+ !
+ address-family ipv6 unicast
+  neighbor 101.152.0.1 activate
+ exit-address-family
+!
+router ospf
+ ospf router-id 101.151.0.1
+ network 101.0.1.0/24 area 0
+ network 101.0.198.0/24 area 0
+ network 101.101.0.0/24 area 0
+ network 101.151.0.0/24 area 0
+!
+ip prefix-list OWN_PREFIX seq 5 permit 101.0.0.0/8
+!
+bgp community-list 1 seq 5 permit 101:10
+bgp community-list 2 seq 5 permit 101:10
+bgp community-list 2 seq 10 permit 101:20
+bgp community-list 2 seq 15 permit 101:30
+!
+route-map OWN_PREFIX permit 10
+ match ip address prefix-list OWN_PREFIX
+!
+route-map LOCAL_PREF_IN_102 permit 10
+ set community 101:20
+ set local-preference 50
+!
+route-map LOCAL_PREF_OUT_102 permit 5
+ match ip address prefix-list OWN_PREFIX
+!
+route-map LOCAL_PREF_OUT_102 permit 10
+ match community 1
+!
+route-map LOCAL_PREF_IN_2 permit 10
+ set community 101:20
+ set local-preference 50
+!
+route-map LOCAL_PREF_OUT_2 permit 5
+ match ip address prefix-list OWN_PREFIX
+!
+route-map LOCAL_PREF_OUT_2 permit 10
+ match community 1
+!
+route-map LOCAL_PREF_IN_103 permit 10
+ set community 101:10
+ set local-preference 100
+!
+route-map LOCAL_PREF_OUT_103 permit 5
+ match ip address prefix-list OWN_PREFIX
+!
+route-map LOCAL_PREF_OUT_103 permit 10
+ match community 2
+!
+route-map LOCAL_PREF_IN_104 permit 10
+ set community 101:10
+ set local-preference 100
+!
+route-map LOCAL_PREF_OUT_104 permit 5
+ match ip address prefix-list OWN_PREFIX
+!
+route-map LOCAL_PREF_OUT_104 permit 10
+ match community 2
+!
+route-map IXP_OUT_126 permit 10
+ match ip address prefix-list OWN_PREFIX
+ set community 126:1 126:2 126:3 126:4 126:5 126:6 126:7 126:8 126:9 126:10 126:11 126:12
+!
+route-map IXP_OUT_126 permit 20
+ match community 1
+ set community 126:1 126:2 126:3 126:4 126:5 126:6 126:7 126:8 126:9 126:10 126:11 126:12
+!
+route-map IXP_IN_126 permit 10
+ set community 101:20
+ set local-preference 50
+!
+line vty
+!

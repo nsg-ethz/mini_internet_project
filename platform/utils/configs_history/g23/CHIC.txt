@@ -1,0 +1,89 @@
+frr version 7.5
+frr defaults traditional
+hostname CHIC_router
+!
+ip route 23.0.0.0/8 Null0
+!
+interface ext_21_BROO
+ ip address 179.0.9.2/24
+!
+interface host
+ ip address 23.106.0.2/24
+!
+interface lo
+ ip address 23.156.0.1/24
+!
+interface port_DETR
+ ip address 23.0.10.2/24
+ ip ospf cost 1
+!
+interface port_STLO
+ ip address 23.0.11.1/24
+ ip ospf cost 1
+!
+router bgp 23
+ neighbor 23.151.0.1 remote-as 23
+ neighbor 23.151.0.1 update-source lo
+ neighbor 23.152.0.1 remote-as 23
+ neighbor 23.152.0.1 update-source lo
+ neighbor 23.153.0.1 remote-as 23
+ neighbor 23.153.0.1 update-source lo
+ neighbor 23.154.0.1 remote-as 23
+ neighbor 23.154.0.1 update-source lo
+ neighbor 23.155.0.1 remote-as 23
+ neighbor 23.155.0.1 update-source lo
+ neighbor 23.157.0.1 remote-as 23
+ neighbor 23.157.0.1 update-source lo
+ neighbor 23.158.0.1 remote-as 23
+ neighbor 23.158.0.1 update-source lo
+ neighbor 179.0.9.1 remote-as 21
+ !
+ address-family ipv4 unicast
+  network 23.0.0.0/8
+  neighbor 23.151.0.1 next-hop-self
+  neighbor 23.152.0.1 next-hop-self
+  neighbor 23.153.0.1 next-hop-self
+  neighbor 23.154.0.1 next-hop-self
+  neighbor 23.155.0.1 next-hop-self
+  neighbor 23.157.0.1 next-hop-self
+  neighbor 23.158.0.1 next-hop-self
+  neighbor 179.0.9.1 route-map LOCAL_PREF_IN_21 in
+  neighbor 179.0.9.1 route-map LOCAL_PREF_OUT_21 out
+ exit-address-family
+ !
+ address-family ipv6 unicast
+  neighbor 23.151.0.1 activate
+  neighbor 23.152.0.1 activate
+  neighbor 23.153.0.1 activate
+  neighbor 23.154.0.1 activate
+  neighbor 23.155.0.1 activate
+  neighbor 23.157.0.1 activate
+  neighbor 23.158.0.1 activate
+ exit-address-family
+!
+router ospf
+ ospf router-id 23.156.0.1
+ network 23.0.10.0/24 area 0
+ network 23.0.11.0/24 area 0
+ network 23.106.0.0/24 area 0
+ network 23.156.0.0/24 area 0
+!
+ip prefix-list OWN_PREFIX seq 5 permit 23.0.0.0/8
+!
+bgp community-list 1 seq 5 permit 23:10
+!
+route-map OWN_PREFIX permit 10
+ match ip address prefix-list OWN_PREFIX
+!
+route-map LOCAL_PREF_IN_21 permit 10
+ set community 23:30
+ set local-preference 20
+!
+route-map LOCAL_PREF_OUT_21 permit 5
+ match ip address prefix-list OWN_PREFIX
+!
+route-map LOCAL_PREF_OUT_21 permit 10
+ match community 1
+!
+line vty
+!

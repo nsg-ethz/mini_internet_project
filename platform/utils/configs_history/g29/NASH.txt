@@ -1,0 +1,100 @@
+frr version 7.5
+frr defaults traditional
+hostname NASH_router
+!
+ip route 29.0.0.0/8 Null0
+!
+interface ext_31_CHIC
+ ip address 179.0.72.1/24
+!
+interface host
+ ip address 29.108.0.2/24
+!
+interface lo
+ ip address 29.158.0.1/24
+!
+interface measurement_29
+ ip address 29.0.199.1/24
+!
+interface port_CHAR
+ ip address 29.0.6.2/24
+ ip ospf cost 1
+!
+interface port_PITT
+ ip address 29.0.9.2/24
+ ip ospf cost 1
+!
+interface port_STLO
+ ip address 29.0.12.2/24
+ ip ospf cost 1
+!
+router bgp 29
+ neighbor 29.151.0.1 remote-as 29
+ neighbor 29.151.0.1 update-source lo
+ neighbor 29.152.0.1 remote-as 29
+ neighbor 29.152.0.1 update-source lo
+ neighbor 29.153.0.1 remote-as 29
+ neighbor 29.153.0.1 update-source lo
+ neighbor 29.154.0.1 remote-as 29
+ neighbor 29.154.0.1 update-source lo
+ neighbor 29.155.0.1 remote-as 29
+ neighbor 29.155.0.1 update-source lo
+ neighbor 29.156.0.1 remote-as 29
+ neighbor 29.156.0.1 update-source lo
+ neighbor 29.157.0.1 remote-as 29
+ neighbor 29.157.0.1 update-source lo
+ neighbor 179.0.72.2 remote-as 31
+ !
+ address-family ipv4 unicast
+  network 29.0.0.0/8
+  neighbor 29.151.0.1 next-hop-self
+  neighbor 29.152.0.1 next-hop-self
+  neighbor 29.153.0.1 next-hop-self
+  neighbor 29.154.0.1 next-hop-self
+  neighbor 29.155.0.1 next-hop-self
+  neighbor 29.156.0.1 next-hop-self
+  neighbor 29.157.0.1 next-hop-self
+  neighbor 179.0.72.2 route-map LOCAL_PREF_IN_31 in
+  neighbor 179.0.72.2 route-map LOCAL_PREF_OUT_31 out
+ exit-address-family
+ !
+ address-family ipv6 unicast
+  neighbor 29.151.0.1 activate
+  neighbor 29.152.0.1 activate
+  neighbor 29.153.0.1 activate
+  neighbor 29.154.0.1 activate
+  neighbor 29.155.0.1 activate
+  neighbor 29.156.0.1 activate
+  neighbor 29.157.0.1 activate
+ exit-address-family
+!
+router ospf
+ ospf router-id 29.158.0.1
+ network 29.0.6.0/24 area 0
+ network 29.0.9.0/24 area 0
+ network 29.0.12.0/24 area 0
+ network 29.0.199.0/24 area 0
+ network 29.108.0.0/24 area 0
+ network 29.158.0.0/24 area 0
+!
+ip prefix-list OWN_PREFIX seq 5 permit 29.0.0.0/8
+!
+bgp community-list 2 seq 5 permit 29:10
+bgp community-list 2 seq 10 permit 29:20
+bgp community-list 2 seq 15 permit 29:30
+!
+route-map OWN_PREFIX permit 10
+ match ip address prefix-list OWN_PREFIX
+!
+route-map LOCAL_PREF_IN_31 permit 10
+ set community 29:10
+ set local-preference 100
+!
+route-map LOCAL_PREF_OUT_31 permit 5
+ match ip address prefix-list OWN_PREFIX
+!
+route-map LOCAL_PREF_OUT_31 permit 10
+ match community 2
+!
+line vty
+!

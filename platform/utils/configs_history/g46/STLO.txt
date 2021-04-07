@@ -1,0 +1,107 @@
+frr version 7.5
+frr defaults traditional
+hostname STLO_router
+!
+ip route 46.0.0.0/8 Null0
+!
+interface STLO-L2.10
+ ip address 46.201.10.1/24
+ ipv6 address 46:201:10::1/48
+!
+interface STLO-L2.20
+ ip address 46.201.20.1/24
+ ipv6 address 46:201:20::1/48
+!
+interface STLO-L2.30
+ ip address 46.201.30.1/24
+ ipv6 address 46:201:30::1/48
+!
+interface ext_45_STLO
+ ip address 179.0.84.2/24
+!
+interface host
+ ip address 46.107.0.2/24
+!
+interface lo
+ ip address 46.157.0.1/24
+!
+interface port_CHIC
+ ip address 46.0.11.2/24
+ ip ospf cost 1
+!
+interface port_NASH
+ ip address 46.0.12.1/24
+ ip ospf cost 1
+!
+interface port_PITT
+ ip address 46.0.8.2/24
+ ip ospf cost 1
+!
+router bgp 46
+ neighbor 46.151.0.1 remote-as 46
+ neighbor 46.151.0.1 update-source lo
+ neighbor 46.152.0.1 remote-as 46
+ neighbor 46.152.0.1 update-source lo
+ neighbor 46.153.0.1 remote-as 46
+ neighbor 46.153.0.1 update-source lo
+ neighbor 46.154.0.1 remote-as 46
+ neighbor 46.154.0.1 update-source lo
+ neighbor 46.155.0.1 remote-as 46
+ neighbor 46.155.0.1 update-source lo
+ neighbor 46.156.0.1 remote-as 46
+ neighbor 46.156.0.1 update-source lo
+ neighbor 46.158.0.1 remote-as 46
+ neighbor 46.158.0.1 update-source lo
+ neighbor 179.0.84.1 remote-as 45
+ !
+ address-family ipv4 unicast
+  network 46.0.0.0/8
+  neighbor 46.151.0.1 next-hop-self
+  neighbor 46.152.0.1 next-hop-self
+  neighbor 46.153.0.1 next-hop-self
+  neighbor 46.154.0.1 next-hop-self
+  neighbor 46.155.0.1 next-hop-self
+  neighbor 46.156.0.1 next-hop-self
+  neighbor 46.158.0.1 next-hop-self
+  neighbor 179.0.84.1 route-map LOCAL_PREF_IN_45 in
+  neighbor 179.0.84.1 route-map LOCAL_PREF_OUT_45 out
+ exit-address-family
+ !
+ address-family ipv6 unicast
+  neighbor 46.151.0.1 activate
+  neighbor 46.152.0.1 activate
+  neighbor 46.153.0.1 activate
+  neighbor 46.154.0.1 activate
+  neighbor 46.155.0.1 activate
+  neighbor 46.156.0.1 activate
+  neighbor 46.158.0.1 activate
+ exit-address-family
+!
+router ospf
+ ospf router-id 46.157.0.1
+ network 46.0.8.0/24 area 0
+ network 46.0.11.0/24 area 0
+ network 46.0.12.0/24 area 0
+ network 46.107.0.0/24 area 0
+ network 46.157.0.0/24 area 0
+ network 46.201.0.0/16 area 0
+!
+ip prefix-list OWN_PREFIX seq 5 permit 46.0.0.0/8
+!
+bgp community-list 1 seq 5 permit 46:10
+!
+route-map OWN_PREFIX permit 10
+ match ip address prefix-list OWN_PREFIX
+!
+route-map LOCAL_PREF_IN_45 permit 10
+ set community 46:20
+ set local-preference 50
+!
+route-map LOCAL_PREF_OUT_45 permit 5
+ match ip address prefix-list OWN_PREFIX
+!
+route-map LOCAL_PREF_OUT_45 permit 10
+ match community 1
+!
+line vty
+!

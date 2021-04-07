@@ -1,0 +1,100 @@
+frr version 7.5
+frr defaults traditional
+hostname NASH_router
+!
+ip route 7.0.0.0/8 Null0
+!
+interface ext_9_CHIC
+ ip address 179.0.47.1/24
+!
+interface host
+ ip address 7.108.0.2/24
+!
+interface lo
+ ip address 7.158.0.1/24
+!
+interface measurement_7
+ ip address 7.0.199.1/24
+!
+interface port_CHAR
+ ip address 7.0.6.2/24
+ ip ospf cost 1
+!
+interface port_PITT
+ ip address 7.0.9.2/24
+ ip ospf cost 1
+!
+interface port_STLO
+ ip address 7.0.12.2/24
+ ip ospf cost 1
+!
+router bgp 7
+ neighbor 7.151.0.1 remote-as 7
+ neighbor 7.151.0.1 update-source lo
+ neighbor 7.152.0.1 remote-as 7
+ neighbor 7.152.0.1 update-source lo
+ neighbor 7.153.0.1 remote-as 7
+ neighbor 7.153.0.1 update-source lo
+ neighbor 7.154.0.1 remote-as 7
+ neighbor 7.154.0.1 update-source lo
+ neighbor 7.155.0.1 remote-as 7
+ neighbor 7.155.0.1 update-source lo
+ neighbor 7.156.0.1 remote-as 7
+ neighbor 7.156.0.1 update-source lo
+ neighbor 7.157.0.1 remote-as 7
+ neighbor 7.157.0.1 update-source lo
+ neighbor 179.0.47.2 remote-as 9
+ !
+ address-family ipv4 unicast
+  network 7.0.0.0/8
+  neighbor 7.151.0.1 next-hop-self
+  neighbor 7.152.0.1 next-hop-self
+  neighbor 7.153.0.1 next-hop-self
+  neighbor 7.154.0.1 next-hop-self
+  neighbor 7.155.0.1 next-hop-self
+  neighbor 7.156.0.1 next-hop-self
+  neighbor 7.157.0.1 next-hop-self
+  neighbor 179.0.47.2 route-map LOCAL_PREF_IN_9 in
+  neighbor 179.0.47.2 route-map LOCAL_PREF_OUT_9 out
+ exit-address-family
+ !
+ address-family ipv6 unicast
+  neighbor 7.151.0.1 activate
+  neighbor 7.152.0.1 activate
+  neighbor 7.153.0.1 activate
+  neighbor 7.154.0.1 activate
+  neighbor 7.155.0.1 activate
+  neighbor 7.156.0.1 activate
+  neighbor 7.157.0.1 activate
+ exit-address-family
+!
+router ospf
+ ospf router-id 7.158.0.1
+ network 7.0.6.0/24 area 0
+ network 7.0.9.0/24 area 0
+ network 7.0.12.0/24 area 0
+ network 7.0.199.0/24 area 0
+ network 7.108.0.0/24 area 0
+ network 7.158.0.0/24 area 0
+!
+ip prefix-list OWN_PREFIX seq 5 permit 7.0.0.0/8
+!
+bgp community-list 2 seq 5 permit 7:10
+bgp community-list 2 seq 10 permit 7:20
+bgp community-list 2 seq 15 permit 7:30
+!
+route-map OWN_PREFIX permit 10
+ match ip address prefix-list OWN_PREFIX
+!
+route-map LOCAL_PREF_IN_9 permit 10
+ set community 7:10
+ set local-preference 100
+!
+route-map LOCAL_PREF_OUT_9 permit 5
+ match ip address prefix-list OWN_PREFIX
+!
+route-map LOCAL_PREF_OUT_9 permit 10
+ match community 2
+!
+line vty
+!

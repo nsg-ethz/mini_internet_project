@@ -1,0 +1,71 @@
+frr version 7.5
+frr defaults traditional
+hostname BROO_router
+!
+ip route 27.0.0.0/8 Null0
+!
+interface BROO-L2.10
+ ip address 27.200.1.1/24
+ ipv6 address 27:200:1::1/64
+!
+interface BROO-L2.20
+ ip address 27.200.0.1/24
+ ipv6 address 27:200::1/64
+!
+interface host
+ ip address 27.101.0.2/24
+!
+interface ixp_122
+ ip address 180.122.0.27/24
+!
+interface lo
+ ip address 27.151.0.1/24
+!
+interface port_DETR
+ ip address 27.0.2.1/24
+ ip ospf cost 1
+!
+interface port_NEWY
+ ip address 27.0.1.1/24
+ ip ospf cost 1
+!
+router bgp 27
+ neighbor 27.152.0.1 remote-as 27
+ neighbor 27.152.0.1 update-source lo
+ neighbor 27.153.0.1 remote-as 27
+ neighbor 27.153.0.1 update-source lo
+ neighbor 27.154.0.1 remote-as 27
+ neighbor 27.154.0.1 update-source lo
+ neighbor 27.155.0.1 remote-as 27
+ neighbor 27.155.0.1 update-source lo
+ neighbor 27.156.0.1 remote-as 27
+ neighbor 27.156.0.1 update-source lo
+ neighbor 27.157.0.1 remote-as 27
+ neighbor 27.157.0.1 update-source lo
+ neighbor 27.158.0.1 remote-as 27
+ neighbor 27.158.0.1 update-source lo
+ neighbor 180.122.0.122 remote-as 122
+ !
+ address-family ipv4 unicast
+  network 27.0.0.0/8
+  neighbor 27.152.0.1 next-hop-self
+  neighbor 27.153.0.1 next-hop-self
+  neighbor 27.154.0.1 next-hop-self
+  neighbor 27.155.0.1 next-hop-self
+  neighbor 27.156.0.1 next-hop-self
+  neighbor 27.157.0.1 next-hop-self
+  neighbor 27.158.0.1 next-hop-self
+  neighbor 180.122.0.122 route-map IXP_IN in
+  neighbor 180.122.0.122 route-map IXP_OUT out
+ exit-address-family
+!
+router ospf
+ network 27.0.0.0/8 area 0
+!
+route-map IXP_OUT permit 10
+ set community 122:11 122:13 122:15 122:17 122:19
+!
+route-map IXP_IN permit 10
+!
+line vty
+!

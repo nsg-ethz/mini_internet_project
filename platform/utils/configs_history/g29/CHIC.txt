@@ -1,0 +1,89 @@
+frr version 7.5
+frr defaults traditional
+hostname CHIC_router
+!
+ip route 29.0.0.0/8 Null0
+!
+interface ext_27_NASH
+ ip address 179.0.67.2/24
+!
+interface host
+ ip address 29.106.0.2/24
+!
+interface lo
+ ip address 29.156.0.1/24
+!
+interface port_DETR
+ ip address 29.0.10.2/24
+ ip ospf cost 1
+!
+interface port_STLO
+ ip address 29.0.11.1/24
+ ip ospf cost 1
+!
+router bgp 29
+ neighbor 29.151.0.1 remote-as 29
+ neighbor 29.151.0.1 update-source lo
+ neighbor 29.152.0.1 remote-as 29
+ neighbor 29.152.0.1 update-source lo
+ neighbor 29.153.0.1 remote-as 29
+ neighbor 29.153.0.1 update-source lo
+ neighbor 29.154.0.1 remote-as 29
+ neighbor 29.154.0.1 update-source lo
+ neighbor 29.155.0.1 remote-as 29
+ neighbor 29.155.0.1 update-source lo
+ neighbor 29.157.0.1 remote-as 29
+ neighbor 29.157.0.1 update-source lo
+ neighbor 29.158.0.1 remote-as 29
+ neighbor 29.158.0.1 update-source lo
+ neighbor 179.0.67.1 remote-as 27
+ !
+ address-family ipv4 unicast
+  network 29.0.0.0/8
+  neighbor 29.151.0.1 next-hop-self
+  neighbor 29.152.0.1 next-hop-self
+  neighbor 29.153.0.1 next-hop-self
+  neighbor 29.154.0.1 next-hop-self
+  neighbor 29.155.0.1 next-hop-self
+  neighbor 29.157.0.1 next-hop-self
+  neighbor 29.158.0.1 next-hop-self
+  neighbor 179.0.67.1 route-map LOCAL_PREF_IN_27 in
+  neighbor 179.0.67.1 route-map LOCAL_PREF_OUT_27 out
+ exit-address-family
+ !
+ address-family ipv6 unicast
+  neighbor 29.151.0.1 activate
+  neighbor 29.152.0.1 activate
+  neighbor 29.153.0.1 activate
+  neighbor 29.154.0.1 activate
+  neighbor 29.155.0.1 activate
+  neighbor 29.157.0.1 activate
+  neighbor 29.158.0.1 activate
+ exit-address-family
+!
+router ospf
+ ospf router-id 29.156.0.1
+ network 29.0.10.0/24 area 0
+ network 29.0.11.0/24 area 0
+ network 29.106.0.0/24 area 0
+ network 29.156.0.0/24 area 0
+!
+ip prefix-list OWN_PREFIX seq 5 permit 29.0.0.0/8
+!
+bgp community-list 1 seq 5 permit 29:10
+!
+route-map OWN_PREFIX permit 10
+ match ip address prefix-list OWN_PREFIX
+!
+route-map LOCAL_PREF_IN_27 permit 10
+ set community 29:30
+ set local-preference 20
+!
+route-map LOCAL_PREF_OUT_27 permit 5
+ match ip address prefix-list OWN_PREFIX
+!
+route-map LOCAL_PREF_OUT_27 permit 10
+ match community 1
+!
+line vty
+!

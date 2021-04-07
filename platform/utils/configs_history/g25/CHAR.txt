@@ -1,0 +1,100 @@
+frr version 7.5
+frr defaults traditional
+hostname CHAR_router
+!
+ip route 25.0.0.0/8 Null0
+!
+interface ext_28_DETR
+ ip address 179.0.63.1/24
+!
+interface host
+ ip address 25.103.0.2/24
+!
+interface lo
+ ip address 25.153.0.1/24
+!
+interface matrix_25
+ ip address 25.0.198.1/24
+!
+interface port_NASH
+ ip address 25.0.6.1/24
+ ip ospf cost 1
+!
+interface port_NEWY
+ ip address 25.0.4.2/24
+ ip ospf cost 1
+!
+interface port_PITT
+ ip address 25.0.5.1/24
+ ip ospf cost 1
+!
+router bgp 25
+ neighbor 25.151.0.1 remote-as 25
+ neighbor 25.151.0.1 update-source lo
+ neighbor 25.152.0.1 remote-as 25
+ neighbor 25.152.0.1 update-source lo
+ neighbor 25.154.0.1 remote-as 25
+ neighbor 25.154.0.1 update-source lo
+ neighbor 25.155.0.1 remote-as 25
+ neighbor 25.155.0.1 update-source lo
+ neighbor 25.156.0.1 remote-as 25
+ neighbor 25.156.0.1 update-source lo
+ neighbor 25.157.0.1 remote-as 25
+ neighbor 25.157.0.1 update-source lo
+ neighbor 25.158.0.1 remote-as 25
+ neighbor 25.158.0.1 update-source lo
+ neighbor 179.0.63.2 remote-as 28
+ !
+ address-family ipv4 unicast
+  network 25.0.0.0/8
+  neighbor 25.151.0.1 next-hop-self
+  neighbor 25.152.0.1 next-hop-self
+  neighbor 25.154.0.1 next-hop-self
+  neighbor 25.155.0.1 next-hop-self
+  neighbor 25.156.0.1 next-hop-self
+  neighbor 25.157.0.1 next-hop-self
+  neighbor 25.158.0.1 next-hop-self
+  neighbor 179.0.63.2 route-map LOCAL_PREF_IN_28 in
+  neighbor 179.0.63.2 route-map LOCAL_PREF_OUT_28 out
+ exit-address-family
+ !
+ address-family ipv6 unicast
+  neighbor 25.151.0.1 activate
+  neighbor 25.152.0.1 activate
+  neighbor 25.154.0.1 activate
+  neighbor 25.155.0.1 activate
+  neighbor 25.156.0.1 activate
+  neighbor 25.157.0.1 activate
+  neighbor 25.158.0.1 activate
+ exit-address-family
+!
+router ospf
+ ospf router-id 25.153.0.1
+ network 25.0.4.0/24 area 0
+ network 25.0.5.0/24 area 0
+ network 25.0.6.0/24 area 0
+ network 25.0.198.0/24 area 0
+ network 25.103.0.0/24 area 0
+ network 25.153.0.0/24 area 0
+!
+ip prefix-list OWN_PREFIX seq 5 permit 25.0.0.0/8
+!
+bgp community-list 2 seq 5 permit 25:10
+bgp community-list 2 seq 10 permit 25:20
+bgp community-list 2 seq 15 permit 25:30
+!
+route-map OWN_PREFIX permit 10
+ match ip address prefix-list OWN_PREFIX
+!
+route-map LOCAL_PREF_IN_28 permit 10
+ set community 25:10
+ set local-preference 100
+!
+route-map LOCAL_PREF_OUT_28 permit 5
+ match ip address prefix-list OWN_PREFIX
+!
+route-map LOCAL_PREF_OUT_28 permit 10
+ match community 2
+!
+line vty
+!

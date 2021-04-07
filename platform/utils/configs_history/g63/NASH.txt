@@ -1,0 +1,100 @@
+frr version 7.5
+frr defaults traditional
+hostname NASH_router
+!
+ip route 63.0.0.0/8 Null0
+!
+interface ext_65_CHIC
+ ip address 179.0.97.1/24
+!
+interface host
+ ip address 63.108.0.2/24
+!
+interface lo
+ ip address 63.158.0.1/24
+!
+interface measurement_63
+ ip address 63.0.199.1/24
+!
+interface port_CHAR
+ ip address 63.0.6.2/24
+ ip ospf cost 1
+!
+interface port_PITT
+ ip address 63.0.9.2/24
+ ip ospf cost 1
+!
+interface port_STLO
+ ip address 63.0.12.2/24
+ ip ospf cost 1
+!
+router bgp 63
+ neighbor 63.151.0.1 remote-as 63
+ neighbor 63.151.0.1 update-source lo
+ neighbor 63.152.0.1 remote-as 63
+ neighbor 63.152.0.1 update-source lo
+ neighbor 63.153.0.1 remote-as 63
+ neighbor 63.153.0.1 update-source lo
+ neighbor 63.154.0.1 remote-as 63
+ neighbor 63.154.0.1 update-source lo
+ neighbor 63.155.0.1 remote-as 63
+ neighbor 63.155.0.1 update-source lo
+ neighbor 63.156.0.1 remote-as 63
+ neighbor 63.156.0.1 update-source lo
+ neighbor 63.157.0.1 remote-as 63
+ neighbor 63.157.0.1 update-source lo
+ neighbor 179.0.97.2 remote-as 65
+ !
+ address-family ipv4 unicast
+  network 63.0.0.0/8
+  neighbor 63.151.0.1 next-hop-self
+  neighbor 63.152.0.1 next-hop-self
+  neighbor 63.153.0.1 next-hop-self
+  neighbor 63.154.0.1 next-hop-self
+  neighbor 63.155.0.1 next-hop-self
+  neighbor 63.156.0.1 next-hop-self
+  neighbor 63.157.0.1 next-hop-self
+  neighbor 179.0.97.2 route-map LOCAL_PREF_IN_65 in
+  neighbor 179.0.97.2 route-map LOCAL_PREF_OUT_65 out
+ exit-address-family
+ !
+ address-family ipv6 unicast
+  neighbor 63.151.0.1 activate
+  neighbor 63.152.0.1 activate
+  neighbor 63.153.0.1 activate
+  neighbor 63.154.0.1 activate
+  neighbor 63.155.0.1 activate
+  neighbor 63.156.0.1 activate
+  neighbor 63.157.0.1 activate
+ exit-address-family
+!
+router ospf
+ ospf router-id 63.158.0.1
+ network 63.0.6.0/24 area 0
+ network 63.0.9.0/24 area 0
+ network 63.0.12.0/24 area 0
+ network 63.0.199.0/24 area 0
+ network 63.108.0.0/24 area 0
+ network 63.158.0.0/24 area 0
+!
+ip prefix-list OWN_PREFIX seq 5 permit 63.0.0.0/8
+!
+bgp community-list 2 seq 5 permit 63:10
+bgp community-list 2 seq 10 permit 63:20
+bgp community-list 2 seq 15 permit 63:30
+!
+route-map OWN_PREFIX permit 10
+ match ip address prefix-list OWN_PREFIX
+!
+route-map LOCAL_PREF_IN_65 permit 10
+ set community 63:10
+ set local-preference 100
+!
+route-map LOCAL_PREF_OUT_65 permit 5
+ match ip address prefix-list OWN_PREFIX
+!
+route-map LOCAL_PREF_OUT_65 permit 10
+ match community 2
+!
+line vty
+!

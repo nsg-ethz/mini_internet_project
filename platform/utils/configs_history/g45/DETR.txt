@@ -1,0 +1,12 @@
+frr version 7.5
+frr defaults traditional
+hostname DETR_router
+!
+interface dns_45
+ ip address 198.0.0.45/24
+!
+router ospf
+ network 198.0.0.0/24 area 0
+!
+line vty
+!

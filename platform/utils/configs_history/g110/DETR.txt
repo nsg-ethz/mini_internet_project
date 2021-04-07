@@ -1,0 +1,98 @@
+frr version 7.5
+frr defaults traditional
+hostname DETR_router
+!
+ip route 110.0.0.0/8 Null0
+!
+interface dns_110
+ ip address 198.0.0.110/24
+!
+interface ext_107_CHAR
+ ip address 179.1.48.2/24
+!
+interface host
+ ip address 110.105.0.2/24
+!
+interface lo
+ ip address 110.155.0.1/24
+!
+interface port_BROO
+ ip address 110.0.2.2/24
+ ip ospf cost 1
+!
+interface port_CHIC
+ ip address 110.0.10.1/24
+ ip ospf cost 1
+!
+interface port_PITT
+ ip address 110.0.7.2/24
+ ip ospf cost 1
+!
+router bgp 110
+ neighbor 110.151.0.1 remote-as 110
+ neighbor 110.151.0.1 update-source lo
+ neighbor 110.152.0.1 remote-as 110
+ neighbor 110.152.0.1 update-source lo
+ neighbor 110.153.0.1 remote-as 110
+ neighbor 110.153.0.1 update-source lo
+ neighbor 110.154.0.1 remote-as 110
+ neighbor 110.154.0.1 update-source lo
+ neighbor 110.156.0.1 remote-as 110
+ neighbor 110.156.0.1 update-source lo
+ neighbor 110.157.0.1 remote-as 110
+ neighbor 110.157.0.1 update-source lo
+ neighbor 110.158.0.1 remote-as 110
+ neighbor 110.158.0.1 update-source lo
+ neighbor 179.1.48.1 remote-as 107
+ !
+ address-family ipv4 unicast
+  network 110.0.0.0/8
+  neighbor 110.151.0.1 next-hop-self
+  neighbor 110.152.0.1 next-hop-self
+  neighbor 110.153.0.1 next-hop-self
+  neighbor 110.154.0.1 next-hop-self
+  neighbor 110.156.0.1 next-hop-self
+  neighbor 110.157.0.1 next-hop-self
+  neighbor 110.158.0.1 next-hop-self
+  neighbor 179.1.48.1 route-map LOCAL_PREF_IN_107 in
+  neighbor 179.1.48.1 route-map LOCAL_PREF_OUT_107 out
+ exit-address-family
+ !
+ address-family ipv6 unicast
+  neighbor 110.151.0.1 activate
+  neighbor 110.152.0.1 activate
+  neighbor 110.153.0.1 activate
+  neighbor 110.154.0.1 activate
+  neighbor 110.156.0.1 activate
+  neighbor 110.157.0.1 activate
+  neighbor 110.158.0.1 activate
+ exit-address-family
+!
+router ospf
+ ospf router-id 110.155.0.1
+ network 110.0.2.0/24 area 0
+ network 110.0.7.0/24 area 0
+ network 110.0.10.0/24 area 0
+ network 110.105.0.0/24 area 0
+ network 110.155.0.0/24 area 0
+ network 198.0.0.0/24 area 0
+!
+ip prefix-list OWN_PREFIX seq 5 permit 110.0.0.0/8
+!
+bgp community-list 1 seq 5 permit 110:10
+!
+route-map OWN_PREFIX permit 10
+ match ip address prefix-list OWN_PREFIX
+!
+route-map LOCAL_PREF_IN_107 permit 10
+ set community 110:30
+ set local-preference 20
+!
+route-map LOCAL_PREF_OUT_107 permit 5
+ match ip address prefix-list OWN_PREFIX
+!
+route-map LOCAL_PREF_OUT_107 permit 10
+ match community 1
+!
+line vty
+!

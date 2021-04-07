@@ -1,0 +1,89 @@
+frr version 7.5
+frr defaults traditional
+hostname CHIC_router
+!
+ip route 108.0.0.0/8 Null0
+!
+interface ext_106_NASH
+ ip address 179.1.45.2/24
+!
+interface host
+ ip address 108.106.0.2/24
+!
+interface lo
+ ip address 108.156.0.1/24
+!
+interface port_DETR
+ ip address 108.0.10.2/24
+ ip ospf cost 1
+!
+interface port_STLO
+ ip address 108.0.11.1/24
+ ip ospf cost 1
+!
+router bgp 108
+ neighbor 108.151.0.1 remote-as 108
+ neighbor 108.151.0.1 update-source lo
+ neighbor 108.152.0.1 remote-as 108
+ neighbor 108.152.0.1 update-source lo
+ neighbor 108.153.0.1 remote-as 108
+ neighbor 108.153.0.1 update-source lo
+ neighbor 108.154.0.1 remote-as 108
+ neighbor 108.154.0.1 update-source lo
+ neighbor 108.155.0.1 remote-as 108
+ neighbor 108.155.0.1 update-source lo
+ neighbor 108.157.0.1 remote-as 108
+ neighbor 108.157.0.1 update-source lo
+ neighbor 108.158.0.1 remote-as 108
+ neighbor 108.158.0.1 update-source lo
+ neighbor 179.1.45.1 remote-as 106
+ !
+ address-family ipv4 unicast
+  network 108.0.0.0/8
+  neighbor 108.151.0.1 next-hop-self
+  neighbor 108.152.0.1 next-hop-self
+  neighbor 108.153.0.1 next-hop-self
+  neighbor 108.154.0.1 next-hop-self
+  neighbor 108.155.0.1 next-hop-self
+  neighbor 108.157.0.1 next-hop-self
+  neighbor 108.158.0.1 next-hop-self
+  neighbor 179.1.45.1 route-map LOCAL_PREF_IN_106 in
+  neighbor 179.1.45.1 route-map LOCAL_PREF_OUT_106 out
+ exit-address-family
+ !
+ address-family ipv6 unicast
+  neighbor 108.151.0.1 activate
+  neighbor 108.152.0.1 activate
+  neighbor 108.153.0.1 activate
+  neighbor 108.154.0.1 activate
+  neighbor 108.155.0.1 activate
+  neighbor 108.157.0.1 activate
+  neighbor 108.158.0.1 activate
+ exit-address-family
+!
+router ospf
+ ospf router-id 108.156.0.1
+ network 108.0.10.0/24 area 0
+ network 108.0.11.0/24 area 0
+ network 108.106.0.0/24 area 0
+ network 108.156.0.0/24 area 0
+!
+ip prefix-list OWN_PREFIX seq 5 permit 108.0.0.0/8
+!
+bgp community-list 1 seq 5 permit 108:10
+!
+route-map OWN_PREFIX permit 10
+ match ip address prefix-list OWN_PREFIX
+!
+route-map LOCAL_PREF_IN_106 permit 10
+ set community 108:30
+ set local-preference 20
+!
+route-map LOCAL_PREF_OUT_106 permit 5
+ match ip address prefix-list OWN_PREFIX
+!
+route-map LOCAL_PREF_OUT_106 permit 10
+ match community 1
+!
+line vty
+!

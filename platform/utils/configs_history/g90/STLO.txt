@@ -1,0 +1,107 @@
+frr version 7.5
+frr defaults traditional
+hostname STLO_router
+!
+ip route 90.0.0.0/8 Null0
+!
+interface STLO-L2.10
+ ip address 90.201.10.1/24
+ ipv6 address 90:201:10::1/48
+!
+interface STLO-L2.20
+ ip address 90.201.20.1/24
+ ipv6 address 90:201:20::1/48
+!
+interface STLO-L2.30
+ ip address 90.201.30.1/24
+ ipv6 address 90:201:30::1/48
+!
+interface ext_89_STLO
+ ip address 179.1.34.2/24
+!
+interface host
+ ip address 90.107.0.2/24
+!
+interface lo
+ ip address 90.157.0.1/24
+!
+interface port_CHIC
+ ip address 90.0.11.2/24
+ ip ospf cost 1
+!
+interface port_NASH
+ ip address 90.0.12.1/24
+ ip ospf cost 1
+!
+interface port_PITT
+ ip address 90.0.8.2/24
+ ip ospf cost 1
+!
+router bgp 90
+ neighbor 90.151.0.1 remote-as 90
+ neighbor 90.151.0.1 update-source lo
+ neighbor 90.152.0.1 remote-as 90
+ neighbor 90.152.0.1 update-source lo
+ neighbor 90.153.0.1 remote-as 90
+ neighbor 90.153.0.1 update-source lo
+ neighbor 90.154.0.1 remote-as 90
+ neighbor 90.154.0.1 update-source lo
+ neighbor 90.155.0.1 remote-as 90
+ neighbor 90.155.0.1 update-source lo
+ neighbor 90.156.0.1 remote-as 90
+ neighbor 90.156.0.1 update-source lo
+ neighbor 90.158.0.1 remote-as 90
+ neighbor 90.158.0.1 update-source lo
+ neighbor 179.1.34.1 remote-as 89
+ !
+ address-family ipv4 unicast
+  network 90.0.0.0/8
+  neighbor 90.151.0.1 next-hop-self
+  neighbor 90.152.0.1 next-hop-self
+  neighbor 90.153.0.1 next-hop-self
+  neighbor 90.154.0.1 next-hop-self
+  neighbor 90.155.0.1 next-hop-self
+  neighbor 90.156.0.1 next-hop-self
+  neighbor 90.158.0.1 next-hop-self
+  neighbor 179.1.34.1 route-map LOCAL_PREF_IN_89 in
+  neighbor 179.1.34.1 route-map LOCAL_PREF_OUT_89 out
+ exit-address-family
+ !
+ address-family ipv6 unicast
+  neighbor 90.151.0.1 activate
+  neighbor 90.152.0.1 activate
+  neighbor 90.153.0.1 activate
+  neighbor 90.154.0.1 activate
+  neighbor 90.155.0.1 activate
+  neighbor 90.156.0.1 activate
+  neighbor 90.158.0.1 activate
+ exit-address-family
+!
+router ospf
+ ospf router-id 90.157.0.1
+ network 90.0.8.0/24 area 0
+ network 90.0.11.0/24 area 0
+ network 90.0.12.0/24 area 0
+ network 90.107.0.0/24 area 0
+ network 90.157.0.0/24 area 0
+ network 90.201.0.0/16 area 0
+!
+ip prefix-list OWN_PREFIX seq 5 permit 90.0.0.0/8
+!
+bgp community-list 1 seq 5 permit 90:10
+!
+route-map OWN_PREFIX permit 10
+ match ip address prefix-list OWN_PREFIX
+!
+route-map LOCAL_PREF_IN_89 permit 10
+ set community 90:20
+ set local-preference 50
+!
+route-map LOCAL_PREF_OUT_89 permit 5
+ match ip address prefix-list OWN_PREFIX
+!
+route-map LOCAL_PREF_OUT_89 permit 10
+ match community 1
+!
+line vty
+!

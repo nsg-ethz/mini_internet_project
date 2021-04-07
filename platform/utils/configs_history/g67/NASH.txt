@@ -1,0 +1,12 @@
+frr version 7.5
+frr defaults traditional
+hostname NASH_router
+!
+interface measurement_67
+ ip address 67.0.199.1/24
+!
+router ospf
+ network 67.0.199.0/24 area 0
+!
+line vty
+!
