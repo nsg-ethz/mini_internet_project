@@ -1,6 +1,0 @@
-frr version 7.5
-frr defaults traditional
-hostname NEWY_router
-!
-line vty
-!

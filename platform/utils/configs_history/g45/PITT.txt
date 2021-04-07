@@ -1,6 +1,0 @@
-frr version 7.5
-frr defaults traditional
-hostname PITT_router
-!
-line vty
-!
