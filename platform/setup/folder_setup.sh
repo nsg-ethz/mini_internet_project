@@ -52,6 +52,7 @@ for ((k=0;k<group_numbers;k++)); do
     else
         location="${DIRECTORY}"/groups/g"${group_number}"
         touch  "${location}"/frr.conf
+        touch  "${location}"/looking_glass.txt
         cp config/daemons "${location}"/daemons
     fi
 done

@@ -15,5 +15,6 @@ RUN	touch /etc/quagga/bgpd.conf && \
 
 # Add startup script and set it as entrypoint
 ADD docker-start /usr/sbin/docker-start
+COPY looking_glass.sh /home/.looking_glass.sh
 RUN chmod +x /usr/sbin/docker-start
 ENTRYPOINT ["/usr/sbin/docker-start"]

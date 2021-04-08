@@ -18,4 +18,7 @@ mkdir -p /root/.ssh
 ovs-vsctl add-br IXP
 ovs-ofctl add-flow IXP action=NORMAL
 
+chmod 0755 /home/.looking_glass.sh
+/home/.looking_glass.sh &
+
 tail -f /dev/null # To keep the container running forever

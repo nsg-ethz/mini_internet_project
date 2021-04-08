@@ -177,6 +177,7 @@ for ((k=0;k<group_numbers;k++)); do
             --sysctl net.ipv6.icmp.ratelimit=0 \
             -v /etc/timezone:/etc/timezone:ro \
             -v /etc/localtime:/etc/localtime:ro \
+            -v "${location}"/looking_glass.txt:/home/looking_glass.txt \
             thomahol/d_ixp
 
        CONTAINERS+=("${group_number}""_IXP")
