@@ -65,6 +65,7 @@ for ((k=0;k<n_groups;k++)); do
             rname="${router_i[0]}"
             property1="${router_i[1]}"
             property2="${router_i[2]}"
+            rcmd="${router_i[3]}"
             l2_name=$(echo $property2 | cut -d ':' -f 1 | cut -f 2 -d '-')
 
             if [[ ${l2_id[$l2_name]} == 1000000 ]]; then
@@ -72,8 +73,13 @@ for ((k=0;k<n_groups;k++)); do
             fi
 
             #ssh to router vtysh
-            echo "  subnet=""$(subnet_sshContainer_groupContainer "${group_number}" "${i}" -1  "router")" >> "${file_loc}"
-            echo "  ssh -t -o "StrictHostKeyChecking=no" root@\"\${subnet%???}\" -- -c 'sh run' >> \$dirname/$rname.txt" >> "${file_loc}"
+            if [ "${rcmd}" == "vtysh" ]; then
+                echo "  subnet=""$(subnet_sshContainer_groupContainer "${group_number}" "${i}" -1  "router")" >> "${file_loc}"
+                echo "  ssh -t -o "StrictHostKeyChecking=no" root@\"\${subnet%???}\" -- -c 'sh run' >> \$dirname/$rname.txt" >> "${file_loc}"
+            elif [ "${rcmd}" == "linux" ]; then
+                echo "  subnet=""$(subnet_sshContainer_groupContainer "${group_number}" "${i}" -1  "router")" >> "${file_loc}"
+                echo "  ssh -t -o "StrictHostKeyChecking=no" root@\"\${subnet%???}\" \" vtysh -c 'sh run'\" >> \$dirname/$rname.txt" >> "${file_loc}"
+            fi
         done
 
         for ((l=0;l<n_l2_switches;l++)); do
