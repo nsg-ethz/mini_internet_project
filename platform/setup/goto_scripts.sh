@@ -74,8 +74,8 @@ for ((k=0;k<n_groups;k++)); do
                 # ssh to host
                 echo "if [ \"\${location}\" == \"$rname\" ] && [ \"\${device}\" == \""host"\" ]; then" >> "${file_loc}"
                 echo "  subnet=""$(subnet_sshContainer_groupContainer "${group_number}" "${i}" -1  "host")" >> "${file_loc}"
-                echo "	ssh -t -o "StrictHostKeyChecking=no" root@\"\${subnet%???}"\" >> "${file_loc}"
-                echo "	exit" >> "${file_loc}"
+                echo "  ssh -t -o "StrictHostKeyChecking=no" root@\"\${subnet%???}"\" >> "${file_loc}"
+                echo "  exit" >> "${file_loc}"
                 echo "fi" >> "${file_loc}"
             fi
 
