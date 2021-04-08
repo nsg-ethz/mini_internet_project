@@ -25,7 +25,13 @@ search_path ovs-vsctl
 search_path docker
 search_path uuidgen
 
-if (ip netns) > /dev/null 2>&1; then :; else
+if ! docker ps > /dev/null 2>&1; then
+	echo >&2 "${0##*/}: cannot interact with docker, do you have the"\
+		"required privileges?"
+	exit 1
+fi
+
+if ! ip netns > /dev/null 2>&1; then
     echo >&2 "${0##*/}: ip utility not found (or it does not support netns),"\
              "cannot proceed"
     exit 1
