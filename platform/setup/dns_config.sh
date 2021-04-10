@@ -124,8 +124,9 @@ for ((j=0;j<n_groups;j++)); do
             rname="${router_i[0]}"
             property1="${router_i[1]}"
             property2="${router_i[2]}"
+            dname=$(echo $property2 | cut -d ':' -f 2)
 
-            if [[ "${property2}" == host* ]];then
+            if [[ ! -z "${dname}" ]];then
                 subnet1="$(subnet_host_router "${group_number}" "$i" "host")"
                 subnet2="$(subnet_host_router "${group_number}" "$i" "router")"
 
