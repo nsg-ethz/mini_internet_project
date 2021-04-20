@@ -1,6 +1,9 @@
 import sqlite3
 import sys
 
+class ASPathError(Exception):
+    pass
+
 db = sqlite3.connect("file:as.db?mode=ro", uri=True)
 
 def providers(c, nr):
@@ -25,10 +28,24 @@ def customers(c, nr):
                     (nr,))
     return map(lambda x: x[0], res.fetchall())
 
+def has_path_via_ixp(c, f, t):
+    r = c.execute("""SELECT *
+                     FROM all_links toixp
+                     JOIN all_links fromixp ON toixp.t_as = fromixp.f_as
+                     WHERE toixp.t_as IN (SELECT as_number FROM as_config WHERE as_type = 'IXP')
+                     AND toixp.f_as = ? AND fromixp.t_as = ?""", (f, t)).fetchone()
+
+    return r is not None
+
 def get_relationship(c, f, t):
     r = c.execute("""SELECT DISTINCT f_role || '-' || t_role FROM all_links
                         WHERE f_as = ? AND t_as = ?""", (f, t)).fetchall()
 
+    # Case for routes via the IXP
+    if len(r) == 0:
+        if has_path_via_ixp(c, f, t):
+            return "Peer-Peer"
+        raise ASPathError("Invalid AS path: No known connection between {} and {}".format(f, t))
 
     if len(r) != 1:
         print("Expected unique relationship between AS {} and {}".format(
@@ -136,35 +153,109 @@ def get_tier3(c):
                                         )""")
     return map(lambda x: x[0], res.fetchall())
 
-c = db.cursor()
-print("Tier 1: {}".format(", ".join(map(str, get_tier1(c)))))
-print("Tier 2: {}".format(", ".join(map(str, get_tier2(c)))))
-print("Tier 3: {}".format(", ".join(map(str, get_tier3(c)))))
+def get_as_group(c, asnumber):
+    """
+    Retrieves all AS in the same group as asnumber.  A group is everything that
+    can be reached by using Customer-Provider and Provider-Customer links
+    recursivley.
+    """
 
-asnumbers = list(map(lambda x: x[0], db.cursor().execute("SELECT asnumber FROM asnumbers")))
-for number in asnumbers:
-    print("AS {}".format(number))
-    print("    Providers: {}".format(", ".join(map(str, providers(c, number)))))
-    print("    Peers: {}".format(", ".join(map(str, peers(c, number)))))
-    print("    Customer: {}".format(", ".join(map(str, customers(c, number)))))
+    new = set([asnumber])
+    group = set()
+
+    while len(new) > 0:
+        nextas = new.pop()
+        group.add(nextas)
+
+        for pr in providers(c, nextas):
+            if pr not in group:
+                new.add(pr)
+
+        for cs in customers(c, nextas):
+            if cs not in group:
+                new.add(cs)
+
+    return group
+
+def normalize_as_path(p):
+    pe = p.split(" ")
+    np = []
+    prev = None
+
+    for e in pe:
+        if prev is not None and e == prev:
+            continue
+
+        if e == "":
+            continue
+
+        if not e.isdigit():
+            raise ValueError("invalid element {} in AS path {}".format(e, p))
+
+        np.append(e)
+        prev = e
+
+    return " ".join(np)
+
+def log_nr(c, level, nr, message):
+    c.execute("INSERT INTO logs VALUES (?, ?, ?)", (level, nr, message))
+
+def log(c, level, message):
+    log_nr(c, level, None, message)
+
+def print_log(c):
+    msgs = c.execute("""SELECT DISTINCT level || ': ' ||
+                         CASE WHEN asnr IS NULL THEN ''
+                         ELSE 'AS ' || asnr || ': ' END || message
+                        FROM logs""")
+
+    for [msg] in msgs.fetchall():
+        print(msg, file=sys.stderr)
+
+c = db.cursor()
+
+c.execute("""CREATE TEMP TABLE logs(
+                level STRING NOT NULL,
+                asnr INTEGER,
+                message STRING NOT NULL)""")
+
+asnumbers = list(map(lambda x: x[0], c.execute("SELECT asnumber FROM asnumbers")))
 
 for number in asnumbers:
     res = c.execute("SELECT prefix, path FROM looking_glass WHERE asnumber = ?", (number,))
     for prefix, path in res.fetchall():
         # At the moment, ignore internal routes if the path is empty
-        if str(number) == prefix[0]:
+        if str(number) == prefix.split(".")[0]:
             if path != "":
-                print("AS {} goes to {} via AS {}".format(number, prefix, path),
-                        file=sys.stderr)
+                log(c, "ERROR", "AS {} goes to {} via AS {}".format(number, prefix, path))
             continue
 
         # Check that the received paths are following Customer/Provider relationship
         state = "START"
         npath = str(number) + " " + str(path)
-        npath = npath.split(" ")
+        npath = normalize_as_path(npath).split(" ")
+        # The current AS and the next AS
+        assert len(npath) >= 2
+        nlinks = 0
+        level = "ERROR"
+        from_as = npath[0]
+        tested_as = npath[1]
 
         for f, t in zip(npath, npath[1:]):
-            link = get_relationship(c, f, t)
+            if f == t:
+                raise AssertionError("Invalid AS path")
+
+            # Those errors are most likely already detected, so allow to filter them
+            if nlinks == 2:
+                level = "NON-LOCAL"
+
+            try:
+                link = get_relationship(c, f, t)
+            except ASPathError:
+                log(c, "AS-PATH", "route to {} via path {}: No known link between {} and {}".format(
+                    prefix, path, f, t))
+                break
+
             if state == "START":
                 state = link
             elif state == "Customer-Provider":
@@ -172,14 +263,22 @@ for number in asnumbers:
                 state = link
             elif state == "Peer-Peer":
                 if link != "Provider-Customer":
-                    print("ERROR: AS {} has route to {} with path {} "
+                    if nlinks < 2:
+                        log_nr(c, level + "-SIMPLE", tested_as, "You should not export {} to AS {} "
+                                "(because it is an {} link)".format(prefix, from_as, link))
+                    log(c, level, "AS {} has route to {} with path {} "
                             "contains {} link {} to {}".format(number, prefix,
-                                path, link, f, t), file=sys.stderr)
+                                path, link, f, t))
             elif state == "Provider-Customer":
                 if link != "Provider-Customer":
-                    print("ERROR: AS {} has route to {} with path {} "
+                    if nlinks < 2:
+                        log_nr(c, level + "-SIMPLE", tested_as, "You should not export {} to AS {} "
+                                "(because it is an {} link)".format(prefix, from_as, link))
+                    log(c, level, "AS {} has route to {} with path {} "
                             "contains {} link {} to {}".format(number, prefix,
-                                path, link, f, t), file=sys.stderr)
+                                path, link, f, t))
+
+            nlinks += 1
 
     # Check that we receive from each customer routes to him and his customers
     for cs in customers(c, number):
@@ -188,8 +287,8 @@ for number in asnumbers:
 
         for customer in cset:
             if not has_route_via(c, number, customer, cs):
-                print("ERROR: AS {} should have an announcement for {} from AS {}".format(
-                    number, "{}.0.0.0/8".format(customer), cs), file=sys.stderr)
+                log(c, "ERROR", "AS {} should have an announcement for {} from AS {}".format(
+                    number, "{}.0.0.0/8".format(customer), cs))
 
     # Check that peers announce their customers and themself
     for pe in peers(c, number):
@@ -198,8 +297,8 @@ for number in asnumbers:
 
         for customer in pset:
             if not has_route_via(c, number, customer, pe):
-                print("ERROR: AS {} should have an announcement for {} from AS {}".format(
-                    number, "{}.0.0.0/8".format(customer), pe), file=sys.stderr)
+                log(c, "ERROR", "AS {} should have an announcement for {} from AS {}".format(
+                    number, "{}.0.0.0/8".format(customer), pe))
 
     # Check that we receive routes from all providers and their peers
     for pr in providers(c, number):
@@ -214,15 +313,14 @@ for number in asnumbers:
 
         for provider in pset:
             if not has_route_via(c, number, provider, pr):
-                print("ERROR: AS {} should have an announcement for {} from AS {}".format(
-                    number, "{}.0.0.0/8".format(provider), pr), file=sys.stderr)
+                log(c, "ERROR", "AS {} should have an announcement for {} from AS {}".format(
+                    number, "{}.0.0.0/8".format(provider), pr))
 
 # Check that the best paths are
 bestpaths = c.execute("""SELECT asnumber, prefix, CAST(path AS TEXT)
                          FROM looking_glass
                          WHERE bestpath = 1 AND path != ""
                          GROUP BY asnumber, prefix, path;""")
-
 
 for bp in bestpaths.fetchall():
     number = bp[0]
@@ -231,7 +329,13 @@ for bp in bestpaths.fetchall():
     nextas = int(path.split(" ")[0])
     destination = int(prefix.split(".")[0])
 
-    relationship = get_relationship(c, number, nextas)
+    try:
+        relationship = get_relationship(c, number, nextas)
+    except ASPathError:
+        # This should have been discovered already by the checker above
+        log(c, "AS-PATH", "Not checking bestpath from {} to {} due to bad AS path".format(
+            number, prefix))
+        continue
 
     # Sending traffic via customer is always good
     if relationship == "Provider-Customer":
@@ -241,9 +345,9 @@ for bp in bestpaths.fetchall():
     # so no theoretical route should exist via a customer
     for cs in customers(c, number):
         if theoretical_route_via(c, number, destination, cs):
-            print("ERROR: AS {} is using {} to reach prefix {} via a {} relationship "
+            log(c, "EXP", "AS {} is using {} to reach prefix {} via a {} relationship "
                     "although there is a Provider-Customer route via {}".format(
-                        number, nextas, prefix, relationship, cs), file=sys.stderr)
+                        number, nextas, prefix, relationship, cs))
 
     if relationship == "Peer-Peer":
         continue
@@ -255,8 +359,43 @@ for bp in bestpaths.fetchall():
 
     for pe in peers(c, number):
         if theoretical_route_via(c, number, destination, pe):
-            print("ERROR: AS {} is using {} to reach prefix {} via a {} relationship "
+            log(c, "EXP", "AS {} is using {} to reach prefix {} via a {} relationship "
                     "although there is a Peer-Peer route via {}".format(
-                        number, nextas, prefix, relationship, pe), file=sys.stderr)
+                        number, nextas, prefix, relationship, pe))
 
     #print("from {} to {} via {}".format(number, prefix, path))
+
+# IXP handling:
+# No customer receives a peer route from a provider or customer
+ixp_routes = c.execute("""SELECT asnumber, location, prefix, peer, path, nexthop
+                          FROM looking_glass WHERE peer LIKE '180%'""")
+
+for asnumber, location, prefix, peer, path, nexthop in ixp_routes.fetchall():
+    nextas = str(path).split(" ")[0]
+
+    if not nextas.isdigit():
+        raise AssertionError("Expected non-empty AS path")
+
+    if nexthop == "":
+        raise AssertionError("Expected non-empty next-hop")
+
+    # The last octet of the next-hop is the number of the AS it belongs to
+    # This is to prevent trickery with the AS path
+    if nexthop.split(".")[3] != nextas:
+        log(c, "AS-PATH", "AS {} receives a route to {} with path {} and nexthop {} "
+                "(expected the last octet of the nexthop to be idential to the first AS path entry)".format(
+            asnumber, prefix, path, nexthop))
+
+    if int(nextas) in recursive_providers(c, asnumber):
+        log_nr(c, "ERROR-SIMPLE", nextas,
+                "You advertise a route to {} via an IXP to a customer".format( prefix))
+        log(c, "ERROR", "AS {} receives route to {} as a peer route from AS {} via an IXP".format(
+            asnumber, prefix, nextas))
+
+    if int(nextas) in recursive_customers(c, asnumber):
+        log_nr(c, "ERROR-SIMPLE", nextas,
+                "You advertise a route to {} via an IXP to a provider".format( prefix))
+        log(c, "ERROR", "AS {} receives route to {} as a peer route from AS {} via an IXP".format(
+            asnumber, prefix, nextas))
+
+print_log(c)
