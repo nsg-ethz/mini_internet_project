@@ -1,9 +1,9 @@
 #!/bin/bash
 
-gitdir=/home/thomas/configs_history
+gitdir=/home/thomas/configs_and_matrix_history
 rm -rf $gitdir
 
-sudo -H -u thomas git clone git@gitlab.ethz.ch:nsg/lectures/lec_commnet/projects/2021/routing_project/configs_history.git $gitdir
+sudo -H -u thomas git clone git@gitlab.ethz.ch:nsg/lectures/lec_commnet/projects/2021/routing_project/configs_and_matrix_history.git $gitdir
 
 while true
 do
@@ -85,9 +85,14 @@ do
         done
     done
 
+    # Save the matrix
+    sudo sed '/fully/d' /home/thomas/mini_internet_project/platform/utils/matrix.html > /home/thomas/mini_internet_project/platform/utils/tmp.html
+    cp /home/thomas/mini_internet_project/platform/utils/tmp.html $gitdir/matrix.html
+    sudo -H -u thomas git -C $gitdir add $gitdir/matrix.html
+
     d=$(date +'%m/%d/%Y-%Hh%Mm%Ss')
     sudo -H -u thomas git -C $gitdir commit -m "Config $d"
     sudo -H -u thomas git -C $gitdir push
 
-    sleep 60
+    sleep 300
 done

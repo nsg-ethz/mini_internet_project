@@ -1,5 +1,6 @@
 import sqlite3
 import sys
+import datetime
 
 class ASPathError(Exception):
     pass
@@ -212,7 +213,79 @@ def print_log(c):
     for [msg] in msgs.fetchall():
         print(msg, file=sys.stderr)
 
+def print_simple_as_html(c):
+    print("<html><head><title>Looking glass checks</title></head><body>")
+    print("<h2>BGP analyzer</h2>")
+    print("<p>Last update: {}.</p>".format(str(datetime.datetime.now().strftime("%m/%d/%Y, %H:%M:%S"))))
+
+    print("<ul>")
+    for asnr in get_tier2(c):
+        cnt = c.execute("""SELECT COUNT(*)
+                           FROM logs
+                           WHERE level = 'ERROR-SIMPLE'
+                            AND asnr = ?""", (asnr,)).fetchone()[0]
+        if cnt != 0:
+            cnt = " ({} errors detected)".format(cnt)
+        else:
+            cnt = ""
+
+        print("<li><a href='#AS{}'>AS {}{}</a></li>".format(asnr, asnr, cnt))
+    print("</ul>")
+
+    for asnr in get_tier2(c):
+        print("<h2 id='AS{}'>{}</h2>".format(asnr, asnr))
+        msgs = c.execute("""SELECT DISTINCT message
+                            FROM logs
+                            WHERE level = 'ERROR-SIMPLE'
+                             AND asnr = ?""", (asnr,)).fetchall()
+        if len(msgs) == 0:
+            continue
+
+        for [msg] in msgs:
+            print("{}<br />".format(msg))
+
+    print("</body></html>")
+
 c = db.cursor()
+
+html = False
+if len(sys.argv) > 1:
+    cmd = sys.argv[1]
+    if cmd == "test-has-path-via-ixp":
+        if len(sys.argv) != 4:
+            print("usage: {} {} from to".format(sys.argv[0], cmd), file=sys.stderr)
+            sys.exit(1)
+        print(has_path_via_ixp(c, int(sys.argv[2]), int(sys.argv[3])))
+        sys.exit(0)
+    elif cmd == "test-get-as-group":
+        if len(sys.argv) != 3:
+            print("usage: {} {} as".format(sys.argv[0], cmd), file=sys.stderr)
+            sys.exit(1)
+        print(get_as_group(c, int(sys.argv[2])))
+        sys.exit(0)
+    elif cmd == "test-display-tiers":
+        print("Tier 1: {}".format(", ".join(map(str, get_tier1(c)))))
+        print("Tier 2: {}".format(", ".join(map(str, get_tier2(c)))))
+        print("Tier 3: {}".format(", ".join(map(str, get_tier3(c)))))
+        sys.exit(0)
+    elif cmd == "test-normalize-as-path":
+        if len(sys.argv) != 3:
+            print("usage: {} {} as-path".format(sys.argv[0], cmd), file=sys.stderr)
+            sys.exit(1)
+        print(normalize_as_path(sys.argv[2]))
+        sys.exit(0)
+    elif cmd == "test-display-as-info":
+        for [number] in c.execute("SELECT asnumber FROM asnumbers").fetchall():
+            print("AS {}".format(number))
+            print("    Providers: {}".format(", ".join(map(str, providers(c, number)))))
+            print("    Peers: {}".format(", ".join(map(str, peers(c, number)))))
+            print("    Customer: {}".format(", ".join(map(str, customers(c, number)))))
+        sys.exit(0)
+    elif cmd == "print-html":
+        html = True
+    else:
+        print("unknown command {}".format(cmd), file=sys.stderr)
+        sys.exit(1)
 
 c.execute("""CREATE TEMP TABLE logs(
                 level STRING NOT NULL,
@@ -235,7 +308,19 @@ for number in asnumbers:
         npath = str(number) + " " + str(path)
         npath = normalize_as_path(npath).split(" ")
         # The current AS and the next AS
-        assert len(npath) >= 2
+
+        if len(npath) < 2:
+            # Exporting the eBGP session IPs
+            if prefix.split(".")[0] == "179":
+                log(c, "EBGP-IP-LEAK", "eBGP IP prefix {} found at AS {}".format(prefix, number))
+            elif prefix.split(".")[0] == "180":
+                log(c, "IXP-IP-LEAK", "IXP IP prefix {} found at AS {}".format(prefix, number))
+            else:
+                # Don't know about them
+                log(c, "ERROR", "encountered unexpected prefix {} at AS {}".format(
+                    prefix, number))
+            continue
+
         nlinks = 0
         level = "ERROR"
         from_as = npath[0]
@@ -398,4 +483,7 @@ for asnumber, location, prefix, peer, path, nexthop in ixp_routes.fetchall():
         log(c, "ERROR", "AS {} receives route to {} as a peer route from AS {} via an IXP".format(
             asnumber, prefix, nextas))
 
-print_log(c)
+if html:
+    print_simple_as_html(c)
+else:
+    print_log(c)

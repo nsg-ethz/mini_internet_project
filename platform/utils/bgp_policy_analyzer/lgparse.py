@@ -8,6 +8,12 @@ import sqlite3
 
 def parse_lg(f, g, l, c):
     lg = json.load(f)
+
+    # this happens if BGP is not configured
+    if len(lg) == 1 and 'warning' in lg and lg['warning'] == "Default BGP instance not found":
+        print("Group {} location {}: BGP not configured".format(g, l), file=sys.stderr)
+        return
+
     tv = lg['tableVersion']
     #print(lg['routerId'])
     a = lg['localAS']
@@ -26,7 +32,7 @@ def parse_lg(f, g, l, c):
                 print("group {} router {} prefix {} path {} aspath {}".format(g, l, prefix,
                     path, aspath), file=sys.stderr)
             peerId = route.get('peerId')
-            valid = route.get('valid')
+            valid = route.get('valid', -1)
             bestpath = route.get('bestpath', False)
             if len(route.get('nexthops')) != 1:
                 print("nexthops for {} {} prefix {} are {}".format(g, l, prefix,
