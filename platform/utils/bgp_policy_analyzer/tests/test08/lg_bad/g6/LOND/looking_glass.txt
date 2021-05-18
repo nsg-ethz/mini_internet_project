@@ -1,0 +1,21 @@
+2021-04-15T16:33:28
+BGP table version is 11, local router ID is 6.151.0.1, vrf id 0
+Default local pref 100, local AS 6
+Status codes:  s suppressed, d damped, h history, * valid, > best, = multipath,
+               i internal, r RIB-failure, S Stale, R Removed
+Nexthop codes: @NNN nexthop's vrf id, < announce-nh-self
+Origin codes:  i - IGP, e - EGP, ? - incomplete
+
+   Network          Next Hop            Metric LocPrf Weight Path
+*>i1.0.0.0/8        6.152.0.1                      20      0 4 1 i
+*>i2.0.0.0/8        6.152.0.1                      20      0 4 2 i
+*>i3.0.0.0/8        6.152.0.1                0     20      0 3 i
+*>i4.0.0.0/8        6.152.0.1                0     20      0 4 i
+*>i5.0.0.0/8        6.152.0.1                0     50      0 5 i
+* i6.0.0.0/8        6.152.0.1                0    100      0 i
+*>                  0.0.0.0                  0         32768 i
+*>i7.0.0.0/8        6.152.0.1                      20      0 3 7 i
+*>i8.0.0.0/8        6.152.0.1                      20      0 3 8 i
+*>i9.0.0.0/8        6.152.0.1                      20      0 3 9 i
+
+Displayed  9 routes and 10 total paths

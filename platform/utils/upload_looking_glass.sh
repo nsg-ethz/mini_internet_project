@@ -37,9 +37,19 @@ do
                 property2="${router_i[2]}"
 
                 cp groups/g${group_number}/${rname}/looking_glass.txt G$group_number/${rname}.txt
+                cp groups/g${group_number}/${rname}/looking_glass_json.txt G$group_number/${rname}_json.txt
 
                 echo $group_number $rname
             done
+            scp -r G$group_number thomahol@virt07.ethz.ch:/home/web_commnet/public_html/routing_project/looking_glass/
+
+            rm -r G$group_number
+            echo $group_number done
+        else
+            mkdir G$group_number
+
+            cp groups/g${group_number}/looking_glass.txt G$group_number/LG.txt
+
             scp -r G$group_number thomahol@virt07.ethz.ch:/home/web_commnet/public_html/routing_project/looking_glass/
 
             rm -r G$group_number

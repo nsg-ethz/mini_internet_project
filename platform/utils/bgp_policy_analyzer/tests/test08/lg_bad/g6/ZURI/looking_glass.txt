@@ -1,0 +1,38 @@
+2021-04-15T16:33:35
+BGP table version is 18, local router ID is 6.152.0.1, vrf id 0
+Default local pref 100, local AS 6
+Status codes:  s suppressed, d damped, h history, * valid, > best, = multipath,
+               i internal, r RIB-failure, S Stale, R Removed
+Nexthop codes: @NNN nexthop's vrf id, < announce-nh-self
+Origin codes:  i - IGP, e - EGP, ? - incomplete
+
+   Network          Next Hop            Metric LocPrf Weight Path
+*> 1.0.0.0/8        179.0.54.1                     20      0 4 1 i
+*=                  179.0.53.1                     20      0 4 1 i
+*                   179.0.51.1                     20      0 3 4 1 i
+*= 2.0.0.0/8        179.0.53.1                     20      0 4 2 i
+*>                  179.0.54.1                     20      0 4 2 i
+*                   179.0.51.1                     20      0 3 4 2 i
+*  3.0.0.0/8        179.0.53.1                     20      0 4 3 i
+*                   179.0.54.1                     20      0 4 3 i
+*>                  179.0.51.1               0     20      0 3 i
+*  4.0.0.0/8        179.0.51.1                     20      0 3 4 i
+*=                  179.0.53.1               0     20      0 4 i
+*>                  179.0.54.1               0     20      0 4 i
+*  5.0.0.0/8        179.0.53.1                     20      0 4 5 i
+*                   179.0.54.1                     20      0 4 5 i
+*                   179.0.51.1                     20      0 3 5 i
+*>                  179.2.38.1               0     50      0 5 i
+* i6.0.0.0/8        6.151.0.1                0    100      0 i
+*>                  0.0.0.0                  0         32768 i
+*  7.0.0.0/8        179.0.54.1                     20      0 4 1 7 i
+*                   179.0.53.1                     20      0 4 1 7 i
+*>                  179.0.51.1                     20      0 3 7 i
+*  8.0.0.0/8        179.0.54.1                     20      0 4 1 8 i
+*                   179.0.53.1                     20      0 4 1 8 i
+*>                  179.0.51.1                     20      0 3 8 i
+*  9.0.0.0/8        179.0.54.1                     20      0 4 1 9 i
+*                   179.0.53.1                     20      0 4 1 9 i
+*>                  179.0.51.1                     20      0 3 9 i
+
+Displayed  9 routes and 27 total paths

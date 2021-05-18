@@ -13,13 +13,13 @@ do
 
     for r in BROO NEWY; do
         docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "router bgp ${asn}" -c "address-family ipv4 unicast" -c "network ${target}.108.0.0/25"
-        docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "router bgp ${asn}" -c "address-family ipv4 unicast" -c "network ${target}.108.0.128/25"
+        # docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "router bgp ${asn}" -c "address-family ipv4 unicast" -c "network ${target}.108.0.128/25"
 
         docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip prefix-list OWN_PREFIX seq $seq permit ${target}.108.0.0/25"
-        docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip prefix-list OWN_PREFIX seq $(($seq+1)) permit ${target}.108.0.128/25"
+        # docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip prefix-list OWN_PREFIX seq $(($seq+1)) permit ${target}.108.0.128/25"
 
         docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip route ${target}.108.0.0/25 Null0"
-        docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip route ${target}.108.0.128/25 Null0"
+        # docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip route ${target}.108.0.128/25 Null0"
     done
     seq=$(($seq+2))
 done
@@ -32,13 +32,13 @@ do
 
     for r in BROO NEWY; do
         docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "router bgp ${asn}" -c "address-family ipv4 unicast" -c "network ${target}.108.0.0/25"
-        docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "router bgp ${asn}" -c "address-family ipv4 unicast" -c "network ${target}.108.0.128/25"
+        # docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "router bgp ${asn}" -c "address-family ipv4 unicast" -c "network ${target}.108.0.128/25"
 
         docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip prefix-list OWN_PREFIX seq $seq permit ${target}.108.0.0/25"
-        docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip prefix-list OWN_PREFIX seq $(($seq+1)) permit ${target}.108.0.128/25"
+        # docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip prefix-list OWN_PREFIX seq $(($seq+1)) permit ${target}.108.0.128/25"
   
         docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip route ${target}.108.0.0/25 Null0"
-        docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip route ${target}.108.0.128/25 Null0" 
+        # docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip route ${target}.108.0.128/25 Null0" 
     done
     seq=$(($seq+2))
 done
@@ -51,13 +51,13 @@ do
 
     for r in BROO NEWY; do
         docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "router bgp ${asn}" -c "address-family ipv4 unicast" -c "network ${target}.108.0.0/25"
-        docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "router bgp ${asn}" -c "address-family ipv4 unicast" -c "network ${target}.108.0.128/25"
+        # docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "router bgp ${asn}" -c "address-family ipv4 unicast" -c "network ${target}.108.0.128/25"
 
         docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip prefix-list OWN_PREFIX seq $seq permit ${target}.108.0.0/25"
-        docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip prefix-list OWN_PREFIX seq $(($seq+1)) permit ${target}.108.0.128/25"
+        # docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip prefix-list OWN_PREFIX seq $(($seq+1)) permit ${target}.108.0.128/25"
     
         docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip route ${target}.108.0.0/25 Null0"
-        docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip route ${target}.108.0.128/25 Null0"
+        # docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip route ${target}.108.0.128/25 Null0"
     done
     seq=$(($seq+2))
 done
@@ -70,13 +70,13 @@ do
 
     for r in BROO NEWY; do
         docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "router bgp ${asn}" -c "address-family ipv4 unicast" -c "network ${target}.108.0.0/25"
-        docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "router bgp ${asn}" -c "address-family ipv4 unicast" -c "network ${target}.108.0.128/25"
+        # docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "router bgp ${asn}" -c "address-family ipv4 unicast" -c "network ${target}.108.0.128/25"
 
         docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip prefix-list OWN_PREFIX seq $seq permit ${target}.108.0.0/25"
-        docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip prefix-list OWN_PREFIX seq $(($seq+1)) permit ${target}.108.0.128/25"
+        # docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip prefix-list OWN_PREFIX seq $(($seq+1)) permit ${target}.108.0.128/25"
     
         docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip route ${target}.108.0.0/25 Null0"
-        docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip route ${target}.108.0.128/25 Null0"
+        # docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip route ${target}.108.0.128/25 Null0"
     done
     seq=$(($seq+2))
 done
@@ -89,13 +89,13 @@ do
 
     for r in BROO NEWY; do
         docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "router bgp ${asn}" -c "address-family ipv4 unicast" -c "network ${target}.108.0.0/25"
-        docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "router bgp ${asn}" -c "address-family ipv4 unicast" -c "network ${target}.108.0.128/25"
+        # docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "router bgp ${asn}" -c "address-family ipv4 unicast" -c "network ${target}.108.0.128/25"
 
         docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip prefix-list OWN_PREFIX seq $seq permit ${target}.108.0.0/25"
-        docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip prefix-list OWN_PREFIX seq $(($seq+1)) permit ${target}.108.0.128/25"
+        # docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip prefix-list OWN_PREFIX seq $(($seq+1)) permit ${target}.108.0.128/25"
     
         docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip route ${target}.108.0.0/25 Null0"
-        docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip route ${target}.108.0.128/25 Null0"
+        # docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip route ${target}.108.0.128/25 Null0"
     done
     seq=$(($seq+2))
 done
@@ -108,13 +108,13 @@ do
 
     for r in BROO NEWY; do
         docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "router bgp ${asn}" -c "address-family ipv4 unicast" -c "network ${target}.108.0.0/25"
-        docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "router bgp ${asn}" -c "address-family ipv4 unicast" -c "network ${target}.108.0.128/25"
+        # docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "router bgp ${asn}" -c "address-family ipv4 unicast" -c "network ${target}.108.0.128/25"
 
         docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip prefix-list OWN_PREFIX seq $seq permit ${target}.108.0.0/25"
-        docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip prefix-list OWN_PREFIX seq $(($seq+1)) permit ${target}.108.0.128/25"
+        # docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip prefix-list OWN_PREFIX seq $(($seq+1)) permit ${target}.108.0.128/25"
     
         docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip route ${target}.108.0.0/25 Null0"
-        docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip route ${target}.108.0.128/25 Null0"
+        # docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip route ${target}.108.0.128/25 Null0"
     done
     seq=$(($seq+2))
 done
@@ -127,13 +127,13 @@ do
 
     for r in BROO NEWY; do
         docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "router bgp ${asn}" -c "address-family ipv4 unicast" -c "network ${target}.108.0.0/25"
-        docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "router bgp ${asn}" -c "address-family ipv4 unicast" -c "network ${target}.108.0.128/25"
+        # docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "router bgp ${asn}" -c "address-family ipv4 unicast" -c "network ${target}.108.0.128/25"
 
         docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip prefix-list OWN_PREFIX seq $seq permit ${target}.108.0.0/25"
-        docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip prefix-list OWN_PREFIX seq $(($seq+1)) permit ${target}.108.0.128/25"
+        # docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip prefix-list OWN_PREFIX seq $(($seq+1)) permit ${target}.108.0.128/25"
     
         docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip route ${target}.108.0.0/25 Null0"
-        docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip route ${target}.108.0.128/25 Null0"
+        # docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip route ${target}.108.0.128/25 Null0"
     done
     seq=$(($seq+2))
 done
@@ -146,13 +146,13 @@ do
 
     for r in BROO NEWY; do
         docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "router bgp ${asn}" -c "address-family ipv4 unicast" -c "network ${target}.108.0.0/25"
-        docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "router bgp ${asn}" -c "address-family ipv4 unicast" -c "network ${target}.108.0.128/25"
+        # docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "router bgp ${asn}" -c "address-family ipv4 unicast" -c "network ${target}.108.0.128/25"
 
         docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip prefix-list OWN_PREFIX seq $seq permit ${target}.108.0.0/25"
-        docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip prefix-list OWN_PREFIX seq $(($seq+1)) permit ${target}.108.0.128/25"
+        # docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip prefix-list OWN_PREFIX seq $(($seq+1)) permit ${target}.108.0.128/25"
     
         docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip route ${target}.108.0.0/25 Null0"
-        docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip route ${target}.108.0.128/25 Null0"
+        # docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip route ${target}.108.0.128/25 Null0"
     done
     seq=$(($seq+2))
 done
@@ -165,13 +165,13 @@ do
 
     for r in BROO NEWY; do
         docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "router bgp ${asn}" -c "address-family ipv4 unicast" -c "network ${target}.108.0.0/25"
-        docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "router bgp ${asn}" -c "address-family ipv4 unicast" -c "network ${target}.108.0.128/25"
+        # docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "router bgp ${asn}" -c "address-family ipv4 unicast" -c "network ${target}.108.0.128/25"
 
         docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip prefix-list OWN_PREFIX seq $seq permit ${target}.108.0.0/25"
-        docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip prefix-list OWN_PREFIX seq $(($seq+1)) permit ${target}.108.0.128/25"
+        # docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip prefix-list OWN_PREFIX seq $(($seq+1)) permit ${target}.108.0.128/25"
 
         docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip route ${target}.108.0.0/25 Null0"
-        docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip route ${target}.108.0.128/25 Null0"    
+        # docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip route ${target}.108.0.128/25 Null0"    
     done
     seq=$(($seq+2))
 done
@@ -184,13 +184,13 @@ do
 
     for r in BROO NEWY; do
         docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "router bgp ${asn}" -c "address-family ipv4 unicast" -c "network ${target}.108.0.0/25"
-        docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "router bgp ${asn}" -c "address-family ipv4 unicast" -c "network ${target}.108.0.128/25"
+        # docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "router bgp ${asn}" -c "address-family ipv4 unicast" -c "network ${target}.108.0.128/25"
 
         docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip prefix-list OWN_PREFIX seq $seq permit ${target}.108.0.0/25"
-        docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip prefix-list OWN_PREFIX seq $(($seq+1)) permit ${target}.108.0.128/25"
+        # docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip prefix-list OWN_PREFIX seq $(($seq+1)) permit ${target}.108.0.128/25"
     
         docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip route ${target}.108.0.0/25 Null0"
-        docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip route ${target}.108.0.128/25 Null0"
+        # docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip route ${target}.108.0.128/25 Null0"
     done
     seq=$(($seq+2))
 done
@@ -203,13 +203,13 @@ do
 
     for r in BROO NEWY; do
         docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "router bgp ${asn}" -c "address-family ipv4 unicast" -c "network ${target}.108.0.0/25"
-        docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "router bgp ${asn}" -c "address-family ipv4 unicast" -c "network ${target}.108.0.128/25"
+        # docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "router bgp ${asn}" -c "address-family ipv4 unicast" -c "network ${target}.108.0.128/25"
 
         docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip prefix-list OWN_PREFIX seq $seq permit ${target}.108.0.0/25"
-        docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip prefix-list OWN_PREFIX seq $(($seq+1)) permit ${target}.108.0.128/25"
+        # docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip prefix-list OWN_PREFIX seq $(($seq+1)) permit ${target}.108.0.128/25"
     
         docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip route ${target}.108.0.0/25 Null0"
-        docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip route ${target}.108.0.128/25 Null0"
+        # docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip route ${target}.108.0.128/25 Null0"
     done
     seq=$(($seq+2))
 done
@@ -222,13 +222,13 @@ do
 
     for r in BROO NEWY; do
         docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "router bgp ${asn}" -c "address-family ipv4 unicast" -c "network ${target}.108.0.0/25"
-        docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "router bgp ${asn}" -c "address-family ipv4 unicast" -c "network ${target}.108.0.128/25"
+        # docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "router bgp ${asn}" -c "address-family ipv4 unicast" -c "network ${target}.108.0.128/25"
 
         docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip prefix-list OWN_PREFIX seq $seq permit ${target}.108.0.0/25"
-        docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip prefix-list OWN_PREFIX seq $(($seq+1)) permit ${target}.108.0.128/25"
+        # docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip prefix-list OWN_PREFIX seq $(($seq+1)) permit ${target}.108.0.128/25"
     
         docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip route ${target}.108.0.0/25 Null0"
-        docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip route ${target}.108.0.128/25 Null0"
+        # docker exec -it ${asn}_${r}router vtysh -c "conf t" -c "ip route ${target}.108.0.128/25 Null0"
     done
     seq=$(($seq+2))
 done

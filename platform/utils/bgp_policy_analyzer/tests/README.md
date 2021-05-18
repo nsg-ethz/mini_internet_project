@@ -25,7 +25,7 @@ Misconfiguration: AS 3 exports all routes to AS 2.
 Commands:
 ```
 (AS 3)
-root@g3-proxy:~# ./goto.sh ZURI router 
+root@g3-proxy:~# ./goto.sh ZURI router
 
 Hello, this is FRRouting (version 7.2.1).
 Copyright 1996-2005 Kunihiro Ishiguro, et al.
@@ -43,7 +43,7 @@ Misconfiguration: AS 3 blocks exporting routes learned from customers to AS 2.
 Commands:
 ```
 (AS 3)
-root@g3-proxy:~# ./goto.sh ZURI router 
+root@g3-proxy:~# ./goto.sh ZURI router
 
 Hello, this is FRRouting (version 7.2.1).
 Copyright 1996-2005 Kunihiro Ishiguro, et al.
@@ -61,7 +61,7 @@ Misconfiguration: AS 5 is not exporting its own routes to AS 4.
 Commands:
 ```
 (AS 5)
-root@g5-proxy:~# ./goto.sh ZURI  router 
+root@g5-proxy:~# ./goto.sh ZURI router
 
 Hello, this is FRRouting (version 7.2.1).
 Copyright 1996-2005 Kunihiro Ishiguro, et al.
@@ -80,7 +80,7 @@ exporting any routes to AS 5.
 Commands:
 ```
 (AS 2)
-root@g2-proxy:~# ./goto.sh ZURI router 
+root@g2-proxy:~# ./goto.sh ZURI router
 
 Hello, this is FRRouting (version 7.2.1).
 Copyright 1996-2005 Kunihiro Ishiguro, et al.
@@ -92,7 +92,7 @@ ZURI_router(config-route-map)# exit
 ZURI_router(config)# route-map LOCAL_PREF_OUT_3 permit 10
 ZURI_router(config-route-map)# match community 10
 (AS 4)
-root@g4-proxy:~# ./goto.sh ATLA router 
+root@g4-proxy:~# ./goto.sh ATLA router
 
 Hello, this is FRRouting (version 7.2.1).
 Copyright 1996-2005 Kunihiro Ishiguro, et al.
@@ -105,6 +105,27 @@ ATLA_router(config)# route-map LOCAL_PREF_OUT_5 permit 10
 ATLA_router(config-route-map)# match community 10
 ```
 
+### Test 5
+Config: 9 AS
+
+Misconfiguration: AS 3 is exporting routes to AS 5 via the IXP
+
+Commands:
+```
+(AS 3)
+root@g3-proxy:~# ./goto.sh NEWY router
+
+Hello, this is FRRouting (version 7.2.1).
+Copyright 1996-2005 Kunihiro Ishiguro, et al.
+
+NEWY_router# conf t
+NEWY_router(config)# route-map IXP_OUT_121 permit 10
+NEWY_router(config-route-map)# set community 121:5 121:7 121:8 121:9
+NEWY_router(config-route-map)# exit
+NEWY_router(config)# route-map IXP_OUT_121 permit 20
+NEWY_router(config-route-map)# set community 121:5 121:7 121:8 121:9
+```
+
 ### Test 6
 Config: 6 AS
 
@@ -113,7 +134,7 @@ Misconfiguration: AS is not exporting any routes to AS 3.
 Commands:
 ```
 (AS 4)
-t@g4-proxy:~# ./goto.sh PARI router
+root@g4-proxy:~# ./goto.sh PARI router
 
 Hello, this is FRRouting (version 7.2.1).
 Copyright 1996-2005 Kunihiro Ishiguro, et al.
@@ -186,7 +207,7 @@ ZURI_router(config)# route-map LOCAL_PREF_IN_1 permit 10
 ZURI_router(config-route-map)# set local-preference 10
 (AS 5)
 
-t@g5-proxy:~# ./goto.sh ZURI router
+root@g5-proxy:~# ./goto.sh ZURI router
 
 Hello, this is FRRouting (version 7.2.1).
 Copyright 1996-2005 Kunihiro Ishiguro, et al.
@@ -203,4 +224,21 @@ Copyright 1996-2005 Kunihiro Ishiguro, et al.
 ZURI_router# conf t
 ZURI_router(config)# route-map LOCAL_PREF_OUT_4 permit 5
 ZURI_router(config-route-map)# match community 10
+```
+
+### Test 8
+Config: 9 AS
+
+Misconfiguration: AS 4 does not filter outgoing routes to peer AS 3
+
+Commands:
+```
+root@g4-proxy:~# ./goto.sh PARI router
+
+Hello, this is FRRouting (version 7.2.1).
+Copyright 1996-2005 Kunihiro Ishiguro, et al.
+
+PARI_router# conf t
+PARI_router(config)# route-map LOCAL_PREF_OUT_3 permit 10
+PARI_router(config-route-map)# no match community 1
 ```

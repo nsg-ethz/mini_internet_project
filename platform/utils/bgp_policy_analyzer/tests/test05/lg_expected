@@ -1,0 +1,4 @@
+ERROR: AS 5 receives route to 3.0.0.0/8 as a peer route from AS 3 via an IXP
+ERROR: AS 5 receives route to 6.0.0.0/8 as a peer route from AS 3 via an IXP
+ERROR-SIMPLE: AS 3: You advertise a route to 3.0.0.0/8 via an IXP to a customer
+ERROR-SIMPLE: AS 3: You advertise a route to 6.0.0.0/8 via an IXP to a customer

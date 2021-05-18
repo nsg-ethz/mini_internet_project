@@ -1,0 +1,17 @@
+ERROR-SIMPLE: AS 4: You should not export 1.0.0.0/8 to AS 3 (because it is an Customer-Provider link)
+ERROR: AS 3 has route to 1.0.0.0/8 with path 4 1 contains Customer-Provider link 4 to 1
+ERROR-SIMPLE: AS 4: You should not export 2.0.0.0/8 to AS 3 (because it is an Customer-Provider link)
+ERROR: AS 3 has route to 2.0.0.0/8 with path 4 2 contains Customer-Provider link 4 to 2
+ERROR-SIMPLE: AS 4: You should not export 7.0.0.0/8 to AS 3 (because it is an Customer-Provider link)
+ERROR: AS 3 has route to 7.0.0.0/8 with path 4 1 7 contains Customer-Provider link 4 to 1
+NON-LOCAL: AS 3 has route to 7.0.0.0/8 with path 4 1 7 contains Peer-Peer link 1 to 7
+ERROR-SIMPLE: AS 4: You should not export 8.0.0.0/8 to AS 3 (because it is an Customer-Provider link)
+ERROR: AS 3 has route to 8.0.0.0/8 with path 4 1 8 contains Customer-Provider link 4 to 1
+NON-LOCAL: AS 3 has route to 8.0.0.0/8 with path 4 1 8 contains Peer-Peer link 1 to 8
+ERROR-SIMPLE: AS 4: You should not export 9.0.0.0/8 to AS 3 (because it is an Customer-Provider link)
+ERROR: AS 3 has route to 9.0.0.0/8 with path 4 1 9 contains Customer-Provider link 4 to 1
+NON-LOCAL: AS 3 has route to 9.0.0.0/8 with path 4 1 9 contains Peer-Peer link 1 to 9
+NON-LOCAL: AS 5 has route to 1.0.0.0/8 with path 3 4 1 contains Customer-Provider link 4 to 1
+NON-LOCAL: AS 5 has route to 2.0.0.0/8 with path 3 4 2 contains Customer-Provider link 4 to 2
+NON-LOCAL: AS 6 has route to 1.0.0.0/8 with path 3 4 1 contains Customer-Provider link 4 to 1
+NON-LOCAL: AS 6 has route to 2.0.0.0/8 with path 3 4 2 contains Customer-Provider link 4 to 2

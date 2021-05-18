@@ -221,9 +221,12 @@ def print_simple_as_html(c):
     print("<ul>")
     for asnr in get_tier2(c):
         cnt = c.execute("""SELECT COUNT(*)
-                           FROM logs
-                           WHERE level = 'ERROR-SIMPLE'
-                            AND asnr = ?""", (asnr,)).fetchone()[0]
+                           FROM (SELECT DISTINCT message
+                                  FROM logs
+                                  WHERE level = 'ERROR-SIMPLE'
+                                   AND asnr = ?
+                                )""", (asnr,)).fetchone()[0]
+
         if cnt != 0:
             cnt = " ({} errors detected)".format(cnt)
         else:

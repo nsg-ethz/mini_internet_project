@@ -55,7 +55,9 @@ testcase () {
 	rm lg_stdout lg_stderr as.db
 }
 
-TEST_CASES="test01 test02 test03 test04 test06 test07"
+TEST_CASES="test01 test02 test03 test04 test05 test06 test07 test08"
+
+rm -f lg_stdout lg_stderr as.db
 
 for t in $TEST_CASES
 do
