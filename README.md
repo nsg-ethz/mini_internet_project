@@ -37,7 +37,7 @@ journal = {SIGCOMM Comput. Commun. Rev.},
 
 ### News
 
-*20/05/21:* Added our assignmenet for 2021! You can find it [here](https://github.com/nsg-ethz/mini_internet_project/tree/master/communication_networks_course/2021_assignement_eth) \
+*20/05/21:* Added our assignmenet for 2021! You can find it [here](https://github.com/nsg-ethz/mini_internet_project/tree/master/communication_networks_course/2021_assignement_eth). This year, we added support for IPv6 and asked our students to configure 6in4 tunnels. \
 *3/12/20:* Added the BGP VPN MPLS and Multicast exercises of our Advanced Topic in Computer Networks course \
 *29/09/20:* Changed the Dockerfile for the router image. Now FRR is compiled from the source with a particular version of the libyang library so that VRF are supported \
 *08/07/20:* Added the docker image to use for the hosts in the config files \
