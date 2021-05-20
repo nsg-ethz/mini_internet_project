@@ -1,1 +1,1 @@
-S1 N\A host:thomahol/d_host
+S1 N\A host:thomahol/d_host vtysh

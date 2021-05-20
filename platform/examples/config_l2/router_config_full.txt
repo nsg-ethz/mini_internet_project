@@ -1,8 +1,8 @@
-LOND	DNS	host:thomahol/d_host
-ZURI	MEASUREMENT	L2-UNIV
-PARI	MATRIX host:thomahol/d_host
-GENE	N/A	L2-UNIV
-NEWY	N/A	L2-NEWYCITY
-BOST	N/A	host:thomahol/d_host
-ATLA	MATRIX_TARGET  host:thomahol/d_host
-MIAM	N/A	host:thomahol/d_host
+LOND	DNS	host:thomahol/d_host    vtysh
+ZURI	MEASUREMENT	L2-UNIV:thomahol/d_host vtysh
+PARI	MATRIX host:thomahol/d_host vtysh
+GENE	N/A	L2-UNIV:thomahol/d_host vtysh
+NEWY	N/A	L2-NEWYCITY:thomahol/d_host vtysh
+BOST	N/A	host:thomahol/d_host    vtysh
+ATLA	MATRIX_TARGET  host:thomahol/d_host vtysh
+MIAM	N/A	host:thomahol/d_host    vtysh
