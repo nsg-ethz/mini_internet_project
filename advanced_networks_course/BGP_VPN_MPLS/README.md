@@ -1,7 +1,7 @@
 # BGP Free Core + BGP VPN over MPLS
 
 In this exercise we will work with the mini-Internet, a virtual network mimicking the real Internet.
-
+For this exercise, we used FRR version 7.2.1.
 
 ## Introduction
 
