@@ -1,5 +1,5 @@
 LOND	N/A	host:thomahol/d_host    vtysh
-ZURI	MEASUREMENT	L2-ETH  vtysh
+ZURI	MEASUREMENT	L2-ETH:thomahol/d_host  vtysh
 BARC	N/A	host:thomahol/d_host    vtysh
 ROMA	DNS	host:thomahol/d_host    vtysh
 NEWY	N/A	host:thomahol/d_host    vtysh
