@@ -1,11 +1,11 @@
 #### Additional topologies
 
 In this directory, we provide configuration files to build the topology we used
-in the 2020 iteration of the project. We provide configuration files for different
+in the 2021 iteration of the project. We provide configuration files for different
 sizes of the mini-Internet.
 
-Please look at the 2020 assignment [text](https://github.com/nsg-ethz/mini_internet_project/blob/master/2020_assignment_eth/routing_project.pdf)
-or in the [config](../config) directory to see how the L2, L3 and AS-level topologies look like.  
+Please look at the 2021 assignment [text](https://github.com/nsg-ethz/mini_internet_project/blob/master/2021_assignment_eth/wiki)
+to see how the L2, L3 and AS-level topologies look like.  
 
 If you want to quickly try the mini-Internet on a small server/VM, you may want to try the topologies with 1 or 2 ASes.
 To do this, just run the following commands if you want to use the 1-AS topology:
