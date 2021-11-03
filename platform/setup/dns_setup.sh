@@ -38,7 +38,7 @@ if [[ "$is_dns" -eq 0 ]]; then
     echo "There is no DNS server, skipping dns_setup.sh"
 else
     # dns
-    docker run -itd --net='none' --name="DNS" --privileged \
+    docker run -itd --net='none' --name="DNS" --hostname="DNS" --privileged \
         -v /etc/timezone:/etc/timezone:ro \
         -v /etc/localtime:/etc/localtime:ro \
         thomahol/d_dns
