@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# delere all group containers(ssh, routers, hosts, switches), DNS, MEASUREMENT and MATRIX
+# delete all group containers(ssh, routers, hosts, switches), DNS, MEASUREMENT and MATRIX
 
 set -o errexit
 set -o pipefail
@@ -42,15 +42,18 @@ for ((k=0;k<group_numbers;k++)); do
             rname="${router_i[0]}"
             property1="${router_i[1]}"
             property2="${router_i[2]}"
+            dname=$(echo $property2 | cut -s -d ':' -f 2)
 
             # kill router router
             docker kill "${group_number}""_""${rname}""router" &>/dev/null || true &
 
-            # kill host or layer 2
-            if [ "$(echo ${property2} | sed 's/:.*//g')" == "host" ]; then
+            # kill host
+            if [[ ! -z "${dname}" ]]; then
                 docker kill "${group_number}""_""${rname}""host" &>/dev/null || true &
+            fi
 
-            elif [[ "${property2}" == *L2* ]];then
+            # cleanup layer 2
+            if [[ "${property2}" == *L2* ]];then
                 # kill switches
                 for ((l=0;l<n_l2_switches;l++)); do
                     switch_l=(${l2_switches[$l]})

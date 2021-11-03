@@ -86,7 +86,7 @@ for ((k=0;k<group_numbers;k++)); do
             property1="${router_i[1]}"
             property2="${router_i[2]}"
             rcmd="${router_i[3]}"
-            dname=$(echo $property2 | cut -d ':' -f 2)
+            dname=$(echo $property2 | cut -s -d ':' -f 2)
             l2_switch_cur=0
             l2_host_cur=0
 
