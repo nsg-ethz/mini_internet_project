@@ -39,7 +39,7 @@ for ((k=0;k<group_numbers;k++)); do
             rname="${router_i[0]}"
             property1="${router_i[1]}"
             property2="${router_i[2]}"
-            dname=$(echo $property2 | cut -d ':' -f 2)
+            dname=$(echo $property2 | cut -s -d ':' -f 2)
 
             if [[ ! -z "${dname}" ]];then
 
