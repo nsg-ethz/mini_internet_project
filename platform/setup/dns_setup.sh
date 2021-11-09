@@ -49,7 +49,7 @@ else
     declare -p DOCKER_TO_PID > "${DIRECTORY}/groups/docker_pid.map"
     source "${DIRECTORY}/setup/ovs-docker.sh"
 
-    echo -n "-- add-br dns " >> "${DIRECTORY}"/groups/add_bridges.sh
+    echo -n "-- add-br dns -- set-fail-mode dns secure  " >> "${DIRECTORY}"/groups/add_bridges.sh
     echo "ip link set dev dns up" >> "${DIRECTORY}"/groups/ip_setup.sh
 
     get_docker_pid DNS
