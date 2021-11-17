@@ -369,7 +369,11 @@ Note: sometimes the MAC address on some interfaces must follow a particular sche
 
 #### Saving routers and switches configuration
 
-When building the mini-Internet, a script called `save_configs.sh` is automatically generated and aims at saving all the routers and switches configuration in a zip file. There is one `save_configs.sh` script for each group, which is available in the SSH proxy container of the corresponding group. 
+When building the mini-Internet, a script called `save_configs.sh` is automatically generated and aims at saving all the routers and switches configuration in a zip file. There is one `save_configs.sh` script for each group, which is available in the SSH proxy container of the corresponding group. A complementary script `restore_configs.sh` is also available and restores a router's configuration (or all routers) from a saved configuration. Reloading a switch's configuration is not supported.
+
+#### Restarting ospfd
+
+Students may encounter the message _For this router-id change to take effect, save config and restart ospfd_ when configuring a router. The `restart_ospfd.sh` script deletes and reinstalls the OSPF configuration running on a given router. Deleting and reinstalling the OSPF configuration effectively restarts ospfd and will cause the new router-id to take effect.
 
 #### MPLS and Multicast
 
