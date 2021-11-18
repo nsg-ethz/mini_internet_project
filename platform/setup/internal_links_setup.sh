@@ -34,7 +34,7 @@ for ((k=0;k<group_numbers;k++)); do
 
             br_name="int-""${group_number}"
 
-            echo -n "-- add-br "${br_name}" " >> "${DIRECTORY}"/groups/add_bridges.sh
+            echo -n "-- add-br "${br_name}" -- set-fail-mode "${br_name}" secure " >> "${DIRECTORY}"/groups/add_bridges.sh
             echo "ip link set dev ${br_name} up" >> "${DIRECTORY}"/groups/ip_setup.sh
 
             for ((i=0;i<n_intern_links;i++)); do

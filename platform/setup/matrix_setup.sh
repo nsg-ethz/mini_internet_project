@@ -54,7 +54,7 @@ else
     DOCKER_TO_PID['MATRIX']=$(docker inspect -f '{{.State.Pid}}' MATRIX)
     declare -p DOCKER_TO_PID > ${DIRECTORY}/groups/docker_pid.map
 
-    echo -n "-- add-br matrix " >> "${DIRECTORY}"/groups/add_bridges.sh
+    echo -n "-- add-br matrix -- set-fail-mode matrix secure " >> "${DIRECTORY}"/groups/add_bridges.sh
     echo "ip link set dev matrix up" >> "${DIRECTORY}"/groups/ip_setup.sh
 
     for ((k=0;k<group_numbers;k++)); do
