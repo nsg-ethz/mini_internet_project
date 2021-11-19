@@ -41,7 +41,7 @@ for ((k=0;k<group_numbers;k++)); do
         # Initialization of the associative arrays
         for ((i=0;i<n_routers;i++)); do
             router_i=(${routers[$i]})
-            property2="$(echo ${router_i[2]} | cut -d ':' -f 1)"
+            property2="${router_i[2]}"
             l2_id[$property2]=0
             l2_routerid[$property2]=1
         done
@@ -51,7 +51,7 @@ for ((k=0;k<group_numbers;k++)); do
             router_i=(${routers[$i]})
             rname="${router_i[0]}"
             property1="${router_i[1]}"
-            property2="$(echo ${router_i[2]} | cut -d ':' -f 1)"
+            property2="${router_i[2]}"
             if [[ "${property2}" == *L2* ]];then
 
                 declare -A vlanset
@@ -68,39 +68,12 @@ for ((k=0;k<group_numbers;k++)); do
                     idtmp=$(($idtmp+1))
                 fi
 
-                # Setup the 6in4 tunnels between the routers connected to the L2 networks
-                subnet_local_router=$(subnet_router $group_number $i)
-
-                for ((u=0;u<group_numbers;u++)); do
-                    group_tunnel=(${groups[$u]})
-                    group_number_tunnel="${group_tunnel[0]}"
-                    group_as_tunnel="${group_tunnel[1]}"
-
-                    if [ "${group_as_tunnel}" != "IXP" ] && [ "${group_number_tunnel}" != "${group_number}" ];then
-                        subnet_remote_router=$(subnet_router $group_number_tunnel $i)
-
-                        echo "docker exec -d ${group_number}_${rname}router ip tunnel add tun6to4_${group_number_tunnel} mode sit remote ${subnet_remote_router%/*} local ${subnet_local_router%/*} ttl 255" >> "${DIRECTORY}"/groups/g"${group_number}"/6in4_setup.sh
-
-                        echo "docker exec -d ${group_number}_${rname}router ip link set tun6to4_${group_number_tunnel} up" >> "${DIRECTORY}"/groups/g"${group_number}"/6in4_setup.sh
-
-                        for vlan in "${!vlanset[@]}"
-                        do
-                            subnet_remote_router_l2=$(subnet_l2_ipv6 $group_number_tunnel $((${l2_id[$property2]}-1)) $vlan 0)
-
-                            echo "docker exec -d ${group_number}_${rname}router ip route add ${subnet_remote_router_l2} dev tun6to4_${group_number_tunnel}" >> "${DIRECTORY}"/groups/g"${group_number}"/6in4_setup.sh
-                        done
-                    fi
-                done
-                # Done setting up the 6in4 tunnels
-
                 for vlan in "${!vlanset[@]}"
                 do
+                    subnet_router="$(subnet_l2 ${group_number} $((${l2_id[$property2]}-1)) ${vlan} ${l2_routerid[$property2]})"
                     get_docker_pid ${group_number}_${rname}router
                     PID=$DOCKER_PID
                     create_netns_link
-
-                    subnet_router="$(subnet_l2 ${group_number} $((${l2_id[$property2]}-1)) ${vlan} ${l2_routerid[$property2]})"
-                    subnet_router_ipv6="$(subnet_l2_ipv6 ${group_number} $((${l2_id[$property2]}-1)) ${vlan} ${l2_routerid[$property2]})"
 
                     if [ "$vlan" != "0" ]; then # VLAN 0 means there is no VLAN
                         ip netns exec $PID \
@@ -109,15 +82,11 @@ for ((k=0;k<group_numbers;k++)); do
                         if [ "$group_config" == "Config" ]; then
                             docker exec -d ${group_number}_${rname}router \
                                 vtysh -c 'conf t' -c 'interface '${rname}'-L2.'$vlan -c 'ip address '$subnet_router
-                            docker exec -d ${group_number}_${rname}router \
-                                vtysh -c 'conf t' -c 'interface '${rname}'-L2.'$vlan -c 'ip address '$subnet_router_ipv6
                         fi
                     else
                         if [ "$group_config" == "Config" ]; then
                             docker exec -d ${group_number}_${rname}router \
                                 vtysh -c 'conf t' -c 'interface '${rname}'-L2' -c 'ip address '$subnet_router
-                            docker exec -d ${group_number}_${rname}router \
-                                vtysh -c 'conf t' -c 'interface '${rname}'-L2' -c 'ip address '$subnet_router_ipv6
                         fi
                     fi
                 done
@@ -144,30 +113,19 @@ for ((k=0;k<group_numbers;k++)); do
             if [[ $hname != vpn* ]]; then
                 if [ "$group_config" == "Config" ]; then
                     subnet_host=$(subnet_l2 $group_number $((${l2_id["L2-"$l2name]}-1)) $vlan $((${vlanl2set["L2-"${l2name}-${vlan}]}+${l2_routerid["L2-"$l2name]})))
-                    subnet_host_ipv6=$(subnet_l2_ipv6 $group_number $((${l2_id["L2-"$l2name]}-1)) $vlan $((${vlanl2set["L2-"${l2name}-${vlan}]}+${l2_routerid["L2-"$l2name]})))
 
                     get_docker_pid ${group_number}_L2_${l2name}_${hname}
                     PID=$DOCKER_PID
                     create_netns_link
-
-                    # IPv4
                     ip netns exec $PID \
                         ip a add $subnet_host dev ${group_number}-${sname}
-                    # IPv6
-                    ip netns exec $PID \
-                        ip -6 a add $subnet_host_ipv6 dev ${group_number}-${sname}
-
                     ip netns exec $PID \
                         ip link set dev ${group_number}-${sname} up
 
                     subnet_gw="$(subnet_l2 ${group_number} $((${l2_id["L2-"$l2name]}-1)) ${vlan} 1)"
-                    subnet_gw_ipv6="$(subnet_l2_ipv6 ${group_number} $((${l2_id["L2-"$l2name]}-1)) ${vlan} 1)"
 
                     ip netns exec $PID \
                         ip route add default via ${subnet_gw%/*}
-
-                    ip netns exec $PID \
-                        ip -6 route add default via ${subnet_gw_ipv6%/*}
                 fi
             fi
 
@@ -215,6 +173,3 @@ for ((k=0;k<group_numbers;k++)); do
         done
     fi
 done
-
-# ip -6 route show 
-# ip -6 route show dev tun6to4

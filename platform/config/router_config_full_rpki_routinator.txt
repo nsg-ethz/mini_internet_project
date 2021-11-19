@@ -1,0 +1,8 @@
+LOND  DNS            host:temparus/d_host
+ZURI  MEASUREMENT    L2-UNIV
+PARI  MATRIX         host:temparus/d_routinator
+GENE  N/A            L2-UNIV
+NEWY  N/A            host:temparus/d_host
+BOST  N/A            host:temparus/d_host
+ATLA  MATRIX_TARGET  host:temparus/d_host
+MIAM  N/A            host:temparus/d_host

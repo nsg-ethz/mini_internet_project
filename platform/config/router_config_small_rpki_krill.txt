@@ -1,0 +1,4 @@
+LOND    DNS            host:temparus/d_routinator
+ZURI    MATRIX_TARGET  host:temparus/d_krill
+PARI    MATRIX         host:temparus/d_host
+NEWY    MEASUREMENT    host:temparus/d_host

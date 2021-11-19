@@ -1,0 +1,4 @@
+# This file describes the ROAs that should be issued by the group's CA on startup
+
+R: 2.0.0.0/8 => 2
+A: 2.0.0.0/8 => 3

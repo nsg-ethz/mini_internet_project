@@ -50,18 +50,6 @@ gw_l2_ () {
   echo "${n_grp}"".200.$vlan.$n_host/24"
 }
 
-subnet_l2_router_ipv6 () {
-  local n_grp="$1" l2_id="$2"
-
-  echo "${n_grp}"":$((200+$l2_id))::/32"
-}
-
-subnet_l2_ipv6 () {
-  local n_grp="$1" l2_id="$2" vlan="$3" n_host="$4"
-
-  echo "${n_grp}"":$((200+$l2_id)):$vlan::$n_host/48"
-}
-
 subnet_router () {
   local n_grp="$1" n_router="$2"
 
@@ -132,7 +120,7 @@ subnet_router_MEASUREMENT () {
 
     echo "${n_grp}"".0.199.1/24"
 
-  elif [ "${device}" = "measurement" ] ; then
+    elif [ "${device}" = "measurement" ] ; then
 
     echo "${n_grp}"".0.199.2/24"
 
@@ -168,7 +156,7 @@ subnet_router_DNS () {
 
     echo "198.0.0."${n_grp}"/24"
 
-  elif [ "${device}" = "measurement" ] ; then
+elif [ "${device}" = "measurement" ] ; then
 
     echo "198.0.0.101/24"
 
@@ -190,7 +178,7 @@ subnet_ext_sshContainer () {
 
     echo "157.0.0.$(($n_grp+10))/24"
 
-  elif [ "${device}" = "MEASUREMENT" ] ; then
+elif [ "${device}" = "MEASUREMENT" ] ; then
 
     echo "157.0.0.250/24"
 
@@ -218,7 +206,7 @@ subnet_sshContainer_groupContainer () {
 
   elif [ "${device}" = "L2" ] ; then
 
-    echo "158."$n_grp".$((n_router+10)).$((n_layer2+3))/16"
+    echo "158."$n_grp".$((n_router+10)).$((n_layer2+2))/16"
 
   elif [ "${device}" = "bridge" ] ; then
 

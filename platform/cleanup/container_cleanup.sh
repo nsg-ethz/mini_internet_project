@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# delete all group containers(ssh, routers, hosts, switches), DNS, MEASUREMENT and MATRIX
+# delere all group containers(ssh, routers, hosts, switches), DNS, MEASUREMENT and MATRIX
 
 set -o errexit
 set -o pipefail
@@ -35,31 +35,28 @@ for ((k=0;k<group_numbers;k++)); do
         n_l2_hosts=${#l2_hosts[@]}
 
         # kill ssh container
-        docker kill "${group_number}""_ssh" &>/dev/null || true
+        docker kill "${group_number}""_ssh" &>/dev/nul || true
 
         for ((i=0;i<n_routers;i++)); do
             router_i=(${routers[$i]})
             rname="${router_i[0]}"
             property1="${router_i[1]}"
             property2="${router_i[2]}"
-            dname=$(echo $property2 | cut -s -d ':' -f 2)
 
             # kill router router
-            docker kill "${group_number}""_""${rname}""router" &>/dev/null || true &
+            docker kill "${group_number}""_""${rname}""router" &>/dev/nul || true &
 
-            # kill host
-            if [[ ! -z "${dname}" ]]; then
-                docker kill "${group_number}""_""${rname}""host" &>/dev/null || true &
-            fi
+            # kill host or layer 2
+            if [ "$(echo ${property2} | sed 's/:.*//g')" == "host" ]; then
+                docker kill "${group_number}""_""${rname}""host" &>/dev/nul || true &
 
-            # cleanup layer 2
-            if [[ "${property2}" == *L2* ]];then
+            elif [[ "${property2}" == *L2* ]];then
                 # kill switches
                 for ((l=0;l<n_l2_switches;l++)); do
                     switch_l=(${l2_switches[$l]})
                     l2name="${switch_l[0]}"
                     sname="${switch_l[1]}"
-                    docker kill ${group_number}_L2_${l2name}_${sname} &>/dev/null || true &
+                    docker kill ${group_number}_L2_${l2name}_${sname} &>/dev/nul || true &
                 done
 
                 # kill hosts
@@ -69,7 +66,7 @@ for ((k=0;k<group_numbers;k++)); do
                     hname="${host_l[0]}"
                     l2name="${host_l[2]}"
 
-                    docker kill ${group_number}_L2_${l2name}_${hname} &>/dev/null || true &
+                    docker kill ${group_number}_L2_${l2name}_${hname} &>/dev/nul || true &
 
                 done
             fi
@@ -79,15 +76,15 @@ for ((k=0;k<group_numbers;k++)); do
         elif [ "${group_as}" = "IXP" ];then
 
         #kill IXP router
-        docker kill "${group_number}""_IXP" &>/dev/null || true &
+        docker kill "${group_number}""_IXP" &>/dev/nul || true &
 
     fi
 
 done
 
-docker kill DNS &>/dev/null || true &
-docker kill MEASUREMENT &>/dev/null || true &
-docker kill MATRIX &>/dev/null || true &
+docker kill DNS &>/dev/nul || true &
+docker kill MEASUREMENT &>/dev/nul || true &
+docker kill MATRIX &>/dev/nul || true &
 
 wait
 docker system prune -f

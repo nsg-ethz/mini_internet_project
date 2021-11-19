@@ -7,115 +7,196 @@ set -o pipefail
 set -o nounset
 
 DIRECTORY="$1"
+DOCKERHUB_USER="${2:-thomahol}"
 source "${DIRECTORY}"/config/subnet_config.sh
+source "${DIRECTORY}"/setup/_parallel_helper.sh
+
+touch "${DIRECTORY}/groups/rpki/krill_containers.txt"
 
 # read configs
 readarray groups < "${DIRECTORY}"/config/AS_config.txt
 group_numbers=${#groups[@]}
 
-declare -a CONTAINERS
+rpki_location="${DIRECTORY}/groups/rpki"
+
+krill_container_list_file="${rpki_location}/krill_containers.txt"
+routinator_container_list_file="${rpki_location}/routinator_containers.txt"
+container_list_file="${DIRECTORY}/groups/docker_containers.txt"
+
+# Create empty file or clear its content if the file already exists.
+> $krill_container_list_file
+> $routinator_container_list_file
+> $container_list_file
 
 #create all container
 for ((k=0;k<group_numbers;k++)); do
-    group_k=(${groups[$k]})
-    group_number="${group_k[0]}"
-    group_as="${group_k[1]}"
-    group_config="${group_k[2]}"
-    group_router_config="${group_k[3]}"
-    group_layer2_switches="${group_k[5]}"
-    group_layer2_hosts="${group_k[6]}"
-    group_layer2_links="${group_k[7]}"
+    (
+        group_k=(${groups[$k]})
+        group_number="${group_k[0]}"
+        group_as="${group_k[1]}"
+        group_config="${group_k[2]}"
+        group_router_config="${group_k[3]}"
+        group_layer2_switches="${group_k[5]}"
+        group_layer2_hosts="${group_k[6]}"
+        group_layer2_links="${group_k[7]}"
 
-    echo "creating containers for group: ""${group_number}"
+        declare -a CONTAINERS
+        declare -a KRILL_CONTAINERS
+        declare -a ROUTINATOR_CONTAINERS
 
-    if [ "${group_as}" != "IXP" ];then
+        echo "Group ${group_number}: creating containers..."
 
-        readarray routers < "${DIRECTORY}"/config/$group_router_config
-        readarray l2_switches < "${DIRECTORY}"/config/$group_layer2_switches
-        readarray l2_hosts < "${DIRECTORY}"/config/$group_layer2_hosts
-        n_routers=${#routers[@]}
-        n_l2_switches=${#l2_switches[@]}
-        n_l2_hosts=${#l2_hosts[@]}
+        if [ "${group_as}" != "IXP" ];then
 
-        location="${DIRECTORY}"/groups/g"${group_number}"
-        subnet_dns="$(subnet_router_DNS "${group_number}" "dns")"
+            readarray routers < "${DIRECTORY}"/config/$group_router_config
+            readarray l2_switches < "${DIRECTORY}"/config/$group_layer2_switches
+            readarray l2_hosts < "${DIRECTORY}"/config/$group_layer2_hosts
+            n_routers=${#routers[@]}
+            n_l2_switches=${#l2_switches[@]}
+            n_l2_hosts=${#l2_hosts[@]}
 
-        # start ssh container
-        docker run -itd --net='none'  --name="${group_number}""_ssh" \
-            --cpus=2 --pids-limit 100 --hostname="g${group_number}-proxy" --cap-add=NET_ADMIN \
-            -v "${location}"/goto.sh:/root/goto.sh  \
-            -v "${location}"/save_configs.sh:/root/save_configs.sh \
-            -v /etc/timezone:/etc/timezone:ro \
-            -v /etc/localtime:/etc/localtime:ro \
-            -v "${DIRECTORY}"/config/welcoming_message.txt:/etc/motd:ro \
-            thomahol/d_ssh
+            location="${DIRECTORY}"/groups/g"${group_number}"
+            subnet_dns="$(subnet_router_DNS "${group_number}" "dns")"
 
-        CONTAINERS+=("${group_number}_ssh")
-
-        # start switches
-        for ((l=0;l<n_l2_switches;l++)); do
-
-            switch_l=(${l2_switches[$l]})
-            l2name="${switch_l[0]}"
-            sname="${switch_l[1]}"
-
-            docker run -itd --net='none' --dns="${subnet_dns%/*}" \
-                --cpus=2 --pids-limit 100 --hostname "${sname}" \
-                --name=${group_number}_L2_${l2name}_${sname} \
-                --cap-add=ALL \
-                --cap-drop=SYS_RESOURCE \
-                --sysctl net.ipv4.ip_forward=1 \
-                --sysctl net.ipv4.icmp_ratelimit=0 \
-                --sysctl net.ipv4.fib_multipath_hash_policy=1 \
-                --sysctl net.ipv4.conf.all.rp_filter=0 \
-                --sysctl net.ipv4.conf.default.rp_filter=0 \
-                --sysctl net.ipv4.conf.lo.rp_filter=0 \
-                --sysctl net.ipv4.icmp_echo_ignore_broadcasts=0 \
-                --sysctl net.ipv6.conf.all.disable_ipv6=0 \
-                --sysctl net.ipv6.conf.all.forwarding=1 \
-                --sysctl net.ipv6.icmp.ratelimit=0 \
+            # start ssh container
+            docker run -itd --net='none'  --name="${group_number}""_ssh" \
+                --cpus=2 --pids-limit 100 --hostname="g${group_number}-proxy" --cap-add=NET_ADMIN \
+                -v "${location}"/goto.sh:/root/goto.sh  \
+                -v "${location}"/save_configs.sh:/root/save_configs.sh \
                 -v /etc/timezone:/etc/timezone:ro \
-                -v /etc/localtime:/etc/localtime:ro thomahol/d_switch
+                -v /etc/localtime:/etc/localtime:ro \
+                -v "${DIRECTORY}"/config/welcoming_message.txt:/etc/motd:ro \
+                "${DOCKERHUB_USER}/d_ssh"
 
-            CONTAINERS+=(${group_number}_L2_${l2name}_${sname})
-        done
+            CONTAINERS+=("${group_number}_ssh")
 
-        # start hosts in l2 network
-        for ((l=0;l<n_l2_hosts;l++)); do
-            host_l=(${l2_hosts[$l]})
-            hname="${host_l[0]}"
-            dname="${host_l[1]}"
-            l2name="${host_l[2]}"
-            sname="${host_l[3]}"
+            # start switches
+            for ((l=0;l<n_l2_switches;l++)); do
 
-            if [[ $hname != vpn* ]]; then
+                switch_l=(${l2_switches[$l]})
+                l2name="${switch_l[0]}"
+                sname="${switch_l[1]}"
+
                 docker run -itd --net='none' --dns="${subnet_dns%/*}" --cap-add=NET_ADMIN \
-                    --cpus=2 --pids-limit 100 --hostname "${hname}" \
-                    --name="${group_number}""_L2_""${l2name}""_""${hname}" \
+                    --cpus=2 --pids-limit 100 --hostname "${sname}" \
+                    --name=${group_number}_L2_${l2name}_${sname} \
+                    --sysctl net.ipv4.ip_forward=1 \
                     --sysctl net.ipv4.icmp_ratelimit=0 \
+                    --sysctl net.ipv4.fib_multipath_hash_policy=1 \
+                    --sysctl net.ipv4.conf.all.rp_filter=0 \
+                    --sysctl net.ipv4.conf.default.rp_filter=0 \
+                    --sysctl net.ipv4.conf.lo.rp_filter=0 \
                     --sysctl net.ipv4.icmp_echo_ignore_broadcasts=0 \
-                    --sysctl net.ipv6.conf.all.disable_ipv6=0 \
-                    --sysctl net.ipv6.icmp.ratelimit=0 \
                     -v /etc/timezone:/etc/timezone:ro \
-                    -v /etc/localtime:/etc/localtime:ro $dname
+                    -v /etc/localtime:/etc/localtime:ro \
+                    "${DOCKERHUB_USER}/d_switch"
 
-                CONTAINERS+=("${group_number}""_L2_""${l2name}""_""${hname}")
-            fi
-        done
+                CONTAINERS+=(${group_number}_L2_${l2name}_${sname})
+            done
 
-        # start routers and hosts
-        for ((i=0;i<n_routers;i++)); do
-            router_i=(${routers[$i]})
-            rname="${router_i[0]}"
-            property1="${router_i[1]}"
-            property2="${router_i[2]}"
-            dname=$(echo $property2 | cut -s -d ':' -f 2)
+            # start hosts in l2 network
+            for ((l=0;l<n_l2_hosts;l++)); do
+                host_l=(${l2_hosts[$l]})
+                hname="${host_l[0]}"
+                dname="${host_l[1]}"
+                l2name="${host_l[2]}"
+                sname="${host_l[3]}"
 
-            location="${DIRECTORY}"/groups/g"${group_number}"/"${rname}"
+                if [[ $hname != vpn* ]]; then
+                    docker run -itd --net='none' --dns="${subnet_dns%/*}" --cap-add=NET_ADMIN \
+                        --cpus=2 --pids-limit 100 --hostname "${hname}" \
+                        --name="${group_number}""_L2_""${l2name}""_""${hname}" \
+                        --sysctl net.ipv4.icmp_ratelimit=0 \
+                        --sysctl net.ipv4.icmp_echo_ignore_broadcasts=0 \
+                        -v /etc/timezone:/etc/timezone:ro \
+                        -v /etc/localtime:/etc/localtime:ro $dname
 
-            # start router
-            docker run -itd --net='none'  --dns="${subnet_dns%/*}" \
-                --name="${group_number}""_""${rname}""router" \
+                    CONTAINERS+=("${group_number}""_L2_""${l2name}""_""${hname}")
+                fi
+            done
+
+            # start routers and hosts
+            for ((i=0;i<n_routers;i++)); do
+                router_i=(${routers[$i]})
+                rname="${router_i[0]}"
+                property1="${router_i[1]}"
+                property2="${router_i[2]}"
+                dname=$(echo $property2 | cut -d ':' -f 2)
+
+                location="${DIRECTORY}"/groups/g"${group_number}"/"${rname}"
+
+                # start router
+                docker run -itd --net='none'  --dns="${subnet_dns%/*}" \
+                    --name="${group_number}""_""${rname}""router" \
+                    --sysctl net.ipv4.ip_forward=1 \
+                    --sysctl net.ipv4.icmp_ratelimit=0 \
+                    --sysctl net.ipv4.fib_multipath_hash_policy=1 \
+                    --sysctl net.ipv4.conf.all.rp_filter=0 \
+                    --sysctl net.ipv4.conf.default.rp_filter=0 \
+                    --sysctl net.ipv4.conf.lo.rp_filter=0 \
+                    --sysctl net.mpls.conf.lo.input=1 \
+                    --sysctl net.ipv4.icmp_echo_ignore_broadcasts=0 \
+                    --sysctl net.mpls.platform_labels=1048575 \
+                    --sysctl net.ipv4.tcp_l3mdev_accept=1 \
+                    --privileged \
+                    --cpus=2 --pids-limit 100 --hostname "${rname}""_router" \
+                    -v "${location}"/looking_glass.txt:/home/looking_glass.txt \
+                    -v "${location}"/daemons:/etc/frr/daemons \
+                    -v "${location}"/frr.conf:/etc/frr/frr.conf \
+                    -v /etc/timezone:/etc/timezone:ro \
+                    -v /etc/localtime:/etc/localtime:ro \
+                    "${DOCKERHUB_USER}/d_router"
+
+                CONTAINERS+=("${group_number}""_""${rname}""router")
+
+                # start host
+                if [[ "${property2}" == host* ]];then
+                    container_name="${group_number}_${rname}host"
+                    additional_args=()
+
+                    if [[ "${property2}" == *"krill"* ]]; then
+                        KRILL_CONTAINERS+=("${group_number} ${container_name}")
+                        krill_auth_token=$(<"${DIRECTORY}/groups/g${group_number}/krill/krill_token.txt")
+                        additional_args+=("--add-host" "rpki-server.group${group_number}:127.0.0.1")
+                        additional_args+=("-e" "KRILL_CLI_TOKEN=${krill_auth_token}")
+                        additional_args+=("-v" "${rpki_location}/tals:/var/krill/tals")
+                        additional_args+=("-v" "${rpki_location}/root.crt:/usr/local/share/ca-certificates/root.crt:ro")
+                        additional_args+=("-v" "${DIRECTORY}/groups/g${group_number}/krill/data:/var/krill/data")
+                        additional_args+=("-v" "${DIRECTORY}/groups/g${group_number}/krill/krill.includesprivatekey.pem:/etc/ssl/certs/cert.includesprivatekey.pem:ro")
+                        additional_args+=("-v" "${DIRECTORY}/groups/g${group_number}/krill/krill.crt:/var/krill/data/ssl/cert.pem:ro")
+                        additional_args+=("-v" "${DIRECTORY}/groups/g${group_number}/krill/krill.key:/var/krill/data/ssl/key.pem:ro")
+                        additional_args+=("-v" "${DIRECTORY}/groups/g${group_number}/krill/krill.conf:/var/krill/krill.conf:ro")
+                        additional_args+=("-v" "${DIRECTORY}/groups/g${group_number}/krill/setup.sh:/home/setup.sh:ro")
+                        additional_args+=("-v" "${DIRECTORY}/config/roas:/var/krill/roas:ro")
+                    elif [[ "${property2}" == *"routinator"* ]]; then
+                        ROUTINATOR_CONTAINERS+=("${group_number} ${container_name}")
+                        additional_args+=("-v" "${rpki_location}/root.crt:/usr/local/share/ca-certificates/root.crt:ro")
+                        additional_args+=("-v" "${rpki_location}/tals:/root/.rpki-cache/tals:ro")
+                        additional_args+=("-v" "${DIRECTORY}/groups/g${group_number}/rpki_exceptions.json:/root/rpki_exceptions.json")
+                    fi
+
+                    docker run -itd --net='none' --dns="${subnet_dns%/*}"  \
+                            --name="${container_name}" --cap-add=NET_ADMIN \
+                            --cpus=2 --pids-limit 100 --hostname "${rname}""_host" \
+                            --sysctl net.ipv4.icmp_ratelimit=0 \
+                            --sysctl net.ipv4.icmp_echo_ignore_broadcasts=0 \
+                            -v /etc/timezone:/etc/timezone:ro \
+                            -v /etc/localtime:/etc/localtime:ro \
+                            "${additional_args[@]}" \
+                            $dname
+                            # add this for bgpsimple -v ${DIRECTORY}/docker_images/host/bgpsimple.pl:/home/bgpsimple.pl \
+
+                    CONTAINERS+=("${container_name}")
+                fi
+            done
+
+        elif [ "${group_as}" = "IXP" ];then
+
+            location="${DIRECTORY}"/groups/g"${group_number}"
+            docker run -itd --net='none' --name="${group_number}""_IXP" \
+                --pids-limit 100 --hostname "${group_number}""_IXP" \
+                -v "${location}"/daemons:/etc/quagga/daemons \
+                --privileged \
                 --sysctl net.ipv4.ip_forward=1 \
                 --sysctl net.ipv4.icmp_ratelimit=0 \
                 --sysctl net.ipv4.fib_multipath_hash_policy=1 \
@@ -123,66 +204,27 @@ for ((k=0;k<group_numbers;k++)); do
                 --sysctl net.ipv4.conf.default.rp_filter=0 \
                 --sysctl net.ipv4.conf.lo.rp_filter=0 \
                 --sysctl net.ipv4.icmp_echo_ignore_broadcasts=0 \
-                --sysctl net.ipv4.tcp_l3mdev_accept=1 \
-                --sysctl net.ipv6.conf.all.disable_ipv6=0 \
-                --sysctl net.ipv6.conf.all.forwarding=1 \
-                --sysctl net.ipv6.icmp.ratelimit=0 \
-                --sysctl net.mpls.conf.lo.input=1 \
-                --sysctl net.mpls.platform_labels=1048575 \
-                --cap-add=ALL \
-                --cap-drop=SYS_RESOURCE \
-                --cpus=2 --pids-limit 100 --hostname "${rname}""_router" \
-                -v "${location}"/looking_glass.txt:/home/looking_glass.txt \
-                -v "${location}"/looking_glass_json.txt:/home/looking_glass_json.txt \
-                -v "${location}"/daemons:/etc/frr/daemons \
-                -v "${location}"/frr.conf:/etc/frr/frr.conf \
                 -v /etc/timezone:/etc/timezone:ro \
-                -v /etc/localtime:/etc/localtime:ro thomahol/d_router
+                -v /etc/localtime:/etc/localtime:ro \
+                "${DOCKERHUB_USER}/d_ixp"
 
-            CONTAINERS+=("${group_number}""_""${rname}""router")
+            CONTAINERS+=("${group_number}""_IXP")
+        fi
 
-            # start host
-            if [[ ! -z "${dname}" ]];then
-                docker run -itd --net='none' --dns="${subnet_dns%/*}"  \
-                    --name="${group_number}""_""${rname}""host" --cap-add=NET_ADMIN \
-                    --cpus=2 --pids-limit 100 --hostname "${rname}""_host" \
-                    --sysctl net.ipv4.icmp_ratelimit=0 \
-                    --sysctl net.ipv4.icmp_echo_ignore_broadcasts=0 \
-                    --sysctl net.ipv6.conf.all.disable_ipv6=0 \
-                    --sysctl net.ipv6.icmp.ratelimit=0 \
-                    -v /etc/timezone:/etc/timezone:ro \
-                    -v /etc/localtime:/etc/localtime:ro $dname
-                    # add this for bgpsimple -v ${DIRECTORY}/docker_images/host/bgpsimple.pl:/home/bgpsimple.pl \
+        printf '%b\n' "${ROUTINATOR_CONTAINERS[@]}" >> $routinator_container_list_file
+        printf '%b\n' "${KRILL_CONTAINERS[@]}" >> $krill_container_list_file
+        printf '%b\n' "${CONTAINERS[@]}" >> $container_list_file
 
-                CONTAINERS+=("${group_number}""_""${rname}""host")
-            fi
-        done
+        echo "Group ${group_number}: ${#CONTAINERS[@]} containers created!"
+    ) &
 
-    elif [ "${group_as}" = "IXP" ];then
-
-        location="${DIRECTORY}"/groups/g"${group_number}"
-        docker run -itd --net='none' --name="${group_number}""_IXP" \
-            --pids-limit 100 --hostname "${group_number}""_IXP" \
-            -v "${location}"/daemons:/etc/quagga/daemons \
-            --privileged \
-            --sysctl net.ipv4.ip_forward=1 \
-            --sysctl net.ipv4.icmp_ratelimit=0 \
-            --sysctl net.ipv4.fib_multipath_hash_policy=1 \
-            --sysctl net.ipv4.conf.all.rp_filter=0 \
-            --sysctl net.ipv4.conf.default.rp_filter=0 \
-            --sysctl net.ipv4.conf.lo.rp_filter=0 \
-            --sysctl net.ipv4.icmp_echo_ignore_broadcasts=0 \
-            --sysctl net.ipv6.conf.all.disable_ipv6=0 \
-            --sysctl net.ipv6.conf.all.forwarding=1 \
-            --sysctl net.ipv6.icmp.ratelimit=0 \
-            -v /etc/timezone:/etc/timezone:ro \
-            -v /etc/localtime:/etc/localtime:ro \
-            -v "${location}"/looking_glass.txt:/home/looking_glass.txt \
-            thomahol/d_ixp
-
-       CONTAINERS+=("${group_number}""_IXP")
-    fi
+    wait_if_n_tasks_are_running
 done
+
+wait
+
+# Read container list from file
+readarray -t CONTAINERS < $container_list_file
 
 # Cache the docker pid to avoid calling docker inspect multiple times
 # Access via setup/ovs-docker.sh get_docker_pid
@@ -194,6 +236,6 @@ for ((i=0;i<${#CONTAINERS[@]};++i)); do
     else
         DOCKER_TO_PID["${CONTAINERS[$i]}"]=${PIDS[$i]}
     fi
-
 done
+
 declare -p DOCKER_TO_PID > ${DIRECTORY}/groups/docker_pid.map

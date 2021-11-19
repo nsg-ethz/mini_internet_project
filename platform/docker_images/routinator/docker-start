@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# Update trusted certificates store
+update-ca-certificates --fresh
+
+exec "$@"

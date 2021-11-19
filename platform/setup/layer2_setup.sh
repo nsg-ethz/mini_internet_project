@@ -51,7 +51,7 @@ for ((k=0;k<group_numbers;k++)); do
         fi
 
         br_name="l2-"${group_number}
-        echo -n "-- add-br "${br_name}" -- set-fail-mode "${br_name}" secure " >> "${DIRECTORY}"/groups/add_bridges.sh
+        echo -n "-- add-br "${br_name}" " >> "${DIRECTORY}"/groups/add_bridges.sh
         echo "ovs-vsctl set bridge "${br_name}" other-config:forward-bpdu=true" >> "${DIRECTORY}"/groups/l2_init_switch.sh
 
         for ((l=0;l<n_l2_switches;l++)); do
@@ -117,6 +117,7 @@ for ((k=0;k<group_numbers;k++)); do
                 echo "ip link set ${group_number}-$hname netns \$PID" >> "${DIRECTORY}"/groups/add_vpns.sh
                 echo "ip netns exec \$PID ip link set dev ${group_number}-$hname up" >> "${DIRECTORY}"/groups/add_vpns.sh
                 echo "docker exec -d "${group_number}""_L2_""${l2name}_${sname}" ovs-vsctl add-port br0 ${group_number}-$hname" >> "${DIRECTORY}"/groups/add_vpns.sh
+
                 echo "ip link set dev g${group_number}_$hname up" >> groups/add_vpns.sh
                 echo "ip link set dev tap_g${group_number}_$hname up" >> groups/add_vpns.sh
 

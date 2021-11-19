@@ -1,1 +1,5 @@
-ZURI	LOND	100000	100
+ZURI    PARI    100000                     100
+ZURI    LOND    100000                     1000
+PARI    LOND    100000                     20
+PARI    NEWY    10000,100000,10000,10000   1000
+LOND    NEWY    10000,100000,100000,10000  100

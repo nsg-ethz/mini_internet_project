@@ -117,7 +117,7 @@ When a switch is connected to a L3 router, it must also be indicated in the thir
 
 #### Layer 3 topology
 
-`router_config_full.txt (or router_config_small.txt)`: This file contains all the routers in the L3 topology. In the default L3 topology there are 8 routers. The second column indicates if a tool or service (such as the connectivity matrix or the DNS server) is connected to the network through the corresponding router. For instance, the DNS server is connected to LOND. The third column indicates whether a single host or a L2 network is connected to the router. In the default topology, both routers ZURI and GENE are connected to a L2 network, all the others are connected to a single host. In case a router is connected to a single host, the third column (after the semicolon) also indicates which docker image the host is running. Note that a router can be connected to a host even if it is also connected to a L2 network. Finally the last column indicates wether the students can access the router container with bash or can only access the CLI. `vtysh` means the students can only access the CLI whereas anything else means the students can access the router container using bash (via the `goto.sh` script, using the keyword `container` instead of `router`).
+`router_config_full.txt (or router_config_small.txt)`: This file contains all the routers in the L3 topology. In the default L3 topology there are 8 routers. The second column indicates if a tool or service (such as the connectivity matrix or the DNS server) is connected to the network through the corresponding router. For instance, the DNS server is connected to LOND. Finally the last column indicates whether a single host or a L2 network is connected to the router. In the default topology, both routers ZURI and GENE are connected to a L2 network, all the others are connected to a single host. In case a router is connected to a single host, the third column indicates which docker image the host is running. 
 
 `internal_links_config_full.txt (or internal_links_config_small.txt)`: This is the internal topology. The first two columns indicate which pair of routers are interconnected, the last two columns indicate the throughput and delay of the link, respectively.
 
@@ -281,13 +281,7 @@ The following section explains how we build and use the different monitoring too
 #### Looking glass
 
 Every container which runs a router pulls the routing table from the FRRouting CLI every 30 seconds and stores it in `/home/looking_glass.txt`.
-This file is bound to a file in the local filesystem according to this scheme: `groups/gX/<location>/looking_glass.txt` where X is the group
-number and `<location>` is e.g. PARI.
-
-Alternativley you can then simply periodically copy this file from the container (e.g., using `docker cp 1_PARIrouter:/home/looking_glass.txt .`) and make it available to the students for example over a web interface.
-
-See `utils/upload_looking_glass.sh`.
-
+You can then simply periodically copy this file from the container (e.g., using `docker cp 1_PARIrouter:/home/looking_glass.txt .`) and make it available to the students for example over a web interface.
 
 #### Active probing
 

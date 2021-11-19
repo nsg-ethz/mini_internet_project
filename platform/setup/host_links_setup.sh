@@ -31,7 +31,7 @@ for ((k=0;k<group_numbers;k++)); do
 
         br_name="${group_number}"-host
 
-        echo -n "-- add-br "${br_name}" -- set-fail-mode "${br_name}" secure " >> "${DIRECTORY}"/groups/add_bridges.sh
+        echo -n "-- add-br "${br_name}" " >> "${DIRECTORY}"/groups/add_bridges.sh
         echo "ip a add 0.0.0.0 dev ${br_name}" >> "${DIRECTORY}"/groups/ip_setup.sh
 
         for ((i=0;i<n_routers;i++)); do
@@ -39,9 +39,8 @@ for ((k=0;k<group_numbers;k++)); do
             rname="${router_i[0]}"
             property1="${router_i[1]}"
             property2="${router_i[2]}"
-            dname=$(echo $property2 | cut -s -d ':' -f 2)
 
-            if [[ ! -z "${dname}" ]];then
+            if [[ "${property2}" == host* ]];then
 
                 subnet_bridge="$(subnet_host_router "${group_number}" "${i}" "bridge")"
                 subnet_router="$(subnet_host_router "${group_number}" "${i}" "router")"

@@ -1,2 +1,4 @@
-LOND    MATRIX host:thomahol/d_host
-ZURI    MATRIX_TARGET host:thomahol/d_host
+LOND    DNS            host:temparus/d_host
+ZURI    MATRIX_TARGET  host:temparus/d_host
+PARI    MATRIX         host:temparus/d_host
+NEWY    MEASUREMENT    host:temparus/d_host

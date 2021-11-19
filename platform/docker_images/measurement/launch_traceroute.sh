@@ -5,8 +5,6 @@ if [ $# -ne 2 ]; then
     exit 1
 fi
 
-trap "exit" SIGINT
-
 src_grp=$1
 dst_ip=$2
 

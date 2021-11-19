@@ -1,6 +1,7 @@
 FROM debian:stretch
 RUN apt-get update && apt-get install -y rsyslog locales iputils-ping traceroute \
-  openssh-server vim tcpdump net-tools dnsutils iperf3 build-essential smcroute git
+        openssh-server vim tcpdump net-tools dnsutils iperf3 build-essential smcroute git \
+    && rm -rf /var/lib/apt/lists/*
 # Install cpanminus for bgpsimple
 
 # cpanminus and build-essential needed for this
