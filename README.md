@@ -71,7 +71,7 @@ We thank our ETH colleagues Rudiger Birkner for all his work on the platform as 
 
 We are thankful to the following ETH students who helped us developping the platform during their studies:
 - Martin Vahlensieck, 2021 (BGP policy analyzer and auto-completion in the ssh container)
-- Denis Mikhaylov, 2020 (Implementation of RPKI)
+- Denis Mikhaylov, 2020 (Implementation of RPKI, his code is available in the `rpki-dev` branch, we plan to merge it in the `master` branch in Spring 2022)
 
 ### Disclaimer
 
