@@ -7,8 +7,6 @@ RUN apt-get install -y \
     git \
     rsyslog \
     locales \
-    libpcre3-dev \
-    libpcre3-dev \
     apt-transport-https \
     ca-certificates \
     curl \
@@ -50,13 +48,13 @@ RUN apt-get install -y \
     libsystemd-dev \
     libcap-dev
 
+# Prepare libyang installation
 RUN mkdir /libyang
-# We need the devel branch for the VRF otherwise we get an error when into an interface configuration
-RUN git clone -b devel https://github.com/CESNET/libyang.git /libyang
+RUN git clone https://github.com/CESNET/libyang.git /libyang
 RUN mkdir /libyang/build
 
 # Install FRR
-## add FRR GPG key
+# Add FRR GPG key
 COPY frr_keys.asc /frr_keys.asc
 RUN apt-key add /frr_keys.asc
 
@@ -66,16 +64,19 @@ RUN adduser --system --ingroup frr --home /var/opt/frr/ --gecos "FRR suite" --sh
 RUN usermod -a -G frrvty frr
 
 RUN mkdir /frr
-# RUN git clone --depth 1 --branch frr-7.2.1 https://github.com/FRRouting/frr.git /frr
 RUN git clone --depth 1 --branch frr-7.5 https://github.com/FRRouting/frr.git /frr
-#RUN git clone --branch frr-7.4 https://github.com/FRRouting/frr.git /frr
-#RUN git clone --branch frr-7.3.1 https://github.com/FRRouting/frr.git /frr
+# RUN git clone --branch frr-7.4 https://github.com/FRRouting/frr.git /frr
+# RUN git clone --branch frr-7.3.1 https://github.com/FRRouting/frr.git /frr
+# RUN git clone --depth 1 --branch frr-7.2.1 https://github.com/FRRouting/frr.git /frr
 RUN ldconfig
 WORKDIR /frr
 RUN ./bootstrap.sh
 
-## For some reasons we need to install libyang here and not around line 50 otherwise the configure fails.
+# For some reasons we need to install libyang here and not around line 50 otherwise the configuration fails.
 WORKDIR /libyang/build
+# We checkout the latest stable libyang version 1.0.XXX which is required for frr-7.5 (libyang versions 2.0.XXX do not work)
+# As a reference, previously we used libyang devel branch commit 27f0eb9bc5a3dd7fac5b40cf9ca8335505b7a0ad (v 1.0.228)
+RUN git checkout v1.0.240
 RUN cmake -DENABLE_LYD_PRIV=ON -DCMAKE_INSTALL_PREFIX:PATH=/usr -D CMAKE_BUILD_TYPE:String="Release" ..
 RUN make
 RUN make install
