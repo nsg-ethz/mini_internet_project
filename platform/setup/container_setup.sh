@@ -161,8 +161,9 @@ for ((k=0;k<group_numbers;k++)); do
                 CONTAINERS+=("${group_number}""_""${rname}""router")
 
                 # start host
-                if [[ "${property2}" == host* ]];then
+                if [[ ! -z "${dname}" ]];then
                     container_name="${group_number}_${rname}host"
+                    echo $container_name
                     additional_args=()
 
                     if [[ "${property2}" == *"krill"* ]]; then
@@ -187,17 +188,17 @@ for ((k=0;k<group_numbers;k++)); do
                     fi
 
                     docker run -itd --net='none' --dns="${subnet_dns%/*}"  \
-                            --name="${container_name}" --cap-add=NET_ADMIN \
-                            --cpus=2 --pids-limit 100 --hostname "${rname}""_host" \
-                            --sysctl net.ipv4.icmp_ratelimit=0 \
-                            --sysctl net.ipv4.icmp_echo_ignore_broadcasts=0 \
-                            --sysctl net.ipv6.conf.all.disable_ipv6=0 \
-                            --sysctl net.ipv6.icmp.ratelimit=0 \
-                            -v /etc/timezone:/etc/timezone:ro \
-                            -v /etc/localtime:/etc/localtime:ro \
-                            "${additional_args[@]}" \
-                            $dname
-                            # add this for bgpsimple -v ${DIRECTORY}/docker_images/host/bgpsimple.pl:/home/bgpsimple.pl \
+                        --name="${container_name}" --cap-add=NET_ADMIN \
+                        --cpus=2 --pids-limit 100 --hostname "${rname}""_host" \
+                        --sysctl net.ipv4.icmp_ratelimit=0 \
+                        --sysctl net.ipv4.icmp_echo_ignore_broadcasts=0 \
+                        --sysctl net.ipv6.conf.all.disable_ipv6=0 \
+                        --sysctl net.ipv6.icmp.ratelimit=0 \
+                        -v /etc/timezone:/etc/timezone:ro \
+                        -v /etc/localtime:/etc/localtime:ro \
+                        "${additional_args[@]}" \
+                        $dname
+                        # add this for bgpsimple -v ${DIRECTORY}/docker_images/host/bgpsimple.pl:/home/bgpsimple.pl \
 
                     CONTAINERS+=("${container_name}")
                 fi
