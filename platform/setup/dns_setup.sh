@@ -40,7 +40,7 @@ if [[ "$is_dns" -eq 0 ]]; then
 else
     # create dns container, copy files generated from dns_config.sh into the
     # container before starting it.
-    docker create --net='none' --name="DNS" --privileged \
+    docker create --net='none' --name="DNS" --hostname="DNS" --privileged \
         -v /etc/timezone:/etc/timezone:ro \
         -v /etc/localtime:/etc/localtime:ro \
         "${DOCKERHUB_USER}/d_dns"

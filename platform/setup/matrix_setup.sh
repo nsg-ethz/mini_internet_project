@@ -43,7 +43,8 @@ else
 
 
     # start matrix container
-    docker run -itd --net='none' --name="MATRIX" --privileged --pids-limit 500 \
+    docker run -itd --net='none' --name="MATRIX" --hostname="MATRIX" \
+        --privileged --pids-limit 500 \
         --sysctl net.ipv4.icmp_ratelimit=0 \
         -v /etc/timezone:/etc/timezone:ro \
         -v /etc/localtime:/etc/localtime:ro \
