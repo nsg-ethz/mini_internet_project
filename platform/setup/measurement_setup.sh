@@ -8,6 +8,7 @@ set -o pipefail
 set -o nounset
 
 DIRECTORY="$1"
+DOCKERHUB_USER="${2:-thomahol}"
 source "${DIRECTORY}"/config/subnet_config.sh
 
 # read configs
@@ -37,10 +38,11 @@ else
     subnet_dns="$(subnet_router_DNS -1 "dns")"
     docker run -itd --net='none' --dns="${subnet_dns%/*}" \
         --sysctl net.ipv4.icmp_ratelimit=0 \
-        --name="MEASUREMENT" --hostname="MEASUREMENT" --cpus=2 --pids-limit 100 \
+        --name="MEASUREMENT" --cpus=2 --pids-limit 100 \
         -v /etc/timezone:/etc/timezone:ro \
         -v /etc/localtime:/etc/localtime:ro \
-        --cap-add=NET_ADMIN thomahol/d_measurement
+        --cap-add=NET_ADMIN \
+        "${DOCKERHUB_USER}/d_measurement"
 
     # cache the docker pid for ovs-docker.sh
     source ${DIRECTORY}/groups/docker_pid.map
@@ -54,7 +56,7 @@ else
     subnet_ssh_measurement="$(subnet_ext_sshContainer -1 "MEASUREMENT")"
     ./setup/ovs-docker.sh add-port ssh_to_group ssh_in MEASUREMENT --ipaddress="${subnet_ssh_measurement}"
 
-    echo -n "-- add-br measurement -- set-fail-mode measurement secure " >> "${DIRECTORY}"/groups/add_bridges.sh
+    echo -n "-- add-br measurement " >> "${DIRECTORY}"/groups/add_bridges.sh
     echo "ip link set dev measurement up" >> "${DIRECTORY}"/groups/ip_setup.sh
 
     for ((k=0;k<group_numbers;k++)); do
