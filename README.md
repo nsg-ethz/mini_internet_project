@@ -70,8 +70,8 @@ We are grateful to everyone who contributed to improve the platform.
 We thank our ETH colleagues Rudiger Birkner for all his work on the platform as a teaching assistant as well as Roland Meier for the connectivity matrix. 
 
 We are thankful to the following ETH students who helped us developping the platform during their studies:
-- Martin Vahlensieck, 2021 (BGP policy analyzer and auto-completion in the ssh container)
-- Denis Mikhaylov, 2020 (Implementation of RPKI, his code is available in the `rpki-dev` branch, we plan to merge it in the `master` branch in Spring 2022)
+- Martin Vahlensieck (2021) who implemented the BGP policy analyzer and the auto-completion in the ssh container)
+- Denis Mikhaylov (2020) and Sandro Lutz (2021) who implemented the RPKI part (their code is available in the `rpki-dev` branch, we plan to merge it in the `master` branch in Spring 2022)
 
 ### Disclaimer
 
