@@ -21,7 +21,7 @@ subnet_bridge="$(subnet_ext_sshContainer -1 "bridge")"
 echo "ip a add $subnet_bridge dev ssh_to_group" >> "${DIRECTORY}"/groups/ip_setup.sh
 echo "ip link set dev ssh_to_group up" >> "${DIRECTORY}"/groups/ip_setup.sh
 
-# General a pair of keys for the server, and put the public in the proxy container
+# Generate a pair of keys for the server, and put the public in the proxy container
 ssh-keygen -t rsa -b 4096 -C "comment" -P "" -f "groups/id_rsa" -q
 cp groups/id_rsa.pub groups/authorized_keys
 
@@ -86,22 +86,30 @@ for ((k=0;k<group_numbers;k++)); do
                 rname="${router_i[0]}"
                 property1="${router_i[1]}"
                 property2="${router_i[2]}"
+                rcmd="${router_i[3]}"
+                dname=$(echo $property2 | cut -s -d ':' -f 2)
                 l2_switch_cur=0
                 l2_host_cur=0
 
                 #ssh login for router"
                 subnet_router="$(subnet_sshContainer_groupContainer "${group_number}" "${i}" -1 "router")"
                 ./setup/ovs-docker.sh add-port "${group_number}"-ssh ssh "${group_number}"_"${rname}"router --ipaddress="${subnet_router}"
-                docker cp "${DIRECTORY}"/groups/g"${group_number}"/id_rsa_command.pub "${group_number}"_"${rname}"router:/root/.ssh/authorized_keys
 
-                if [[ "${property2}" == host* ]];then
+                if [ "${rcmd}" == "vtysh" ]; then
+                    docker cp "${DIRECTORY}"/groups/g"${group_number}"/id_rsa_command.pub "${group_number}"_"${rname}"router:/root/.ssh/authorized_keys
+                else
+                    docker cp "${DIRECTORY}"/groups/g"${group_number}"/id_rsa.pub "${group_number}"_"${rname}"router:/root/.ssh/authorized_keys
+                fi
+
+                if [[ ! -z "${dname}" ]];then
                     #ssh login for host
                     subnet_host="$(subnet_sshContainer_groupContainer "${group_number}" "${i}" -1 "host")"
                     ./setup/ovs-docker.sh add-port "${group_number}"-ssh ssh "${group_number}"_"${rname}"host --ipaddress="${subnet_host}"
                     docker cp "${DIRECTORY}"/groups/g"${group_number}"/id_rsa.pub "${group_number}"_"${rname}"host:/root/.ssh/authorized_keys
                     docker exec "${group_number}"_"${rname}"host bash -c "kill -HUP \$(cat /var/run/sshd.pid)"
+                fi
 
-                elif [[ "${property2}" == *L2* ]]; then
+                if [[ "${property2}" == *L2* ]]; then
                     l2_name=$(echo $property2 | cut -f 2 -d '-')
 
                     if [[ ! $l2_done =~ (^| )$l2_name($| ) ]]; then
