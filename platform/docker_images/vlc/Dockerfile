@@ -1,7 +1,11 @@
 FROM debian:stretch
 RUN apt-get update && apt-get install -y rsyslog locales iputils-ping traceroute \
-  openssh-server vim tcpdump net-tools dnsutils iperf3 build-essential smcroute vlc git
-
+        openssh-server vim tcpdump net-tools dnsutils iperf3 build-essential smcroute vlc git \
+    && rm -rf /var/lib/apt/lists/* \
+    && sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/g' /etc/ssh/sshd_config \
+    && mkdir -p /var/run/sshd \
+    && chmod 0755 /var/run/sshd \
+    && mkdir -p /root/.ssh
 
 # Set locale
 RUN sed -i -e 's/# \(en_US\.UTF-8 .*\)/\1/' /etc/locale.gen && \
@@ -10,9 +14,8 @@ ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 
-# Add startup script and set it as entrypoint
-ADD docker-start /usr/sbin/docker-start
-RUN chmod +x /usr/sbin/docker-start
 RUN git clone https://github.com/troglobit/mtools.git
 
-ENTRYPOINT ["/usr/sbin/docker-start"]
+EXPOSE 22/tcp
+
+CMD ["/usr/sbin/sshd", "-D", "-e"]

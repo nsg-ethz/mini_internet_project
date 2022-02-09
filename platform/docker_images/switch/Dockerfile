@@ -1,15 +1,15 @@
-FROM debian:stretch
-RUN apt-get update && apt-get install -y rsyslog locales iputils-ping inetutils-traceroute openssh-server \
-  openvswitch-switch openvswitch-common vim tcpdump net-tools dnsutils
+FROM d_base_supervisor:latest
 
-# Set locale
-RUN sed -i -e 's/# \(en_US\.UTF-8 .*\)/\1/' /etc/locale.gen && \
-  locale-gen
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US:en
-ENV LC_ALL en_US.UTF-8
+RUN apk add --no-cache openssh-server openvswitch \
+    && ssh-keygen -A \
+    && sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/g' /etc/ssh/sshd_config \
+    && sed -i 's/#PrintMotd yes/PrintMotd no/g' /etc/ssh/sshd_config \
+    # Unlocks the root user so that ssh login is allowed.
+    && sed -i s/root:!/"root:*"/g /etc/shadow \
+    && mkdir -p /var/run/sshd /root/.ssh \
+    && chmod 0755 /var/run/sshd
 
-# Add startup script and set it as entrypoint
-ADD docker-start /usr/sbin/docker-start
-RUN chmod +x /usr/sbin/docker-start
-ENTRYPOINT ["/usr/sbin/docker-start"]
+COPY supervisord.conf /etc/supervisor/conf.d/processes.conf
+COPY run_ovs.sh /usr/local/bin/run_ovs
+
+RUN chmod +x /usr/local/bin/run_ovs
