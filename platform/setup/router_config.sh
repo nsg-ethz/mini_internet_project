@@ -11,7 +11,6 @@ DIRECTORY="$1"
 source "${DIRECTORY}"/config/subnet_config.sh
 source "${DIRECTORY}"/setup/_parallel_helper.sh
 
-
 # read configs
 readarray groups < "${DIRECTORY}"/config/AS_config.txt
 readarray extern_links < "${DIRECTORY}"/config/external_links_config.txt
@@ -40,7 +39,6 @@ for ((k=0;k<group_numbers;k++));do
 
             readarray routers < "${DIRECTORY}"/config/$group_router_config
             readarray intern_links < "${DIRECTORY}"/config/$group_internal_links
-
             n_routers=${#routers[@]}
             n_intern_links=${#intern_links[@]}
 
@@ -70,6 +68,7 @@ for ((k=0;k<group_numbers;k++));do
                 rname="${router_i[0]}"
                 property1="${router_i[1]}"
                 property2="${router_i[2]}"
+                dname=$(echo $property2 | cut -s -d ':' -f 2)
 
                 if [ ${#rname} -gt 10 ]; then
                     echo 'ERROR: Router names must have a length lower or equal than 10'
@@ -90,19 +89,20 @@ for ((k=0;k<group_numbers;k++));do
                     echo " -c 'interface lo' \\"
                     echo " -c 'ip address "$(subnet_router "${group_number}" "${i}")"' \\"
                     echo " -c 'exit' \\"
-                        if [[ "${property2}" == host* ]];then
-                            echo " -c 'interface host' \\"
-                            echo " -c 'ip address "$(subnet_host_router "${group_number}" "${i}" "router")"' \\"
-                            echo " -c 'exit' \\"
-                            echo " -c 'router ospf' \\"
-                            echo " -c 'network "$(subnet_host_router "${group_number}" "${i}" "router")" area 0' \\"
-                            echo " -c 'exit' \\"
+                    if [[ ! -z "${dname}" ]];then
+                        echo " -c 'interface host' \\"
+                        echo " -c 'ip address "$(subnet_host_router "${group_number}" "${i}" "router")"' \\"
+                        echo " -c 'exit' \\"
+                        echo " -c 'router ospf' \\"
+                        echo " -c 'network "$(subnet_host_router "${group_number}" "${i}" "router")" area 0' \\"
+                        echo " -c 'exit' \\"
+                    fi
 
-                        elif [[ "${property2}" == *L2* ]];then
-                                echo " -c 'router ospf' \\"
-                                echo " -c 'network "$(subnet_l2_router "${group_number}" $((${l2_id[$property2]}-1)))" area 0' \\"
-                                echo " -c 'exit'\\"
-                        fi
+                    if [[ "${property2}" == *L2* ]];then
+                            echo " -c 'router ospf' \\"
+                            echo " -c 'network "$(subnet_l2_router "${group_number}" $((${l2_id[$property2]}-1)))" area 0' \\"
+                            echo " -c 'exit'\\"
+                    fi
 
                     router_id=$(subnet_router "${group_number}" "${i}")
 
@@ -126,6 +126,9 @@ for ((k=0;k<group_numbers;k++));do
                             echo " -c 'neighbor "${subnet%???}" remote-as "${group_number}"' \\"
                             echo " -c 'neighbor "${subnet%???}" update-source lo' \\"
                             echo " -c 'neighbor "${subnet%???}" next-hop-self' \\"
+                            echo " -c 'address-family ipv6 unicast' \\"
+                            echo " -c 'neighbor "${subnet%???}" activate' \\"
+                            echo " -c 'exit' \\"
                             echo " -c 'exit' \\"
                         fi
                     done
@@ -187,7 +190,6 @@ for ((k=0;k<group_numbers;k++));do
                         subnet1="$(subnet_router_IXP "${grp_1}" "${grp_2}" "group")"
                         subnet2="$(subnet_router_IXP "${grp_1}" "${grp_2}" "IXP")"
 
-
                         echo " -c 'ip community-list "${grp_1}" permit "${grp_2}"":""${grp_1}"' \\"
                         echo " -c 'route-map "${grp_1}"_EXPORT permit 10' \\"
                         echo " -c 'set ip next-hop "${subnet1%/*}"' \\"
@@ -204,17 +206,15 @@ for ((k=0;k<group_numbers;k++));do
                         echo " -c 'neighbor "${subnet1%/*}" route-map "${grp_1}"_EXPORT export' \\"
                         echo " -c 'exit' \\"
 
-                        docker exec -d "${group_number}"_IXP bash -c "ovs-vsctl add-port IXP grp_${grp_1}" > /dev/null
+                        docker exec -d "${group_number}"_IXP bash -c "ovs-vsctl add-port IXP grp_${grp_1}"
                     fi
                 done
             } >> "${location}"
         fi
-    ) &
+    )  &
 
     wait_if_n_tasks_are_running
 done
-
-wait
 
 # for every connection in ./config/external_links_config.txt
 # configure the subnet as defined in ./config/subnet_config.sh
@@ -255,6 +255,7 @@ for ((i=0;i<n_extern_links;i++)); do
             subnet1="$(subnet_router_IXP "${grp_1}" "${grp_2}" "group")"
             subnet2="$(subnet_router_IXP "${grp_1}" "${grp_2}" "IXP")"
             location="${DIRECTORY}"/groups/g"${grp_1}"/"${router_grp_1}"/init_full_conf.sh
+
             {
                 echo " -c 'interface ixp_"${grp_2}"' \\"
                 echo " -c 'ip address "${subnet1}"' \\"
@@ -287,7 +288,6 @@ for ((i=0;i<n_extern_links;i++)); do
 
                 echo " -c 'exit' \\"
             } >> "${location}"
-
         else
             subnet="${row_i[8]}"
 
@@ -410,8 +410,6 @@ for ((i=0;i<n_extern_links;i++)); do
     wait_if_n_tasks_are_running
 done
 
-wait
-
 # measurement
 for ((k=0;k<group_numbers;k++)); do
     (
@@ -447,12 +445,10 @@ for ((k=0;k<group_numbers;k++)); do
                 fi
             done
         fi
-    ) &
+    ) & 
 
     wait_if_n_tasks_are_running
 done
-
-wait
 
 # matrix
 for ((k=0;k<group_numbers;k++)); do
@@ -473,7 +469,7 @@ for ((k=0;k<group_numbers;k++)); do
             rname="${router_i[0]}"
             property1="${router_i[1]}"
 
-            if [ "${property1}" = "MATRIX"  ]; then
+            if [ "${property1}" = "MATRIX"  ];then
                 location="${DIRECTORY}"/groups/g"${group_number}"/"${rname}"/init_conf.sh
                 {
                     echo "#!/bin/bash"
@@ -521,7 +517,7 @@ for ((k=0;k<group_numbers;k++)); do
                     echo " -c 'router ospf' \\"
                     echo " -c 'network "$(subnet_router_DNS "${group_number}" "group")" area 0' \\"
                     echo " -c 'exit' \\"
-                } >> "${location}"
+                }  >> "${location}"
             fi
         done
     fi
