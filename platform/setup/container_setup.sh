@@ -128,7 +128,10 @@ for ((k=0;k<group_numbers;k++)); do
                 rname="${router_i[0]}"
                 property1="${router_i[1]}"
                 property2="${router_i[2]}"
+                htype=$(echo $property2 | cut -d ':' -f 1)
                 dname=$(echo $property2 | cut -d ':' -f 2)
+
+                echo $property2 $htype $dname
 
                 location="${DIRECTORY}"/groups/g"${group_number}"/"${rname}"
 
@@ -166,7 +169,7 @@ for ((k=0;k<group_numbers;k++)); do
                     echo $container_name
                     additional_args=()
 
-                    if [[ "${property2}" == *"krill"* ]]; then
+                    if [[ "${htype}" == *"krill"* ]]; then
                         KRILL_CONTAINERS+=("${group_number} ${container_name}")
                         krill_auth_token=$(<"${DIRECTORY}/groups/g${group_number}/krill/krill_token.txt")
                         additional_args+=("--add-host" "rpki-server.group${group_number}:127.0.0.1")
@@ -180,7 +183,7 @@ for ((k=0;k<group_numbers;k++)); do
                         additional_args+=("-v" "${DIRECTORY}/groups/g${group_number}/krill/krill.conf:/var/krill/krill.conf:ro")
                         additional_args+=("-v" "${DIRECTORY}/groups/g${group_number}/krill/setup.sh:/home/setup.sh:ro")
                         additional_args+=("-v" "${DIRECTORY}/config/roas:/var/krill/roas:ro")
-                    elif [[ "${property2}" == *"routinator"* ]]; then
+                    elif [[ "${htype}" == *"routinator"* ]]; then
                         ROUTINATOR_CONTAINERS+=("${group_number} ${container_name}")
                         additional_args+=("-v" "${rpki_location}/root.crt:/usr/local/share/ca-certificates/root.crt:ro")
                         additional_args+=("-v" "${rpki_location}/tals:/root/.rpki-cache/tals:ro")

@@ -235,7 +235,7 @@ echo ""
 
 echo "rpki_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
 echo "rpki_setup.sh: "
-# time ./setup/rpki_setup.sh "${DIRECTORY}"
+time ./setup/rpki_setup.sh "${DIRECTORY}"
 
 echo ""
 echo ""
