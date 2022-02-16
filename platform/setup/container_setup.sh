@@ -131,8 +131,6 @@ for ((k=0;k<group_numbers;k++)); do
                 htype=$(echo $property2 | cut -d ':' -f 1)
                 dname=$(echo $property2 | cut -d ':' -f 2)
 
-                echo $property2 $htype $dname
-
                 location="${DIRECTORY}"/groups/g"${group_number}"/"${rname}"
 
                 # start router
@@ -166,7 +164,6 @@ for ((k=0;k<group_numbers;k++)); do
                 # start host
                 if [[ ! -z "${dname}" ]];then
                     container_name="${group_number}_${rname}host"
-                    echo $container_name
                     additional_args=()
 
                     if [[ "${htype}" == *"krill"* ]]; then
