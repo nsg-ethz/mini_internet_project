@@ -34,12 +34,15 @@ for ((j=0;j<n_krill_containers;j++)); do
             group_number="${container_data[0]}"
             container_name="${container_data[1]}"
 
+            # Enable ssh port forwarding to krill webserver via ssh proxy container (and only port forwarding)  
+            docker exec ${group_number}_ssh bash -c "echo 'no-pty,command=\"/bin/false\" $(cat groups/rpki/id_rsa_krill_webserver.pub)' >> ~/.ssh/authorized_keys"
+            
             # Setup Certificate Authority and predefined ROAs
             docker exec $container_name /bin/bash /home/setup.sh
             sleep 5
 
             # Extract TAL file
-            docker exec $container_name wget -q -O /var/krill/tals/group${group_number}.tal  https://localhost:3000/ta/ta.tal
+            docker exec $container_name wget -q -O /var/krill/tals/group${group_number}.tal  https://127.0.0.1:3000/ta/ta.tal
         fi
     ) &
 
@@ -137,13 +140,13 @@ for ((k=0;k<group_numbers;k++)); do
                 if [ "$group_config" == "Config" ]; then
                     group_subnet="$(subnet_group "${group_number}")"
                     echo "group ${group_number}: Adding default ROA \"${group_subnet} => ${group_number}\"..."
-                    docker exec $krill_container_name krillc roas update --ca "group${group_number}" --add "${group_subnet} => ${group_number}"
+                    docker exec $krill_container_name krillc roas update --ca "group${group_number}" --add "${group_subnet} => ${group_number}" || true
                     echo "group ${group_number}: Default ROA added."
                 fi
 
                 # Apply ROA delta file if available for the group
                 if [[ -f "${DIRECTORY}/config/roas/g${group_number}.txt" ]]; then
-                    docker exec $krill_container_name krillc roas update --ca "group${group_number}" --delta "/var/krill/roas/g${group_number}.txt"
+                    docker exec $krill_container_name krillc roas update --ca "group${group_number}" --delta "/var/krill/roas/g${group_number}.txt" || true
                 fi
             fi
         done

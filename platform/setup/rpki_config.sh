@@ -60,6 +60,9 @@ for ((j=0;j<n_groups;j++)); do
     wait_if_n_tasks_are_running
 done
 
+# Create pair of keys dedicated to allowing ssh forwarding via the ssh proxy container to the kill webserver
+ssh-keygen -t rsa -b 4096 -C "comment" -P "" -f "${DIRECTORY}"/groups/rpki/id_rsa_krill_webserver -q
+
 wait
 
 for role in "readonly" "admin"; do
@@ -93,7 +96,6 @@ for ((j=0;j<n_groups;j++)); do
                 dname=$(echo $property2 | cut -d ':' -f 2)
 
                 if [[ ! -z "${dname}" ]];then
-
                     if [[ "${htype}" == *"routinator"* ]]; then
                         subnet="$(subnet_host_router "${group_number}" "$i" "host")"
 
@@ -158,7 +160,7 @@ for ((j=0;j<n_groups;j++)); do
                         {
                             echo "#!/bin/bash -e"
                             echo "export KRILL_TEST=true"
-                            echo "KRILL_SERVER=\"https://localhost:3000/\""
+                            echo "KRILL_SERVER=\"https://127.0.0.1:3000/\""
                         } > $setup_location
 
                         krill_auth_token=$(uuidgen)

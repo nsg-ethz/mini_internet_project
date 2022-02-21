@@ -62,7 +62,7 @@ for ((k=0;k<group_numbers;k++)); do
             docker cp "${DIRECTORY}"/groups/g"${group_number}"/id_rsa "${group_number}"_ssh:/root/.ssh/id_rsa
             docker cp "${DIRECTORY}"/groups/authorized_keys "${group_number}"_ssh:/root/.ssh/authorized_keys
 
-            # generate password for login to ssh container, safe it to group folder
+            # generate password for login to ssh container, save it to group folder
             passwd=$(awk "\$1 == \"${group_number}\" { print \$0 }" "${DIRECTORY}/groups/passwords.txt" | cut -f 2 -d ' ')                
             echo -e ""${passwd}"\n"${passwd}"" | docker exec -i "${group_number}"_ssh passwd root
             docker exec "${group_number}"_ssh bash -c "kill -HUP \$(cat /var/run/sshd.pid)"
