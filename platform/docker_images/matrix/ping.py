@@ -108,7 +108,7 @@ def update_matrix(as_list, co_dic, t):
     fd.write('</body>\n')
     fd.write('</html>\n')
 
-with open('destination_ips.txt') as fd:
+with open('destination_ips.txt', 'r') as fd:
     for line in fd.readlines():
         linetab = line.rstrip('\n').split(' ')
         asn = int(linetab[0])
@@ -122,6 +122,7 @@ co_dic = {}
 # Ping processes dic
 proc_dic = {}
 
+
 # Connectivity dictionnary initializatin
 for from_g in as_list:
     co_dic[from_g] = {}
@@ -130,8 +131,8 @@ for from_g in as_list:
 
 for asn in as_list:
 
-    mod = asn%100
-    div = asn/100
+    mod = int(asn%100)
+    div = int(asn/100)
 
     if mod < 10:
         mod = "0"+str(mod)
@@ -156,9 +157,9 @@ while True:
             if to_g >= from_g:
 
                 cmd = "nping --dest-mac "+mac_dic[from_g]+" --source-ip "+str(from_g)+".0.198.2 --dest-ip "+str(as_list[to_g])+" --interface group_"+str(from_g)+" -c 1 --tcp --delay 250ms"
-                print cmd
-                proc_dic[from_g][to_g] = Popen(shlex.split(cmd), stdout=PIPE)
-                print 'sleep ', (113-from_g)*0.001
+                print (cmd)
+                proc_dic[from_g][to_g] = Popen(shlex.split(cmd), stdout=PIPE, text=True)
+                print ('sleep ', (113-from_g)*0.001)
                 time.sleep((113-from_g)*0.001)
 
         for to_g in proc_dic[from_g]:
@@ -167,17 +168,24 @@ while True:
             if "RCVD" in output_tmp and 'ICMP' not in output_tmp:
                 co_dic[from_g][to_g] = True
                 co_dic[to_g][from_g] = True
-                print "Connectivity Between "+str(from_g)+" and "+str(to_g)
+                print ("Connectivity Between "+str(from_g)+" and "+str(to_g))
             else:
                 co_dic[from_g][to_g] = False
                 co_dic[to_g][from_g] = False
-                print "No Connectivity Between "+str(from_g)+" and "+str(to_g)
-                print output_tmp
+                print ("No Connectivity Between "+str(from_g)+" and "+str(to_g))
+                print (output_tmp)
                 #print output_tmp.split('\n')[3]
         # sleep(0.1)
 
         update_matrix(as_list, co_dic, update_time)
 
+        # File description for outfile
+        fd_out = open('connectivity.txt', 'w')
+        fd_out.truncate()
+        for from_g in co_dic:
+            for to_g in co_dic:
+                fd_out.write('{}\t{}\t{}\n'.format(from_g, to_g, co_dic[from_g][to_g]))
+        fd_out.close()
 
     update_time = time.time() - start_ts
 

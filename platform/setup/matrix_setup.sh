@@ -40,7 +40,8 @@ else
 
     touch "$location"/destination_ips.txt
     chmod +x "${location}"/destination_ips.txt
-
+    touch "$location"/connectivity.txt
+    chmod +x "${location}"/connectivity.txt
 
     # start matrix container
     docker run -itd --net='none' --name="MATRIX" --hostname="MATRIX" \
@@ -50,6 +51,7 @@ else
         -v /etc/localtime:/etc/localtime:ro \
         -v "${DIRECTORY}"/config/welcoming_message.txt:/etc/motd:rw \
         -v "${location}"/destination_ips.txt:/home/destination_ips.txt \
+        -v "${location}"/connectivity.txt:/home/connectivity.txt \
         "${DOCKERHUB_USER}/d_matrix"
 
     # cache the docker pid for ovs-docker.sh
