@@ -102,7 +102,7 @@ for ((k=0;k<group_numbers;k++)); do
 
 
                 echo "proto udp" >> $location/server.conf
-                echo "port "$(($port_offset+10000)) >> $location/server.conf
+                echo "port "$(($port_offset+2050)) >> $location/server.conf
                 echo "dev tap_g"${group_number}_$hname >> $location/server.conf
                 echo "dev-type tap" >> $location/server.conf
                 echo "ca $location/ca.crt" >> $location/server.conf
@@ -150,7 +150,7 @@ for ((k=0;k<group_numbers;k++)); do
                 echo "openvpn --config $location/server.conf --log $location/log.txt &" >> "${DIRECTORY}"/groups/add_vpns.sh
                 echo "echo kill \$! >> groups/del_vpns.sh" >> "${DIRECTORY}"/groups/add_vpns.sh
 
-                port_list=${port_list}' '$(($port_offset+10000))
+                port_list=${port_list}' '$(($port_offset+2050))
                 port_offset=$(($port_offset+1))
                 ip_range_offset=$(($ip_range_offset+10))
             fi
