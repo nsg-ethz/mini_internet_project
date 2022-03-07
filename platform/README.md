@@ -373,6 +373,11 @@ When building the mini-Internet, a script called `save_configs.sh` is automatica
 
 #### MPLS and Multicast
 
-The mini-Internet can support MPLS and Multicast. To activate MPLS you must turn on the ldp daemon by replacing `ldpd=no` with `ldpd=yes` in `config/daemons`. Similarly, for Multicast you need to replace `pimd=no` with `pimd=yes`. 
+The mini-Internet can support MPLS and Multicast.
+
+- To activate MPLS, you must turn on the ldp daemon by replacing `ldpd=no` with `ldpd=yes` in `config/daemons`.
+:warning: To [enable MPLS](setup/mpls_setup.sh) on the interfaces of the routers, the containers hosting the routers must [start](https://github.com/nsg-ethz/mini_internet_project/blob/master/platform/setup/container_setup.sh#L117) with the`--priviliged` option. To prevent security issues, you should avoid using `--privileged` and give access to the container using bash (with the `linux` [option](https://github.com/nsg-ethz/mini_internet_project/tree/master/platform#layer-3-topology)).
+
+- For Multicast you need to replace `pimd=no` with `pimd=yes` in `config/daemons`. 
 The [`hostm`](docker_images/hostm/Dockerfile) docker image comes with multicast tools such as `smcroute` or `mtools` and can be used to test multicast. The `vlc` docker image comes vlc and can stream a multicast video.
 
