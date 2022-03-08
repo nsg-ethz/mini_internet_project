@@ -1,0 +1,10 @@
+R1	frr  N/A  N/A   12000   10
+R2	frr  N/A  N/A   12000   10
+R3  frr N/A N/A    12000   10
+R4  frr N/A N/A    12000   10
+S1  p4switch_container_name  N/A  host:thomahol/d_adv_net_host   12000   10
+S2  p4switch_container_name  N/A  host:thomahol/d_adv_net_host   12000   10
+S3  p4switch_container_name  N/A  host:thomahol/d_adv_net_host   12000   10
+S4  p4switch_container_name  N/A  host:thomahol/d_adv_net_host   12000   10
+S5  p4switch_container_name  N/A  host:thomahol/d_adv_net_host   12000   10
+S6  p4switch_container_name  N/A  host:thomahol/d_adv_net_host   12000   10
