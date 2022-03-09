@@ -6,9 +6,11 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
-images=(base base_supervisor host router ixp ssh measurement dns switch matrix vpn vlc hostm)
+# images=(base base_supervisor host router ixp ssh measurement dns switch matrix vpn vlc hostm routinator krill)
+images=(base base_supervisor switch)
 
 for image in "${images[@]}"; do
+    echo 'Build '$image
     docker build --tag="d_${image}" "docker_images/${image}/"
 done
 
@@ -20,6 +22,7 @@ docker_name=miniinterneteth
 
 # Upload all images to docker hub except the first two (base images).
 for image in "${images[@]:2}"; do
+    echo 'Upload '$image
     docker tag "d_${image}" "${docker_name}/d_${image}"
     docker push "${docker_name}/d_${image}"
 done
