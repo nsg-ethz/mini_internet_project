@@ -6,7 +6,7 @@ import subprocess
 import argparse
 
 def send_notification(title, content, group_nb):
-    url = 
+    url = "https://hooks.slack.com/services/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"
     message = (content)
     title = (":male-detective: Group {}: {} :zap:".format(group_nb, title))
     slack_data = {
@@ -60,4 +60,4 @@ if __name__ == '__main__':
         nb_proc = stdout.decode('ascii').count('\n')
         if nb_proc >= nb_proc_threshold:
             print ('send_notification: {} nb_proc: {}'.format(asn, nb_proc))
-            send_notification("Warning SSH container", 'There are {} processes running in your SSH container.\nThis is too high, please fix this.'.format(nb_proc), asn)
+            send_notification("Warning SSH container", '<@U01LPJ0PPPW>: There are {} processes running in your SSH container.\nThis is too high, please fix this.'.format(nb_proc), asn)
