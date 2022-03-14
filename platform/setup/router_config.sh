@@ -127,7 +127,7 @@ for ((k=0;k<group_numbers;k++));do
                         echo " -c 'neighbor "${subnet%???}" next-hop-self' \\"
                         # echo " -c 'address-family ipv6 unicast' \\"
                         # echo " -c 'neighbor "${subnet%???}" activate' \\"
-                        echo " -c 'exit' \\"
+                        # echo " -c 'exit' \\"
                         echo " -c 'exit' \\"
                     fi
                 done
