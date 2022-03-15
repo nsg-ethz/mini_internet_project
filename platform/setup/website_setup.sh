@@ -42,7 +42,7 @@ for ((k=0;k<group_numbers;k++)); do
             dname=$(echo $property2 | cut -d ':' -f 2)
 
             location=$(pwd ${DIRECTORY})"/groups/g"${group_number}"/"${rname}
-            echo "-v "${location}"/looking_glass.txt:/home/lg_G${group_number}_R${rname}.txt "
+            # echo "-v "${location}"/looking_glass.txt:/home/lg_G${group_number}_R${rname}.txt "
 
             docker_command_option=${docker_command_option}"-v "${location}"/looking_glass_json.txt:/tmp/lg_G${group_number}_${rname}.txt "
         done
@@ -50,7 +50,6 @@ for ((k=0;k<group_numbers;k++)); do
 done
 
 for key in "${!router_config_files[@]}"; do
-    echo $key
     docker_command_option=${docker_command_option}" -v "$(pwd ${DIRECTORY})"/config/$key:/tmp/$key"
 done
 
