@@ -78,7 +78,7 @@ for ((k=0;k<group_numbers;k++)); do
                 sname="${switch_l[1]}"
 
                 docker run -itd --net='none' --dns="${subnet_dns%/*}" --cap-add=NET_ADMIN \
-                    --cpus=2 --pids-limit 100 --hostname "${sname}" \
+                    --cpus=2 --pids-limit 256 --hostname "${sname}" \
                     --name=${group_number}_L2_${l2name}_${sname} \
                     --cap-add=ALL \
                     --cap-drop=SYS_RESOURCE \

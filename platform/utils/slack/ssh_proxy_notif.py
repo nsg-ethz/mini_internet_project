@@ -26,7 +26,7 @@ def send_notification(title, content, group_nb):
             }
         ]
     }
-    byte_length = str(sys.getsizeof(slack_data))
+    byte_length = len(json.dumps(slack_data))
     headers = {'Content-Type': "application/json", 'Content-Length': byte_length}
     response = requests.post(url, data=json.dumps(slack_data), headers=headers)
     if response.status_code != 200:
