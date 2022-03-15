@@ -242,7 +242,7 @@ echo ""
 
 echo "website_setup.sh: "
 echo "website_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
-time ./setup/website_setup.sh
+time ./setup/website_setup.sh "${DIRECTORY}"
 
 echo ""
 echo ""
