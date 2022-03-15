@@ -39,7 +39,7 @@ class AS:
                 self.peers.add(peer.asn)
 
     def __str__(self):
-        print 'AS {}'.format(self.asn)
+        print ('AS {}'.format(self.asn))
         cs = 'Customers: '
         for cus in self.customers:
             cs += str(cus)+','
@@ -94,21 +94,10 @@ def path_checker(dic_as, aspath):
 
     return wrong
 
-if __name__ == '__main__':
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('config_dir', type=str, default='../../config', help='Config directory')
-    parser.add_argument('groups_dir', type=str, default='../../groups', help='Group directory generated at the mini-internet startup')
-    parser.add_argument('outfile', type=str, default='paths_check.txt', help='File indicating whether path between pairs of ASes are valid')
-
-    args = parser.parse_args()
-    config_dir = args.config_dir
-    groups_dir = args.groups_dir
-    outfile = args.outfile
-
+def paths_checker():
     dic_as = {}
 
-    with open(config_dir+'/AS_config.txt', 'r') as fd:
+    with open('/tmp/AS_config.txt', 'r') as fd:
         for line in fd.readlines():
             linetab = line.rstrip('\n').split('\t')
             asn = int(linetab[0])
@@ -117,7 +106,7 @@ if __name__ == '__main__':
             new_as = AS(asn, astype)
             dic_as[asn] = new_as 
 
-    with open(config_dir+'/external_links_config.txt', 'r') as fd:
+    with open('/tmp/external_links_config.txt', 'r') as fd:
         for line in fd.readlines():
             linetab = line.rstrip('\n').split('\t')
             as1n = int(linetab[0])
@@ -148,11 +137,11 @@ if __name__ == '__main__':
 
         print (dic_as[asn])
 
-    with open(outfile, 'w') as fd:
+    with open('/tmp/path_checks.txt', 'w') as fd:
         for asn in dic_as:
             if dic_as[asn].type == 'AS':
-                print asn
-                path_to_as = get_path_as(config_dir, groups_dir, asn)
+                print (asn)
+                path_to_as = get_path_as(asn)
 
                 for asdest in path_to_as:
                     paths_str = ''
@@ -161,11 +150,11 @@ if __name__ == '__main__':
                         if path == '':
                             path = []
                         else:
-                            path = map(lambda x:int(x), path.split(' '))
+                            path = list(map(lambda x:int(x), path.split(' ')))
                         if path_checker(dic_as, path):
                             status = 'Invalid'
 
-                        print asn, asdest, path
+                        print (asn, asdest, path)
                         paths_str += '-'.join(map(lambda x:str(x), path))+','
 
                     fd.write('{}\t{}\t{}\t{}\n'.format(asn, asdest, status, paths_str[:-1]))

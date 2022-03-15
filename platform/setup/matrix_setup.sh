@@ -63,70 +63,66 @@ else
     echo "ip link set dev matrix up" >> "${DIRECTORY}"/groups/ip_setup.sh
 
     for ((k=0;k<group_numbers;k++)); do
-        (
-            group_k=(${groups[$k]})
-            group_number="${group_k[0]}"
-            group_as="${group_k[1]}"
-            group_config="${group_k[2]}"
-            group_router_config="${group_k[3]}"
-            group_internal_links="${group_k[4]}"
+        group_k=(${groups[$k]})
+        group_number="${group_k[0]}"
+        group_as="${group_k[1]}"
+        group_config="${group_k[2]}"
+        group_router_config="${group_k[3]}"
+        group_internal_links="${group_k[4]}"
 
-            if [ "${group_as}" != "IXP" ];then
+        if [ "${group_as}" != "IXP" ];then
 
-                readarray routers < "${DIRECTORY}"/config/$group_router_config
-                readarray intern_links < "${DIRECTORY}"/config/$group_internal_links
-                n_routers=${#routers[@]}
-                n_intern_links=${#intern_links[@]}
+            readarray routers < "${DIRECTORY}"/config/$group_router_config
+            readarray intern_links < "${DIRECTORY}"/config/$group_internal_links
+            n_routers=${#routers[@]}
+            n_intern_links=${#intern_links[@]}
 
-                # find the ID of that router
-                dest_router_id='None'
-                for i in "${!routers[@]}"; do
-                if [[ "${routers[$i]}" == *'MATRIX_TARGET'* ]]; then
-                    dest_router_id=$i;
-                fi
-                done
-
-                if [ "$dest_router_id" != 'None' ]; then
-                    subnet="$(subnet_host_router "${group_number}" "$dest_router_id" host)"
-                    echo $group_number" "${subnet%/*} >> ${location}/destination_ips.txt
-
-                    for ((i=0;i<n_routers;i++)); do
-                        router_i=(${routers[$i]})
-                        rname="${router_i[0]}"
-                        property1="${router_i[1]}"
-
-                        if [ "${property1}" = "MATRIX"  ];then
-                            subnet_bridge="$(subnet_router_MATRIX "${group_number}" "bridge")"
-                                subnet_matrix="$(subnet_router_MATRIX "${group_number}" "matrix")"
-                            subnet_group="$(subnet_router_MATRIX "${group_number}" "group")"
-
-                            ./setup/ovs-docker.sh add-port matrix group_"${group_number}"  \
-                            MATRIX --ipaddress="${subnet_matrix}"
-
-                            mod=$((${group_number} % 100))
-                            div=$((${group_number} / 100))
-
-                            if [ $mod -lt 10 ];then
-                                mod="0"$mod
-                            fi
-                            if [ $div -lt 10 ];then
-                                div="0"$div
-                            fi
-
-                            ./setup/ovs-docker.sh add-port matrix matrix_"${group_number}" \
-                            "${group_number}"_"${rname}"router --ipaddress="${subnet_group}" \
-                            --macaddress="aa:11:11:11:"$div":"$mod
-
-                            ./setup/ovs-docker.sh connect-ports matrix \
-                            group_"${group_number}" MATRIX \
-                            matrix_"${group_number}" "${group_number}"_"${rname}"router
-                        fi
-                    done
-                fi
+            # find the ID of that router
+            dest_router_id='None'
+            for i in "${!routers[@]}"; do
+            if [[ "${routers[$i]}" == *'MATRIX_TARGET'* ]]; then
+                dest_router_id=$i;
             fi
-        ) &
+            done
 
-        wait_if_n_tasks_are_running
+            if [ "$dest_router_id" != 'None' ]; then
+                subnet="$(subnet_host_router "${group_number}" "$dest_router_id" host)"
+                echo $group_number" "${subnet%/*} >> ${location}/destination_ips.txt
+
+                for ((i=0;i<n_routers;i++)); do
+                    router_i=(${routers[$i]})
+                    rname="${router_i[0]}"
+                    property1="${router_i[1]}"
+
+                    if [ "${property1}" = "MATRIX"  ];then
+                        subnet_bridge="$(subnet_router_MATRIX "${group_number}" "bridge")"
+                            subnet_matrix="$(subnet_router_MATRIX "${group_number}" "matrix")"
+                        subnet_group="$(subnet_router_MATRIX "${group_number}" "group")"
+
+                        ./setup/ovs-docker.sh add-port matrix group_"${group_number}"  \
+                        MATRIX --ipaddress="${subnet_matrix}"
+
+                        mod=$((${group_number} % 100))
+                        div=$((${group_number} / 100))
+
+                        if [ $mod -lt 10 ];then
+                            mod="0"$mod
+                        fi
+                        if [ $div -lt 10 ];then
+                            div="0"$div
+                        fi
+
+                        ./setup/ovs-docker.sh add-port matrix matrix_"${group_number}" \
+                        "${group_number}"_"${rname}"router --ipaddress="${subnet_group}" \
+                        --macaddress="aa:11:11:11:"$div":"$mod
+
+                        ./setup/ovs-docker.sh connect-ports matrix \
+                        group_"${group_number}" MATRIX \
+                        matrix_"${group_number}" "${group_number}"_"${rname}"router
+                    fi
+                done
+            fi
+        fi
     done
 
     wait

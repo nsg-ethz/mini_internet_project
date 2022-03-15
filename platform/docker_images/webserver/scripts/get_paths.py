@@ -1,9 +1,9 @@
 import json
 import time 
-def load_config(config_dir):
+def load_config():
     as_dic = {}
     
-    with open(config_dir+'/AS_config.txt', 'r') as fd:
+    with open('/tmp/AS_config.txt', 'r') as fd:
         for line in fd.readlines(): 
             linetab = line.rstrip('\n').split('\t')
             asn = int(linetab[0])
@@ -14,7 +14,7 @@ def load_config(config_dir):
                 break
 
             as_dic[asn] = []
-            fd_router = open(config_dir+'/'+router_config_file, 'r')
+            fd_router = open('/tmp/'+router_config_file, 'r')
             for line in fd_router.readlines():
                 linetab = line.replace('\t', ' ').split(' ')
                 router_name = linetab[0]
@@ -22,9 +22,9 @@ def load_config(config_dir):
 
     return as_dic
 
-def get_path_as_router(group_dir, asn, router_name):
-    fd = open(group_dir+'/g{}/{}/looking_glass_json.txt'.format(asn, router_name))
-    print group_dir+'/g{}/{}/looking_glass_json.txt'.format(asn, router_name)
+def get_path_as_router(asn, router_name):
+    fd = open('/tmp/lg_G{}_{}.txt'.format(asn, router_name))
+    print ('/tmp/lg_G{}_{}.txt'.format(asn, router_name))
 
     try:
         bgp_data = json.load(fd)
@@ -58,13 +58,13 @@ def get_path_as_router(group_dir, asn, router_name):
 
     return path_to_as
 
-def get_path_as(config_dir, group_dir, asn):
-    routers = load_config(config_dir)[asn]
+def get_path_as(asn):
+    routers = load_config()[asn]
   
     path_to_as = {}
 
     for r in routers:
-        tmp = get_path_as_router(group_dir, asn, r)
+        tmp = get_path_as_router(asn, r)
         for asdest in tmp:
             if asdest not in path_to_as:
                 path_to_as[asdest] = set()
@@ -74,4 +74,4 @@ def get_path_as(config_dir, group_dir, asn):
     return path_to_as
 
 if __name__ == '__main__':
-    print (get_path_as('../../config', '../../groups', 3))
+    print (get_path_as(3))

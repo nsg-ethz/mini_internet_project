@@ -191,9 +191,9 @@ sleep 10
 echo ""
 echo ""
 
-echo "dns_routes"
-echo "dns_routes $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
-time ./groups/dns_routes.sh
+# echo "dns_routes.sh"
+# echo "dns_routes $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
+# time ./groups/dns_routes.sh
 
 echo ""
 echo ""
@@ -236,6 +236,13 @@ echo ""
 echo "rpki_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
 echo "rpki_setup.sh: "
 time ./setup/rpki_setup.sh "${DIRECTORY}"
+
+echo ""
+echo ""
+
+echo "website_setup.sh: "
+echo "website_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
+time ./setup/website_setup.sh
 
 echo ""
 echo ""
