@@ -1,0 +1,28 @@
+<!doctype html>
+
+<head>
+    <link rel="stylesheet" href={{url_for('static', filename='style.css' )}}>
+</head>
+
+AS:
+<select onchange="if (this.value) window.location.href=this.value">
+    {% for _group in dropdown_groups|sort %}
+    <option {% if _group==group %}selected{%endif%} value="{{url_for('looking_glass', group=_group, router=router)}}">
+        {{_group}}
+    </option>
+    {% endfor %}
+</select>
+<br />
+Router:
+<select onchange="if (this.value) window.location.href=this.value">
+    {% for _router in dropdown_routers %}
+    <option {% if _router==router %}selected{%endif%} value="{{url_for('looking_glass', group=group, router=_router)}}">
+        {{_router}}
+    </option>
+    {% endfor %}
+</select>
+
+<br>
+<code>
+    {{filecontent|safe}}
+</code>
