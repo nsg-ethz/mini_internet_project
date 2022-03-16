@@ -1,0 +1,46 @@
+<!doctype html>
+
+
+<head>
+    <link rel="stylesheet" href={{url_for('static', filename='style.css' )}}>
+</head>
+
+<p>
+    Show AS connections between
+    <select onchange="if (this.value) window.location.href=this.value">
+        <option {% if group is none %}selected{%endif%} value="{{url_for('as_connections', group=None)}}">Any</option>
+        {% for _group in dropdown_groups|sort %}
+        {# Always reset second field. #}
+        <option {% if _group==group %}selected{%endif%} value="{{url_for('as_connections', group=_group)}}">
+            {{_group}}
+        </option>
+        {% endfor %}
+    </select>
+    and
+    <select onchange="if (this.value) window.location.href=this.value">
+        <option {% if othergroup is none %}selected{%endif%} value="{{url_for('as_connections', group=group)}}">Any
+        </option>
+        {% for _group in dropdown_others|sort %}
+        {# If group is None, selecting other selects group instead. #}
+        <option {% if _group==othergroup %}selected{%endif%}
+            value="{{url_for('as_connections', group=group if group is not none else _group, othergroup=_group if group is not none else None)}}">
+            {{_group}}
+        </option>
+        {% endfor %}
+    </select>
+    <a href="{{url_for('as_connections')}}">(reset)</a>
+</p>
+
+{% if connections %}
+<ul>
+    {% for conn in connections %}
+    <li>
+        <b>AS {{conn[0].asn}}, {{conn[0].router}}, {{conn[0].ip}}, {{conn[0].role}}</b>
+        is connected to:
+        <b>AS {{conn[1].asn}}, {{conn[1].router}}, {{conn[1].ip}}, {{conn[1].role}}</b>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>There are no connections!</p>
+{% endif %}
