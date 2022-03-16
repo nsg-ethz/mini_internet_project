@@ -2,9 +2,9 @@ import sqlite3
 import os.path
 import sys
 
-if len(sys.argv) != 2:
-    print("usage: {} config_directory".format(sys.argv[0]), file=sys.stderr)
-    sys.exit(1)
+# if len(sys.argv) != 2:
+#     print("usage: {} config_directory".format(sys.argv[0]), file=sys.stderr)
+#     sys.exit(1)
 
 db = sqlite3.connect("as.db")
 c = db.cursor()
@@ -41,7 +41,8 @@ c.execute("""CREATE VIEW all_links AS
 
 c.execute("PRAGMA foreign_keys = ON")
 
-with open(os.path.join(sys.argv[1], "AS_config.txt")) as f:
+# with open(os.path.join(sys.argv[1], "AS_config.txt")) as f:
+with open("/tmp/AS_config.txt") as f:
     for line in f:
         fields = line.split("\t")
 
@@ -49,7 +50,8 @@ with open(os.path.join(sys.argv[1], "AS_config.txt")) as f:
                      VALUES (?, ?)""",
                   (fields[0], fields[1]))
 
-with open(os.path.join(sys.argv[1], "external_links_config.txt")) as f:
+# with open(os.path.join(sys.argv[1], "external_links_config.txt")) as f:
+with open("/tmp/external_links_config.txt") as f:
     for line in f:
         fields = line.split("\t")
 

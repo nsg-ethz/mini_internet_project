@@ -48,9 +48,9 @@ def parse_lg(f, g, l, c):
                 (tv, g, l, prefix, valid, bestpath, multipath, med, metric, localpref, weight,
                     peerId, path, route['nexthops'][0]['ip']))
 
-if len(sys.argv) != 2:
-    print("usage: {} dir".format(sys.argv[0]), file=sys.stderr)
-    sys.exit(1)
+# if len(sys.argv) != 2:
+#     print("usage: {} dir".format(sys.argv[0]), file=sys.stderr)
+#     sys.exit(1)
 
 db = sqlite3.connect("as.db")
 c = db.cursor()
@@ -74,8 +74,8 @@ c.execute("""CREATE TABLE IF NOT EXISTS looking_glass (
         )""")
 db.commit()
 
-GROUPS = map(lambda x: x[0],
-        c.execute("SELECT asnumber FROM asnumbers ORDER BY asnumber ASC").fetchall())
+GROUPS = list(map(lambda x: x[0],
+        c.execute("SELECT asnumber FROM asnumbers ORDER BY asnumber ASC").fetchall()))
 
 for g in GROUPS:
     LOCATIONS = map(lambda x: x[0],
@@ -84,12 +84,12 @@ for g in GROUPS:
                          WHERE f_loc IS NOT NULL AND f_as = ?""", (g,)).fetchall())
 
     for l in LOCATIONS:
-        p = os.path.join(sys.argv[1], "g{:d}".format(g), l, "looking_glass_json.txt")
+        # p = os.path.join(sys.argv[1], "g{:d}".format(g), l, "looking_glass_json.txt")
         try:
             c = db.cursor()
             c.execute("DELETE FROM looking_glass WHERE asnumber = ? AND location = ?",
                     (g, l))
-            with open(p) as f:
+            with open('/tmp/lg_G{}_{}.txt'.format(g, l)) as f:
                 parse_lg(f, g, l, c)
             db.commit()
         except json.JSONDecodeError:
