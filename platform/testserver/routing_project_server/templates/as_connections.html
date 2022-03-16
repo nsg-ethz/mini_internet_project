@@ -35,9 +35,9 @@
 <ul>
     {% for conn in connections %}
     <li>
-        <b>AS {{conn[0].as}}, {{conn[0].router}}, {{conn[0].ip}}, {{conn[0].role}}</b>
+        <b>AS {{conn[0].asn}}, {{conn[0].router}}, {{conn[0].ip}}, {{conn[0].role}}</b>
         is connected to:
-        <b>AS {{conn[1].as}}, {{conn[1].router}}, {{conn[1].ip}}, {{conn[1].role}}</b>
+        <b>AS {{conn[1].asn}}, {{conn[1].router}}, {{conn[1].ip}}, {{conn[1].role}}</b>
     </li>
     {% endfor %}
 </ul>
