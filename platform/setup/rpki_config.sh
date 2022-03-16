@@ -137,7 +137,6 @@ for ((j=0;j<n_groups;j++)); do
                                 -out "${krill_group_location}/krill.csr" \
                                 -sha256 \
                                 -nodes \
-                                -days "${EXPIRES_IN_DAYS}" \
                                 -subj "${krill_subject}"
                         openssl x509 \
                                 -in "${krill_group_location}/krill.csr" \
