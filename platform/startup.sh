@@ -191,9 +191,9 @@ sleep 10
 echo ""
 echo ""
 
-# echo "dns_routes.sh"
-# echo "dns_routes $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
-# time ./groups/dns_routes.sh
+echo "dns_routes.sh"
+echo "dns_routes $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
+time ./groups/dns_routes.sh
 
 echo ""
 echo ""

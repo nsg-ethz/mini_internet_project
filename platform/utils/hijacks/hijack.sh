@@ -20,7 +20,6 @@ run_hijack () {
 
     shift 3
     while [ $# -ne 0 ]; do
-        echo "hello"
         case $1 in
             "--origin_as")
                 ORIGIN_AS=$2

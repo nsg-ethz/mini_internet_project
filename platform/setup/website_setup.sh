@@ -1,4 +1,3 @@
-
 set -o errexit
 set -o pipefail
 set -o nounset
@@ -55,7 +54,7 @@ done
 
 docker_command_option=${docker_command_option}" -v "$(pwd ${DIRECTORY})"/config/AS_config.txt:/tmp/AS_config.txt"
 docker_command_option=${docker_command_option}" -v "$(pwd ${DIRECTORY})"/config/external_links_config.txt:/tmp/external_links_config.txt"
-docker_command_option=${docker_command_option}" -v "$(pwd ${DIRECTORY})"/config/external_links_config.txt:/tmp/external_links_config.txt"
+# docker_command_option=${docker_command_option}" -v "$(pwd ${DIRECTORY})"/config/external_links_config.txt:/tmp/external_links_config.txt"
 
 if [ -f ${DIRECTORY}/config/external_links_config_students.txt ]; then
     docker_command_option=${docker_command_option}" -v "$(pwd ${DIRECTORY})"/config/external_links_config_students.txt:/tmp/external_links_config_students.txt"
