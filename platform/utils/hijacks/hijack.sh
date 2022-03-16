@@ -6,10 +6,12 @@
 # echo docker exec -it ${asn}_BROOrouter vtysh -c "conf t" -c "ip prefix-list OWN_PREFIX seq 5 permit ${target}.108.0.0/24"
 
 run_hijack () {
+
     HIJACKER_AS=$1
     HIJACKED_PREFIX=$2
-    SEQ=$4
-    CLEAN=""
+    SEQ=$3
+    CLEAR=""
+
 
     if [ -z "$HIJACKER_AS" ] || [ -z "$HIJACKED_PREFIX" ] || [ -z "$SEQ" ]; then
         echo >&2 "$UTIL run-hijack: not enough arguments"
@@ -18,13 +20,15 @@ run_hijack () {
 
     shift 3
     while [ $# -ne 0 ]; do
+        echo "hello"
         case $1 in
-            --origin_as=*)
-                ORIGIN_AS=${1#*=}
+            "--origin_as")
+                ORIGIN_AS=$2
+                shift 
                 shift
                 ;;
-            --clean=*)
-                CLEAN="no "
+            "--clear")
+                CLEAR="no"
                 shift
                 ;;
             *)
@@ -34,6 +38,15 @@ run_hijack () {
         esac
     done
 
+    echo $HIJACKER_AS $HIJACKED_PREFIX $SEQ $ORIGIN_AS $CLEAR 
+
+    # read configs
+    readarray groups < config/AS_config.txt
+    readarray extern_links < config/external_links_config.txt
+
+    group_numbers=${#groups[@]}
+    n_extern_links=${#extern_links[@]}
+
     for ((k=0;k<group_numbers;k++)); do
         group_k=(${groups[$k]})
         group_number="${group_k[0]}"
@@ -41,28 +54,74 @@ run_hijack () {
         group_config="${group_k[2]}"
         group_router_config="${group_k[3]}"
 
-        if [ "${group_as}" != "IXP" ];then
+        if [ "${group_number}" != "IXP" ];then
 
-            if [ "${group_as}" == "$HIJACKER_AS" ];then
+            if [ "${group_number}" == "$HIJACKER_AS" ];then
+            echo ${group_number}
 
-                readarray routers < "${DIRECTORY}"/config/$group_router_config
+                readarray routers < config/$group_router_config
                 n_routers=${#routers[@]}
 
                 for ((i=0;i<n_routers;i++)); do
                     router_i=(${routers[$i]})
                     rname="${router_i[0]}"
-                    
-                    echo docker exec -it ${group_as}_${rname}router vtysh -c "conf t" -c "router bgp ${group_as}" -c "address-family ipv4 unicast" -c "$CLEAN network $HIJACKED_PREFIX"
-                    echo docker exec -it ${group_as}_${rname}router vtysh -c "conf t" -c "$CLEAN ip prefix-list OWN_PREFIX seq $SEQ permit $HIJACKED_PREFIX"
-                    echo docker exec -it ${group_as}_${rname}router vtysh -c "conf t" -c "$CLEAN ip route $HIJACKED_PREFIX Null0"
+                    echo $rname
+
+                    if [ -z "$ORIGIN_AS" ]; then 
+
+                        docker exec -it ${group_number}_${rname}router vtysh -c "conf t" -c "router bgp ${group_number}" -c "address-family ipv4 unicast" -c "$CLEAR network $HIJACKED_PREFIX"
+                        docker exec -it ${group_number}_${rname}router vtysh -c "conf t" -c "$CLEAR ip prefix-list OWN_PREFIX seq $SEQ permit $HIJACKED_PREFIX"
+                        docker exec -it ${group_number}_${rname}router vtysh -c "conf t" -c "$CLEAR ip route $HIJACKED_PREFIX Null0"
+
+                    else
+                        for ((j=0;j<n_extern_links;j++)); do
+                            row_j=(${extern_links[$j]})
+                            grp_1="${row_j[0]}"
+                            router_grp_1="${row_j[1]}"
+                            relation_grp_1="${row_j[2]}"
+                            grp_2="${row_j[3]}"
+                            router_grp_2="${row_j[4]}"
+                            relation_grp_2="${row_j[5]}"
+                            throughput="${row_j[6]}"
+                            delay="${row_j[7]}"
+
+                            bgp_peer_num=''
+                            if [ "${grp_1}" == "${group_number}" ] && [ "${router_grp_1}" == "$rname" ] ;then
+                                bgp_peer_num="${grp_2}"
+                                # echo "1 "$grp_1 $group_number $router_grp_1 $rname $bgp_peer_num
+
+                            elif [ "${grp_2}" == "${group_number}" ] && [ "${router_grp_2}" == "$rname" ] ;then
+                                bgp_peer_num="${grp_1}"
+                                # echo "2 "$grp_2 $group_number $router_grp_2 $rname $bgp_peer_num
+                            fi
+
+                            # echo $bgp_peer_num
+                            if [ ! -z "$bgp_peer_num" ]; then 
+                                if [ -z "$CLEAR" ]; then
+                                    docker exec -it ${group_number}_${rname}router vtysh \
+                                        -c "conf t" \
+                                        -c "ip prefix-list HIJACKED_PREFIX seq 10 permit $HIJACKED_PREFIX" \
+                                        -c "route-map LOCAL_PREF_OUT_$bgp_peer_num permit 3" \
+                                        -c "match ip address prefix-list HIJACKED_PREFIX" \
+                                        -c "set as-path prepend $ORIGIN_AS" 
+                                else
+                                    docker exec -it ${group_number}_${rname}router vtysh \
+                                        -c "conf t" \
+                                        -c "$CLEAR ip prefix-list HIJACKED_PREFIX seq 10 permit $HIJACKED_PREFIX" \
+                                        -c "$CLEAR route-map LOCAL_PREF_OUT_$bgp_peer_num permit 3"
+                                fi
+                                docker exec -it ${group_number}_${rname}router vtysh -c "conf t" -c "router bgp ${group_number}" -c "address-family ipv4 unicast" -c "$CLEAR network $HIJACKED_PREFIX"
+                                docker exec -it ${group_number}_${rname}router vtysh -c "conf t" -c "$CLEAR ip route $HIJACKED_PREFIX Null0"
+                            fi
+                        done
+                    fi
                 done
             fi
         fi
     done
 }
 
-run_hijack 2 3.101.0.0/25 100
-
+# run_hijack 3 4.101.0.0/25 100 --origin_as 7 --clear
 # seq=20
 # asn=41
 # for target in 3 5 7 9
