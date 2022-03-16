@@ -169,7 +169,10 @@ def parse_as_connections(filename: os.PathLike) \
             {key: row[f"{side}_{key}"] for key in ["asn", "router", "role"]}
             for side in ('a', 'b')
         )
+        # Now replace N/As with None and add link data to both sides.
         for sidedata in connection:
+            if sidedata['router'] == 'N/A':
+                sidedata['router'] = None
             sidedata.update(link)
         connections.append(connection)
 

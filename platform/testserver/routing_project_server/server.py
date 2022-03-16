@@ -4,10 +4,10 @@ from typing import Optional
 from urllib.parse import urlparse
 
 from flask import Flask, redirect, render_template, request, url_for
+from flask_basicauth import BasicAuth
 from jinja2 import StrictUndefined
 
-# from .matrix import make_matrix
-from . import matrix, parsers
+from . import bgp_policy_analyzer, matrix, parsers
 
 app = Flask(__name__)
 app.jinja_env.undefined = StrictUndefined
@@ -26,7 +26,14 @@ config = {
         "matrix": "/home/alex/routing_project/github/platform/groups/matrix/connectivity.txt"
     },
     'krill-url': "http://{hostname}:3080/index.html",
+    'BASIC_AUTH_USERNAME': 'admin',
+    'BASIC_AUTH_PASSWORD': 'admin',
 }
+
+# TODO
+app.config['BASIC_AUTH_USERNAME'] = config['BASIC_AUTH_USERNAME']
+app.config['BASIC_AUTH_PASSWORD'] = config['BASIC_AUTH_PASSWORD']
+basic_auth = BasicAuth(app)
 
 
 @app.route("/krill")
@@ -68,23 +75,44 @@ def connectivity_matrix():
     )
 
 
+@app.route("/bgp-analysis")
+@basic_auth.required
+def bgp_analysis():
+    as_data = parsers.parse_as_config(
+        config['locations']['as_config'],
+        router_config_dir=config['locations']['config_directory'],
+    )
+    connection_data = parsers.parse_as_connections(
+        config['locations']['as_connections']
+    )
+    looking_glass_data = parsers.parse_looking_glass_json(
+        config['locations']['groups']
+    )
+
+    messages = bgp_policy_analyzer.bgp_report(
+        as_data, connection_data, looking_glass_data
+    )
+
+    return render_template("bgp_analysis.html", messages=messages,)
+
+
 @app.route("/looking-glass")
 @app.route("/looking-glass/<int:group>")
 @app.route("/looking-glass/<int:group>/<router>")
 def looking_glass(
         group: Optional[int] = None, router: Optional[str] = None):
     """Show the looking glass for group (AS) and router."""
-    looking_glass_data = parsers.find_looking_glass_textfiles(
+    looking_glass_files = parsers.find_looking_glass_textfiles(
         config['locations']['groups']
     )
     need_redirect = False
 
-    if (group is None) or (group not in looking_glass_data):
+    if (group is None) or (group not in looking_glass_files):
         # Redict to a possible group.
-        group = min(looking_glass_data.keys())
+        group = min(looking_glass_files.keys())
         need_redirect = True
 
-    groupdata = looking_glass_data[group]
+    groupdata = looking_glass_files[group]
 
     if (router is None) or (router not in groupdata):
         # Redirect to first possible router.
@@ -94,15 +122,32 @@ def looking_glass(
     if need_redirect:
         return redirect(url_for("looking_glass", group=group, router=router))
 
+    # Now get data for group. First the actual looking glass.
     with open(groupdata[router]) as file:
         filecontent = file.read()
 
-    dropdown_groups = list(looking_glass_data.keys())
-    dropdown_routers = list(groupdata.keys())
+    # Next the analysis.
+    as_data = parsers.parse_as_config(
+        config['locations']['as_config'],
+        router_config_dir=config['locations']['config_directory'],
+    )
+    connection_data = parsers.parse_as_connections(
+        config['locations']['as_connections']
+    )
+    looking_glass_data = parsers.parse_looking_glass_json(
+        config['locations']['groups']
+    )
+    messages = bgp_policy_analyzer.analyze_bgp(
+        group, as_data, connection_data, looking_glass_data
+    )
 
+    # Prepare template.
+    dropdown_groups = list(looking_glass_files.keys())
+    dropdown_routers = list(groupdata.keys())
     return render_template(
         "looking_glass.html",
         filecontent=filecontent,
+        bgp_hints=messages,
         group=group, router=router,
         dropdown_groups=dropdown_groups, dropdown_routers=dropdown_routers
     )
@@ -144,7 +189,25 @@ def as_connections(group: int = None, othergroup: int = None):
 
 
 def test():
-    connectivity_matrix()
+    as_data = parsers.parse_as_config(
+        config['locations']['as_config'],
+        router_config_dir=config['locations']['config_directory'],
+    )
+    connection_data = parsers.parse_as_connections(
+        config['locations']['as_connections']
+    )
+    looking_glass_data = parsers.parse_looking_glass_json(
+        config['locations']['groups']
+    )
+
+    from pprint import pprint
+
+    # pprint(bgp_policy_analyzer.bgp_report(
+    #     as_data, connection_data, looking_glass_data))
+    for key in as_data:
+        pprint(bgp_policy_analyzer.analyze_bgp(
+            key,
+            as_data, connection_data, looking_glass_data))
 
 
 if __name__ == "__main__":

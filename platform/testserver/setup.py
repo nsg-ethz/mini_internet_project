@@ -5,6 +5,6 @@ setup(
     packages=['routing_project_server'],
     include_package_data=True,
     install_requires=[
-        'flask', 'bjoern',  # TODO
+        'flask', 'bjoern', 'flask-basicauth', # TODO
     ],
 )

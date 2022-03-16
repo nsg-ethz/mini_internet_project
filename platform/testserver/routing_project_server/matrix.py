@@ -60,26 +60,25 @@ def check_validity(as_data, connection_data, looking_glass_data):
 
     # check if another ooutput format is better!
     results = defaultdict(dict)
-    with open('path_checks.txt', 'w') as fd:
-        for asn in dic_as:
-            if dic_as[asn].type == 'AS':
-                path_to_as = get_path_to_as(asn, as_data, looking_glass_data)
+    for asn in dic_as:
+        if dic_as[asn].type == 'AS':
+            path_to_as = get_path_to_as(asn, as_data, looking_glass_data)
 
-                for asdest in path_to_as:
-                    paths_str = ''
-                    valid = True
-                    for path in path_to_as[asdest]:
-                        if path == '':
-                            path = []
-                        else:
-                            path = list(map(int, path.split(' ')))
-                        if path_checker(dic_as, path):
-                            valid = False
+            for asdest in path_to_as:
+                paths_str = ''
+                valid = True
+                for path in path_to_as[asdest]:
+                    if path == '':
+                        path = []
+                    else:
+                        path = list(map(int, path.split(' ')))
+                    if path_checker(dic_as, path):
+                        valid = False
 
-                        paths_str += '-'.join(map(lambda x: str(x), path))+','
+                    paths_str += '-'.join(map(lambda x: str(x), path))+','
 
-                    results[asn][asdest] = valid
-                    #results.append((asn, asdest, status, paths_str[:-1]))
+                results[asn][asdest] = valid
+                #results.append((asn, asdest, status, paths_str[:-1]))
 
     return(results)
 

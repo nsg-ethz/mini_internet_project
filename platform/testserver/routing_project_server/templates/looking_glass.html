@@ -23,6 +23,20 @@ Router:
 </select>
 
 <br>
+<h1>looking glass</h1>
+
 <code>
     {{filecontent|safe}}
 </code>
+
+<h2>BGP analysis</h1>
+    {% if not bgp_hints %}
+    Our BGP analyzer found no mistakes in your current advertisements.
+    Keep in mind that this analysis does not consider missing advertisements.
+    {% else %}
+    <ul>
+        {% for msg in bgp_hints %}
+        <li>{{msg}}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
