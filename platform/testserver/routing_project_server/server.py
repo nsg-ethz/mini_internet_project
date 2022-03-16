@@ -1,16 +1,13 @@
 """A small web-server hosting all mini-internet tools."""
 
-import csv
-from ctypes import addressof
-from pathlib import Path
-from sqlite3 import connect
-from typing import Dict, List, Optional, Tuple
+from typing import Optional
+from urllib.parse import urlparse
 
-from flask import Flask, redirect, render_template, url_for
+from flask import Flask, redirect, render_template, request, url_for
 from jinja2 import StrictUndefined
 
 # from .matrix import make_matrix
-from . import parsers, matrix
+from . import matrix, parsers
 
 app = Flask(__name__)
 app.jinja_env.undefined = StrictUndefined
@@ -28,7 +25,16 @@ config = {
         "/home/alex/routing_project/github/platform/config",
         "matrix": "/home/alex/routing_project/github/platform/groups/matrix/connectivity.txt"
     },
+    'krill-url': "http://{hostname}:3080/index.html",
 }
+
+
+@app.route("/krill")
+def krill():
+    """Allow access to krill, which is embedded as an iframe."""
+    hostname = urlparse(request.base_url).hostname
+    krill_url = config['krill-url'].format(hostname=hostname)
+    return render_template("krill.html", krill_url=krill_url)
 
 
 @app.route("/matrix")

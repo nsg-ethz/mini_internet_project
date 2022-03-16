@@ -21,8 +21,6 @@ def check_connectivity(as_data, connectivity_data):
     for src_asn, dst_asn, status in connectivity_data:
         connected[src_asn][dst_asn] = status
 
-    print(connected)
-
     return connected
 
 
