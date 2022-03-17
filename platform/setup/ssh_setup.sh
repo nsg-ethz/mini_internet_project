@@ -22,7 +22,7 @@ echo "ip a add $subnet_bridge dev ssh_to_group" >> "${DIRECTORY}"/groups/ip_setu
 echo "ip link set dev ssh_to_group up" >> "${DIRECTORY}"/groups/ip_setup.sh
 
 # Generate a pair of keys for the server, and put the public in the proxy container
-ssh-keygen -t rsa -b 4096 -C "comment" -P "" -f "groups/id_rsa" -q
+ssh-keygen -t rsa -b 4096 -C "ta key" -P "" -f "groups/id_rsa" -q
 cp groups/id_rsa.pub groups/authorized_keys
 
 if [ -n "$(docker ps | grep "MEASUREMENT")" ]; then
@@ -54,7 +54,7 @@ for ((k=0;k<group_numbers;k++)); do
         n_l2_links=${#l2_links[@]}
 
         # genarate key pair for authentification between ssh container and group containers
-        ssh-keygen -t rsa -b 4096 -C "comment" -P "" -f "groups/g"${group_number}"/id_rsa" -q
+        ssh-keygen -t rsa -b 4096 -C "internal key group ${group_number}" -P "" -f "groups/g"${group_number}"/id_rsa" -q
         echo 'command="vtysh \"${SSH_ORIGINAL_COMMAND}\"" '$(cat "${DIRECTORY}"/groups/g"${group_number}"/id_rsa.pub) > "${DIRECTORY}"/groups/g"${group_number}"/id_rsa_command.pub
 
         # copy private key to container and change access rights
