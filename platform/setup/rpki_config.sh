@@ -61,7 +61,7 @@ for ((j=0;j<n_groups;j++)); do
 done
 
 # Create pair of keys dedicated to allowing ssh forwarding via the ssh proxy container to the kill webserver
-ssh-keygen -t rsa -b 4096 -C "comment" -P "" -f "${DIRECTORY}"/groups/rpki/id_rsa_krill_webserver -q
+ssh-keygen -t rsa -b 4096 -C "krill webserver" -P "" -f "${DIRECTORY}"/groups/rpki/id_rsa_krill_webserver -q
 
 wait
 
