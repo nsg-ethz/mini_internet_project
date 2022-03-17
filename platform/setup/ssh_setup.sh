@@ -59,6 +59,7 @@ for ((k=0;k<group_numbers;k++)); do
 
         # copy private key to container and change access rights
         docker cp "${DIRECTORY}"/groups/g"${group_number}"/id_rsa "${group_number}"_ssh:/root/.ssh/id_rsa
+        docker cp "${DIRECTORY}"/groups/g"${group_number}"/id_rsa.pub "${group_number}"_ssh:/root/.ssh/id_rsa.pub
         docker cp "${DIRECTORY}"/groups/authorized_keys "${group_number}"_ssh:/root/.ssh/authorized_keys
 
         # generate password for login to ssh container, save it to group folder
