@@ -8,15 +8,7 @@ set -o nounset
 
 # Check for programs we'll need.
 search_path () {
-    save_IFS=$IFS
-    IFS=:
-    for dir in $PATH; do
-        IFS=$save_IFS
-        if test -x "$dir/$1"; then
-            return 0
-        fi
-    done
-    IFS=$save_IFS
+    type -p "$1" > /dev/null && return 0
     echo >&2 "$0: $1 not found in \$PATH, please install and try again"
     exit 1
 }
