@@ -1,42 +1,67 @@
-<!doctype html>
+{% extends "base.html" %}
+{% block body %}
+<div class="max-w-4xl mx-auto p-6">
+    <h1 class="text-4xl underline underline-offset-2 decoration-4  decoration-red-400 mono mb-4">looking glass</h1>
 
-<head>
-    <link rel="stylesheet" href={{url_for('static', filename='style.css' )}}>
-</head>
+    <blockquote class="relative m-4 p-4 text-md border-l-4 bg-neutral-100 text-neutral-700 border-neutral-400">
+        <p class="italic quote  mb-4">
+            Looking Glass servers (LG servers) are servers on the Internet running one of a variety of publicly
+            available Looking Glass software implementations. They are commonly deployed by autonomous systems (AS) to
+            offer access to their routing infrastructure in order to facilitate debugging network issues. A Looking
+            Glass server is accessed remotely for the purpose of viewing routing information. Essentially, the server
+            acts as a limited, read-only portal to routers of whatever organization is running the LG server.
+        </p>
+        <cite>
+            <a href="https://en.wikipedia.org/wiki/Looking_Glass_server" class="flex items-center not-italic">
+                <img alt="avatar" class="w-12 mr-4 rounded-full"
+                    src="https://upload.wikimedia.org/wikipedia/commons/6/63/Wikipedia-logo.png" />
+                <div class="flex flex-col">
+                    <span class="text-md text-neutral-800 ">Looking Glass Server</span>
+                    <span class="text-sm text-neutral-500 ">wikipedia.org</span>
+                </div>
+            </a>
+        </cite>
+    </blockquote>
+    <div class="flex items-center">
+        <div class="m-2">
+            <span class="font-bold">AS</span>
+            <select class="bg-transparent border-0 border-b-2 border-neutral-400 hover:border-red-400"
+                onchange="if (this.value) window.location.href=this.value">
+                {% for _group in dropdown_groups|sort %}
+                <option {% if _group==group %}selected{%endif%}
+                    value="{{url_for('looking_glass', group=_group, router=router)}}">
+                    {{_group}}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="m-2">
+            <span class="font-bold">Router</span>
+            <select class="bg-transparent border-0 border-b-2 border-neutral-400 hover:border-red-400"
+                onchange="if (this.value) window.location.href=this.value">
+                {% for _router in dropdown_routers %}
+                <option {% if _router==router %}selected{%endif%}
+                    value="{{url_for('looking_glass', group=group, router=_router)}}">
+                    {{_router}}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
 
-AS:
-<select onchange="if (this.value) window.location.href=this.value">
-    {% for _group in dropdown_groups|sort %}
-    <option {% if _group==group %}selected{%endif%} value="{{url_for('looking_glass', group=_group, router=router)}}">
-        {{_group}}
-    </option>
-    {% endfor %}
-</select>
-<br />
-Router:
-<select onchange="if (this.value) window.location.href=this.value">
-    {% for _router in dropdown_routers %}
-    <option {% if _router==router %}selected{%endif%} value="{{url_for('looking_glass', group=group, router=_router)}}">
-        {{_router}}
-    </option>
-    {% endfor %}
-</select>
+    </div>
 
-<br>
-<h1>looking glass</h1>
+    <code class="mb-4 px-4 py-2 rounded border border-neutral-300 bg-neutral-100">{{filecontent|safe}}</code>
 
-<code>
-    {{filecontent|safe}}
-</code>
-
-<h2>BGP analysis</h1>
+    <h1 class="text-4xl underline underline-offset-2 decoration-4  decoration-red-400 mono mb-4">policy analysis</h1>
     {% if not bgp_hints %}
-    Our BGP analyzer found no mistakes in your current advertisements.
-    Keep in mind that this analysis does not consider missing advertisements.
+    The BGP advertisements of <b>AS {{group}}</b> do not seem violate any policies.
     {% else %}
     <ul>
+        <!-- TODO! -->
         {% for msg in bgp_hints %}
         <li>{{msg}}</li>
         {% endfor %}
     </ul>
-    {% endif %}
+</div>
+{% endif %}
+{% endblock %}
