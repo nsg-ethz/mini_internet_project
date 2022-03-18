@@ -36,6 +36,12 @@ app.config['BASIC_AUTH_PASSWORD'] = config['BASIC_AUTH_PASSWORD']
 basic_auth = BasicAuth(app)
 
 
+@app.route("/")
+def index():
+    """Redict to matrix as starting page."""
+    return redirect(url_for("matrix"))
+
+
 @app.route("/krill")
 def krill():
     """Allow access to krill, which is embedded as an iframe."""
