@@ -28,6 +28,12 @@ n_groups=${#groups[@]}
 # all configs are saved in groups
 rpki_location="${DIRECTORY}/groups/rpki"
 mkdir -p "${rpki_location}/tals"
+krill_webserver_ip_links="${rpki_location}/webserver_links.sh"
+
+# Initialize empty file
+echo "#!/bin/bash" > $krill_webserver_ip_links
+echo "source \"${DIRECTORY}/setup/ovs-docker.sh\"" >> $krill_webserver_ip_links
+chmod +x $krill_webserver_ip_links
 
 # Validity duration for generated certificates
 EXPIRES_IN_DAYS=365
@@ -233,6 +239,29 @@ for ((j=0;j<n_groups;j++)); do
                                 } >> $setup_location
                             fi
                         done
+                        # Create the link to the main host to access the krill webserver
+                        # And create the http port-based routing on the krill container
+                        {
+                            echo "ip link add web_host_${group_number} type veth peer name web_krill_${group_number}"
+                            echo "ip link set web_krill_${group_number} up"
+                            
+                            subnet_main="$(subnet_krill_webserver "${group_number}" main_host)"
+                            echo "ip address add ${subnet_main} dev web_krill_${group_number}"
+
+                            echo "get_docker_pid ${group_number}_${rname}host"
+                            echo "ip link set web_host_${group_number} netns \$DOCKER_PID"
+                            subnet_krill="$(subnet_krill_webserver "${group_number}" krill)"
+                            echo "docker exec -it ${group_number}_${rname}host ip link set web_host_${group_number} up"
+                            echo "docker exec -it ${group_number}_${rname}host ip address add ${subnet_krill} dev web_host_${group_number}"
+                            echo "docker exec -it ${group_number}_${rname}host iptables -t mangle -A OUTPUT -p tcp --sport 3080 -j MARK --set-mark 0x1"
+                            echo "docker exec -it ${group_number}_${rname}host bash -c 'echo \"100 httptable\" >> /etc/iproute2/rt_tables'"
+                            echo "docker exec -it ${group_number}_${rname}host ip rule add fwmark 0x1 lookup httptable"
+                            echo "docker exec -it ${group_number}_${rname}host ip route add default via ${subnet_main%/*} table httptable"
+                        } >> $krill_webserver_ip_links
+
+                        # Then on the main server:
+                        # sudo iptables -t nat -A PREROUTING -i INTERFACE_NAME -p tcp --dport PORT --jump DNAT --to-destination 197.x.0.1:3080
+                        # Do not forget to enable forwarding on ufw!!
                     fi
                 fi
             done

@@ -35,6 +35,8 @@ RUN apk add --no-cache haproxy curl rsync libgcc ca-certificates openssl openssh
     && chmod 0755 /var/run/sshd \
     && mkdir -p /var/krill/data/ssl
 
+RUN apk add iproute2-minimal iptables
+
 EXPOSE 3000/tcp
 EXPOSE 3080/tcp
 EXPOSE 22/tcp

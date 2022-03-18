@@ -183,6 +183,21 @@ subnet_router_DNS () {
   fi
 }
 
+subnet_krill_webserver () {
+  local n_grp="$1" device="$2"
+
+  if [ "${device}" = "main_host" ] ; then
+
+    echo "197."${n_grp}".0.2/24"
+
+  elif [ "${device}" = "krill" ] ; then
+
+    echo "197."${n_grp}".0.1/24"
+
+  fi
+}
+
+
 subnet_ext_sshContainer () {
   local n_grp=$1 device="$2"
 
