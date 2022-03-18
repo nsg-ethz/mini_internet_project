@@ -252,6 +252,13 @@ time ./setup/website_setup.sh "${DIRECTORY}"
 echo ""
 echo ""
 
+echo "webserver_links.sh: "
+echo "webserver_links.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
+time ./groups/rpki/webserver_links.sh
+
+echo ""
+echo ""
+
 echo "wait" >> "${DIRECTORY}"/groups/delay_throughput.sh
 echo "delay_throughput.sh: "
 echo "delay_throughput.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
