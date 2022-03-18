@@ -39,9 +39,9 @@ ssh -i groups/id_rsa -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking
 # I rely on the previous portforwarding to group 1.
 # Stuff is both hardcoded and does this double ssh tunneling.
 # Can we immediately forward port 3080 to go to krill?
-if command -v ufw > /dev/null 2>&1; then
-    ufw allow 3080
-fi
-ssh -i groups/id_rsa -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking no" -f -N -L 3080:158.1.10.2:3080 -p 2001 root@localhost
+# if command -v ufw > /dev/null 2>&1; then
+#     ufw allow 3080
+# fi
+# ssh -i groups/id_rsa -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking no" -f -N -L 3080:158.1.10.2:3080 -p 2001 root@localhost
 
 # for pid in $(ps aux | grep ssh | grep StrictHostKeyChecking | tr -s ' ' | cut -f 2 -d ' '); do sudo kill -9 $pid; done
