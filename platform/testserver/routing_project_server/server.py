@@ -166,12 +166,12 @@ def as_connections(group: int = None, othergroup: int = None):
     """Show the AS connections, optionally for selected groups only."""
     connections = parsers.parse_public_as_connections(
         config['locations']['as_connections_public'])
-    all_ases = {c[0]["as"] for c in connections}.union(
-        {c[1]["as"] for c in connections})
+    all_ases = {c[0]["asn"] for c in connections}.union(
+        {c[1]["asn"] for c in connections})
 
     def _check_as(data_a, data_b):
-        if ((group is None) or (data_a['as'] == group)) and \
-                ((othergroup is None) or (data_b['as'] == othergroup)):
+        if ((group is None) or (data_a['asn'] == group)) and \
+                ((othergroup is None) or (data_b['asn'] == othergroup)):
             return True
         return False
 
@@ -190,7 +190,7 @@ def as_connections(group: int = None, othergroup: int = None):
         # All ASes
         dropdown_groups=all_ases,
         # Only matching ASes for first one.
-        dropdown_others={conn[1]['as'] for conn in selected_connections},
+        dropdown_others={conn[1]['asn'] for conn in selected_connections},
     )
 
 

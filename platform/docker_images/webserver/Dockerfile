@@ -150,9 +150,15 @@ RUN set -eux; \
 
 RUN apk add --no-cache tmux
 
-COPY scripts/get_paths.py /home/get_paths.py
-COPY scripts/make_matrix.py /home/make_matrix.py
-COPY scripts/paths_checker.py /home/paths_checker.py
+RUN mkdir /home/matrix
+COPY scripts/matrix/get_paths.py /home/matrix/get_paths.py
+COPY scripts/matrix/make_matrix.py /home/matrix/make_matrix.py
+COPY scripts/matrix/paths_checker.py /home/matrix/paths_checker.py
+
+RUN mkdir /home/bgp_policy_analyzer
+COPY scripts/bgp_policy_analyzer/cfparse.py /home/bgp_policy_analyzer/cfparse.py
+COPY scripts/bgp_policy_analyzer/lganalyze.py /home/bgp_policy_analyzer/lganalyze.py
+COPY scripts/bgp_policy_analyzer/lgparse.py /home/bgp_policy_analyzer/lgparse.py
 
 # @Alex add your python libs there
 
