@@ -18,10 +18,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body>
+<body class="flex flex-col min-h-screen">
+    <!-- Flex and min-height allow the Krill iframe to fill the screen. -->
     <!-- Menu bar background (full-width). -->
-    <div class="w-full bg-gray-800 text-white font-mono">
-        <!-- viewport space. -->
+    <div class="flex-none w-full bg-gray-800 text-white font-mono">
         <nav class="max-w-6xl mx-auto flex items-center justify-between flex-wrap p-6">
             <!-- Logo -->
             <div class="flex items-center flex-shrink-0 mr-6 text-3xl font-bold">
@@ -42,7 +42,6 @@
             {% endfor %}
         </nav>
     </div>
-    <!-- viewport space. -->
     {% block body %}{% endblock %}
 </body>
 
