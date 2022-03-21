@@ -139,7 +139,7 @@ if __name__ == '__main__':
                     co_dic[from_as] = {}
                 if to_as not in co_dic[from_as]:
                     co_dic[from_as][to_as] = 0
-                print (co)
+
                 co_dic[from_as][to_as] = 1 if co == 'True' else 0
 
         with open('/tmp/path_checks.txt', 'r') as fd:

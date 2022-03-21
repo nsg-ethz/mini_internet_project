@@ -21,6 +21,11 @@ search_path () {
     exit 1
 }
 
+if (($UID != 0)); then
+    echo "$0 needs to be run as root"
+    exit 1
+fi
+
 search_path ovs-vsctl
 search_path docker
 search_path uuidgen
