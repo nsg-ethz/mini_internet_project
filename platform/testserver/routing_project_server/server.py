@@ -39,7 +39,7 @@ basic_auth = BasicAuth(app)
 @app.route("/")
 def index():
     """Redict to matrix as starting page."""
-    return redirect(url_for("matrix"))
+    return redirect(url_for("connectivity_matrix"))
 
 
 @app.route("/krill")
