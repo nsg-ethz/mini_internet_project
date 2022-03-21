@@ -74,16 +74,34 @@ def connectivity_matrix():
     validity = matrix.check_validity(
         as_data, connection_data, looking_glass_data)
 
+    # Compute percentages as well.
+    valid, invalid, failure = 0, 0, 0
+    for src, dsts in connectivity.items():
+        for dst, connected in dsts.items():
+            if connected:
+                # We have connectivity, now check if valid.
+                if validity.get(src, {}).get(dst, False):
+                    valid += 1
+                else:
+                    invalid += 1
+            else:
+                failure += 1
+    total = valid + invalid + failure
+    valid = round(valid / total * 100)
+    invalid = round(invalid / total * 100)
+    failure = round(failure / total * 100)
+
     return render_template(
         'matrix.html',
-        connectivity=connectivity,
-        validity=validity,
+        connectivity=connectivity, validity=validity,
+        valid=valid, invalid=invalid, failure=failure,
     )
 
 
 @app.route("/bgp-analysis")
 @basic_auth.required
 def bgp_analysis():
+    """Return the full BGP analysis report."""
     as_data = parsers.parse_as_config(
         config['locations']['as_config'],
         router_config_dir=config['locations']['config_directory'],
@@ -192,28 +210,6 @@ def as_connections(group: int = None, othergroup: int = None):
         # Only matching ASes for first one.
         dropdown_others={conn[1]['asn'] for conn in selected_connections},
     )
-
-
-def test():
-    as_data = parsers.parse_as_config(
-        config['locations']['as_config'],
-        router_config_dir=config['locations']['config_directory'],
-    )
-    connection_data = parsers.parse_as_connections(
-        config['locations']['as_connections']
-    )
-    looking_glass_data = parsers.parse_looking_glass_json(
-        config['locations']['groups']
-    )
-
-    from pprint import pprint
-
-    # pprint(bgp_policy_analyzer.bgp_report(
-    #     as_data, connection_data, looking_glass_data))
-    for key in as_data:
-        pprint(bgp_policy_analyzer.analyze_bgp(
-            key,
-            as_data, connection_data, looking_glass_data))
 
 
 if __name__ == "__main__":

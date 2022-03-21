@@ -31,7 +31,7 @@ endmacro %}
 {%- endmacro %}
 {% block body %}
 <div class="max-w-4xl mx-auto p-6">
-    <h1 class="text-4xl underline underline-offset-2 decoration-4  decoration-red-400 mono mb-4">AS connections</h1>
+    <h1 class="text-4xl underline underline-offset-2 decoration-4  decoration-[#ff7e79] mono mb-4">AS connections</h1>
 
     <p>
         This list shows all inter-AS connections. For each connection, it shows both involved ASes, the edge-routers at
@@ -49,13 +49,13 @@ endmacro %}
             <button type="submit" class="rounded border p-0 px-4
                 text-black border-black
                 disabled:text-neutral-400 disabled:border-neutral-300
-                hover:text-red-400 hover:border-red-400
+                hover:text-[#ff7e79] hover:border-[#ff7e79]
                 " {% if group is none %}disabled{% endif %}>reset
                 filter</button>
         </form>
         <div class="flex flex-row">
             <div class="flex items-center justify-center box-content w-48 m-2 px-4">
-                <select class="bg-transparent font-bold border-0 border-b-2 border-neutral-400 hover:border-red-400"
+                <select class="bg-transparent font-bold border-0 border-b-2 border-neutral-400 hover:border-[#ff7e79]"
                     onchange="if (this.value) window.location.href=this.value">
                     <option {% if group is none %}selected{%endif%} value="{{url_for('as_connections', group=None)}}">
                         any AS
@@ -73,7 +73,7 @@ endmacro %}
             </div>
             <div class="flex items-center justify-center box-content w-48 m-2 px-4">
                 <select
-                    class="max-w-4xl m-2 bg-transparent font-bold border-0 border-b-2 border-neutral-400 hover:border-red-400"
+                    class="max-w-4xl m-2 bg-transparent font-bold border-0 border-b-2 border-neutral-400 hover:border-[#ff7e79]"
                     onchange="if (this.value) window.location.href=this.value">
                     <option {% if othergroup is none %}selected{%endif%}
                         value="{{url_for('as_connections', group=group)}}">
