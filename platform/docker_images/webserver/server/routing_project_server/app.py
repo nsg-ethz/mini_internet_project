@@ -35,7 +35,7 @@ def create_app(config=None):
     app.config.from_mapping(config_defaults)
 
     if config is None:
-        config = os.environ.get("FLASK_CONFIG", None)
+        config = os.environ.get("SERVER_CONFIG", None)
 
     if config is not None and isinstance(config, dict):
         app.config.from_mapping(config)

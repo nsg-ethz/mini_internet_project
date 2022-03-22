@@ -81,7 +81,6 @@ fi
 
 docker_command_option=${docker_command_option}" -v "$(pwd ${DIRECTORY})"/groups/matrix/connectivity.txt:${DATADIR}/connectivity.txt"
 
-
 # Write the webserver config file
 cat > "$OUTPUT_DIRECTORY/webserver_config.py" << EOM
 LOCATIONS = {
@@ -104,9 +103,11 @@ docker_command_option=${docker_command_option}" -v ${OUTPUT_DIRECTORY}/webserver
 docker run -itd --name="WEB" --cpus=2 \
     --network host \
     --pids-limit 100 \
+    -e SERVER_CONFIG=/server/config.py \  # Path to config file.
     --hostname="g${group_number}-proxy" \
     --privileged \
     $docker_command_option "miniinterneteth/d_webserver"
+
 
 # source "./setup/ovs-docker.sh"
 # get_docker_pid 1_ZURIhost
