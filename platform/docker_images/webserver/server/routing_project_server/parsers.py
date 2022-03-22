@@ -184,7 +184,7 @@ def parse_matrix_connectivity(filename: os.PathLike):
     results = []
     reader = csv.reader(_read_clean(filename), delimiter='\t')
     for row in reader:
-        results.append((int(row[0]), int(row[1]), bool(row[2])))
+        results.append((int(row[0]), int(row[1]), True if row[2] == 'True' else False))
     return results
 
 
