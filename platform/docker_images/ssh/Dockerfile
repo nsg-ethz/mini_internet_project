@@ -4,7 +4,7 @@ FROM d_base:latest
 # cpanminus and build-essential needed for this
 # RUN cpanm Net::BGP
 
-RUN apk add --no-cache openssh-client openssh-server \
+RUN apk add --no-cache openssh-client openssh-server zip \
     && ssh-keygen -A \
     && sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/g' /etc/ssh/sshd_config \
     && sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/g' /etc/ssh/sshd_config \
