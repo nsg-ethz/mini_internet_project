@@ -55,7 +55,6 @@ for ((k=0;k<group_numbers;k++)); do
             dname=$(echo $property2 | cut -d ':' -f 2)
 
             location=$(pwd ${DIRECTORY})"/groups/g"${group_number}"/"${rname}
-            # echo "-v "${location}"/looking_glass.txt:/home/lg_G${group_number}_R${rname}.txt "
 
             # Copy both the text and json looking glass output.
             files=("looking_glass.txt" "looking_glass_json.txt")
@@ -76,8 +75,6 @@ docker_command_option=${docker_command_option}" -v "$(pwd ${DIRECTORY})"/config/
 if [ -f ${DIRECTORY}/config/external_links_config_students.txt ]; then
     docker_command_option=${docker_command_option}" -v "$(pwd ${DIRECTORY})"/config/external_links_config_students.txt:${CONFIGDIR}/external_links_config_students.txt"
 fi
-
-# echo $docker_command_option
 
 docker_command_option=${docker_command_option}" -v "$(pwd ${DIRECTORY})"/groups/matrix/connectivity.txt:${DATADIR}/connectivity.txt"
 
@@ -107,23 +104,3 @@ docker run -itd --name="WEB" --cpus=2 \
     --hostname="g${group_number}-proxy" \
     --privileged \
     $docker_command_option "miniinterneteth/d_webserver"
-
-
-# source "./setup/ovs-docker.sh"
-# get_docker_pid 1_ZURIhost
-# echo $DOCKER_PID
-# ip link add web_host type veth peer name web_krill
-# ip link set web_krill up
-# ip address add 111.0.0.2/24 dev web_krill
-# ip link set web_host netns $DOCKER_PID
-# docker exec -it 1_ZURIhost ip link set web_host up
-# docker exec -it 1_ZURIhost ip address add 111.0.0.1/24 dev web_host
-
-#Make sure that UFA allows forwarding!
-
-# docker exec 
-
-# write in /etc/iproute2/rt_table: 100 sshtable
-
-# ip rule add fwmark 0x1 lookup httptable
-# ip route add default via 111.0.0.2 table httptable 
