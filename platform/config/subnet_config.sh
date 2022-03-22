@@ -170,7 +170,7 @@ subnet_router_DNS () {
 
   elif [ "${device}" = "measurement" ] ; then
 
-    echo "198.0.0.101/24"
+    echo "198.0.0.200/24"
 
   elif [ "${device}" = "dns" ] ; then
 
