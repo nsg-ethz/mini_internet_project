@@ -22,9 +22,16 @@ endmacro %}
     <div class="flex flex-row justify-center">
         {{icon(data.role)}}
         <div class="flex flex-col mr-2">
+            <!-- IXP case -->
+            {% if "IXP" in data.router %}
+            <div class="font-bold"><b>AS {{data.router}}</b> </div>
+            <div class="text-sm text-neutral-700">{{data.ip if data.ip is not none else "N/A"}}</div>
+            <!-- Case of a normal AS -->
+            {% else %}
             <div class="font-bold"><b>AS {{data.asn}}</b> <span class="text-neutral-500">/</span>
                 {{data.router}}</div>
             <div class="text-sm text-neutral-700">{{data.ip if data.ip is not none else "N/A"}}</div>
+            {% endif %}
         </div>
     </div>
 </div>
