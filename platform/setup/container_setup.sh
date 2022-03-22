@@ -180,7 +180,6 @@ for ((k=0;k<group_numbers;k++)); do
                         additional_args+=("-v" "${DIRECTORY}/groups/g${group_number}/krill/krill.conf:/var/krill/krill.conf:ro")
                         additional_args+=("-v" "${DIRECTORY}/groups/g${group_number}/krill/setup.sh:/home/setup.sh:ro")
                         additional_args+=("-v" "${DIRECTORY}/config/roas:/var/krill/roas:ro")
-                        additional_args+=("-p" "3080:3080")
                     elif [[ "${htype}" == *"routinator"* ]]; then
                         ROUTINATOR_CONTAINERS+=("${group_number} ${container_name}")
                         additional_args+=("-v" "${rpki_location}/root.crt:/usr/local/share/ca-certificates/root.crt:ro")
