@@ -17,7 +17,7 @@ CONFIGDIR='/server/configs'
 
 # Ports for the webserver and krill on the host.
 # (must be publicly available)
-SERVER_PORT="8000"
+SERVER_PORT="80"
 KRILL_PORT="3080"
 
 
