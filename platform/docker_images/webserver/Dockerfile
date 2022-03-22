@@ -1,7 +1,15 @@
-FROM python:3
+FROM python:3-alpine
 
-# We require libev-dev for the bjoern WSGI server.
-RUN apt-get update && apt-get install -y libev-dev
+RUN apk add --no-cache tini bash bash-completion util-linux coreutils \
+                       binutils findutils grep vim nano \
+                       iputils net-tools bind-tools tcptraceroute tcpdump
+
+# Install bjoern and dependencies for install
+RUN apk add --no-cache --virtual .deps \
+    musl-dev gcc git && \
+    # Keep libev for running bjoern, libjpeg and zlib for Pillow
+    apk add --no-cache libev-dev zlib-dev jpeg-dev && \
+    pip install bjoern
 
 COPY server /server
 RUN pip install -e /server
