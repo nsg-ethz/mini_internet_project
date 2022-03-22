@@ -105,6 +105,6 @@ docker run -itd --name="WEB" --cpus=2 \
     --network bridge -p ${SERVER_PORT}:8000 \
     --pids-limit 100 \
     -e SERVER_CONFIG=/server/config.py \
-    --hostname="g${group_number}-proxy" \
+    --hostname="web" \
     --privileged \
     $docker_command_option "miniinterneteth/d_webserver"
