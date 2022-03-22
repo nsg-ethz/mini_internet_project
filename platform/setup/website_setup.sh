@@ -15,8 +15,12 @@ OUTPUT_DIRECTORY="$(pwd ${DIRECTORY})/groups"
 DATADIR='/server/data'
 CONFIGDIR='/server/configs'
 
-
+# Ports for the webserver and krill on the host.
+# (must be publicly available)
+SERVER_PORT="8000"
 KRILL_PORT="3080"
+
+
 DOCKERHUB_USER="${2:-thomahol}"
 source "${DIRECTORY}"/config/subnet_config.sh
 source "${DIRECTORY}"/setup/_parallel_helper.sh
@@ -98,7 +102,7 @@ EOM
 docker_command_option=${docker_command_option}" -v ${OUTPUT_DIRECTORY}/webserver_config.py:/server/config.py"
 
 docker run -itd --name="WEB" --cpus=2 \
-    --network host \
+    --network bridge -p ${SERVER_PORT}:8000 \
     --pids-limit 100 \
     -e SERVER_CONFIG=/server/config.py \
     --hostname="g${group_number}-proxy" \
