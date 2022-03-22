@@ -155,19 +155,20 @@ def create_app(config=None):
             filecontent = file.read()
 
         # Next the analysis.
-        as_data = parsers.parse_as_config(
-            app.config['LOCATIONS']['as_config'],
-            router_config_dir=app.config['LOCATIONS']['config_directory'],
-        )
-        connection_data = parsers.parse_as_connections(
-            app.config['LOCATIONS']['as_connections']
-        )
-        looking_glass_data = parsers.parse_looking_glass_json(
-            app.config['LOCATIONS']['groups']
-        )
-        messages = bgp_policy_analyzer.analyze_bgp(
-            group, as_data, connection_data, looking_glass_data
-        )
+        # as_data = parsers.parse_as_config(
+        #     app.config['LOCATIONS']['as_config'],
+        #     router_config_dir=app.config['LOCATIONS']['config_directory'],
+        # )
+        # connection_data = parsers.parse_as_connections(
+        #     app.config['LOCATIONS']['as_connections']
+        # )
+        # looking_glass_data = parsers.parse_looking_glass_json(
+        #     app.config['LOCATIONS']['groups']
+        # )
+        # messages = bgp_policy_analyzer.analyze_bgp(
+        #     group, as_data, connection_data, looking_glass_data
+        # )
+        messages = []  # temporarily disabled.
 
         # Prepare template.
         dropdown_groups = list(looking_glass_files.keys())
