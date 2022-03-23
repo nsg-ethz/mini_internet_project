@@ -1,9 +1,11 @@
-# This function runs or undo a hijack. Hijack can be MOAS or Type-1 Hijack.
+# This function runs or undo a hijack. Hijacks can be MOAS or Type-1.
 # HIJACKED_AS is the hijacker AS number
 # HIJACKED_PREFIX is the hijacked prefix
 # SEQ is the sequence number used in the route-map (you can use e.g., 3)
 # --clear indicates whether the function runs a hijack or undo a hijack
 # --origin_as is used to change the origin_as, i.e., to do a Typo-1 Hijack
+
+# This script must be executed from the platform directory,
 
 run_hijack () {
 
@@ -11,7 +13,6 @@ run_hijack () {
     HIJACKED_PREFIX=$2
     SEQ=$3
     CLEAR=""
-
 
     if [ -z "$HIJACKER_AS" ] || [ -z "$HIJACKED_PREFIX" ] || [ -z "$SEQ" ]; then
         echo >&2 "$UTIL run-hijack: not enough arguments"
