@@ -56,7 +56,6 @@ run_hijack () {
         if [ "${group_number}" != "IXP" ];then
 
             if [ "${group_number}" == "$HIJACKER_AS" ];then
-            echo ${group_number}
 
                 readarray routers < config/$group_router_config
                 n_routers=${#routers[@]}
@@ -64,7 +63,6 @@ run_hijack () {
                 for ((i=0;i<n_routers;i++)); do
                     router_i=(${routers[$i]})
                     rname="${router_i[0]}"
-                    echo $rname
 
                     if [ -z "$ORIGIN_AS" ]; then 
 
