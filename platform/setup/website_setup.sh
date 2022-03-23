@@ -110,5 +110,4 @@ docker run -itd --name="WEB" --cpus=2 \
     -e TZ=${TZ} \
     --hostname="web" \
     --privileged \
-    $docker_command_option alexweb
-    #"miniinterneteth/d_webserver"
+    $docker_command_option "miniinterneteth/d_webserver"
