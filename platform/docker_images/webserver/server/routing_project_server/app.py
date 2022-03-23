@@ -1,12 +1,17 @@
 """A small web-server hosting all mini-internet tools."""
 
 import os
+from pathlib import Path
 from typing import Optional
 from urllib.parse import urlparse
+from datetime import datetime as dt, timedelta
+from time import sleep
+from multiprocessing import Process
 
-from flask import Flask, redirect, render_template, request, url_for
+from flask import Flask, redirect, render_template, request, url_for, jsonify
 from flask_basicauth import BasicAuth
 from jinja2 import StrictUndefined
+import pickle
 
 from . import bgp_policy_analyzer, matrix, parsers
 
@@ -25,14 +30,21 @@ config_defaults = {
     'BASIC_AUTH_PASSWORD': 'admin',
     'HOST': '127.0.0.1',
     'PORT': 8000,
+    # Background processing for resource-intensive tasks.
+    'BACKGROUND_WORKERS': False,
+    'AUTO_START_WORKERS': True,
+    'MATRIX_UPDATE_FREQUENCY': 60,  # seconds
+    'ANALYSIS_UPDATE_FREQUENCY': 300,  # seconds
+    'MATRIX_CACHE': '/tmp/cache/matrix.pickle',
+    'ANALYSIS_CACHE': '/tmp/cache/analysis.db',
 }
 
 
 def create_app(config=None):
     """Create and configure the app."""
     app = Flask(__name__)
-    app.jinja_env.undefined = StrictUndefined
     app.config.from_mapping(config_defaults)
+    app.jinja_env.undefined = StrictUndefined
 
     if config is None:
         config = os.environ.get("SERVER_CONFIG", None)
@@ -43,6 +55,21 @@ def create_app(config=None):
         app.config.from_pyfile(config)
 
     basic_auth = BasicAuth(app)
+
+    @app.template_filter()
+    def format_datetime(datetimeobj, format='%Y-%m-%d %H:%M'):
+        return datetimeobj.strftime(format)
+
+    @app.template_filter()
+    def format_timedelta_int(seconds):
+        seconds = int(seconds)
+        if seconds == 1:
+            return "second"
+        elif seconds == 60:
+            return "minute"
+        elif (seconds % 60) == 0:
+            return f"{seconds // 60} minutes"
+        return f"{seconds} seconds"
 
     @app.route("/")
     def index():
@@ -59,26 +86,17 @@ def create_app(config=None):
     @app.route("/matrix")
     def connectivity_matrix():
         """Create the connectivity matrix."""
-        # Load all required files.
-        as_data = parsers.parse_as_config(
-            app.config['LOCATIONS']['as_config'],
-            router_config_dir=app.config['LOCATIONS']['config_directory'],
-        )
-        connection_data = parsers.parse_as_connections(
-            app.config['LOCATIONS']['as_connections']
-        )
-        looking_glass_data = parsers.parse_looking_glass_json(
-            app.config['LOCATIONS']['groups']
-        )
-        connectivity_data = parsers.parse_matrix_connectivity(
-            app.config['LOCATIONS']['matrix']
-        )
+        # Prepare matrix data (or load if using background workers).
+        updated, frequency, connectivity, validity = prepare_matrix(app.config)
 
-        # Compute results
-        connectivity = matrix.check_connectivity(
-            as_data, connectivity_data)
-        validity = matrix.check_validity(
-            as_data, connection_data, looking_glass_data)
+        print(request.args, 'raw' in request.args)
+
+        if 'raw' in request.args:
+            # Only send json data
+            return jsonify(
+                last_updated=updated, update_frequency=frequency,
+                connectivity=connectivity, validity=validity,
+            )
 
         # Compute percentages as well.
         valid, invalid, failure = 0, 0, 0
@@ -93,14 +111,16 @@ def create_app(config=None):
                 else:
                     failure += 1
         total = valid + invalid + failure
-        valid = round(valid / total * 100)
-        invalid = round(invalid / total * 100)
-        failure = round(failure / total * 100)
+        if total:
+            valid = round(valid / total * 100)
+            invalid = round(invalid / total * 100)
+            failure = round(failure / total * 100)
 
         return render_template(
             'matrix.html',
             connectivity=connectivity, validity=validity,
             valid=valid, invalid=invalid, failure=failure,
+            last_updated=updated, update_frequency=frequency,
         )
 
     @app.route("/bgp-analysis")
@@ -215,4 +235,85 @@ def create_app(config=None):
             dropdown_others={conn[1]['asn'] for conn in selected_connections},
         )
 
+    # Start workers if configured.
+    if app.config["BACKGROUND_WORKERS"] and app.config['AUTO_START_WORKERS']:
+        start_workers(app.config)
+
     return app
+
+
+# Worker functions.
+# =================
+
+def start_workers(config):
+    """Create background processes"""
+    processes = []
+    p = Process(
+        target=loop,
+        args=(prepare_matrix, config['MATRIX_UPDATE_FREQUENCY'], config),
+        kwargs=dict(worker=True)
+    )
+    p.start()
+    processes.append(p)
+
+    return processes
+
+
+def loop(function, freq, *args, **kwargs):
+    """Call function in loop. Freq must be in seconds."""
+    while True:
+        starttime = dt.utcnow()
+        function(*args, **kwargs)
+        remaining_secs = freq - (dt.utcnow() - starttime).total_seconds()
+        if remaining_secs > 0:
+            sleep(remaining_secs)
+
+
+def prepare_matrix(config, worker=False):
+    """Prepare matrix.
+
+    Without background workers, create it from scratch now.
+    With background workers, only read result if `worker=False`, and
+    only create result if `worker=True`.
+    """
+    cache_file = Path(config["MATRIX_CACHE"])
+    if config["BACKGROUND_WORKERS"] and not worker:
+        try:
+            with open(cache_file, 'rb') as file:
+                return pickle.load(file)
+        except FileNotFoundError:
+            return (None, None, {}, {})
+
+    # Load all required files.
+    as_data = parsers.parse_as_config(
+        config['LOCATIONS']['as_config'],
+        router_config_dir=config['LOCATIONS']['config_directory'],
+    )
+    connection_data = parsers.parse_as_connections(
+        config['LOCATIONS']['as_connections']
+    )
+    looking_glass_data = parsers.parse_looking_glass_json(
+        config['LOCATIONS']['groups']
+    )
+    connectivity_data = parsers.parse_matrix_connectivity(
+        config['LOCATIONS']['matrix']
+    )
+
+    # Compute results
+    connectivity = matrix.check_connectivity(
+        as_data, connectivity_data)
+    validity = matrix.check_validity(
+        as_data, connection_data, looking_glass_data)
+
+    last_updated = dt.utcnow()
+    update_frequency = (config["MATRIX_UPDATE_FREQUENCY"]
+                        if config["BACKGROUND_WORKERS"] else None)
+
+    results = (last_updated, update_frequency, connectivity, validity)
+
+    if config["BACKGROUND_WORKERS"] and worker:
+        os.makedirs(cache_file.parent, exist_ok=True)
+        with open(cache_file, "wb") as file:
+            pickle.dump(results, file)
+
+    return results

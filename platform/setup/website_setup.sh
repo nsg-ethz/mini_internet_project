@@ -64,7 +64,7 @@ for ((k=0;k<group_numbers;k++)); do
             files=("looking_glass.txt" "looking_glass_json.txt")
             for filename in ${files[*]}; do
                 docker_command_option=${docker_command_option}"-v "${location}"/${filename}:${DATADIR}/g${group_number}/${rname}/${filename} "
-            done                  
+            done
         done
     fi
 done
@@ -95,6 +95,7 @@ LOCATIONS = {
 KRILL_URL="http://{hostname}:${KRILL_PORT}/index.html"
 BASIC_AUTH_USERNAME = 'admin'
 BASIC_AUTH_PASSWORD = 'admin'
+BACKGROUND_WORKERS = True
 HOST = '0.0.0.0'
 PORT = 8000
 EOM

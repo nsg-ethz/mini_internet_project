@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 {% macro make_icon(char, background) -%}
-<div class="flex items-center justify-center text-2xl row-span-2 w-12 mr-4 rounded-full {{background}}">{{char|safe}}
+<div class="flex shrink-0 items-center justify-center text-2xl row-span-2 w-12 mr-4 rounded-full {{background}}">
+    {{char|safe}}
 </div>
-{%-
-endmacro %}
+{%- endmacro %}
 {% macro icon(role) -%}
 {% if role|lower=="provider" %}
 {{make_icon("🎩", 'bg-orange-300')}}

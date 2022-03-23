@@ -1,3 +1,11 @@
+{# Use a repeating-linear-gradient to put a strping pattern over the #}
+{# progress bar if any element is at 0% #}
+{% macro stripes(condition) -%}
+{% if condition -%}
+style="background-image: repeating-linear-gradient(45deg, transparent, transparent 5px, #f5f5f5 5px, #f5f5f5
+7px);"
+{%- endif %}
+{%- endmacro %}
 {% extends "base.html" %}
 {% block head %}
 {{ super() }}
@@ -11,6 +19,17 @@
 <div class="max-w-4xl mx-auto p-6">
 	<h1 class="text-4xl underline underline-offset-2 decoration-4 decoration-[#ff7e79] mono mb-4">connectivity matrix
 	</h1>
+	{% if update_frequency or last_updated%}
+	<p class="italic text-sm text-neutral-500 mb-6">
+		{% if update_frequency %}
+		updates every {{ update_frequency|format_timedelta_int }},
+		{%endif%}
+		{% if last_updated %}
+		last updated {{ last_updated|format_datetime }}
+		{% endif %}
+	</p>
+	{% endif %}
+
 	<p class="mb-2">
 		This connectivity matrix indicates the networks that each group
 	</p>
@@ -29,46 +48,69 @@
 		policies.
 	</p>
 	<!-- Progress bar -->
-	<div class="w-full rounded-lg bg-neutral-700 flex mb-8">
+	{% if valid or invalid or failure %}
+	<div class="w-full rounded-lg border border-neutral-300 bg-neutral-300 flex mb-8">
 		<div class="basis-[{{valid}}%] rounded-l-lg px-2 p-1 bg-[#56c157]"
-			title="Reachabile with valid path: {{valid}}%">
+			title="Reachabile with valid path: {{valid}}%" {{stripes(not valid)}}>
 			{{valid}}%
 		</div>
-		<div class="basis-[{{invalid}}%] px-2 p-1 bg-[#f0ad4e]" title="Reachabile with invalid path: {{invalid}}%">
+		<div class="basis-[{{invalid}}%] px-2 p-1 bg-[#f0ad4e]" title="Reachabile with invalid path: {{invalid}}%"
+			{{stripes(not invalid)}}>
 			{{invalid}}%
 		</div>
-		<div class="basis-[{{failure}}%] px-2 p-1 rounded-r-lg bg-[#d5605e]" title="Not reachabile: {{failure}}%">
+		<div class="basis-[{{failure}}%] px-2 p-1 rounded-r-lg bg-[#d5605e]" title="Not reachabile: {{failure}}%"
+			{{stripes(not failure)}}>
 			{{failure}}%
 		</div>
+	</div>
+	{% else %}
+	<p class="italic text-neutral-500 mb-6 text-center mt-16">
+		Sorry, no data is available! Please check in later.
+	</p>
+	{% endif %}
+	<div
+		class="2xl:hidden mb-8 p-4 text-md border-l-4 bg-neutral-100 text-neutral-700 border-neutral-400 flex flex-row">
+		<div
+			class="flex shrink-0 items-center justify-center text-2xl row-span-2 w-12 h-12 mr-4 rounded-full bg-orange-300">
+			🚨
+		</div>
+		<p>
+			Your screen is not wide enough to properly display the connectivity
+			matrix!<br />We recommend a larger screen for the best experience.
+		</p>
 	</div>
 </div>
 
 <!-- Matrix is allowed to spread out more. -->
-{% set n = connectivity|length + 1 %}
-<div class="max-w-full mx-auto">
-	<div class="grid border border-neutral-300 border-collapse mx-8"
-		style="grid-template-columns: repeat({{ n }}, minmax(0, 1fr));">
+<!-- We use a trick: padding-bottom is relative to cell _width_, -->
+<!-- Thus setting it to 85% gives us (almost) square cells. -->
+{% if connectivity %}
+{% set n = connectivity|length %}
+<div class="max-w-full mx-auto overflow-x-auto">
+	<div class="grid border border-white/50 border-collapse mono {% if n>= 50 %}text-xs{% endif %}"
+		style="grid-template-columns: fit-content(100px) repeat({{ n }}, minmax(25px, 1fr));">
 		<!-- header row. -->
-		<div class=" border border-neutral-300"></div>
+		<div class="border border-white/50 text-center">AS</div>
 		{% for asn in connectivity|sort %}
-		<div class="border border-neutral-300 text-center">{{ asn }}</div>
+		<div class="border border-white/50 text-center even:bg-neutral-200">{{ asn }}</div>
 		{% endfor %}
 		<!-- content rows -->
+		<!-- Add a little padding to ASN to make it look nicer. -->
 		{% for asn in connectivity|sort %}
-		<div class="border border-neutral-300 odd:bg-neutral-200 text-right">G{{asn}}</div>
+		<div class="border border-white/50 even:bg-neutral-200 text-right pt-1 pr-1">{{asn}}</div>
 		{% for asn_dst in connectivity[asn]|sort %}
 		{% if not connectivity[asn][asn_dst] %}
-		<div class="border border-neutral-300 bg-[#d5605e]" title="AS{{asn}} <-> AS{{asn_dst}}: Not Reachable">
+		<div class="border border-white/50 bg-[#d5605e]" title="AS{{asn}} <-> AS{{asn_dst}}: Not Reachable"
+			style="padding-bottom: 85%;">
 		</div>
 		{% else %}
-		<!-- TODO! -->
-		{% if validity[asn].get(asn_dst, False) %}
-		<div class="border border-neutral-300 bg-[#56c157]"
-			title="AS{{asn}} <-> AS{{asn_dst}}: Reachable with valid path">
+		{% if validity and validity[asn].get(asn_dst, False) %}
+		<div class="border  border-white/50 bg-[#56c157]" title="AS{{asn}} <-> AS{{asn_dst}}: Reachable with valid path"
+			style="padding-bottom: 85%;">
 		</div>
 		{% else %}
-		<div class="border border-neutral-300 bg-[#f0ad4e]"
-			title="AS{{asn}} <-> AS{{asn_dst}}: Reachable with invalid path">
+		<div class="border border-white/50 bg-[#f0ad4e]"
+			title="AS{{asn}} <-> AS{{asn_dst}}: Reachable with invalid path" style="padding-bottom: 85%;">
 		</div>
 		{% endif %}
 		{% endif %}
@@ -76,4 +118,5 @@
 		{% endfor %}
 	</div>
 </div>
+{% endif %}
 {% endblock %}
