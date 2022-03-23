@@ -12,8 +12,6 @@ RUN apk add --no-cache --virtual .deps \
     apk add --no-cache libev-dev zlib-dev jpeg-dev && \
     pip install bjoern
 
-ENV TZ="Europe/Paris"
-
 COPY server /server
 RUN pip install -e /server
 

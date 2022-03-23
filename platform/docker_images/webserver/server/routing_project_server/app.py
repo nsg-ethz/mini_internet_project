@@ -7,6 +7,7 @@ from urllib.parse import urlparse
 from datetime import datetime as dt, timedelta
 from time import sleep
 from multiprocessing import Process
+import math
 
 from flask import Flask, redirect, render_template, request, url_for, jsonify
 from flask_basicauth import BasicAuth
@@ -112,9 +113,9 @@ def create_app(config=None):
                     failure += 1
         total = valid + invalid + failure
         if total:
-            valid = round(valid / total * 100)
-            invalid = round(invalid / total * 100)
-            failure = round(failure / total * 100)
+            invalid = math.ceil(invalid / total * 100)
+            failure = math.ceil(failure / total * 100)
+            valid = 100 - invalid - failure
 
         return render_template(
             'matrix.html',
@@ -262,9 +263,9 @@ def start_workers(config):
 def loop(function, freq, *args, **kwargs):
     """Call function in loop. Freq must be in seconds."""
     while True:
-        starttime = dt.utcnow()
+        starttime = dt.now()
         function(*args, **kwargs)
-        remaining_secs = freq - (dt.utcnow() - starttime).total_seconds()
+        remaining_secs = freq - (dt.now() - starttime).total_seconds()
         if remaining_secs > 0:
             sleep(remaining_secs)
 
@@ -305,7 +306,7 @@ def prepare_matrix(config, worker=False):
     validity = matrix.check_validity(
         as_data, connection_data, looking_glass_data)
 
-    last_updated = dt.utcnow()
+    last_updated = dt.now()
     update_frequency = (config["MATRIX_UPDATE_FREQUENCY"]
                         if config["BACKGROUND_WORKERS"] else None)
 

@@ -17,6 +17,7 @@ CONFIGDIR='/server/configs'
 
 # Ports for the webserver and krill on the host.
 # (must be publicly available)
+TZ="Europe/Zurich"
 SERVER_PORT="80"
 KRILL_PORT="3080"
 
@@ -106,6 +107,8 @@ docker run -itd --name="WEB" --cpus=2 \
     --network bridge -p ${SERVER_PORT}:8000 \
     --pids-limit 100 \
     -e SERVER_CONFIG=/server/config.py \
+    -e TZ=${TZ} \
     --hostname="web" \
     --privileged \
-    $docker_command_option "miniinterneteth/d_webserver"
+    $docker_command_option alexweb
+    #"miniinterneteth/d_webserver"
