@@ -25,7 +25,7 @@ sudo -H -u $USERNAME mkdir $GITDIR/matrix/
 sudo -H -u $USERNAME mkdir $GITDIR/images/
 
 # This function copies the routers config in the git repo.
-# It takes as only parameter the group number
+# It takes as parameters the group number and the config file used for the routers
 copy_config () {
     group_number=$1
     group_router_config=$2
@@ -33,7 +33,7 @@ copy_config () {
     readarray routers < $PLATFORM_DIR/config/$group_router_config
     n_routers=${#routers[@]}
 
-    # Make sure or create the directory dedicated to this group in the git repo.
+    # Create the directory dedicated to this group in the git repo if not done yet.
     if [[ ! -d "$GITDIR/g$group_number" ]]
     then
         sudo -H -u $USERNAME mkdir $GITDIR/g$group_number
@@ -57,18 +57,18 @@ do
     group_numbers=${#groups[@]}
 
     # Copy routers config for every group.
-    # for ((k=0;k<group_numbers;k++)); do
-    #     group_k=(${groups[$k]})
-    #     group_number="${group_k[0]}"
-    #     group_as="${group_k[1]}"
-    #     group_config="${group_k[2]}"
-    #     group_router_config="${group_k[3]}"
+    for ((k=0;k<group_numbers;k++)); do
+        group_k=(${groups[$k]})
+        group_number="${group_k[0]}"
+        group_as="${group_k[1]}"
+        group_config="${group_k[2]}"
+        group_router_config="${group_k[3]}"
 
-    #     if [ "${group_as}" != "IXP" ];then
-    #         echo copy_config $group_number $group_router_config
-    #         copy_config $group_number $group_router_config
-    #     fi
-    # done
+        if [ "${group_as}" != "IXP" ];then
+            echo copy_config $group_number $group_router_config
+            copy_config $group_number $group_router_config
+        fi
+    done
 
     # Copy matrix source.
     d=$(date +'%m_%d_%Y-%Hh%Mm%Ss')
