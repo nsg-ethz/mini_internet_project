@@ -1,6 +1,7 @@
 #!/bin/bash
 # This script aims at mitigating potential DDos-like attacks
 # targeting the mini-Internet webservers and ssh ports. 
+# Most of rules come from: https://javapipe.com/blog/iptables-ddos-protection/
 
 CONFIG_DIR=/home/thomas/mini_internet_project/platform/config
 SSH_PORT_BASE=2000

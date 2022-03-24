@@ -1,5 +1,10 @@
+{% extends "base.html" %}
+{% from 'macros.html' import update_message %}
+{% block body %}
+{{ update_message(update_frequency, last_updated)}}
 <ul>
     {% for msg in messages %}
     <li>{{msg}}</li>
     {% endfor %}
 </ul>
+{% endblock %}
