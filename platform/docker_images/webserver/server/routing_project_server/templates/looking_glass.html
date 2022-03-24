@@ -1,9 +1,36 @@
 {% extends "base.html" %}
-{% block body %}
-<div class="max-w-4xl mx-auto p-6">
-    <h1 class="text-4xl underline underline-offset-2 decoration-4  decoration-[#ff7e79] mono mb-4">looking glass</h1>
+{% from 'macros.html' import update_message %}
+{% block head %}
+{{super()}}
+{% if update_frequency %}
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta http-equiv="refresh" content="{{update_frequency}}" />
+<script>
+    // overflow-x-auto needs a fixed with to work; the only I found to make
+    // it responsive was by using js. Sadly.
+    function resize_pre() {
+        let w_menu = document.getElementById("menu").offsetWidth;
+        let w_body = document.getElementById("lg-body").offsetWidth;
+        // 48px equals padding px-6
+        let target_size = Math.min(w_body, w_menu) - 48;
+        document.getElementById("code").style.width = target_size + "px";
+    }
 
-    <blockquote class="relative m-4 p-4 text-md border-l-4 bg-neutral-100 text-neutral-700 border-neutral-400">
+    window.onload = resize_pre;
+    window.onresize = resize_pre;
+</script>
+
+{% endif %}
+{% endblock %}
+{% block body %}
+<div id="lg-body" class="max-w-4xl mx-auto px-6 pt-6">
+    <h1 class="text-4xl underline underline-offset-2 decoration-4  decoration-[#ff7e79] mono mb-6">looking
+        glass
+    </h1>
+
+    <blockquote class="relative m-4 mb-8 p-4 text-md border-l-4 bg-neutral-100 text-neutral-700 border-neutral-400">
         <p class="italic quote  mb-4">
             Looking Glass servers (LG servers) are servers on the Internet running one of a variety of publicly
             available Looking Glass software implementations. They are commonly deployed by autonomous systems (AS) to
@@ -22,8 +49,8 @@
             </a>
         </cite>
     </blockquote>
-    <div class="flex items-center">
-        <div class="m-2">
+    <div class="flex items-center justify-center">
+        <div class="mr-8 mb-4">
             <span class="font-bold">AS</span>
             <select class="bg-transparent border-0 border-b-2 border-neutral-400 hover:border-[#ff7e79]"
                 onchange="if (this.value) window.location.href=this.value">
@@ -35,7 +62,7 @@
                 {% endfor %}
             </select>
         </div>
-        <div class="m-2">
+        <div class="mb-4">
             <span class="font-bold">Router</span>
             <select class="bg-transparent border-0 border-b-2 border-neutral-400 hover:border-[#ff7e79]"
                 onchange="if (this.value) window.location.href=this.value">
@@ -50,18 +77,23 @@
 
     </div>
 
-    <code class="mb-4 px-4 py-2 rounded border border-neutral-300 bg-neutral-100">{{filecontent|safe}}</code>
+    <pre id="code"
+        class="box-border w-48 text-sm px-4 py-2 rounded border border-neutral-300 bg-neutral-100 overflow-x-auto mb-6">{{filecontent|safe}}</pre>
 
-    <h1 class="text-4xl underline underline-offset-2 decoration-4  decoration-[#ff7e79] mono mb-4">policy analysis</h1>
+    <h1 class="text-4xl underline underline-offset-2 decoration-4  decoration-[#ff7e79] mono mb-4">policy
+        analysis</h1>
+    {{ update_message(update_frequency, last_updated)}}
     {% if not bgp_hints %}
-    The BGP advertisements of <b>AS {{group}}</b> do not seem violate any policies.
+    <p class="mb-16">
+        The BGP advertisements of <b>AS {{group}}</b> do not seem to violate any policies.
+    </p>
     {% else %}
-    <ul>
-        <!-- TODO! -->
+    <p class="mb-2">The BGP advertisements of <b>AS {{group}}</b> violate the following policies:</p>
+    <ul class="list-disc mb-16">
         {% for msg in bgp_hints %}
         <li>{{msg}}</li>
         {% endfor %}
     </ul>
+    {% endif %}
 </div>
-{% endif %}
 {% endblock %}

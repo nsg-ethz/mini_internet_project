@@ -1,0 +1,12 @@
+{% macro update_message(freq, last) -%}
+{% if freq or last -%}
+<p class="italic text-sm text-neutral-500 mb-4">
+    {% if freq -%}
+    updates every {{ freq|format_timedelta_int }}{% if last %},{% else %}.{% endif %}
+    {%- endif%}
+    {% if last -%}
+    last updated on {{ last|format_datetime }}.
+    {%- endif %}
+</p>
+{%- endif %}
+{%- endmacro %}

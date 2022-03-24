@@ -1,8 +1,9 @@
 import datetime
+import os
+import sqlite3
 import sys
 from itertools import chain
 
-import sqlite3
 from .analyzer_helpers import load_config, load_looking_glass
 
 
@@ -27,7 +28,8 @@ def analyze_bgp(asn, as_data, connection_data, looking_glass_data):
     finally:
         connection.close()
 
-    return result
+    last_updated = datetime.datetime.utcnow()
+    return last_updated, result
 
 
 def bgp_report(as_data, connection_data, looking_glass_data):
@@ -41,8 +43,58 @@ def bgp_report(as_data, connection_data, looking_glass_data):
     finally:
         connection.close()
 
-    return result
+    last_updated = datetime.datetime.utcnow()
+    return last_updated, result
 
+# Helpers to split up processing.
+# ===============================
+
+
+def update_db(db_file, as_data, connection_data, looking_glass_data):
+    """Update the database."""
+    try:
+        connection = sqlite3.connect(db_file)
+        load_config(connection, as_data, connection_data)
+        load_looking_glass(connection, looking_glass_data)
+        compute_results(connection)
+    finally:
+        connection.close()
+
+
+def load_analysis(db_file, asn):
+    """Load results for a single as."""
+    try:
+        connection = sqlite3.connect(db_file)
+        result = get_simple_as_log(connection, asn)
+        # Interpret time the db file was last modified as update time.
+        updated = datetime.datetime.utcfromtimestamp(os.path.getmtime(db_file))
+    # except sqlite3.DatabaseError:
+    #     result = []
+    #     updated = None
+    finally:
+        connection.close()
+
+    return updated, result
+
+
+def load_report(db_file):
+    """Load full report."""
+    try:
+        connection = sqlite3.connect(db_file)
+        result = get_log(connection)
+        # Interpret time the db file was last modified as update time.
+        updated = datetime.datetime.utcfromtimestamp(os.path.getmtime(db_file))
+    except sqlite3.DatabaseError:
+        result = []
+        updated = None
+    finally:
+        connection.close()
+
+    return updated, result
+
+
+# Functions to get logs.
+# ======================
 
 def get_log(connection):
     """Get the full log.
@@ -82,7 +134,8 @@ def compute_results(connection):
     """The actual analysis code."""
     c = connection.cursor()
 
-    c.execute("""CREATE TEMP TABLE logs(
+    c.execute("DROP TABLE IF EXISTS logs")
+    c.execute("""CREATE TABLE logs(
                     level STRING NOT NULL,
                     asnr INTEGER,
                     message STRING NOT NULL)""")
@@ -282,6 +335,9 @@ def compute_results(connection):
                    "You advertise a route to {} via an IXP to a provider".format(prefix))
             log(c, "ERROR", "AS {} receives route to {} as a peer route from AS {} via an IXP".format(
                 asnumber, prefix, nextas))
+
+    # Commit all log messages
+    connection.commit()
 
 
 def providers(c, nr):

@@ -1,18 +1,19 @@
 """A small web-server hosting all mini-internet tools."""
 
+import math
 import os
+import pickle
+from datetime import datetime as dt
+from datetime import timezone
+from multiprocessing import Process
 from pathlib import Path
+from time import sleep
 from typing import Optional
 from urllib.parse import urlparse
-from datetime import datetime as dt, timedelta
-from time import sleep
-from multiprocessing import Process
-import math
 
-from flask import Flask, redirect, render_template, request, url_for, jsonify
+from flask import Flask, jsonify, redirect, render_template, request, url_for
 from flask_basicauth import BasicAuth
 from jinja2 import StrictUndefined
-import pickle
 
 from . import bgp_policy_analyzer, matrix, parsers
 
@@ -58,8 +59,11 @@ def create_app(config=None):
     basic_auth = BasicAuth(app)
 
     @app.template_filter()
-    def format_datetime(datetimeobj, format='%Y-%m-%d %H:%M'):
-        return datetimeobj.strftime(format)
+    def format_datetime(utcdatetime, format='%Y-%m-%d at %H:%M'):
+        if utcdatetime.tzinfo is None:  # Attach tzinfo if needed
+            utcdatetime = utcdatetime.replace(tzinfo=timezone.utc)
+        localtime = utcdatetime.astimezone()
+        return localtime.strftime(format)
 
     @app.template_filter()
     def format_timedelta_int(seconds):
@@ -89,8 +93,6 @@ def create_app(config=None):
         """Create the connectivity matrix."""
         # Prepare matrix data (or load if using background workers).
         updated, frequency, connectivity, validity = prepare_matrix(app.config)
-
-        print(request.args, 'raw' in request.args)
 
         if 'raw' in request.args:
             # Only send json data
@@ -128,22 +130,11 @@ def create_app(config=None):
     @basic_auth.required
     def bgp_analysis():
         """Return the full BGP analysis report."""
-        as_data = parsers.parse_as_config(
-            app.config['LOCATIONS']['as_config'],
-            router_config_dir=app.config['LOCATIONS']['config_directory'],
+        updated, freq, messages = prepare_bgp_analysis(config)
+        return render_template(
+            "bgp_analysis.html", messages=messages,
+            last_updated=updated, update_frequency=freq,
         )
-        connection_data = parsers.parse_as_connections(
-            app.config['LOCATIONS']['as_connections']
-        )
-        looking_glass_data = parsers.parse_looking_glass_json(
-            app.config['LOCATIONS']['groups']
-        )
-
-        messages = bgp_policy_analyzer.bgp_report(
-            as_data, connection_data, looking_glass_data
-        )
-
-        return render_template("bgp_analysis.html", messages=messages,)
 
     @app.route("/looking-glass")
     @app.route("/looking-glass/<int:group>")
@@ -169,27 +160,15 @@ def create_app(config=None):
             need_redirect = True
 
         if need_redirect:
-            return redirect(url_for("looking_glass", group=group, router=router))
+            return redirect(
+                url_for("looking_glass", group=group, router=router))
 
         # Now get data for group. First the actual looking glass.
         with open(groupdata[router]) as file:
             filecontent = file.read()
 
         # Next the analysis.
-        # as_data = parsers.parse_as_config(
-        #     app.config['LOCATIONS']['as_config'],
-        #     router_config_dir=app.config['LOCATIONS']['config_directory'],
-        # )
-        # connection_data = parsers.parse_as_connections(
-        #     app.config['LOCATIONS']['as_connections']
-        # )
-        # looking_glass_data = parsers.parse_looking_glass_json(
-        #     app.config['LOCATIONS']['groups']
-        # )
-        # messages = bgp_policy_analyzer.analyze_bgp(
-        #     group, as_data, connection_data, looking_glass_data
-        # )
-        messages = []  # temporarily disabled.
+        updated, freq, messages = prepare_bgp_analysis(app.config, asn=group)
 
         # Prepare template.
         dropdown_groups = list(looking_glass_files.keys())
@@ -199,7 +178,8 @@ def create_app(config=None):
             filecontent=filecontent,
             bgp_hints=messages,
             group=group, router=router,
-            dropdown_groups=dropdown_groups, dropdown_routers=dropdown_routers
+            dropdown_groups=dropdown_groups, dropdown_routers=dropdown_routers,
+            last_updated=updated, update_frequency=freq,
         )
 
     @app.route("/as-connections")
@@ -249,13 +229,23 @@ def create_app(config=None):
 def start_workers(config):
     """Create background processes"""
     processes = []
-    p = Process(
+
+    pmatrix = Process(
         target=loop,
         args=(prepare_matrix, config['MATRIX_UPDATE_FREQUENCY'], config),
         kwargs=dict(worker=True)
     )
-    p.start()
-    processes.append(p)
+    pmatrix.start()
+    processes.append(pmatrix)
+
+    pbgp = Process(
+        target=loop,
+        args=(prepare_bgp_analysis,
+              config['ANALYSIS_UPDATE_FREQUENCY'], config),
+        kwargs=dict(worker=True)
+    )
+    pbgp.start()
+    processes.append(pbgp)
 
     return processes
 
@@ -263,9 +253,9 @@ def start_workers(config):
 def loop(function, freq, *args, **kwargs):
     """Call function in loop. Freq must be in seconds."""
     while True:
-        starttime = dt.now()
+        starttime = dt.utcnow()
         function(*args, **kwargs)
-        remaining_secs = freq - (dt.now() - starttime).total_seconds()
+        remaining_secs = freq - (dt.utcnow() - starttime).total_seconds()
         if remaining_secs > 0:
             sleep(remaining_secs)
 
@@ -306,7 +296,7 @@ def prepare_matrix(config, worker=False):
     validity = matrix.check_validity(
         as_data, connection_data, looking_glass_data)
 
-    last_updated = dt.now()
+    last_updated = dt.utcnow()
     update_frequency = (config["MATRIX_UPDATE_FREQUENCY"]
                         if config["BACKGROUND_WORKERS"] else None)
 
@@ -318,3 +308,50 @@ def prepare_matrix(config, worker=False):
             pickle.dump(results, file)
 
     return results
+
+
+def prepare_bgp_analysis(config, asn=None, worker=False):
+    """Prepare matrix.
+
+    Without background workers, create it from scratch now.
+    With background workers, only read result if `worker=False`, and
+    only create result if `worker=True`.
+    """
+    db_file = Path(config["ANALYSIS_CACHE"])
+
+    # Don't even load configs, just immediately return results.
+    if config["BACKGROUND_WORKERS"] and not worker:
+        freq = config['ANALYSIS_UPDATE_FREQUENCY']
+        if asn is not None:
+            last, msgs = bgp_policy_analyzer.load_analysis(db_file, asn)
+        else:
+            last, msgs = bgp_policy_analyzer.load_report(db_file)
+        return last, freq, msgs
+
+    # Now we need configs and compute.
+    as_data = parsers.parse_as_config(
+        config['LOCATIONS']['as_config'],
+        router_config_dir=config['LOCATIONS']['config_directory'],
+    )
+    connection_data = parsers.parse_as_connections(
+        config['LOCATIONS']['as_connections']
+    )
+    looking_glass_data = parsers.parse_looking_glass_json(
+        config['LOCATIONS']['groups']
+    )
+
+    if config["BACKGROUND_WORKERS"] and worker:
+        # Update db, return nothing
+        bgp_policy_analyzer.update_db(
+            db_file, as_data, connection_data, looking_glass_data)
+        return
+
+    # Compute on the fly
+    freq = None
+    if asn is not None:
+        last, msgs = bgp_policy_analyzer.analyze_bgp(
+            asn, as_data, connection_data, looking_glass_data)
+    else:
+        last, msgs = bgp_policy_analyzer.bgp_report(
+            as_data, connection_data, looking_glass_data)
+    return last, freq, msgs
