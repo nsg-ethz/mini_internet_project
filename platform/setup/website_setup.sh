@@ -143,7 +143,6 @@ docker run -d --name='PROXY' \
     --network bridge \
     -p ${SERVER_PORT_HTTP}:${SERVER_PORT_HTTP} \
     -p ${SERVER_PORT_HTTPS}:${SERVER_PORT_HTTPS} \
-    -p 8080:8080 \
     -v "/var/run/docker.sock:/var/run/docker.sock:ro" \
     -v ${OUTPUT_DIRECTORY}/letsencrypt:/letsencrypt \
     --privileged \
@@ -156,5 +155,4 @@ docker run -d --name='PROXY' \
     "--entrypoints.web.http.redirections.entrypoint.scheme=https" \
     "--certificatesresolvers.WEBresolver.acme.tlschallenge=true" \
     "--certificatesresolvers.WEBresolver.acme.storage=/letsencrypt/acme.json" \
-    "--certificatesresolvers.myresolver.acme.email=${ACME_MAIL}" \
-    "--api.insecure=true" \
+    "--certificatesresolvers.myresolver.acme.email=${ACME_MAIL}"
