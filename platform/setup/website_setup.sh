@@ -7,6 +7,10 @@
 # - WEB: the webserver container delivering the pages.
 # - PROXY: a container running the reverse proxy traefik, which takes care
 #          of letsencrypt certificates, too.
+#
+# TODO:
+# - We could make HTTPS optional.
+# - How to make hostname and mail easy to configure?
 
 set -o errexit
 set -o pipefail
@@ -27,6 +31,9 @@ HOSTNAME="duvel.ethz.ch"  # required for https
 SERVER_PORT_HTTP="80"
 SERVER_PORT_HTTPS="443"
 KRILL_PORT="3080"
+
+# Letsencrypt parameters
+ACME_MAIL="nsg@ethz.ch"
 
 
 DOCKERHUB_USER="${2:-thomahol}"
@@ -118,8 +125,10 @@ docker run -itd --name="WEB" --cpus=2 \
     -e SERVER_CONFIG=/server/config.py \
     -e TZ=${TZ} \
     -l traefik.enable=true \
-    -l traefik.http.routers.WEB.rule="Host(\"localhost\") || Host(\"${HOSTNAME}\")" \
+    -l traefik.http.routers.WEB.rule="Host(\"${HOSTNAME}\")" \
     -l traefik.http.routers.WEB.entrypoints=web \
+    -l traefik.http.routers.WEB.entrypoints=websecure \
+    -l traefik.http.routers.WEB.tls.certresolver=WEBresolver \
     --hostname="web" \
     --privileged \
     $docker_command_option "miniinterneteth/d_webserver"
@@ -127,15 +136,25 @@ docker run -itd --name="WEB" --cpus=2 \
 # Next start the proxy
 # Setup based on the following tutorials:
 # https://doc.traefik.io/traefik/user-guides/docker-compose/basic-example/
-docker run --name='PROXY' \
+# https://doc.traefik.io/traefik/user-guides/docker-compose/acme-http/
+# To enable the dashboard for debugging, add -p 8080:8080
+# and the command "--api.insecure=true" (at the very end).
+docker run -d --name='PROXY' \
     --network bridge \
     -p ${SERVER_PORT_HTTP}:${SERVER_PORT_HTTP} \
     -p ${SERVER_PORT_HTTPS}:${SERVER_PORT_HTTPS} \
     -p 8080:8080 \
     -v "/var/run/docker.sock:/var/run/docker.sock:ro" \
+    -v ${OUTPUT_DIRECTORY}/letsencrypt:/letsencrypt \
     --privileged \
     traefik:v2.6 \
     "--providers.docker=True"\
     "--providers.docker.exposedbydefault=false" \
     "--entrypoints.web.address=:${SERVER_PORT_HTTP}" \
-    "--api.insecure=true"
+    "--entrypoints.websecure.address=:${SERVER_PORT_HTTPS}" \
+    "--entrypoints.web.http.redirections.entrypoint.to=websecure" \
+    "--entrypoints.web.http.redirections.entrypoint.scheme=https" \
+    "--certificatesresolvers.WEBresolver.acme.tlschallenge=true" \
+    "--certificatesresolvers.WEBresolver.acme.storage=/letsencrypt/acme.json" \
+    "--certificatesresolvers.myresolver.acme.email=${ACME_MAIL}" \
+    "--api.insecure=true" \
