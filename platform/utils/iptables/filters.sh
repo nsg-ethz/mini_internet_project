@@ -43,13 +43,6 @@ iptables -t mangle $action PREROUTING -f -j DROP
 iptables $action INPUT -p tcp --tcp-flags RST RST -m limit --limit 2/s --limit-burst 2 -j ACCEPT 
 iptables $action INPUT -p tcp --tcp-flags RST RST -j DROP
 
-# # SYNPROXY
-iptables -t raw $action PREROUTING -p tcp --dport $WEBSERVER_PORT -m tcp --syn -j CT --notrack 
-iptables $action INPUT -p tcp --dport $WEBSERVER_PORT -m tcp -m conntrack --ctstate INVALID,UNTRACKED -j SYNPROXY --sack-perm --timestamp --wscale 7 --mss 1460
-iptables -t raw $action PREROUTING -p tcp --dport $KRILL_PORT -m tcp --syn -j CT --notrack 
-iptables $action INPUT -p tcp --dport $KRILL_PORT -m tcp -m conntrack --ctstate INVALID,UNTRACKED -j SYNPROXY --sack-perm --timestamp --wscale 7 --mss 1460 
-iptables $action INPUT -m conntrack --ctstate INVALID -j DROP
-
 # ### SSH brute-force protection ### 
 # read mini-Internet configs.
 readarray groups < $CONFIG_DIR/AS_config.txt
