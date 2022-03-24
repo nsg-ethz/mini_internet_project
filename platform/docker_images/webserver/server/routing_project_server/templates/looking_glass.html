@@ -1,5 +1,6 @@
 {% extends "base.html" %}
-{% from 'macros.html' import update_message %}
+{% from 'macros.html' import update_message, h1 %}
+
 {% block head %}
 {{super()}}
 {% if update_frequency %}
@@ -21,14 +22,12 @@
     window.onload = resize_pre;
     window.onresize = resize_pre;
 </script>
-
 {% endif %}
 {% endblock %}
+
 {% block body %}
 <div id="lg-body" class="max-w-4xl mx-auto px-6 pt-6 mb-16">
-    <h1 class="text-4xl underline underline-offset-2 decoration-4  decoration-[#ff7e79] mono mb-6">looking
-        glass
-    </h1>
+    {{ h1("looking glass") }}
 
     <blockquote class="relative m-4 mb-8 p-4 text-md border-l-4 bg-neutral-100 text-neutral-700 border-neutral-400">
         <p class="italic quote  mb-4">
@@ -80,8 +79,7 @@
     <pre id="code"
         class="box-border w-48 text-sm px-4 py-2 rounded border border-neutral-300 bg-neutral-100 overflow-x-auto mb-6">{{filecontent|safe}}</pre>
 
-    <h1 class="text-4xl underline underline-offset-2 decoration-4  decoration-[#ff7e79] mono mb-4">policy
-        analysis</h1>
+    {{ h1("policy analysis") }}
     {{ update_message(update_frequency, last_updated)}}
     {% if not bgp_hints %}
     <p>
@@ -89,7 +87,7 @@
     </p>
     {% else %}
     <p class="mb-2">The BGP advertisements of <b>AS {{group}}</b> violate the following policies:</p>
-    <ul class="list-disc">
+    <ul class="list-disc list-inside">
         {% for msg in bgp_hints %}
         <li>{{msg}}</li>
         {% endfor %}

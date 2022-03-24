@@ -1,3 +1,6 @@
+{% extends "base.html" %}
+{% from 'macros.html' import update_message, h1 %}
+
 {# Use a repeating-linear-gradient to put a strping pattern over the #}
 {# progress bar if any element is at 0% #}
 {% macro stripes(condition) -%}
@@ -10,8 +13,7 @@ style="background-image: repeating-linear-gradient(45deg, transparent, transpare
 {% if asn >= 10 -%}<span style="margin-bottom:-0.25rem">{{ (asn % 100) // 10}}</span>{% endif %}
 <span>{{ asn % 10}}</span>
 {%- endmacro %}
-{% extends "base.html" %}
-{% from 'macros.html' import update_message %}
+
 {% block head %}
 {{ super() }}
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -19,11 +21,11 @@ style="background-image: repeating-linear-gradient(45deg, transparent, transpare
 <meta http-equiv="Expires" content="0">
 <meta http-equiv="refresh" content="{{60 if not update_frequency else update_frequency}}" />
 {% endblock %}
+
 {% block body %}
 <!-- Column for text etc with fixed size. -->
 <div class="max-w-4xl mx-auto p-6">
-	<h1 class="text-4xl underline underline-offset-2 decoration-4 decoration-[#ff7e79] mono mb-4">connectivity matrix
-	</h1>
+	{{ h1("connectivity matrix") }}
 	{{ update_message(update_frequency, last_updated)}}
 	<p class="mb-2">
 		This connectivity matrix indicates the networks that each group
@@ -49,8 +51,8 @@ style="background-image: repeating-linear-gradient(45deg, transparent, transpare
 			title="Reachabile with valid path: {{valid}}%" {{stripes(not valid)}}>
 			{{valid}}%
 		</div>
-		<div class="basis-[{{invalid}}%] px-2 p-1 bg-[#f0ad4e]" title="Reachabile with invalid path: {{invalid}}%"
-			{{stripes(not invalid)}}>
+		<div class="basis-[{{invalid}}%] px-2 p-1 bg-[#f0ad4e] border-x-2 border-white/50"
+			title="Reachabile with invalid path: {{invalid}}%" {{stripes(not invalid)}}>
 			{{invalid}}%
 		</div>
 		<div class="basis-[{{failure}}%] px-2 p-1 rounded-r-lg bg-[#d5605e]" title="Not reachabile: {{failure}}%"

@@ -130,7 +130,7 @@ def create_app(config=None):
     @basic_auth.required
     def bgp_analysis():
         """Return the full BGP analysis report."""
-        updated, freq, messages = prepare_bgp_analysis(config)
+        updated, freq, messages = prepare_bgp_analysis(app.config)
         return render_template(
             "bgp_analysis.html", messages=messages,
             last_updated=updated, update_frequency=freq,
@@ -322,7 +322,10 @@ def prepare_bgp_analysis(config, asn=None, worker=False):
     # Don't even load configs, just immediately return results.
     if config["BACKGROUND_WORKERS"] and not worker:
         freq = config['ANALYSIS_UPDATE_FREQUENCY']
-        if asn is not None:
+        if not db_file.is_file():
+            last = None
+            msgs = []
+        elif asn is not None:
             last, msgs = bgp_policy_analyzer.load_analysis(db_file, asn)
         else:
             last, msgs = bgp_policy_analyzer.load_report(db_file)

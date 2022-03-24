@@ -1,4 +1,6 @@
 {% extends "base.html" %}
+{% from 'macros.html' import h1 %}
+
 {% set icons = {
 'provider': ("🎩", 'bg-orange-300'),
 'customer': ("💳", 'bg-lime-200'),
@@ -47,10 +49,10 @@
     <>
 </div>
 {%- endmacro %}
+
 {% block body %}
 <div class="max-w-4xl mx-auto p-6">
-    <h1 class="text-4xl underline underline-offset-2 decoration-4  decoration-[#ff7e79] mono mb-4">AS connections</h1>
-
+    {{ h1("AS connections") }}
     <p>
         This list shows all inter-AS connections. For each connection, it shows both involved ASes, the edge-routers at
         which their networks are connected, as well as their business relationship.

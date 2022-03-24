@@ -68,9 +68,9 @@ def load_analysis(db_file, asn):
         result = get_simple_as_log(connection, asn)
         # Interpret time the db file was last modified as update time.
         updated = datetime.datetime.utcfromtimestamp(os.path.getmtime(db_file))
-    # except sqlite3.DatabaseError:
-    #     result = []
-    #     updated = None
+    except sqlite3.DatabaseError:
+        result = []
+        updated = None
     finally:
         connection.close()
 
@@ -106,8 +106,8 @@ def get_log(connection):
     msgs = c.execute("""SELECT DISTINCT level || ': ' ||
                          CASE WHEN asnr IS NULL THEN ''
                          ELSE 'AS ' || asnr || ': ' END || message
-                        FROM logs""")
-    return list(chain(*msgs.fetchall()))
+                        FROM logs""").fetchall()
+    return list(chain(*msgs))
 
 
 def get_simple_as_log(connection, asn):
@@ -119,12 +119,8 @@ def get_simple_as_log(connection, asn):
     msgs = c.execute("""SELECT DISTINCT message
                             FROM logs
                             WHERE level = 'ERROR-SIMPLE'
-                            """).fetchall()
-    # msgs = c.execute("""SELECT DISTINCT message
-    #                         FROM logs
-    #                         WHERE level = 'ERROR-SIMPLE'
-    #                          AND asnr = ?""", (asn,)).fetchall()
-    return msgs
+                             AND asnr = ?""", (asn,)).fetchall()
+    return list(chain(*msgs))
 
 
 # The actual work is done below.

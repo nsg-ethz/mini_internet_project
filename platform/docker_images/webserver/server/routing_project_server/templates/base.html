@@ -15,7 +15,8 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <title>Routing Project - {{ navigation_bar[request.endpoint]|title }}</title>
+    <title>Routing Project - {{ navigation_bar.get(request.endpoint, request.endpoint)|replace('_', " ")|title }}
+    </title>
     {% endblock %}
 </head>
 
