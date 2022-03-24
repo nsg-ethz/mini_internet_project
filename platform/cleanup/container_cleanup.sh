@@ -92,4 +92,4 @@ docker kill WEB &>/dev/null || true &
 docker kill PROXY &>/dev/null || true &
 
 wait
-docker system prune -f
+docker system prune -f --volumes
