@@ -1,4 +1,6 @@
 #!/bin/bash
+# This script aims at mitigating potential DDos-like attacks
+# targeting the mini-Internet webservers and ssh ports. 
 
 CONFIG_DIR=/home/thomas/mini_internet_project/platform/config
 SSH_PORT_BASE=2000
@@ -24,8 +26,8 @@ iptables -t mangle $action PREROUTING -p tcp --tcp-flags ACK,PSH PSH -j DROP
 iptables -t mangle $action PREROUTING -p tcp --tcp-flags ALL NONE -j DROP
 
 # # Reject connections if host has more than 10 established connections
-iptables $action INPUT -p tcp --dport $WEBSERVER_PORT -m connlimit --connlimit-above 10 -j REJECT --reject-with tcp-reset
-iptables $action INPUT -p tcp --dport $KRILL_PORT -m connlimit --connlimit-above 10 -j REJECT --reject-with tcp-reset
+iptables $action INPUT -p tcp --dport $WEBSERVER_PORT -m connlimit --connlimit-above 20 -j REJECT --reject-with tcp-reset
+iptables $action INPUT -p tcp --dport $KRILL_PORT -m connlimit --connlimit-above 20 -j REJECT --reject-with tcp-reset
 
 # # Limits the new TCP connections that a client can establish per second
 iptables $action INPUT -p tcp --dport $WEBSERVER_PORT -m conntrack --ctstate NEW -m limit --limit 60/s --limit-burst 20 -j ACCEPT 
@@ -59,7 +61,6 @@ for ((k=0;k<group_numbers;k++)); do
     group_as="${group_k[1]}"
     
     if [ "${group_as}" != "IXP" ];then
-        echo 'hello'
         iptables $action INPUT -p tcp --dport $(($SSH_PORT_BASE+$group_number)) -m conntrack --ctstate NEW -m recent --set 
         iptables $action INPUT -p tcp --dport $(($SSH_PORT_BASE+$group_number)) -m conntrack --ctstate NEW -m recent --update --seconds 60 --hitcount 10 -j DROP  
     fi
