@@ -1,8 +1,12 @@
 #!/bin/bash
 #
-# Start the container that will run the webserver and all the tools
+# Start the containers that will run the webserver and all the tools
 # related to it
 #
+# Concretely, we use two containers
+# - WEB: the webserver container delivering the pages.
+# - PROXY: a container running the reverse proxy traefik, which takes care
+#          of letsencrypt certificates, too.
 
 set -o errexit
 set -o pipefail
@@ -18,7 +22,10 @@ CONFIGDIR='/server/configs'
 # Ports for the webserver and krill on the host.
 # (must be publicly available)
 TZ="Europe/Zurich"
-SERVER_PORT="80"
+
+HOSTNAME="duvel.ethz.ch"  # required for https
+SERVER_PORT_HTTP="80"
+SERVER_PORT_HTTPS="443"
 KRILL_PORT="3080"
 
 
@@ -103,11 +110,32 @@ EOM
 
 docker_command_option=${docker_command_option}" -v ${OUTPUT_DIRECTORY}/webserver_config.py:/server/config.py"
 
+# First start the web container, adding labels for the traefik proxy.
+# We only have one webserver; traffic for any hostname will go to it.
 docker run -itd --name="WEB" --cpus=2 \
-    --network bridge -p ${SERVER_PORT}:8000 \
+    --network bridge -p 8000:8000 \
     --pids-limit 100 \
     -e SERVER_CONFIG=/server/config.py \
     -e TZ=${TZ} \
+    -l traefik.enable=true \
+    -l traefik.http.routers.WEB.rule="Host(\"localhost\") || Host(\"${HOSTNAME}\")" \
+    -l traefik.http.routers.WEB.entrypoints=web \
     --hostname="web" \
     --privileged \
     $docker_command_option "miniinterneteth/d_webserver"
+
+# Next start the proxy
+# Setup based on the following tutorials:
+# https://doc.traefik.io/traefik/user-guides/docker-compose/basic-example/
+docker run --name='PROXY' \
+    --network bridge \
+    -p ${SERVER_PORT_HTTP}:${SERVER_PORT_HTTP} \
+    -p ${SERVER_PORT_HTTPS}:${SERVER_PORT_HTTPS} \
+    -p 8080:8080 \
+    -v "/var/run/docker.sock:/var/run/docker.sock:ro" \
+    --privileged \
+    traefik:v2.6 \
+    "--providers.docker=True"\
+    "--providers.docker.exposedbydefault=false" \
+    "--entrypoints.web.address=:${SERVER_PORT_HTTP}" \
+    "--api.insecure=true"
