@@ -341,6 +341,7 @@ def prepare_bgp_analysis(config, asn=None, worker=False):
     )
 
     if config["BACKGROUND_WORKERS"] and worker:
+        os.makedirs(db_file.parent, exist_ok=True)
         # Update db, return nothing
         bgp_policy_analyzer.update_db(
             db_file, as_data, connection_data, looking_glass_data)
