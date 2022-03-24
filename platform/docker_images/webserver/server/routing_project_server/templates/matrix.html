@@ -81,7 +81,7 @@ style="background-image: repeating-linear-gradient(45deg, transparent, transpare
 <!-- Thus setting it to 85% gives us (almost) square cells. -->
 {% if connectivity %}
 {% set n = connectivity|length %}
-<div class="max-w-full mx-auto overflow-x-auto">
+<div class="max-w-full mx-auto mb-16 overflow-x-auto">
 	<div class="grid border border-white/50 border-collapse mono {% if n>= 50 %}text-xs{% endif %}"
 		style="grid-template-columns: fit-content(100px) repeat({{ n }}, minmax(20px, 1fr));">
 		<!-- header row. -->
