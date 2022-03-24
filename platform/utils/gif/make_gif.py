@@ -47,5 +47,5 @@ def gif(indir):
     frames = [Image.open(image) for image in glob.glob(f"{indir}/*.png")]
     frame_one = frames[0]
     frame_one.save(indir+"/matrix.gif", format="GIF", append_images=frames,
-        save_all=True, duration=10, loop=0)
+        save_all=True, duration=20, loop=0)
 

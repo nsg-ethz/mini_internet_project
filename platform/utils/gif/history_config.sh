@@ -1,8 +1,7 @@
 #!/bin/bash
 
 # This script pushes in a git repositery the config files of all the routers
-# along with the matrix html file. This can be used to later create a GIF
-# showing the evolution of the matrix during the project.
+# as well as the matrix images and the gif.
 
 # location of the git directory.
 USERNAME=thomas
@@ -13,12 +12,6 @@ rm -rf $GITDIR
 
 # Clone the git repository
 sudo -H -u $USERNAME git clone $GITADDR $GITDIR
-
-# Add the CSS files in the git for the matrix.
-cp -r $(dirname "$0")/css $GITDIR/
-sudo -H -u $USERNAME git -C $GITDIR add css/*
-sudo -H -u $USERNAME git -C $GITDIR commit -m "CSS files"
-sudo -H -u $USERNAME git -C $GITDIR push
 
 # Create the dir where to store matrix data.
 sudo -H -u $USERNAME mkdir $GITDIR/matrix/
