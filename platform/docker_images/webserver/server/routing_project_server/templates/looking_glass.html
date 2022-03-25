@@ -8,6 +8,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta http-equiv="refresh" content="{{update_frequency}}" />
+{% endif %}
 <script>
     // overflow-x-auto needs a fixed width to work; the only way I found to make
     // it responsive was not css but by using js. Sadly.
@@ -22,7 +23,6 @@
     window.onload = resize_pre;
     window.onresize = resize_pre;
 </script>
-{% endif %}
 {% endblock %}
 
 {% block body %}
