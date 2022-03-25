@@ -183,8 +183,11 @@ for ((k=0;k<group_numbers;k++)); do
                         additional_args+=("-v" "${DIRECTORY}/config/roas:/var/krill/roas:ro")
                         # Use bridge network for krill in order to connect to the web proxy container
                         # and use an https connection from the ouside world to reach the krill website
-                        additional_args+=("-p" "3001:3001")
+                        additional_args+=("-p" "3080:3080")
                         net="bridge"
+                        # Enable traefik
+                        additional_args+=("-l" "traefik.enable=true")
+                        additional_args+=("-l" "traefik.http.routers.krill.entrypoints=krill")
                     elif [[ "${htype}" == *"routinator"* ]]; then
                         ROUTINATOR_CONTAINERS+=("${group_number} ${container_name}")
                         additional_args+=("-v" "${rpki_location}/root.crt:/usr/local/share/ca-certificates/root.crt:ro")
