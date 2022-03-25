@@ -23,7 +23,7 @@ drop privileges when applicable.
 First build the test container like this:
 
 ```
-$ cd docker_images/bgptest/
+$ cd ../docker_images/bgptest/
 $ sudo docker image build --tag my_bgp .
 ```
 
@@ -154,9 +154,6 @@ Disconnect an AS from the mini-internet.
 
 ### display.sh
 Displays each veth interface name of the host and the name of the other end.
-
-### docker_images
-Contains the files to build the bgptest container image.
 
 ### fake_network.sh
 *EXPERIMENTAL* The same as configure_container.sh except that the bgptest
