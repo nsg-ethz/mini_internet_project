@@ -48,14 +48,14 @@ style="background-image: repeating-linear-gradient(45deg, transparent, transpare
 	{% if valid or invalid or failure %}
 	<div class="w-full rounded-lg border border-neutral-300 bg-neutral-300 flex mb-8">
 		<div class="basis-[{{valid}}%] rounded-l-lg px-2 p-1 bg-[#56c157]"
-			title="Reachabile with valid path: {{valid}}%" {{stripes(not valid)}}>
+			title="Reachable with valid path: {{valid}}%" {{stripes(not valid)}}>
 			{{valid}}%
 		</div>
 		<div class="basis-[{{invalid}}%] px-2 p-1 bg-[#f0ad4e] border-x-2 border-white/50"
-			title="Reachabile with invalid path: {{invalid}}%" {{stripes(not invalid)}}>
+			title="Reachable with invalid path: {{invalid}}%" {{stripes(not invalid)}}>
 			{{invalid}}%
 		</div>
-		<div class="basis-[{{failure}}%] px-2 p-1 rounded-r-lg bg-[#d5605e]" title="Not reachabile: {{failure}}%"
+		<div class="basis-[{{failure}}%] px-2 p-1 rounded-r-lg bg-[#d5605e]" title="Not reachable: {{failure}}%"
 			{{stripes(not failure)}}>
 			{{failure}}%
 		</div>
