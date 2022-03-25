@@ -107,7 +107,21 @@ for ((j=0;j<n_groups;j++)); do
 
                         echo "${subnet%/*}" >> "${DIRECTORY}/groups/g${group_number}/routinator.txt"
 
+                        {
+                            echo "{"
+                            echo "  \"slurmVersion\": 1,"
+                            echo "  \"validationOutputFilters\": {"
+                            echo "    \"prefixFilters\": [],"
+                            echo "    \"bgpsecFilters\": []"
+                            echo "  },"
+                            echo "  \"locallyAddedAssertions\": {"
+                            echo "    \"prefixAssertions\": [],"                      
+                            echo "    \"bgpsecAssertions\": []"
+                            echo "  }"
+                            echo "}"
+                        } > "${DIRECTORY}/groups/g${group_number}/rpki_exceptions.json"
 
+                        # The following files contains exceptions that are useful for the autograder
                         {
                             echo "{"
                             echo "  \"slurmVersion\": 1,"
@@ -135,7 +149,7 @@ for ((j=0;j<n_groups;j++)); do
                             echo "    \"bgpsecAssertions\": []"
                             echo "  }"
                             echo "}"
-                        } > "${DIRECTORY}/groups/g${group_number}/rpki_exceptions.json"
+                        } > "${DIRECTORY}/groups/g${group_number}/rpki_exceptions_autograder.json"
                     elif [[ "${htype}" == *"krill"* ]]; then
                         subnet="$(subnet_host_router "${group_number}" "$i" "host")"
 
