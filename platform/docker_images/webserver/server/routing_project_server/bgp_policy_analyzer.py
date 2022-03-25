@@ -199,7 +199,7 @@ def compute_results(connection):
                     if link != "Provider-Customer":
                         if nlinks < 2:
                             log_nr(c, level + "-SIMPLE", tested_as, "You should not export {} to AS {} "
-                                   "(because it is an {} link)".format(prefix, from_as, link))
+                                   "(because it is a {} link)".format(prefix, from_as, link))
                         log(c, level, "AS {} has route to {} with path {} "
                             "contains {} link {} to {}".format(number, prefix,
                                                                path, link, f, t))
@@ -207,7 +207,7 @@ def compute_results(connection):
                     if link != "Provider-Customer":
                         if nlinks < 2:
                             log_nr(c, level + "-SIMPLE", tested_as, "You should not export {} to AS {} "
-                                   "(because it is an {} link)".format(prefix, from_as, link))
+                                   "(because it is a {} link)".format(prefix, from_as, link))
                         log(c, level, "AS {} has route to {} with path {} "
                             "contains {} link {} to {}".format(number, prefix,
                                                                path, link, f, t))
