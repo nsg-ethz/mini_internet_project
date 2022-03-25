@@ -107,6 +107,7 @@ for ((j=0;j<n_groups;j++)); do
 
                         echo "${subnet%/*}" >> "${DIRECTORY}/groups/g${group_number}/routinator.txt"
 
+
                         {
                             echo "{"
                             echo "  \"slurmVersion\": 1,"
@@ -116,12 +117,20 @@ for ((j=0;j<n_groups;j++)); do
                             echo "  },"
                             echo "  \"locallyAddedAssertions\": {"
                             echo "    \"prefixAssertions\": [ "
+                            for i in $(seq 1 253); do
+                                echo "    { "
+                                echo "      \"asn\": 10000, "
+                                echo "      \"prefix\": \"200.$i.0.0/16\", "
+                                echo "      \"maxPrefixLength\": 16, "
+                                echo "      \"comment\": \"used by the autograder container\" "
+                                echo "    }, "
+                            done
                             echo "    { "
                             echo "      \"asn\": 10000, "
-                            echo "      \"prefix\": \"200.0.0.0/16\", "
+                            echo "      \"prefix\": \"200.254.0.0/16\", "
                             echo "      \"maxPrefixLength\": 16, "
                             echo "      \"comment\": \"used by the autograder container\" "
-                            echo "    } "
+                            echo "    } "                        
                             echo "  ],"
                             echo "    \"bgpsecAssertions\": []"
                             echo "  }"
