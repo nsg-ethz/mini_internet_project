@@ -1,7 +1,11 @@
+#!/bin/bash
+
+echo "hello"
+
 source ./utils/hijacks/hijack.sh
 
 # Write --clear to undo the hijack.
-params="--clear"
+params=""
 
 seq=10
 for asn in 3 5 7 9 11; do
