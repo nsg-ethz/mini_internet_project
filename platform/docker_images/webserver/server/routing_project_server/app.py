@@ -1,8 +1,21 @@
-"""A small web-server hosting all mini-internet tools."""
+"""A small web-server hosting all mini-internet tools.
+
+The webserver needs access to the config and group directory,
+or concretely to all paths present in the config under the key `LOCATIONS`.
+Check the default config below for the list of paths.
+
+Computing the connectivity matrix as well as the BGP analysis can take quite
+a while, so it is possible to enabled `BACKGROUND_WORKERS` in the config to
+start two background processes taking care of the updates in specified
+intervals (`MATRIX_UPDATE_FREQUENCY`, `ANALYSIS_UPDATE_FREQUENCY`).
+
+By default, these workers are started automatically when the app is created.
+"""
 
 import math
 import os
 import pickle
+import traceback
 from datetime import datetime as dt
 from datetime import timezone
 from multiprocessing import Process
@@ -25,7 +38,7 @@ config_defaults = {
         "../../../config/external_links_config_students.txt",
         "as_connections": "../../../config/external_links_config.txt",
         "config_directory": "../../../config",
-        "matrix": "../../..//groups/matrix/connectivity.txt"
+        "matrix": "../../../groups/matrix/connectivity.txt"
     },
     'KRILL_URL': "http://{hostname}:3080/index.html",
     'BASIC_AUTH_USERNAME': 'admin',
@@ -252,9 +265,19 @@ def start_workers(config):
 
 def loop(function, freq, *args, **kwargs):
     """Call function in loop. Freq must be in seconds."""
+    print(f"Running worker `{function.__name__}` (every `{freq}s`).")
     while True:
         starttime = dt.utcnow()
-        function(*args, **kwargs)
+        try:
+            try:
+                function(*args, **kwargs)
+            except Exception as error:
+                # Attach message to exception.
+                raise RuntimeError(
+                    f"Worker `{function.__name__}` crashed! Restarting."
+                ) from error
+        except:  # pylint: disable=bare-except
+            traceback.print_exc()
         remaining_secs = freq - (dt.utcnow() - starttime).total_seconds()
         if remaining_secs > 0:
             sleep(remaining_secs)
