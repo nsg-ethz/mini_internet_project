@@ -35,7 +35,7 @@ CONFIGDIR_SERVER='/server/configs'
 # Hostname and ACME mail for letsencrypt.
 # You need to specify a hostname different to "localhost" and an email for
 # LetsEncrypt to be enabled.
-HOSTNAME="localhost"
+HOSTNAME="duvel.ethz.ch"
 ACME_MAIL="nsg@ethz.ch"
 
 # Hostname and ports for the webserver and krill on the host.
@@ -70,18 +70,22 @@ EOM
 
 # TLS and LetsEncrypt
 if [ ! -z "$HOSTNAME" ] && [ "$HOSTNAME" != "localhost" ] ; then
-    TLSCONF="--entrypoints.websecure.address=:${SERVER_PORT_HTTPS}" \
-    "--entrypoints.web.http.redirections.entrypoint.to=websecure" \
-    "--entrypoints.web.http.redirections.entrypoint.scheme=https" \
-    "--entrypoints.krill.http.redirections.entrypoint.scheme=https" \
-    "--certificatesresolvers.project_resolver.acme.tlschallenge=true" \
-    "--certificatesresolvers.project_resolver.acme.email=${ACME_MAIL}" \
-    "--certificatesresolvers.project_resolver.acme.storage=/letsencrypt/acme.json" \
-    "--entrypoints.web.http.tls.certresolver=project_resolver" \
-    "--entrypoints.krill.http.tls.certresolver=project_resolver" \
-    SAFEENTRY="-l traefik.http.routers.web.entrypoints=websecure"
+    IFS=" " read -ra TLSCONF <<< "\
+    --entrypoints.websecure.address=:${SERVER_PORT_HTTPS} \
+    --entrypoints.web.http.redirections.entrypoint.to=websecure \
+    --entrypoints.web.http.redirections.entrypoint.scheme=https \
+    --entrypoints.web.http.redirections.entrypoint.permanent=true \
+    --entrypoints.krill.http.redirections.entrypoint.scheme=https \
+    --entrypoints.krill.http.redirections.entrypoint.permanent=true \
+    --certificatesresolvers.project_resolver.acme.tlschallenge=true \
+    --certificatesresolvers.project_resolver.acme.email=${ACME_MAIL} \
+    --certificatesresolvers.project_resolver.acme.storage=/letsencrypt/acme.json \
+    --entrypoints.web.http.tls.certresolver=project_resolver \
+    --entrypoints.krill.http.tls.certresolver=project_resolver"
+    IFS=" " read -ra SAFEENTRY <<< "\
+    -l traefik.http.routers.web.entrypoints=websecure"
 else
-    TLSCONF="--certificatesresolvers.project_resolver.acme.tlschallenge=false"
+    TLSCONF=""
     SAFEENTRY=""
 fi
 
@@ -97,7 +101,7 @@ docker run -itd --name="WEB" --cpus=2 \
     -e SERVER_CONFIG=/server/config.py \
     -e TZ=${TZ} \
     -l traefik.enable=true \
-    -l traefik.http.routers.web.entrypoints=web ${SAFEENTRY}\
+    -l traefik.http.routers.web.entrypoints=web ${SAFEENTRY[@]}\
     --hostname="web" \
     --privileged \
     "miniinterneteth/d_webserver"
@@ -114,7 +118,6 @@ docker run -d --name='PROXY' \
     -p ${SERVER_PORT_HTTPS}:${SERVER_PORT_HTTPS} \
     -v "/var/run/docker.sock:/var/run/docker.sock:ro" \
     -v ${LETSENCRYPT}:/letsencrypt \
-    -p 8080:8080 \
     --privileged \
     traefik:v2.6 \
     "--providers.docker=True"\
@@ -122,5 +125,4 @@ docker run -d --name='PROXY' \
     "--providers.docker.defaultRule=Host(\"${HOSTNAME}\")" \
     "--entrypoints.web.address=:${SERVER_PORT_HTTP}" \
     "--entrypoints.krill.address=:${KRILL_PORT}" \
-    "--api.insecure=true" \
-    $TLSCONF
+    "${TLSCONF[@]}"
