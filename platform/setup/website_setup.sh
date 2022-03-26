@@ -50,6 +50,28 @@ DOCKERHUB_USER="${2:-thomahol}"
 source "${DIRECTORY}"/config/subnet_config.sh
 source "${DIRECTORY}"/setup/_parallel_helper.sh
 
+# TLS and LetsEncrypt
+if [ ! -z "$HOSTNAME" ] && [ "$HOSTNAME" != "localhost" ] ; then
+    IFS=" " read -ra TLSCONF <<< "\
+    --entrypoints.websecure.address=:${SERVER_PORT_HTTPS} \
+    --entrypoints.web.http.redirections.entrypoint.to=websecure \
+    --entrypoints.web.http.redirections.entrypoint.scheme=https \
+    --entrypoints.web.http.redirections.entrypoint.permanent=true \
+    --certificatesresolvers.project_resolver.acme.tlschallenge=true \
+    --certificatesresolvers.project_resolver.acme.email=${ACME_MAIL} \
+    --certificatesresolvers.project_resolver.acme.storage=/letsencrypt/acme.json \
+    --entrypoints.web.http.tls.certresolver=project_resolver \
+    --entrypoints.websecure.http.tls.certresolver=project_resolver \
+    --entrypoints.krill.http.tls.certresolver=project_resolver"
+    IFS=" " read -ra SAFEENTRY <<< "\
+    -l traefik.http.routers.web.entrypoints=websecure"
+    KRILL_SCHEME="https"
+else
+    TLSCONF=""
+    SAFEENTRY=""
+    KRILL_SCHEME="http"
+fi
+
 # Write the webserver config file
 cat > "$CONFIGFILE" << EOM
 LOCATIONS = {
@@ -60,34 +82,13 @@ LOCATIONS = {
     'groups': '${DATADIR_SERVER}',
     "matrix": "${DATADIR_SERVER}/matrix/connectivity.txt"
 }
-KRILL_URL="http://{hostname}:${KRILL_PORT}/index.html"
+KRILL_URL="${KRILL_SCHEME}://{hostname}:${KRILL_PORT}/index.html"
 BASIC_AUTH_USERNAME = 'admin'
 BASIC_AUTH_PASSWORD = 'admin'
 BACKGROUND_WORKERS = True
 HOST = '0.0.0.0'
 PORT = 8000
 EOM
-
-# TLS and LetsEncrypt
-if [ ! -z "$HOSTNAME" ] && [ "$HOSTNAME" != "localhost" ] ; then
-    IFS=" " read -ra TLSCONF <<< "\
-    --entrypoints.websecure.address=:${SERVER_PORT_HTTPS} \
-    --entrypoints.web.http.redirections.entrypoint.to=websecure \
-    --entrypoints.web.http.redirections.entrypoint.scheme=https \
-    --entrypoints.web.http.redirections.entrypoint.permanent=true \
-    --entrypoints.krill.http.redirections.entrypoint.scheme=https \
-    --entrypoints.krill.http.redirections.entrypoint.permanent=true \
-    --certificatesresolvers.project_resolver.acme.tlschallenge=true \
-    --certificatesresolvers.project_resolver.acme.email=${ACME_MAIL} \
-    --certificatesresolvers.project_resolver.acme.storage=/letsencrypt/acme.json \
-    --entrypoints.web.http.tls.certresolver=project_resolver \
-    --entrypoints.krill.http.tls.certresolver=project_resolver"
-    IFS=" " read -ra SAFEENTRY <<< "\
-    -l traefik.http.routers.web.entrypoints=websecure"
-else
-    TLSCONF=""
-    SAFEENTRY=""
-fi
 
 # First start the web container, adding labels for the traefik proxy.
 # We only have one webserver; traffic for any hostname will go to it.
@@ -116,13 +117,14 @@ docker run -d --name='PROXY' \
     --network bridge \
     -p ${SERVER_PORT_HTTP}:${SERVER_PORT_HTTP} \
     -p ${SERVER_PORT_HTTPS}:${SERVER_PORT_HTTPS} \
+    -p 8080:8080 \
     -v "/var/run/docker.sock:/var/run/docker.sock:ro" \
     -v ${LETSENCRYPT}:/letsencrypt \
     --privileged \
     traefik:v2.6 \
     "--providers.docker=True"\
-    "--providers.docker.exposedbydefault=false" \
+    "--providers.docker.exposedbydefault=false" ${TLSCONF[@]} \
     "--providers.docker.defaultRule=Host(\"${HOSTNAME}\")" \
     "--entrypoints.web.address=:${SERVER_PORT_HTTP}" \
     "--entrypoints.krill.address=:${KRILL_PORT}" \
-    "${TLSCONF[@]}"
+    "--api.insecure=true"
