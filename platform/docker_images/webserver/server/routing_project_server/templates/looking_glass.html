@@ -86,7 +86,7 @@
         The BGP advertisements of <b>AS {{group}}</b> do not seem to violate any policies.
     </p>
     {% else %}
-    <p class="mb-2">The BGP advertisements of <b>AS {{group}}</b> violate the following policies:</p>
+    <p class="mb-2">The BGP advertisements of <b>AS {{group}}</b> violate policies:</p>
     <ul class="list-disc list-inside">
         {% for msg in bgp_hints %}
         <li>{{msg}}</li>
