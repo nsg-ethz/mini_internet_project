@@ -42,7 +42,7 @@ ACME_MAIL="nsg@ethz.ch"
 # (must be publicly available)
 SERVER_PORT_HTTP="80"
 SERVER_PORT_HTTPS="443"
-KRILL_PORT="3080"
+PORT_KRILL="2142"  # TODO
 
 TZ="Europe/Zurich"
 
@@ -53,22 +53,17 @@ source "${DIRECTORY}"/setup/_parallel_helper.sh
 # TLS and LetsEncrypt
 if [ ! -z "$HOSTNAME" ] && [ "$HOSTNAME" != "localhost" ] ; then
     IFS=" " read -ra TLSCONF <<< "\
-    --entrypoints.websecure.address=:${SERVER_PORT_HTTPS} \
     --entrypoints.web.http.redirections.entrypoint.to=websecure \
     --entrypoints.web.http.redirections.entrypoint.scheme=https \
     --entrypoints.web.http.redirections.entrypoint.permanent=true \
     --certificatesresolvers.project_resolver.acme.tlschallenge=true \
     --certificatesresolvers.project_resolver.acme.email=${ACME_MAIL} \
     --certificatesresolvers.project_resolver.acme.storage=/letsencrypt/acme.json \
-    --entrypoints.web.http.tls.certresolver=project_resolver \
     --entrypoints.websecure.http.tls.certresolver=project_resolver \
     --entrypoints.krill.http.tls.certresolver=project_resolver"
-    IFS=" " read -ra SAFEENTRY <<< "\
-    -l traefik.http.routers.web.entrypoints=websecure"
     KRILL_SCHEME="https"
 else
     TLSCONF=""
-    SAFEENTRY=""
     KRILL_SCHEME="http"
 fi
 
@@ -82,7 +77,7 @@ LOCATIONS = {
     'groups': '${DATADIR_SERVER}',
     "matrix": "${DATADIR_SERVER}/matrix/connectivity.txt"
 }
-KRILL_URL="${KRILL_SCHEME}://{hostname}:${KRILL_PORT}/index.html"
+KRILL_URL="${KRILL_SCHEME}://{hostname}:${PORT_KRILL}/index.html"
 BASIC_AUTH_USERNAME = 'admin'
 BASIC_AUTH_PASSWORD = 'admin'
 BACKGROUND_WORKERS = True
@@ -102,7 +97,8 @@ docker run -itd --name="WEB" --cpus=2 \
     -e SERVER_CONFIG=/server/config.py \
     -e TZ=${TZ} \
     -l traefik.enable=true \
-    -l traefik.http.routers.web.entrypoints=web ${SAFEENTRY[@]}\
+    -l traefik.http.routers.web.entrypoints=web \
+    -l traefik.http.routers.websecure.entrypoints=websecure \
     --hostname="web" \
     --privileged \
     "miniinterneteth/d_webserver"
@@ -117,7 +113,7 @@ docker run -d --name='PROXY' \
     --network bridge \
     -p ${SERVER_PORT_HTTP}:${SERVER_PORT_HTTP} \
     -p ${SERVER_PORT_HTTPS}:${SERVER_PORT_HTTPS} \
-    -p 8080:8080 \
+    -p ${PORT_KRILL}:${PORT_KRILL} \
     -v "/var/run/docker.sock:/var/run/docker.sock:ro" \
     -v ${LETSENCRYPT}:/letsencrypt \
     --privileged \
@@ -126,5 +122,5 @@ docker run -d --name='PROXY' \
     "--providers.docker.exposedbydefault=false" ${TLSCONF[@]} \
     "--providers.docker.defaultRule=Host(\"${HOSTNAME}\")" \
     "--entrypoints.web.address=:${SERVER_PORT_HTTP}" \
-    "--entrypoints.krill.address=:${KRILL_PORT}" \
-    "--api.insecure=true"
+    "--entrypoints.websecure.address=:${SERVER_PORT_HTTPS}" \
+    "--entrypoints.krill.address=:${PORT_KRILL}"
