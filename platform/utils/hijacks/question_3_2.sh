@@ -1,3 +1,5 @@
+#!/bin/bash
+
 source ./utils/hijacks/hijack.sh
 
 # Write --clear to undo the hijack.

