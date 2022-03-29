@@ -6,7 +6,7 @@
 # location of the git directory.
 USERNAME=thomas
 PLATFORM_DIR=/home/thomas/mini_internet_project/platform/
-GITADDR=git@gitlab.ethz.ch:nsg/lectures/lec_commnet/projects/2022/routing_project/configs_and_matrix_history.git
+GITADDR=git@gitlab.ethz.ch:nsg/lectures/lec_commnet/projects/2022/routing_project/configs_and_matrix_history_2
 GITDIR=/home/thomas/configs_and_matrix_history
 rm -rf $GITDIR
 
@@ -16,6 +16,10 @@ sudo -H -u $USERNAME git clone $GITADDR $GITDIR
 # Create the dir where to store matrix data.
 sudo -H -u $USERNAME mkdir $GITDIR/matrix/
 sudo -H -u $USERNAME mkdir $GITDIR/images/
+
+# Copy the css file in the matrix directory and push it
+sudo -H -u $USERNAME cp -r css $GITDIR/images/css
+sudo -H -u $USERNAME git -C $GITDIR add $GITDIR/images/css
 
 # This function copies the routers config in the git repo.
 # It takes as parameters the group number and the config file used for the routers
@@ -65,7 +69,7 @@ do
 
     # Copy matrix source.
     d=$(date +'%m_%d_%Y-%Hh%Mm%Ss')
-    wget -O $GITDIR/matrix/matrix_source_$d.json http://localhost/matrix?raw 
+    wget -O $GITDIR/matrix/matrix_source_$d.json https://duvel.ethz.ch/matrix?raw 
     chown $USERNAME:$USERNAME $GITDIR/matrix/matrix_source_$d.json
     sudo -H -u $USERNAME git -C $GITDIR add $GITDIR/matrix/matrix_source_$d.json
 
@@ -77,9 +81,13 @@ do
     python3 -c "from make_gif import gif; gif('$GITDIR/images')"
     sudo -H -u $USERNAME git -C $GITDIR add $GITDIR/images/matrix.gif
 
+    # Generate the matrix HTML file
+    python3 -c "from make_gif import generate_html; generate_html('$GITDIR/matrix/matrix_source_$d.json', '$GITDIR/images/$d.html')"
+    sudo -H -u $USERNAME git -C $GITDIR add $GITDIR/images/$d.html
+
     # Commit and push.
     sudo -H -u thomas git -C $GITDIR commit -m "Config $d"
     sudo -H -u thomas git -C $GITDIR push
 
-    sleep 60
+    sleep 600
 done
