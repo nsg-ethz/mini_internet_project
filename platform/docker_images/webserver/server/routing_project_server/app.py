@@ -120,7 +120,8 @@ def create_app(config=None):
             for dst, connected in dsts.items():
                 if connected:
                     # We have connectivity, now check if valid.
-                    if validity.get(src, {}).get(dst, False):
+                    # If validity could not be checked, assume valid.
+                    if validity.get(src, {}).get(dst, True):
                         valid += 1
                     else:
                         invalid += 1
