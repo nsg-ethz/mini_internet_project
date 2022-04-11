@@ -103,23 +103,23 @@ style="background-image: repeating-linear-gradient(45deg, transparent, transpare
 		<div class="border border-white/50 even:bg-neutral-200 text-right pr-1">{{asn}}</div>
 		{% for asn_dst in connectivity[asn]|sort %}
 		{% if not connectivity[asn][asn_dst] %}
-		<div class="border border-white/50 bg-[#d5605e]" title="AS{{asn}} <-> AS{{asn_dst}}: Not Reachable"
+		<div class="border border-white/50 bg-[#d5605e]" title="AS{{asn}}&rarr;AS{{asn_dst}}: Not Reachable"
 			style="padding-bottom: 80%;">
 		</div>
 		{% else %}
 		{% if validity and (asn in validity) and (asn_dst in validity[asn]) %}
 		{% if validity[asn][asn_dst] %}
-		<div class="border border-white/50 bg-[#56c157]" title="AS{{asn}} <-> AS{{asn_dst}}: Reachable with valid path"
+		<div class="border border-white/50 bg-[#56c157]" title="AS{{asn}}&rarr;AS{{asn_dst}}: Reachable with valid path"
 			style="padding-bottom: 80%;">
 		</div>
 		{% else %}
 		<div class="border border-white/50 bg-[#f0ad4e]"
-			title="AS{{asn}} <-> AS{{asn_dst}}: Reachable with invalid path" style="padding-bottom: 80%;">
+			title="AS{{asn}}&rarr;AS{{asn_dst}}: Reachable with invalid path" style="padding-bottom: 80%;">
 		</div>
 		{% endif %}
 		{% else %}
 		<div class="border border-white/50 bg-[#56c157]"
-			title="AS{{asn}} <-> AS{{asn_dst}}: Reachable, but validity of path could not be verified."
+			title="AS{{asn}}&rarr;AS{{asn_dst}}: Reachable, but validity of path could not be verified."
 			style="padding-bottom: 80%;">
 		</div>
 		{% endif %}
