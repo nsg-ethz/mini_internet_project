@@ -16,6 +16,30 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
+######################################
+### UPDATE THE FOLLOWING VARIABLES ###
+######################################
+# Hostname and ACME mail for letsencrypt.
+# You need to specify a hostname different to "localhost" and an email for
+# LetsEncrypt to be enabled.
+# UPDATE THOSE VARIABLES. HOSTNAME -> localhost and EMAIL -> empty string (for http)
+HOSTNAME="duvel.ethz.ch"
+ACME_MAIL="nsg@ethz.ch"
+
+# Hostname and ports for the webserver and krill on the host.
+# (must be publicly available)
+# you can change http and https ports, but letsencrypt won't work, so its not recommended.
+SERVER_PORT_HTTP="80"
+SERVER_PORT_HTTPS="443"
+
+# Use the one you want, make sure to make it reachable from outside.
+PORT_KRILL="2142"  # TODO UPDATE TO 3000
+
+# Put your timezone here.
+TZ="Europe/Zurich"
+######################################
+
+
 # Directories on host.
 DIRECTORY="$1"
 
@@ -31,20 +55,6 @@ LETSENCRYPT="${DATADIR}/webserver/letsencrypt"
 # Directories inside the container.
 DATADIR_SERVER='/server/data'
 CONFIGDIR_SERVER='/server/configs'
-
-# Hostname and ACME mail for letsencrypt.
-# You need to specify a hostname different to "localhost" and an email for
-# LetsEncrypt to be enabled.
-HOSTNAME="duvel.ethz.ch"
-ACME_MAIL="nsg@ethz.ch"
-
-# Hostname and ports for the webserver and krill on the host.
-# (must be publicly available)
-SERVER_PORT_HTTP="80"
-SERVER_PORT_HTTPS="443"
-PORT_KRILL="2142"  # TODO
-
-TZ="Europe/Zurich"
 
 DOCKERHUB_USER="${2:-thomahol}"
 source "${DIRECTORY}"/config/subnet_config.sh
