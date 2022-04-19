@@ -67,15 +67,15 @@ Laurent Vanbever <lvanbever@ethz.ch> \
 We are grateful to everyone who contributed to improve the platform.
 
 We thank our ETH colleagues: 
- - Alexander Dietmuller, who implemented the website and helped us as a teaching assistant.
- - Rudiger Birkner, for all his work as a teaching assistant and his feeback on the platform.
- - Roland Meier for the connectivity matrix (prior 2022). 
+ - **Alexander Dietmuller**, who implemented the website and helped us as a teaching assistant.
+ - **Rudiger Birkner**, for all his work as a teaching assistant and his feeback on the platform.
+ - **Roland Meier** for the connectivity matrix (prior 2022). 
 
 We are thankful to the following ETH students who helped us developping the platform during their studies:
-- Martin Vahlensieck, 2021. He implemented the BGP policy analyzer and the auto-completion in the SSH container.
-- Sandro Lutz, 2021. He continued the work of Denis and managed to make RPKI work within the mini-Internet. 
-- Denis Mikhaylov, 2020. He was the first student who worked on implementing RPKI within the mini-Internet.
-- Tino Rellstab, 2019. He implemented some of the core features of the platform needed to move from a VM-based platform to container-based platform.
+- **Martin Vahlensieck**, 2021. He implemented the BGP policy analyzer and the auto-completion in the SSH container.
+- **Sandro Lutz**, 2021. He continued the work of Denis and managed to make RPKI work within the mini-Internet. 
+- **Denis Mikhaylov**, 2020. He was the first student who worked on implementing RPKI within the mini-Internet.
+- **Tino Rellstab**, 2019. He implemented some of the core features of the platform needed to move from a VM-based platform to container-based platform.
 
 
 ### Disclaimer
