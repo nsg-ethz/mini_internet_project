@@ -59,7 +59,6 @@ journal = {SIGCOMM Comput. Commun. Rev.},
 
 Thomas Holterbach <thomahol@ethz.ch> \
 Tobias Bühler <buehlert@ethz.ch> \
-Tino Rellstab <tino.rellstab@gmail.com> \
 Laurent Vanbever <lvanbever@ethz.ch> \
 [NSG Group website](https://nsg.ee.ethz.ch/home/)
 
@@ -67,11 +66,17 @@ Laurent Vanbever <lvanbever@ethz.ch> \
 
 We are grateful to everyone who contributed to improve the platform.
 
-We thank our ETH colleagues Rudiger Birkner for all his work on the platform as a teaching assistant as well as Roland Meier for the connectivity matrix. 
+We thank our ETH colleagues: 
+ - Alexander Dietmuller, who implemented the website and helped us as a teaching assistant.
+ - Rudiger Birkner for all his work and feeback on the platform as a teaching assistant
+ - Roland Meier for the connectivity matrix (prior 2022). 
 
 We are thankful to the following ETH students who helped us developping the platform during their studies:
-- Martin Vahlensieck, 2021 (BGP policy analyzer and auto-completion in the ssh container)
-- Denis Mikhaylov, 2020 (Implementation of RPKI, his code is available in the `rpki-dev` branch, we plan to merge it in the `master` branch in Spring 2022)
+- Martin Vahlensieck, 2021. He implemented the BGP policy analyzer and the auto-completion in the SSH container.
+- Sandro Lutz, 2021. He continued the work of Denis and managed to make RPKI work within the mini-Internet. 
+- Denis Mikhaylov, 2020. He was the first student who worked on implementing RPKI within the mini-Internet.
+- Tino Rellstab, 2019. He implemented some of the core features of the platform needed to move from a VM-based platform to container-based platform.
+
 
 ### Disclaimer
 
