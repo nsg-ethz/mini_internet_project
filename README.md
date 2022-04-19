@@ -57,9 +57,9 @@ journal = {SIGCOMM Comput. Commun. Rev.},
 
 ### Contacts
 
-Thomas Holterbach <thomahol@ethz.ch> \
-Tobias Bühler <buehlert@ethz.ch> \
-Laurent Vanbever <lvanbever@ethz.ch> \
+- **Thomas Holterbach** <thomasholterbach@gmail.com> \
+- **Tobias Bühler** <buehlert@ethz.ch> \
+- **Laurent Vanbever** <lvanbever@ethz.ch> \
 [NSG Group website](https://nsg.ee.ethz.ch/home/)
 
 ### Acknowledgment
