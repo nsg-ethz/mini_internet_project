@@ -34,30 +34,61 @@ def send_notification(title, content, group_nb):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('ASconfig_file', type=str, default='../../config/AS_config.txt', help='AS Config file')
     parser.add_argument('nb_proc_threshold', type=str, default=50, help='Threshold above which a slack warning will be triggered')
 
     args = parser.parse_args()
-    config_file = args.ASconfig_file
     nb_proc_threshold = int(args.nb_proc_threshold)
 
-    as_list = []
-    
-    with open(config_file, 'r') as fd:
-        for line in fd.readlines(): 
-            linetab = line.rstrip('\n').split('\t')
-            asn = int(linetab[0])
-            astype = linetab[1]
+    # Get the list of running SSH container
+    ps = subprocess.run(['docker', 'ps', '--format', '{{.ID}},{{.Names}}', '--filter', 'ancestor=miniinterneteth/d_ssh'], capture_output=True)
+    ps.check_returncode()
 
-            if astype == 'AS':
-                as_list.append(asn)
+    cid2group = {} # Container ID to group
+    groups = {} # Running processes in the SSH container for every group
+    idlen = 0
 
-    for asn in as_list:
-        process = subprocess.Popen(['docker', 'exec', '-it', '{}_ssh'.format(asn), 'ps'],
-                            stdout=subprocess.PIPE, 
-                            stderr=subprocess.PIPE)
-        stdout, stderr = process.communicate()
-        nb_proc = stdout.decode('ascii').count('\n')
+    for line in ps.stdout.decode().split('\n'):
+        if line == '':
+            continue
+
+        # Initialization
+        cid, name = line.split(',')
+        group = name.split('_')[0]
+        groups[cid] = 0
+        cid2group[cid] = group
+
+        # Update the ID length and make sure the ID length is always identical across containers
+        if idlen == 0:
+            idlen = len(cid)
+        else:
+            assert idlen == len(cid)
+
+    assert idlen > 0
+
+    # Get all the control group of every running process in the server
+    ps = subprocess.run(['ps', '-A', '-o', 'cgname'], capture_output=True)
+    ps.check_returncode()
+
+    for line in ps.stdout.decode().split('\n'):
+        if line == '-':
+            continue
+
+        # Check if this process is for a docker container
+        if line[:16] != 'systemd:/docker/':
+            continue
+
+        # Go to the container ID in the string
+        cid = line[16:16+idlen]
+
+        # Increment the number of running processes for that ssh container
+        if cid in groups:
+            groups[cid] += 1
+
+    # Check containers that have more than the threshold number of running processes
+    for cid, nb_proc in groups.items():
         if nb_proc >= nb_proc_threshold:
-            print ('send_notification: {} nb_proc: {}'.format(asn, nb_proc))
-            send_notification("Warning SSH container", '<@U01LPJ0PPPW>: There are {} processes running in your SSH container.\nThis is too high, please fix this.'.format(nb_proc), asn)
+            print ('send_notification: {} nb_proc: {}'.format(cid2group[cid], nb_proc))
+            send_notification("Warning SSH container", '<@U01LPJ0PPPW>: There are {} processes running in your SSH container.\nThis is too high, please fix this.'.format(nb_proc), cid2group[cid])
+
+        
+
