@@ -1,6 +1,6 @@
 # Communication Networks course
 
-In these folders, you can find our assignments that we used for the mini-Internet project at Zurich since 2019. We also provide the configuration files that you can use the build the topology we describe in the assignment.
+In these folders, you can find our assignments that we used for the mini-Internet project at ETH Zurich since 2019. We also provide the configuration files that you can use the build the topology we describe in the assignment.
 
 ℹ️ For the 2019 and 2020 iteration of the mini-Internet project we use pdf for the assignment whereas for the next iterations we used GitLab wiki instead.
 
