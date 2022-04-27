@@ -1,0 +1,51 @@
+{% set navigation_bar = {
+'connectivity_matrix': 'matrix',
+'looking_glass': 'looking glass',
+'as_connections': 'connections',
+'krill': 'krill',
+} -%}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    {% block head %}
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" charset="UTF-8">
+    <link rel="icon" type="image/x-icon" href="{{url_for('static', filename='favicon.ico')}}">
+    <link rel="stylesheet" href={{url_for('static', filename='style.css' )}}>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <title>Routing Project - {{ navigation_bar.get(request.endpoint, request.endpoint)|replace('_', " ")|title }}
+    </title>
+    {% endblock %}
+</head>
+
+<body class="flex flex-col min-h-screen">
+    <!-- Flex and min-height allow the Krill iframe to fill the screen. -->
+    <!-- Menu bar background (full-width). -->
+    <div id="menu" class="flex-none w-full bg-[#1c1c21] text-white font-mono">
+        <nav class="max-w-6xl mx-auto flex items-center justify-between flex-wrap p-4">
+            <!-- Logo -->
+            <div class="flex items-center flex-shrink-0 mr-6 text-3xl font-bold">
+                <img class=" h-16 pr-4" alt="logo" src="{{url_for('static', filename='logo.svg')}}" />
+                <!-- <span class="text-gray-400 pr-2">></span> -->
+                <span>routing project</span>
+            </div>
+            <!-- Menu -->
+            <div class="w-full block flex-grow lg:flex lg:items-center lg:w-auto"></div>
+            {% for endpoint, name in navigation_bar.items() %}
+            <div class="">
+                <a class="block mt-4 lg:inline-block lg:mt-0 hover:font-bold mr-4 text-lg" href="{{url_for(endpoint)}}"
+                    }}>
+                    <span class="pr-2 pl-2">
+                        <span class="text-gray-400">[</span>{{'*' if endpoint == request.endpoint else ' '}}<span
+                            class="text-gray-400">]</span></span>{{name}}
+                </a>
+            </div>
+            {% endfor %}
+        </nav>
+    </div>
+    {% block body %}{% endblock %}
+</body>
+
+</html>

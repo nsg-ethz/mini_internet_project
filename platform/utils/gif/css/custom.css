@@ -1,0 +1,31 @@
+.vcenter {
+    display: inline-block;
+    vertical-align: middle;
+    float: none;
+}
+
+table td {
+    padding: 1px !important;
+    font-size: 11px;
+    width: 20px;
+    text-align: center;
+}
+
+.connectivity-success {
+    background-color: rgb(86, 193, 87);
+}
+
+.connectivity-failure {
+    background-color: rgb(213, 96, 94);
+}
+
+.connectivity-invalid {
+    background-color: rgb(255, 127, 0);
+}
+
+
+table td.connectivity-invalid span,
+table td.connectivity-success span,
+table td.connectivity-failure span {
+    display: none;
+}

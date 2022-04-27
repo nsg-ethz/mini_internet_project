@@ -35,9 +35,7 @@ RUN apk add --no-cache haproxy curl rsync libgcc ca-certificates openssl openssh
     && chmod 0755 /var/run/sshd \
     && mkdir -p /var/krill/data/ssl
 
-EXPOSE 3000/tcp
-EXPOSE 3080/tcp
-EXPOSE 22/tcp
+RUN apk add iproute2-minimal iptables
 
 COPY haproxy.cfg /etc/haproxy/haproxy.cfg
 COPY supervisord.conf /etc/supervisor/conf.d/processes.conf

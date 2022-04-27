@@ -12,8 +12,27 @@ DIRECTORY="$1"
 source "${DIRECTORY}"/config/subnet_config.sh
 source "${DIRECTORY}"/setup/ovs-docker.sh
 
-readarray groups < "${DIRECTORY}"/config/AS_config.txt
+readarray krill_containers < "${DIRECTORY}"/groups/rpki/krill_containers.txt
+n_krill_containers=${#krill_containers[@]}
 
+# Remove the default route on the krill container.
+# The default route exists because of the docker bridge used to connect krill to the http proxy
+for ((j=0;j<n_krill_containers;j++)); do
+    (
+        container_data=(${krill_containers[$j]})
+        n_container_data=${#container_data[@]}
+
+        # Filter out empty lines
+        if [ $n_container_data -ge 2 ]; then
+            group_number="${container_data[0]}"
+            container_name="${container_data[1]}"
+        
+            docker exec $container_name ip route del 0/0
+        fi
+    )
+done
+
+readarray groups < "${DIRECTORY}"/config/AS_config.txt
 group_numbers=${#groups[@]}
 
 for ((k=0;k<group_numbers;k++)); do

@@ -165,6 +165,7 @@ for ((k=0;k<group_numbers;k++)); do
                 if [[ ! -z "${dname}" ]];then
                     container_name="${group_number}_${rname}host"
                     additional_args=()
+                    net="none"
 
                     if [[ "${htype}" == *"krill"* ]]; then
                         KRILL_CONTAINERS+=("${group_number} ${container_name}")
@@ -180,14 +181,22 @@ for ((k=0;k<group_numbers;k++)); do
                         additional_args+=("-v" "${DIRECTORY}/groups/g${group_number}/krill/krill.conf:/var/krill/krill.conf:ro")
                         additional_args+=("-v" "${DIRECTORY}/groups/g${group_number}/krill/setup.sh:/home/setup.sh:ro")
                         additional_args+=("-v" "${DIRECTORY}/config/roas:/var/krill/roas:ro")
+                        # Use bridge network for krill in order to connect to the web proxy container
+                        # and use an https connection from the ouside world to reach the krill website
+                        additional_args+=("-p" "3080:3080")
+                        net="bridge"
+                        # Enable traefik
+                        additional_args+=("-l" "traefik.enable=true")
+                        additional_args+=("-l" "traefik.http.routers.krill.entrypoints=krill")
                     elif [[ "${htype}" == *"routinator"* ]]; then
                         ROUTINATOR_CONTAINERS+=("${group_number} ${container_name}")
                         additional_args+=("-v" "${rpki_location}/root.crt:/usr/local/share/ca-certificates/root.crt:ro")
                         additional_args+=("-v" "${rpki_location}/tals:/root/.rpki-cache/tals:ro")
                         additional_args+=("-v" "${DIRECTORY}/groups/g${group_number}/rpki_exceptions.json:/root/rpki_exceptions.json")
+                        additional_args+=("-v" "${DIRECTORY}/groups/g${group_number}/rpki_exceptions_autograder.json:/root/rpki_exceptions_autograder.json")
                     fi
 
-                    docker run -itd --net='none' --dns="${subnet_dns%/*}"  \
+                    docker run -itd --network "$net" --dns="${subnet_dns%/*}"  \
                         --name="${container_name}" --cap-add=NET_ADMIN \
                         --cpus=2 --pids-limit 100 --hostname "${rname}""_host" \
                         --sysctl net.ipv4.icmp_ratelimit=0 \

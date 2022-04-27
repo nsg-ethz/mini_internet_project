@@ -8,10 +8,6 @@ for container in `docker ps -q`; do
 done
 wait
 
-# remove all container & restart docker
-docker system prune -f
-service docker restart
-
 # remove all ovs-bridges
 if [ "$(ovs-vsctl list-br | wc -l )" != "0" ];then
   echo -n "ovs-vsctl " > tmp.txt
@@ -40,3 +36,7 @@ fi
 for pid in $(ps aux | grep vpn | awk '{print $2}'); do
     kill -9 $pid 2>&1 >/dev/null
 done
+
+# remove all container & restart docker
+docker system prune -f
+service docker restart

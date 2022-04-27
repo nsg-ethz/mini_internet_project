@@ -170,7 +170,7 @@ subnet_router_DNS () {
 
   elif [ "${device}" = "measurement" ] ; then
 
-    echo "198.0.0.101/24"
+    echo "198.0.0.200/24"
 
   elif [ "${device}" = "dns" ] ; then
 
@@ -182,6 +182,21 @@ subnet_router_DNS () {
 
   fi
 }
+
+subnet_krill_webserver () {
+  local n_grp="$1" device="$2"
+
+  if [ "${device}" = "main_host" ] ; then
+
+    echo "197."${n_grp}".0.2/24"
+
+  elif [ "${device}" = "krill" ] ; then
+
+    echo "197."${n_grp}".0.1/24"
+
+  fi
+}
+
 
 subnet_ext_sshContainer () {
   local n_grp=$1 device="$2"

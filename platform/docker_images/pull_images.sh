@@ -6,7 +6,7 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
-images=(router ixp host ssh measurement dns switch matrix vpn vlc hostm)
+images=(router ixp host ssh measurement dns switch matrix vpn vlc hostm krill routinator webserver)
 
 # If you want to use your custom docker containers and upload them into
 # docker hub, change the docker username with your own docker username.

@@ -140,6 +140,9 @@ for ((k=0;k<group_numbers;k++)); do
                 if [ "$group_config" == "Config" ]; then
                     group_subnet="$(subnet_group "${group_number}")"
                     echo "group ${group_number}: Adding default ROA \"${group_subnet} => ${group_number}\"..."
+                    while ! docker exec $krill_container_name krillc show --ca "group${group_number}" | grep "State: active" > /dev/null; do
+                        sleep 1
+                    done
                     docker exec $krill_container_name krillc roas update --ca "group${group_number}" --add "${group_subnet} => ${group_number}" || true
                     echo "group ${group_number}: Default ROA added."
                 fi

@@ -4,12 +4,13 @@ FROM d_base:latest
 # cpanminus and build-essential needed for this
 # RUN cpanm Net::BGP
 
-RUN apk add --no-cache openssh-client openssh-server \
+RUN apk add --no-cache openssh-client openssh-server zip \
     && ssh-keygen -A \
     && sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/g' /etc/ssh/sshd_config \
     && sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/g' /etc/ssh/sshd_config \
     && sed -i 's/AllowTcpForwarding no/AllowTcpForwarding yes/g' /etc/ssh/sshd_config \
     && sed -i 's/GatewayPorts no/GatewayPorts yes/g' /etc/ssh/sshd_config \
+    && sed -i 's@AuthorizedKeysFile	.ssh/authorized_keys@AuthorizedKeysFile /etc/ssh/authorized_keys .ssh/authorized_keys@g' /etc/ssh/sshd_config \
     && mkdir -p /var/run/sshd /root/.ssh \
     && chmod 0755 /var/run/sshd
 
