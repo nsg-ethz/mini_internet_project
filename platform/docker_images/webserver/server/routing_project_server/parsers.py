@@ -197,7 +197,12 @@ def _read_json_safe(filename: os.PathLike, sleep_time=0.01, max_attempts=200):
                 return json.load(file)
         except json.decoder.JSONDecodeError as error:
             if current_attempt == max_attempts:
-                raise error
+                # raise error
+                print ('WARNING: could not read {} and path validity.'.format(filename))
+                print ('We assume empty BGP configuration for this router')
+    
+                # return the same json as if BGP was not running in the router.
+                return {'warning':'Default BGP instance not found'}
 
             # The file may have changed, wait a bit.
             time.sleep(sleep_time)
