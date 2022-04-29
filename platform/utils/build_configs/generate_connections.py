@@ -96,8 +96,8 @@ all_tier1 = list(map(lambda x:str(x), sum(tier1, [])))
 
 THROUGHPUT=100000
 DELAY=1000
-FD = open('external_links_config.txt', 'w')
-FD_STUDENTS = open('external_links_config_students.txt', 'w')
+FD = open('aslevel_links.txt', 'w')
+FD_STUDENTS = open('aslevel_links_students.txt', 'w')
 LINE_NB = 0
 
 # Utility functions used to derive which IP subnet to use for a given connection.
@@ -305,13 +305,14 @@ all_ixp.append(ixp_central)
 # Write the AS_config.txt file, with AS1 hosting krill.
 with open('AS_config.txt', 'w') as fd:
     for asn in all_tier1+all_stub:
-        if asn == 1:
-            fd.write(str(asn)+'\tAS\tConfig\trouter_config_small_krill.txt\tinternal_links_config_small.txt\tlayer2_switches_config_empty.txt\tlayer2_hosts_config_empty.txt\tlayer2_links_config_empty.txt\n')
+        # By default we set krill in AS1
+        if asn == '1':
+            fd.write(str(asn)+'\tAS\tConfig\tl3_routers_krill.txt\tl3_links_krill.txt\tempty.txt\tempty.txt\tempty.txt\n')
         else:
-            fd.write(str(asn)+'\tAS\tConfig\trouter_config_small.txt\tinternal_links_config_small.txt\tlayer2_switches_config_empty.txt\tlayer2_hosts_config_empty.txt\tlayer2_links_config_empty.txt\n')
+            fd.write(str(asn)+'\tAS\tConfig\tl3_routers_tier1_and_stub.txt\tl3_links_tier1_and_stub.txt\tempty.txt\tempty.txt\tempty.txt\n')
 
     for asn in all_transit:
-        fd.write(str(asn)+'\tAS\tConfig\trouter_config_full.txt\tinternal_links_config_full.txt\tlayer2_switches_config.txt\tlayer2_hosts_config.txt\tlayer2_links_config.txt\n')
+        fd.write(str(asn)+'\tAS\tConfig\tl3_routers.txt\tl3_links.txt\tl2_switches.txt\tl2_hosts.txt\tl2_links.txt\n')
 
     for asn in all_ixp:
         fd.write(str(asn)+'\tIXP\tConfig\tN/A\tN/A\tN/A\tN/A\tN/A\n')

@@ -13,10 +13,10 @@ source "${DIRECTORY}"/setup/_parallel_helper.sh
 
 # read configs
 readarray groups < "${DIRECTORY}"/config/AS_config.txt
-readarray extern_links < "${DIRECTORY}"/config/external_links_config.txt
-readarray l2_switches < "${DIRECTORY}"/config/layer2_switches_config.txt
-readarray l2_links < "${DIRECTORY}"/config/layer2_links_config.txt
-readarray l2_hosts < "${DIRECTORY}"/config/layer2_hosts_config.txt
+readarray extern_links < "${DIRECTORY}"/config/aslevel_links.txt
+readarray l2_switches < "${DIRECTORY}"/config/l2_switches.txt
+readarray l2_links < "${DIRECTORY}"/config/l2_links.txt
+readarray l2_hosts < "${DIRECTORY}"/config/l2_hosts.txt
 
 group_numbers=${#groups[@]}
 n_extern_links=${#extern_links[@]}
@@ -212,7 +212,7 @@ for ((k=0;k<group_numbers;k++));do
     fi
 done
 
-# for every connection in ./config/external_links_config.txt
+# for every connection in ./config/aslevel_links.txt
 # configure the subnet as defined in ./config/subnet_config.sh
 for ((i=0;i<n_extern_links;i++)); do
     row_i=(${extern_links[$i]})

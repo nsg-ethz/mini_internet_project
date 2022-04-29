@@ -10,9 +10,7 @@ source "${DIRECTORY}"/setup/_parallel_helper.sh
 
 # read configs
 readarray groups < "${DIRECTORY}"/config/AS_config.txt
-readarray extern_links < "${DIRECTORY}"/config/external_links_config.txt
 group_numbers=${#groups[@]}
-n_extern_links=${#extern_links[@]}
 
 # bridge for connection from host to ssh containers
 echo -n "-- add-br ssh_to_group " >> "${DIRECTORY}"/groups/add_bridges.sh

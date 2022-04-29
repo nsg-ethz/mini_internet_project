@@ -23,8 +23,8 @@ set -o nounset
 # You need to specify a hostname different to "localhost" and an email for
 # LetsEncrypt to be enabled.
 # UPDATE THOSE VARIABLES. HOSTNAME -> localhost and EMAIL -> empty string (for http)
-HOSTNAME="duvel.ethz.ch"
-ACME_MAIL="nsg@ethz.ch"
+HOSTNAME="localhost"
+ACME_MAIL=""
 
 # Hostname and ports for the webserver and krill on the host.
 # (must be publicly available)
@@ -33,7 +33,7 @@ SERVER_PORT_HTTP="80"
 SERVER_PORT_HTTPS="443"
 
 # Use the one you want, make sure to make it reachable from outside.
-PORT_KRILL="2142"  # TODO UPDATE TO 3000
+PORT_KRILL="3000"
 
 # Put your timezone here.
 TZ="Europe/Zurich"
@@ -82,8 +82,8 @@ cat > "$CONFIGFILE" << EOM
 LOCATIONS = {
     "config_directory": "${CONFIGDIR_SERVER}",
     'as_config': "${CONFIGDIR_SERVER}/AS_config.txt",
-    "as_connections_public": "${CONFIGDIR_SERVER}/external_links_config_students.txt",
-    "as_connections": "${CONFIGDIR_SERVER}/external_links_config.txt",
+    "as_connections_public": "${CONFIGDIR_SERVER}/aslevel_links_students.txt",
+    "as_connections": "${CONFIGDIR_SERVER}/aslevel_links.txt",
     'groups': '${DATADIR_SERVER}',
     "matrix": "${DATADIR_SERVER}/matrix/connectivity.txt"
 }
@@ -111,7 +111,7 @@ docker run -itd --name="WEB" --cpus=2 \
     -l traefik.http.routers.websecure.entrypoints=websecure \
     --hostname="web" \
     --privileged \
-    "miniinterneteth/d_webserver"
+    "d_webserver"
 
 # Next start the proxy
 # Setup based on the following tutorials:

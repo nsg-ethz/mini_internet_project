@@ -14,7 +14,7 @@ source "${DIRECTORY}"/setup/_parallel_helper.sh
 
 # read configs
 readarray groups < "${DIRECTORY}"/config/AS_config.txt
-readarray extern_links < "${DIRECTORY}"/config/external_links_config.txt
+readarray extern_links < "${DIRECTORY}"/config/aslevel_links.txt
 readarray krill_containers < "${DIRECTORY}"/groups/rpki/krill_containers.txt
 readarray routinator_containers < "${DIRECTORY}"/groups/rpki/routinator_containers.txt
 
@@ -195,7 +195,7 @@ done
 
 wait
 
-# for every connection in ./config/external_links_config.txt
+# for every connection in ./config/aslevel_links.txt
 # configure the route-maps
 for ((i=0;i<n_extern_links;i++)); do
     (
