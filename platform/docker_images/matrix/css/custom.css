@@ -19,8 +19,12 @@ table td {
     background-color: rgb(213, 96, 94);
 }
 
+.connectivity-invalid {
+    background-color: rgb(255, 127, 0);
+}
 
 
+table td.connectivity-invalid span,
 table td.connectivity-success span,
 table td.connectivity-failure span {
     display: none;

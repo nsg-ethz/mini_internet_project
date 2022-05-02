@@ -70,6 +70,7 @@ for ((k=0;k<group_numbers;k++)); do
 
                 # Signature of the server certificat by the master CA
                 openssl x509 -req \
+                    -days 365 \
                     -in $location/serv.csr \
                     -out $location/serv.crt \
                     -CA $location/ca.crt -CAkey $location/ca.key \
@@ -87,6 +88,7 @@ for ((k=0;k<group_numbers;k++)); do
                         -subj "/C=CH/ST=Zurich/L=Zurich/O=ETHZ/OU=TIK/CN=$cname" 2>/dev/null
 
                     openssl x509 -req \
+                        -days 365 \
                         -in $location/$cname.csr \
                         -out $location/$cname.crt \
                         -CA $location/ca.crt -CAkey $location/ca.key \

@@ -1,15 +1,16 @@
 #!/bin/bash
+# This script must be executed from the platform directory.
 
 source ./utils/hijacks/hijack.sh
 
 # Write --clear to undo the hijack.
 params=""
 
-# seq=10
-# for asn in 3 5 7 9 11; do
-#     run_hijack 32 $asn.104.0.0/25 $seq $params
-#     seq=$((seq+1))
-# done
+seq=10
+for asn in 3 5 7 9 11; do
+    run_hijack 32 $asn.104.0.0/25 $seq $params
+    seq=$((seq+1))
+done
 
 # seq=10
 # for asn in 4 6 8 10 12; do
@@ -53,11 +54,11 @@ params=""
 #     seq=$((seq+1))
 # done
 
-seq=10
-for asn in 84 86 88 90; do
-    run_hijack 71 $asn.104.0.0/25 $seq $params
-    seq=$((seq+1))
-done
+# seq=10
+# for asn in 84 86 88 90; do
+#     run_hijack 71 $asn.104.0.0/25 $seq $params
+#     seq=$((seq+1))
+# done
 
 # seq=10
 # for asn in 83 85 87 89; do
@@ -72,7 +73,7 @@ done
 # done
 
 # seq=10
-# for asn in 103 105 106 109; do
+# for asn in 103 105 107 109; do
 #     run_hijack 14 $asn.104.0.0/25 $seq $params
 #     seq=$((seq+1))
 # done
