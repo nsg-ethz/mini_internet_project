@@ -71,13 +71,6 @@ def update_matrix(as_list, co_dic, t):
                 fd.write('\t\t\t\t<td class="connectivity-failure" title="AS{} <-> AS{}: Not Reachable"><span class="glyphicon glyphicon-remove text-danger"></td>\n'.format(asn_from, asn_to))
         fd.write('\t\t\t</tr>\n')
 
-    # fd.write('\t\t\t<thread>\n')
-    # fd.write('\t\t\t\t<td></td>\n')
-    #
-    # for asn in sorted(as_list.keys()):
-    #     fd.write('\t\t\t\t<td>'+str(asn)+'</td>\n')
-    #
-    # fd.write('\t\t\t</thead>\n')
     fd.write('\t\t</table>\n')
 
     fd.write('\t\n')

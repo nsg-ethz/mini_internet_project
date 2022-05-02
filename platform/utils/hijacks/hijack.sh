@@ -125,7 +125,7 @@ run_hijack () {
                                         -c "ip prefix-list HIJACKED_PREFIX_$ORIGIN_AS seq $SEQ permit $HIJACKED_PREFIX" \
                                         -c "route-map $route_map_name permit $route_map_permit" \
                                         -c "match ip address prefix-list HIJACKED_PREFIX_$ORIGIN_AS" \
-                                        -c "set as-path prepend $ORIGIN_AS"
+                                        -c "set as-path prepend $ORIGIN_AS $ORIGIN_AS $ORIGIN_AS $ORIGIN_AS"
                                     
                                     # Set communities in case the peer is an IXP
                                     if [ ! -z "$str_tmp" ]; then
