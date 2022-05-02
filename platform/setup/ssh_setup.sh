@@ -10,9 +10,7 @@ source "${DIRECTORY}"/setup/_parallel_helper.sh
 
 # read configs
 readarray groups < "${DIRECTORY}"/config/AS_config.txt
-readarray extern_links < "${DIRECTORY}"/config/external_links_config.txt
 group_numbers=${#groups[@]}
-n_extern_links=${#extern_links[@]}
 
 # bridge for connection from host to ssh containers
 echo -n "-- add-br ssh_to_group " >> "${DIRECTORY}"/groups/add_bridges.sh
@@ -64,7 +62,7 @@ for ((k=0;k<group_numbers;k++)); do
         docker cp "${DIRECTORY}"/groups/authorized_keys "${group_number}"_ssh:/etc/ssh/authorized_keys
 
         # generate password for login to ssh container, save it to group folder
-        passwd=$(awk "\$1 == \"${group_number}\" { print \$0 }" "${DIRECTORY}/groups/passwords.txt" | cut -f 2 -d ' ')                
+        passwd=$(awk "\$1 == \"${group_number}\" { print \$2 }" "${DIRECTORY}/groups/passwords.txt")
         echo -e ""${passwd}"\n"${passwd}"" | docker exec -i "${group_number}"_ssh passwd root
         docker exec "${group_number}"_ssh bash -c "kill -HUP \$(cat /var/run/sshd.pid)"
 
