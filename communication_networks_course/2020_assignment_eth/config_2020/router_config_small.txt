@@ -1,2 +1,2 @@
-LOND    MATRIX host:thomahol/d_host vtysh
-ZURI    MATRIX_TARGET host:thomahol/d_host  vtysh
+LOND    MATRIX host:miniinterneteth/d_host vtysh
+ZURI    MATRIX_TARGET host:miniinterneteth/d_host  vtysh
