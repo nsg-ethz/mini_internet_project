@@ -5,7 +5,7 @@ import time
 
 # This function sends a notification to the routing_project channel that indicates the connectivity score.
 def send_notification(content):
-    url = "https://hooks.slack.com/services/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"
+    url = "https://hooks.slack.com/services/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"
     title = (":male-detective: Daily report")
     slack_data = {
         "username": "Mini-Internet Robot",
