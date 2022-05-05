@@ -20,10 +20,10 @@ set -o nounset
 ### UPDATE THE FOLLOWING VARIABLES ###
 ######################################
 # Hostname and ACME mail for letsencrypt.
-# You need to specify a hostname different to "localhost" and an email for
+# You need to specify the hostname of the server and an email for
 # LetsEncrypt to be enabled.
-# UPDATE THOSE VARIABLES. HOSTNAME -> localhost and EMAIL -> empty string (for http)
-HOSTNAME="localhost"
+# UPDATE THOSE VARIABLES. HOSTNAME -> hostname of the server and EMAIL -> empty string (for http)
+HOSTNAME="pc-10328.ethz.ch"
 ACME_MAIL=""
 
 # Hostname and ports for the webserver and krill on the host.
@@ -61,7 +61,7 @@ source "${DIRECTORY}"/config/subnet_config.sh
 source "${DIRECTORY}"/setup/_parallel_helper.sh
 
 # TLS and LetsEncrypt
-if [ ! -z "$HOSTNAME" ] && [ "$HOSTNAME" != "localhost" ] ; then
+if [ ! -z "$ACME_MAIL" ] && [ ! -z "$HOSTNAME" ] && [ "$HOSTNAME" != "localhost" ] ; then
     IFS=" " read -ra TLSCONF <<< "\
     --entrypoints.web.http.redirections.entrypoint.to=websecure \
     --entrypoints.web.http.redirections.entrypoint.scheme=https \
