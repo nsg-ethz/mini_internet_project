@@ -37,7 +37,7 @@ journal = {SIGCOMM Comput. Commun. Rev.},
 
 ### News
 
-*05/05/22:* Added our assignment for 2022! You can find it [here](https://github.com/nsg-ethz/mini_internet_project/tree/master/communication_networks_course/2022_assignment_eth). This year, we added RPKI and developed a website that is built automatically at startup that students can use to look at the matrix, looking glasses and register their ROAs for RPKI.
+*05/05/22:* Added our assignment for 2022! You can find it [here](https://github.com/nsg-ethz/mini_internet_project/tree/master/communication_networks_course/2022_assignment_eth). This year, we added RPKI and developed a website that is built automatically at startup that students can use to look at the matrix, looking glasses and register their ROAs for RPKI. \
 *20/05/21:* Added our assignment for 2021! You can find it [here](https://github.com/nsg-ethz/mini_internet_project/tree/master/communication_networks_course/2021_assignement_eth). This year, we added support for IPv6 and asked our students to configure 6in4 tunnels. \
 *3/12/20:* Added the BGP VPN MPLS and Multicast exercises of our Advanced Topic in Computer Networks course. \
 *29/09/20:* Changed the Dockerfile for the router image. Now FRR is compiled from the source with a particular version of the libyang library so that VRF are supported. \
