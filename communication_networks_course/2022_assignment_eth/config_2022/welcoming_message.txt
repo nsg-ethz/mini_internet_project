@@ -1,0 +1,12 @@
++------------------------------------------------------+
+|                                                      |
+|   Communication Networks 2022  - Routing Project     |
+|             Build your mini-Internet!                |
+|                                                      |
+|                                                      |                    |
+|   From here, you can access your virtual devices     |
+|   with the goto.sh script. For instance:             |
+|                                                      |
+|   ./goto.sh ZURI router                              |
+|                                                      |
++------------------------------------------------------+
