@@ -37,6 +37,7 @@ journal = {SIGCOMM Comput. Commun. Rev.},
 
 ### News
 
+*05/05/22:* Added our assignment for 2022! You can find it [here](https://github.com/nsg-ethz/mini_internet_project/tree/master/communication_networks_course/2022_assignement_eth). This year, we added RPKI and developed a website that is built automatically at startup that students can use to look at the matrix, looking glasses and register their ROAs for RPKI.
 *20/05/21:* Added our assignment for 2021! You can find it [here](https://github.com/nsg-ethz/mini_internet_project/tree/master/communication_networks_course/2021_assignement_eth). This year, we added support for IPv6 and asked our students to configure 6in4 tunnels. \
 *3/12/20:* Added the BGP VPN MPLS and Multicast exercises of our Advanced Topic in Computer Networks course. \
 *29/09/20:* Changed the Dockerfile for the router image. Now FRR is compiled from the source with a particular version of the libyang library so that VRF are supported. \
@@ -72,16 +73,10 @@ We thank our ETH colleagues:
  - **Roland Meier**, for the connectivity matrix (prior 2022). 
 
 We are thankful to the following ETH students who helped us developping the platform during their studies:
-<<<<<<< HEAD
-- Martin Vahlensieck (2021) who implemented the BGP policy analyzer and the auto-completion in the ssh container)
-- Denis Mikhaylov (2020) and Sandro Lutz (2021) who implemented the RPKI part (their code is available in the `rpki-dev` branch, we plan to merge it in the `master` branch in Spring 2022)
-=======
 - **Martin Vahlensieck**, 2021. He implemented the BGP policy analyzer and the auto-completion in the SSH container.
 - **Sandro Lutz**, 2021. He continued the work of Denis and managed to make RPKI work within the mini-Internet. Besides, he improved the docker images that are used within the platform.
 - **Denis Mikhaylov**, 2020. He was the first student who worked on implementing RPKI within the mini-Internet.
 - **Tino Rellstab**, 2019. He implemented some of the core features of the platform needed to move from a VM-based platform to container-based platform.
-
->>>>>>> dev
 
 ### Disclaimer
 
