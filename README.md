@@ -19,11 +19,7 @@ We find this class-wide project to be invaluable in teaching our students how th
 ### Build _your_ mini-Internet
 
 With this platform, you can easily build your own mini-Internet, tailored for your teaching objectives.
-<<<<<<< HEAD
-The documentation as well as the code of the platform is in the [platform](platform) directory.
-=======
 The documentation is available in the [wiki](https://github.com/nsg-ethz/mini_internet_project/wiki) and the code of the platform is in the [platform](platform) directory.
->>>>>>> dev
 In a nutshell, after defining your topology in configuration files, you can build your mini-Internet with a bash script and use it for your networking class. 
 
 If you use the platform, please cite our SIGCOMM CCR'20 **[paper](https://dl.acm.org/doi/pdf/10.1145/3402413.3402420)**. Here is the bibtex:
