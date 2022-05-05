@@ -70,6 +70,7 @@ for ((k=0;k<group_numbers;k++)); do
 
                 # Signature of the server certificat by the master CA
                 openssl x509 -req \
+                    -days 365 \
                     -in $location/serv.csr \
                     -out $location/serv.crt \
                     -CA $location/ca.crt -CAkey $location/ca.key \
@@ -87,17 +88,18 @@ for ((k=0;k<group_numbers;k++)); do
                         -subj "/C=CH/ST=Zurich/L=Zurich/O=ETHZ/OU=TIK/CN=$cname" 2>/dev/null
 
                     openssl x509 -req \
+                        -days 365 \
                         -in $location/$cname.csr \
                         -out $location/$cname.crt \
                         -CA $location/ca.crt -CAkey $location/ca.key \
                         -CAcreateserial -CAserial $location/ca.srl 2>/dev/null
                 done
 
-                if grep "SECLEVEL=2" /etc/ssl/openssl.cnf ; then
-                    DH_KEY_SIZE=2048
-                else
-                    DH_KEY_SIZE=512
-                fi
+                # if grep "SECLEVEL=2" /etc/ssl/openssl.cnf ; then
+                DH_KEY_SIZE=2048
+                # else
+                    # DH_KEY_SIZE=512
+                # fi
                 openssl dhparam -dsaparam -out $location/dh.pem ${DH_KEY_SIZE} 2>/dev/null
 
 
@@ -121,7 +123,7 @@ for ((k=0;k<group_numbers;k++)); do
                 echo "script-security 2" >> $location/server.conf
                 echo "verify-client-cert none" >> $location/server.conf
 
-                passwd_loc=$(pwd "${DIRECTORY}")/groups/ssh_passwords.txt
+                passwd_loc=$(pwd "${DIRECTORY}")/groups/passwords.txt
                 echo "#!/bin/bash" >> $location/cred.sh
                 echo "passwd=\$(awk '\$1 == \"$group_number\" { print \$0 }' $passwd_loc | cut -f 2 -d ' ')" >> $location/cred.sh
                 echo "readarray -t lines < \$1" >> $location/cred.sh

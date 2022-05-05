@@ -92,7 +92,6 @@ for ((k=0;k<group_numbers;k++)); do
                     fi
                 done
                 # Done setting up the 6in4 tunnels
-
                 for vlan in "${!vlanset[@]}"
                 do
                     get_docker_pid ${group_number}_${rname}router

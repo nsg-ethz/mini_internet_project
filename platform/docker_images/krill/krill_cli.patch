@@ -1,0 +1,11 @@
+--- original/src/cli/client.rs  2021-05-17 14:29:34.970000000 +0200
++++ modified/src/cli/client.rs  2021-05-26 20:35:39.860000000 +0200
+@@ -437,7 +437,7 @@
+         let (password_hash, salt) = {
+             use scrypt::scrypt;
+
+-            let password = rpassword::read_password_from_tty(Some("Enter the password to hash: ")).unwrap();
++            let password = rpassword::prompt_password_stdout("Enter the password to hash: ").unwrap();
+
+             // The scrypt-js NPM documentation (https://www.npmjs.com/package/scrypt-js) says:
+             //   "TL;DR - either only allow ASCII characters in passwords, or use

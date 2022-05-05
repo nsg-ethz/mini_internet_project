@@ -1,0 +1,11 @@
+FIFA_1   miniinterneteth/d_host DCN   S1    10000   1000    10
+UEFA_1   miniinterneteth/d_host DCN   S1    10000   1000    20
+vpn_1    miniinterneteth/d_host DCN   S1    10000   1000    30
+FIFA_2   miniinterneteth/d_host DCN   S2    10000   1000    10
+UEFA_2   miniinterneteth/d_host DCN   S2    10000   1000    20
+vpn_2    miniinterneteth/d_host DCN   S2    10000   1000    30
+FIFA_3   miniinterneteth/d_host	DCN   S3    10000   1000    10
+UEFA_3   miniinterneteth/d_host DCN   S3    10000   1000    20
+vpn_3    miniinterneteth/d_host DCN   S3    10000   1000    30
+FIFA_4   miniinterneteth/d_host DCS   S4    10000   1000    10
+UEFA_4   miniinterneteth/d_host DCS   S4    10000   1000    20

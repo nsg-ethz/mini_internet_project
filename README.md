@@ -19,7 +19,11 @@ We find this class-wide project to be invaluable in teaching our students how th
 ### Build _your_ mini-Internet
 
 With this platform, you can easily build your own mini-Internet, tailored for your teaching objectives.
+<<<<<<< HEAD
 The documentation as well as the code of the platform is in the [platform](platform) directory.
+=======
+The documentation is available in the [wiki](https://github.com/nsg-ethz/mini_internet_project/wiki) and the code of the platform is in the [platform](platform) directory.
+>>>>>>> dev
 In a nutshell, after defining your topology in configuration files, you can build your mini-Internet with a bash script and use it for your networking class. 
 
 If you use the platform, please cite our SIGCOMM CCR'20 **[paper](https://dl.acm.org/doi/pdf/10.1145/3402413.3402420)**. Here is the bibtex:
@@ -57,21 +61,31 @@ journal = {SIGCOMM Comput. Commun. Rev.},
 
 ### Contacts
 
-Thomas Holterbach <thomahol@ethz.ch> \
-Tobias Bühler <buehlert@ethz.ch> \
-Tino Rellstab <tino.rellstab@gmail.com> \
-Laurent Vanbever <lvanbever@ethz.ch> \
+- **Thomas Holterbach** <thomasholterbach@gmail.com>
+- **Tobias Bühler** <buehlert@ethz.ch> 
+- **Laurent Vanbever** <lvanbever@ethz.ch> 
 [NSG Group website](https://nsg.ee.ethz.ch/home/)
 
 ### Acknowledgment
 
 We are grateful to everyone who contributed to improve the platform.
 
-We thank our ETH colleagues Rudiger Birkner for all his work on the platform as a teaching assistant as well as Roland Meier for the connectivity matrix. 
+We thank our ETH colleagues: 
+ - **Alexander Dietmuller**, who implemented the website and helped us as a teaching assistant.
+ - **Rudiger Birkner**, for all his work as a teaching assistant and his feeback on the platform.
+ - **Roland Meier**, for the connectivity matrix (prior 2022). 
 
 We are thankful to the following ETH students who helped us developping the platform during their studies:
+<<<<<<< HEAD
 - Martin Vahlensieck (2021) who implemented the BGP policy analyzer and the auto-completion in the ssh container)
 - Denis Mikhaylov (2020) and Sandro Lutz (2021) who implemented the RPKI part (their code is available in the `rpki-dev` branch, we plan to merge it in the `master` branch in Spring 2022)
+=======
+- **Martin Vahlensieck**, 2021. He implemented the BGP policy analyzer and the auto-completion in the SSH container.
+- **Sandro Lutz**, 2021. He continued the work of Denis and managed to make RPKI work within the mini-Internet. Besides, he improved the docker images that are used within the platform.
+- **Denis Mikhaylov**, 2020. He was the first student who worked on implementing RPKI within the mini-Internet.
+- **Tino Rellstab**, 2019. He implemented some of the core features of the platform needed to move from a VM-based platform to container-based platform.
+
+>>>>>>> dev
 
 ### Disclaimer
 

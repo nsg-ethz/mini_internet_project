@@ -1,0 +1,3 @@
+ZURI    DNS krill:miniinterneteth/d_krill vtysh
+BASE    MATRIX_TARGET routinator:miniinterneteth/d_routinator  vtysh
+GENE	MATRIX host:miniinterneteth/d_host    vtysh

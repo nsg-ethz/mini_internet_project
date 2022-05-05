@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% from 'macros.html' import update_message, h1 %}
+
+{% block head %}
+{{super()}}
+{% if update_frequency %}
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta http-equiv="refresh" content="{{update_frequency}}" />
+{% endif %}
+<script>
+    // overflow-x-auto needs a fixed width to work; the only way I found to make
+    // it responsive was not css but by using js. Sadly.
+    function resize_pre() {
+        let w_menu = document.getElementById("menu").offsetWidth;
+        let w_body = document.getElementById("lg-body").offsetWidth;
+        // 48px equals padding px-6
+        let target_size = Math.min(w_body, w_menu) - 48;
+        document.getElementById("code").style.width = target_size + "px";
+    }
+
+    window.onload = resize_pre;
+    window.onresize = resize_pre;
+</script>
+{% endblock %}
+
+{% block body %}
+<div id="lg-body" class="max-w-4xl mx-auto px-6 pt-6 mb-16">
+    {{ h1("looking glass") }}
+
+    <blockquote class="relative m-4 mb-8 p-4 text-md border-l-4 bg-neutral-100 text-neutral-700 border-neutral-400">
+        <p class="italic quote  mb-4">
+            Looking Glass servers (LG servers) are servers on the Internet running one of a variety of publicly
+            available Looking Glass software implementations. They are commonly deployed by autonomous systems (AS) to
+            offer access to their routing infrastructure in order to facilitate debugging network issues. A Looking
+            Glass server is accessed remotely for the purpose of viewing routing information. Essentially, the server
+            acts as a limited, read-only portal to routers of whatever organization is running the LG server.
+        </p>
+        <cite>
+            <a href="https://en.wikipedia.org/wiki/Looking_Glass_server" class="flex items-center not-italic">
+                <img alt="avatar" class="w-12 mr-4 rounded-full"
+                    src="https://upload.wikimedia.org/wikipedia/commons/6/63/Wikipedia-logo.png" />
+                <div class="flex flex-col">
+                    <span class="text-md text-neutral-800 ">Looking Glass Server</span>
+                    <span class="text-sm text-neutral-500 ">wikipedia.org</span>
+                </div>
+            </a>
+        </cite>
+    </blockquote>
+    <div class="flex items-center justify-center">
+        <div class="mr-8 mb-4">
+            <span class="font-bold">AS</span>
+            <select class="bg-transparent border-0 border-b-2 border-neutral-400 hover:border-[#ff7e79]"
+                onchange="if (this.value) window.location.href=this.value">
+                {% for _group in dropdown_groups|sort %}
+                <option {% if _group==group %}selected{%endif%}
+                    value="{{url_for('looking_glass', group=_group, router=router)}}">
+                    {{_group}}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-4">
+            <span class="font-bold">Router</span>
+            <select class="bg-transparent border-0 border-b-2 border-neutral-400 hover:border-[#ff7e79]"
+                onchange="if (this.value) window.location.href=this.value">
+                {% for _router in dropdown_routers %}
+                <option {% if _router==router %}selected{%endif%}
+                    value="{{url_for('looking_glass', group=group, router=_router)}}">
+                    {{_router}}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+    </div>
+
+    <pre id="code"
+        class="box-border w-48 text-sm px-4 py-2 rounded border border-neutral-300 bg-neutral-100 overflow-x-auto mb-6">{{filecontent|safe}}</pre>
+
+    {{ h1("policy analysis") }}
+    {{ update_message(update_frequency, last_updated)}}
+    {% if not bgp_hints %}
+    <p>
+        The BGP advertisements of <b>AS {{group}}</b> do not seem to violate any policies.
+    </p>
+    {% else %}
+    <p class="mb-2">The BGP advertisements of <b>AS {{group}}</b> violate policies:</p>
+    <ul class="list-disc list-inside">
+        {% for msg in bgp_hints %}
+        <li>{{msg}}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</div>
+{% endblock %}

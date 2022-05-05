@@ -1,0 +1,14 @@
+#!/bin/bash
+
+set -e
+
+# Update the trust store for CA Certificates
+update-ca-certificates --fresh
+
+# Launch the command supplied either by the default CMD (krill) in the
+# Dockerfile or that given by the operator when invoking Docker run. Use exec
+# to ensure krill runs as PID 1 as required by Docker for proper signal
+# handling. This also allows this Docker image to be used to run krill_admin
+# instead of krill.
+
+exec "$@"

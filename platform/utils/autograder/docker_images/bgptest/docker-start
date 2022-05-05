@@ -1,0 +1,12 @@
+#!/bin/sh
+
+set -e
+
+mkfifo /run/exabgp.in
+mkfifo /run/exabgp.out
+chmod 600 /run/exabgp.in
+chmod 600 /run/exabgp.out
+chown exabgp /run/exabgp.in
+chown exabgp /run/exabgp.out
+
+tail -f /dev/null # To keep the container running forever

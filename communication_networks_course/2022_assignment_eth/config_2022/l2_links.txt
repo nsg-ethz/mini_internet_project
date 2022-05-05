@@ -1,0 +1,3 @@
+DCN   S1   DCN   S2   10000   1000
+DCN   S1   DCN   S3   10000   1000
+DCN   S2   DCN   S3   10000   1000

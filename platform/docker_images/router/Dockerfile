@@ -1,124 +1,33 @@
-FROM debian:stretch
+FROM d_base_supervisor:latest
 
-# Install dependencies
-RUN apt-get update
-RUN apt-get install -y \
-    build-essential \
-    git \
-    rsyslog \
-    locales \
-    apt-transport-https \
-    ca-certificates \
-    curl \
-    wget \
-    logrotate \
-    libc-ares2 \
-    libjson-c3 \
-    vim \
-    systemd \
-    procps \
-    openssh-server \
-    inetutils-traceroute \
-    net-tools \
-    tcpdump \
-    dnsutils \
-    vlan \
-    gnupg \
-    lsb-release \
-    autogen \
-    python2.7 \
-    cmake \
-    libpcre3 \
-    libpcre3-dev \
-    autoconf \
-    automake \
-    libtool \
-    make \
-    libreadline-dev \
-    texinfo \
-    libjson-c-dev \
-    pkg-config \
-    bison \
-    flex \
-    libc-ares-dev \
-    python3-dev \
-    python3-pytest \
-    python3-sphinx \
-    libsnmp-dev \
-    libsystemd-dev \
-    libcap-dev
+RUN apk add --no-cache openssh-server frr frr-rpki frr-pythontools \
+    && ssh-keygen -A \
+    && sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/g' /etc/ssh/sshd_config \
+    && sed -i 's/#PrintMotd yes/PrintMotd no/g' /etc/ssh/sshd_config \
+    # Unlocks the root user so that ssh login is allowed.
+    && sed -i s/root:!/"root:*"/g /etc/shadow \
+    && mkdir -p /var/run/sshd /root/.ssh \
+    && chmod 0755 /var/run/sshd
 
-# Prepare libyang installation
-RUN mkdir /libyang
-RUN git clone https://github.com/CESNET/libyang.git /libyang
-RUN mkdir /libyang/build
+RUN install -m 755 -o frr -g frr -d /var/log/frr \
+    && install -m 755 -o frr -g frr -d /var/run/frr \
+    && install -m 775 -o frr -g frrvty -d /etc/frr \
+    && install -m 640 -o frr -g frr /dev/null /etc/frr/zebra.conf \
+    && install -m 640 -o frr -g frr /dev/null /etc/frr/bgpd.conf \
+    && install -m 640 -o frr -g frr /dev/null /etc/frr/ospfd.conf \
+    && install -m 640 -o frr -g frr /dev/null /etc/frr/ospf6d.conf \
+    && install -m 640 -o frr -g frr /dev/null /etc/frr/isisd.conf \
+    && install -m 640 -o frr -g frr /dev/null /etc/frr/ripd.conf \
+    && install -m 640 -o frr -g frr /dev/null /etc/frr/ripngd.conf \
+    && install -m 640 -o frr -g frr /dev/null /etc/frr/pimd.conf \
+    && install -m 640 -o frr -g frr /dev/null /etc/frr/ldpd.conf \
+    && install -m 640 -o frr -g frr /dev/null /etc/frr/nhrpd.conf \
+    && install -m 640 -o frr -g frrvty /dev/null /etc/frr/vtysh.conf
 
-# Install FRR
-# Add FRR GPG key
-COPY frr_keys.asc /frr_keys.asc
-RUN apt-key add /frr_keys.asc
+EXPOSE 22
 
-RUN addgroup --system --gid 92 frr
-RUN addgroup --system --gid 85 frrvty
-RUN adduser --system --ingroup frr --home /var/opt/frr/ --gecos "FRR suite" --shell /bin/false frr
-RUN usermod -a -G frrvty frr
+COPY supervisord.conf /etc/supervisor/conf.d/processes.conf
+COPY looking_glass.sh /usr/local/bin/looking_glass
+COPY run_frr.sh /usr/local/bin/run_frr
 
-RUN mkdir /frr
-RUN git clone --depth 1 --branch frr-7.5 https://github.com/FRRouting/frr.git /frr
-# RUN git clone --branch frr-7.4 https://github.com/FRRouting/frr.git /frr
-# RUN git clone --branch frr-7.3.1 https://github.com/FRRouting/frr.git /frr
-# RUN git clone --depth 1 --branch frr-7.2.1 https://github.com/FRRouting/frr.git /frr
-RUN ldconfig
-WORKDIR /frr
-RUN ./bootstrap.sh
-
-# For some reasons we need to install libyang here and not around line 50 otherwise the configuration fails.
-WORKDIR /libyang/build
-# We checkout the latest stable libyang version 1.0.XXX which is required for frr-7.5 (libyang versions 2.0.XXX do not work)
-# As a reference, previously we used libyang devel branch commit 27f0eb9bc5a3dd7fac5b40cf9ca8335505b7a0ad (v 1.0.228)
-RUN git checkout v1.0.240
-RUN cmake -DENABLE_LYD_PRIV=ON -DCMAKE_INSTALL_PREFIX:PATH=/usr -D CMAKE_BUILD_TYPE:String="Release" ..
-RUN make
-RUN make install
-RUN ldconfig
-WORKDIR /frr
-
-RUN ./configure --enable-exampledir=/usr/share/doc/frr/examples/ --localstatedir=/var/opt/frr --enable-user=frr --enable-group=frr --enable-vty-group=frrvty --disable-doc --localstatedir=/var/run/frr --sbindir=/usr/lib/frr --sysconfdir=/etc/frr --enable-systemd
-RUN make
-RUN make check
-RUN make install
-
-RUN install -m 755 -o frr -g frr -d /var/log/frr
-RUN install -m 755 -o frr -g frr -d /var/opt/frr
-RUN install -m 775 -o frr -g frrvty -d /etc/frr
-RUN install -m 640 -o frr -g frr /dev/null /etc/frr/zebra.conf
-RUN install -m 640 -o frr -g frr /dev/null /etc/frr/bgpd.conf
-RUN install -m 640 -o frr -g frr /dev/null /etc/frr/ospfd.conf
-RUN install -m 640 -o frr -g frr /dev/null /etc/frr/ospf6d.conf
-RUN install -m 640 -o frr -g frr /dev/null /etc/frr/isisd.conf
-RUN install -m 640 -o frr -g frr /dev/null /etc/frr/ripd.conf
-RUN install -m 640 -o frr -g frr /dev/null /etc/frr/ripngd.conf
-RUN install -m 640 -o frr -g frr /dev/null /etc/frr/pimd.conf
-RUN install -m 640 -o frr -g frr /dev/null /etc/frr/ldpd.conf
-RUN install -m 640 -o frr -g frr /dev/null /etc/frr/nhrpd.conf
-RUN install -m 640 -o frr -g frrvty /dev/null /etc/frr/vtysh.conf
-WORKDIR /
-
-# Set locale
-RUN sed -i -e 's/# \(en_US\.UTF-8 .*\)/\1/' /etc/locale.gen && \
-    locale-gen
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US:en
-ENV LC_ALL en_US.UTF-8
-
-# To prevent the error /usr/lib/frr/watchfrr: error while loading shared libraries: libfrr.so.0: cannot open shared object file: No such file or directory when start FRR
-RUN echo include /usr/local/lib >> /etc/ld.so.conf
-RUN ldconfig
-
-RUN mkdir -p /root/.ssh
-
-# Add startup script and set it as entrypoint
-COPY docker-start /usr/sbin/docker-start
-COPY looking_glass.sh /home/.looking_glass.sh
-RUN chmod +x /usr/sbin/docker-start
-ENTRYPOINT ["/usr/sbin/docker-start"]
+RUN chmod +x /usr/local/bin/looking_glass /usr/local/bin/run_frr
