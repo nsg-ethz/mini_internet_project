@@ -1,15 +1,13 @@
-FROM debian:stretch
-RUN apt-get update && apt-get install -y rsyslog locales bind9 bind9utils bind9-doc dnsutils \
-  iputils-ping inetutils-traceroute vim net-tools tcpdump
+FROM d_base:latest
 
-# Set locale
-RUN sed -i -e 's/# \(en_US\.UTF-8 .*\)/\1/' /etc/locale.gen && \
-  locale-gen
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US:en
-ENV LC_ALL en_US.UTF-8
+RUN apk add --no-cache bind \
+    && mkdir -p /var/cache/bind
 
+EXPOSE 53
+
+COPY named.conf /etc/bind/named.conf
 # Add startup script and set it as entrypoint
-ADD docker-start /docker-start
+COPY docker-start /docker-start
 RUN chmod +x /docker-start
 ENTRYPOINT ["/docker-start"]
+CMD ["/usr/sbin/named", "-c", "/etc/bind/named.conf", "-f", "-u", "named"]

@@ -9,6 +9,7 @@ set -o pipefail
 set -o nounset
 
 DIRECTORY="$1"
+DOCKERHUB_USER="${2:-thomahol}"
 source "${DIRECTORY}"/config/subnet_config.sh
 
 # read configs
@@ -37,11 +38,19 @@ chmod +x "${DIRECTORY}"/groups/dns_routes.sh
 if [[ "$is_dns" -eq 0 ]]; then
     echo "There is no DNS server, skipping dns_setup.sh"
 else
-    # dns
-    docker run -itd --net='none' --name="DNS" --hostname="DNS" --privileged \
+    # create dns container, copy files generated from dns_config.sh into the
+    # container before starting it.
+    docker create --net='none' --name="DNS" --hostname="DNS" --privileged \
         -v /etc/timezone:/etc/timezone:ro \
         -v /etc/localtime:/etc/localtime:ro \
-        thomahol/d_dns
+        "${DOCKERHUB_USER}/d_dns"
+
+    docker cp "${DIRECTORY}"/groups/dns/group_config DNS:/etc/bind/group_config
+    docker cp "${DIRECTORY}"/groups/dns/zones DNS:/etc/bind/zones
+    docker cp "${DIRECTORY}"/groups/dns/named.conf.local DNS:/etc/bind/named.conf.local
+    docker cp "${DIRECTORY}"/groups/dns/named.conf.options DNS:/etc/bind/named.conf.options
+
+    docker start DNS
 
     # cache the container pid for ovs-docker.sh
     source "${DIRECTORY}/groups/docker_pid.map"
@@ -93,12 +102,6 @@ else
             done
         fi
     done
-
-    # copy dns config files to container generated from dns_config.sh
-    docker cp "${DIRECTORY}"/groups/dns/group_config DNS:/etc/bind/group_config
-    docker cp "${DIRECTORY}"/groups/dns/zones DNS:/etc/bind/zones
-    docker cp "${DIRECTORY}"/groups/dns/named.conf.local DNS:/etc/bind/named.conf.local
-    docker cp "${DIRECTORY}"/groups/dns/named.conf.options DNS:/etc/bind/named.conf.options
 
     # connect measurement to dns service
     br_name="dns_measurement"

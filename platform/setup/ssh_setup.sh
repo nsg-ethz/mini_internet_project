@@ -6,12 +6,11 @@ set -o nounset
 
 DIRECTORY="$1"
 source "${DIRECTORY}"/config/subnet_config.sh
+source "${DIRECTORY}"/setup/_parallel_helper.sh
 
 # read configs
 readarray groups < "${DIRECTORY}"/config/AS_config.txt
-readarray extern_links < "${DIRECTORY}"/config/external_links_config.txt
 group_numbers=${#groups[@]}
-n_extern_links=${#extern_links[@]}
 
 # bridge for connection from host to ssh containers
 echo -n "-- add-br ssh_to_group " >> "${DIRECTORY}"/groups/add_bridges.sh
@@ -21,7 +20,7 @@ echo "ip a add $subnet_bridge dev ssh_to_group" >> "${DIRECTORY}"/groups/ip_setu
 echo "ip link set dev ssh_to_group up" >> "${DIRECTORY}"/groups/ip_setup.sh
 
 # Generate a pair of keys for the server, and put the public in the proxy container
-ssh-keygen -t rsa -b 4096 -C "comment" -P "" -f "groups/id_rsa" -q
+ssh-keygen -t rsa -b 4096 -C "ta key" -P "" -f "groups/id_rsa" -q
 cp groups/id_rsa.pub groups/authorized_keys
 
 if [ -n "$(docker ps | grep "MEASUREMENT")" ]; then
@@ -53,18 +52,19 @@ for ((k=0;k<group_numbers;k++)); do
         n_l2_links=${#l2_links[@]}
 
         # genarate key pair for authentification between ssh container and group containers
-        ssh-keygen -t rsa -b 4096 -C "comment" -P "" -f "groups/g"${group_number}"/id_rsa" -q
+        ssh-keygen -t rsa -b 4096 -C "internal key group ${group_number}" -P "" -f "groups/g"${group_number}"/id_rsa" -q
         echo 'command="vtysh \"${SSH_ORIGINAL_COMMAND}\"" '$(cat "${DIRECTORY}"/groups/g"${group_number}"/id_rsa.pub) > "${DIRECTORY}"/groups/g"${group_number}"/id_rsa_command.pub
 
         # copy private key to container and change access rights
         docker cp "${DIRECTORY}"/groups/g"${group_number}"/id_rsa "${group_number}"_ssh:/root/.ssh/id_rsa
+        docker cp "${DIRECTORY}"/groups/g"${group_number}"/id_rsa.pub "${group_number}"_ssh:/root/.ssh/id_rsa.pub
         docker cp "${DIRECTORY}"/groups/authorized_keys "${group_number}"_ssh:/root/.ssh/authorized_keys
+        docker cp "${DIRECTORY}"/groups/authorized_keys "${group_number}"_ssh:/etc/ssh/authorized_keys
 
-        # generate password for login to ssh container, safe it to group folder
-        passwd="$(openssl rand -hex 8)"
-        echo "${group_number} ${passwd}" >> "${DIRECTORY}"/groups/ssh_passwords.txt
+        # generate password for login to ssh container, save it to group folder
+        passwd=$(awk "\$1 == \"${group_number}\" { print \$2 }" "${DIRECTORY}/groups/passwords.txt")
         echo -e ""${passwd}"\n"${passwd}"" | docker exec -i "${group_number}"_ssh passwd root
-        echo -e ""${passwd}"\n"${passwd}"" | docker exec -i "${group_number}"_ssh service ssh restart &>/dev/nul
+        docker exec "${group_number}"_ssh bash -c "kill -HUP \$(cat /var/run/sshd.pid)"
 
         # bridge to connect ssh container and group containers
         subnet_ssh_to_group="$(subnet_ext_sshContainer "${group_number}" "sshContainer")"
@@ -105,10 +105,11 @@ for ((k=0;k<group_numbers;k++)); do
                 subnet_host="$(subnet_sshContainer_groupContainer "${group_number}" "${i}" -1 "host")"
                 ./setup/ovs-docker.sh add-port "${group_number}"-ssh ssh "${group_number}"_"${rname}"host --ipaddress="${subnet_host}"
                 docker cp "${DIRECTORY}"/groups/g"${group_number}"/id_rsa.pub "${group_number}"_"${rname}"host:/root/.ssh/authorized_keys
+                docker exec "${group_number}"_"${rname}"host bash -c "kill -HUP \$(cat /var/run/sshd.pid)"
             fi
 
             if [[ "${property2}" == *L2* ]]; then
-                l2_name=$(echo $property2 | cut -d ':' -f 1 | cut -f 2 -d '-')
+                l2_name=$(echo $property2 | cut -s -d ':' -f 1 | cut -f 2 -d '-')
 
                 if [[ ! $l2_done =~ (^| )$l2_name($| ) ]]; then
                     for ((l=0;l<n_l2_switches;l++)); do
@@ -152,3 +153,5 @@ for ((k=0;k<group_numbers;k++)); do
         done
     fi
 done
+
+wait

@@ -8,7 +8,9 @@ set -o pipefail
 set -o nounset
 
 DIRECTORY="$1"
+DOCKERHUB_USER="${2:-thomahol}"
 source "${DIRECTORY}"/config/subnet_config.sh
+source "${DIRECTORY}"/setup/_parallel_helper.sh
 
 # read configs
 readarray groups < "${DIRECTORY}"/config/AS_config.txt
@@ -38,7 +40,8 @@ else
 
     touch "$location"/destination_ips.txt
     chmod +x "${location}"/destination_ips.txt
-
+    touch "$location"/connectivity.txt
+    chmod +x "${location}"/connectivity.txt
 
     # start matrix container
     docker run -itd --net='none' --name="MATRIX" --hostname="MATRIX" \
@@ -47,7 +50,9 @@ else
         -v /etc/timezone:/etc/timezone:ro \
         -v /etc/localtime:/etc/localtime:ro \
         -v "${DIRECTORY}"/config/welcoming_message.txt:/etc/motd:rw \
-        -v "${location}"/destination_ips.txt:/home/destination_ips.txt thomahol/d_matrix
+        -v "${location}"/destination_ips.txt:/home/destination_ips.txt \
+        -v "${location}"/connectivity.txt:/home/connectivity.txt \
+        "${DOCKERHUB_USER}/d_matrix"
 
     # cache the docker pid for ovs-docker.sh
     source ${DIRECTORY}/groups/docker_pid.map
@@ -75,9 +80,9 @@ else
             # find the ID of that router
             dest_router_id='None'
             for i in "${!routers[@]}"; do
-               if [[ "${routers[$i]}" == *'MATRIX_TARGET'* ]]; then
-                   dest_router_id=$i;
-               fi
+            if [[ "${routers[$i]}" == *'MATRIX_TARGET'* ]]; then
+                dest_router_id=$i;
+            fi
             done
 
             if [ "$dest_router_id" != 'None' ]; then
@@ -119,4 +124,6 @@ else
             fi
         fi
     done
+
+    wait
 fi

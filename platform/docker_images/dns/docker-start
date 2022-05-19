@@ -1,7 +1,8 @@
 #!/bin/sh
 
-set -e
+chown -R root:named /etc/bind /var/run/named
+chown -R named:named /var/cache/bind
+chmod -R 770 /etc/bind /var/cache/bind /var/run/named
+find /etc/bind /var/cache/bind -type f -exec chmod 640 -- {} +
 
-service bind9 start
-
-tail -f /dev/null # To keep the container running forever
+exec "$@"

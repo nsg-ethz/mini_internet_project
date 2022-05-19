@@ -8,6 +8,7 @@ set -o nounset
 
 DIRECTORY="$1"
 source "${DIRECTORY}"/config/subnet_config.sh
+source "${DIRECTORY}"/setup/_parallel_helper.sh
 
 # read configs
 readarray groups < "${DIRECTORY}"/config/AS_config.txt
@@ -37,33 +38,41 @@ echo "    auth-nxdomain no;    # conform to RFC1035" >> "${location_options}"
 echo "};" >> "${location_options}"
 
 for ((i=0;i<n_groups;i++)); do
-    group_i=(${groups[$i]})
-    group_number="${group_i[0]}"
-    group_as="${group_i[1]}"
-    group_config="${group_i[2]}"
-    group_router_config="${group_i[3]}"
-    group_internal_links="${group_i[4]}"
+    (
+        group_i=(${groups[$i]})
+        group_number="${group_i[0]}"
+        group_as="${group_i[1]}"
+        group_config="${group_i[2]}"
+        group_router_config="${group_i[3]}"
+        group_internal_links="${group_i[4]}"
 
-    location_local="${DIRECTORY}"/groups/dns/named.conf.local
-    location_grp="groups/dns/group_config/named.conf.local.group""${group_number}"
-    if [ "${group_as}" != "IXP" ];then
+        location_local="${DIRECTORY}"/groups/dns/named.conf.local
+        location_grp="groups/dns/group_config/named.conf.local.group""${group_number}"
+        if [ "${group_as}" != "IXP" ];then
 
-        readarray routers < "${DIRECTORY}"/config/$group_router_config
-        readarray intern_links < "${DIRECTORY}"/config/$group_internal_links
-        n_routers=${#routers[@]}
-        n_intern_links=${#intern_links[@]}
+            readarray routers < "${DIRECTORY}"/config/$group_router_config
+            readarray intern_links < "${DIRECTORY}"/config/$group_internal_links
+            n_routers=${#routers[@]}
+            n_intern_links=${#intern_links[@]}
 
-        echo "include \"/etc/bind/group_config/named.conf.local.group"${group_number}"\";" >> "${location_local}"
-        echo "zone \"group"${group_number}"\" {" >> "${location_grp}"
-        echo " type master;" >> "${location_grp}"
-        echo " file \"/etc/bind/zones/db.group"${group_number}"\";" >> "${location_grp}"
-        echo "};" >> "${location_grp}"
-        echo "zone \""${group_number}".in-addr.arpa\" {" >> "${location_grp}"
-        echo " type master;" >> "${location_grp}"
-        echo " file \"/etc/bind/zones/db."${group_number}"\";" >> "${location_grp}"
-        echo "};" >> "${location_grp}"
-    fi
+            echo "include \"/etc/bind/group_config/named.conf.local.group"${group_number}"\";" >> "${location_local}"
+            {
+                echo "zone \"group"${group_number}"\" {"
+                echo " type master;"
+                echo " file \"/etc/bind/zones/db.group"${group_number}"\";"
+                echo "};"
+                echo "zone \""${group_number}".in-addr.arpa\" {"
+                echo " type master;"
+                echo " file \"/etc/bind/zones/db."${group_number}"\";"
+                echo "};"
+            } >> "${location_grp}"
+        fi
+    ) &
+
+    wait_if_n_tasks_are_running
 done
+
+wait
 
 for ((j=0;j<n_groups;j++)); do
     group_j=(${groups[$j]})
@@ -142,11 +151,18 @@ for ((j=0;j<n_groups;j++)); do
                 reverse1="${third_sub1%/*}"".""${second_sub1%.*}"".""${first_sub1%.*.*}"
                 reverse2="${third_sub2%/*}"".""${second_sub2%.*}"".""${first_sub2%.*.*}"
 
-                echo "${reverse1}"" IN  PTR ""host""-""${rname}"".group""${group_number}""." >> "${location_db}"
-                echo "${reverse2}"" IN  PTR ""${rname}""-""host"".group""${group_number}""." >> "${location_db}"
+                {
+                    echo "${reverse1}"" IN  PTR ""host""-""${rname}"".group""${group_number}""."
+                    echo "${reverse2}"" IN  PTR ""${rname}""-""host"".group""${group_number}""."
+                } >> "${location_db}"
 
-                echo "host""-""${rname}"".group""${group_number}"".       IN      A      " "${subnet1%/*}" >> "${location_grp}"
-                echo "${rname}""-""host"".group""${group_number}"".       IN      A      " "${subnet2%/*}" >> "${location_grp}"
+                {
+                    if [[ "${property2}" == *"krill"* ]]; then
+                        echo "rpki-server.group${group_number}.     IN      A      ${subnet1%/*}"
+                    fi
+                    echo "host""-""${rname}"".group""${group_number}"".       IN      A      " "${subnet1%/*}"
+                    echo "${rname}""-""host"".group""${group_number}"".       IN      A      " "${subnet2%/*}"
+                } >> "${location_grp}"
             fi
         done
 
@@ -170,10 +186,14 @@ for ((j=0;j<n_groups;j++)); do
             reverse1="${third_sub1%/*}"".""${second_sub1%.*}"".""${first_sub1%.*.*}"
             reverse2="${third_sub2%/*}"".""${second_sub2%.*}"".""${first_sub2%.*.*}"
 
-            echo "${reverse1}"" IN  PTR ""${router1}""-""${router2}"".group""${group_number}""." >> "${location_db}"
-            echo "${reverse2}"" IN  PTR ""${router2}""-""${router1}"".group""${group_number}""." >> "${location_db}"
-            echo "${router1}""-""${router2}"".group""${group_number}"".       IN      A      " "${subnet1%/*}" >> "${location_grp}"
-            echo "${router2}""-""${router1}"".group""${group_number}"".       IN      A      " "${subnet2%/*}" >> "${location_grp}"
+            {
+                echo "${reverse1}"" IN  PTR ""${router1}""-""${router2}"".group""${group_number}""."
+                echo "${reverse2}"" IN  PTR ""${router2}""-""${router1}"".group""${group_number}""."
+            } >> "${location_db}"
+            {
+                echo "${router1}""-""${router2}"".group""${group_number}"".       IN      A      " "${subnet1%/*}"
+                echo "${router2}""-""${router1}"".group""${group_number}"".       IN      A      " "${subnet2%/*}"
+            } >> "${location_grp}"
         done
     fi
 done

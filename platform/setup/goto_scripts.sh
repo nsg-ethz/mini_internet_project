@@ -74,8 +74,7 @@ for ((k=0;k<n_groups;k++)); do
                 # ssh to host
                 echo "if [ \"\${location}\" == \"$rname\" ] && [ \"\${device}\" == \""host"\" ]; then" >> "${file_loc}"
                 echo "  subnet=""$(subnet_sshContainer_groupContainer "${group_number}" "${i}" -1  "host")" >> "${file_loc}"
-                echo "  ssh -t -o "StrictHostKeyChecking=no" root@\"\${subnet%???}"\" >> "${file_loc}"
-                echo "  exit" >> "${file_loc}"
+                echo "  exec ssh -t -o "StrictHostKeyChecking=no" root@\"\${subnet%???}"\" >> "${file_loc}"
                 echo "fi" >> "${file_loc}"
             fi
 
@@ -83,22 +82,19 @@ for ((k=0;k<n_groups;k++)); do
                 #ssh to router vtysh
                 echo "if [ \"\${location}\" == \"$rname\" ] && [ \"\${device}\" == \""router"\" ]; then" >> "${file_loc}"
                 echo "  subnet=""$(subnet_sshContainer_groupContainer "${group_number}" "${i}" -1  "router")" >> "${file_loc}"
-                echo "  ssh -t -o StrictHostKeyChecking=no root@\"\${subnet%???}\"" >> "${file_loc}"
-                echo "  exit" >> "${file_loc}"
+                echo "  exec ssh -t -o StrictHostKeyChecking=no root@\"\${subnet%???}\"" >> "${file_loc}"
                 echo "fi" >> "${file_loc}"
             else
                 #ssh to router vtysh
                 echo "if [ \"\${location}\" == \"$rname\" ] && [ \"\${device}\" == \""router"\" ]; then" >> "${file_loc}"
                 echo "  subnet=""$(subnet_sshContainer_groupContainer "${group_number}" "${i}" -1  "router")" >> "${file_loc}"
-                echo "  ssh -t -o StrictHostKeyChecking=no root@\"\${subnet%???}\" vtysh" >> "${file_loc}"
-                echo "  exit" >> "${file_loc}"
+                echo "  exec ssh -t -o StrictHostKeyChecking=no root@\"\${subnet%???}\" vtysh" >> "${file_loc}"
                 echo "fi" >> "${file_loc}"
 
                 #shh to router container
                 echo "if [ \"\${location}\" == \"$rname\" ] && [ \"\${device}\" == \""container"\" ]; then" >> "${file_loc}"
                 echo "  subnet=""$(subnet_sshContainer_groupContainer "${group_number}" "${i}" -1  "router")" >> "${file_loc}"
-                echo "  ssh -t -o StrictHostKeyChecking=no root@\"\${subnet%???}\" bash" >> "${file_loc}"
-                echo "  exit" >> "${file_loc}"
+                echo "  exec ssh -t -o StrictHostKeyChecking=no root@\"\${subnet%???}\" bash" >> "${file_loc}"
                 echo "fi" >> "${file_loc}"
             fi
 
@@ -113,8 +109,7 @@ for ((k=0;k<n_groups;k++)); do
 
             echo "if [ \"\${location}\" == \"$l2_name\" ] && [ \"\${device}\" == \""${sname}"\" ]; then" >> "${file_loc}"
             echo "  subnet=""$(subnet_sshContainer_groupContainer "${group_number}" "${l2_id[$l2_name]}" "${l2_cur[$l2_name]}" "L2")" >> "${file_loc}"
-            echo "  ssh -t -o StrictHostKeyChecking=no root@\"\${subnet%???}"\" >> "${file_loc}"
-            echo "  exit" >> "${file_loc}"
+            echo "  exec ssh -t -o StrictHostKeyChecking=no root@\"\${subnet%???}"\" >> "${file_loc}"
             echo "fi" >> "${file_loc}"
 
             l2_cur[$l2_name]=$((${l2_cur[$l2_name]}+1))
@@ -133,8 +128,7 @@ for ((k=0;k<n_groups;k++)); do
 
                 echo "if [ \"\${location}\" == \"$l2_name\" ] && [ \"\${device}\" == \""$hname"\" ]; then" >> "${file_loc}"
                 echo "  subnet=""$(subnet_sshContainer_groupContainer "${group_number}" "${l2_id[$l2_name]}" "${l2_cur[$l2_name]}" "L2")" >> "${file_loc}"
-                echo "  ssh -t -o StrictHostKeyChecking=no root@\"\${subnet%???}"\" >> "${file_loc}"
-                echo "  exit" >> "${file_loc}"
+                echo "  exec ssh -t -o StrictHostKeyChecking=no root@\"\${subnet%???}"\" >> "${file_loc}"
                 echo "fi" >> "${file_loc}"
 
                 l2_cur[$l2_name]=$((${l2_cur[$l2_name]}+1))

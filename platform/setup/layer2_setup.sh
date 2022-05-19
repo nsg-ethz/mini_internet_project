@@ -51,7 +51,7 @@ for ((k=0;k<group_numbers;k++)); do
         fi
 
         br_name="l2-"${group_number}
-        echo -n "-- add-br "${br_name}" " >> "${DIRECTORY}"/groups/add_bridges.sh
+        echo -n "-- add-br "${br_name}" -- set-fail-mode "${br_name}" secure " >> "${DIRECTORY}"/groups/add_bridges.sh
         echo "ovs-vsctl set bridge "${br_name}" other-config:forward-bpdu=true" >> "${DIRECTORY}"/groups/l2_init_switch.sh
 
         for ((l=0;l<n_l2_switches;l++)); do

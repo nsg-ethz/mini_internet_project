@@ -8,36 +8,28 @@ set -o nounset
 
 # Check for programs we'll need.
 search_path () {
-    save_IFS=$IFS
-    IFS=:
-    for dir in $PATH; do
-        IFS=$save_IFS
-        if test -x "$dir/$1"; then
-            return 0
-        fi
-    done
-    IFS=$save_IFS
+    type -p "$1" > /dev/null && return 0
     echo >&2 "$0: $1 not found in \$PATH, please install and try again"
     exit 1
 }
+
+if (($UID != 0)); then
+    echo "$0 needs to be run as root"
+    exit 1
+fi
 
 search_path ovs-vsctl
 search_path docker
 search_path uuidgen
 
-if ! docker ps > /dev/null 2>&1; then
-	echo >&2 "${0##*/}: cannot interact with docker, do you have the"\
-		"required privileges?"
-	exit 1
-fi
-
-if ! ip netns > /dev/null 2>&1; then
+if (ip netns) > /dev/null 2>&1; then :; else
     echo >&2 "${0##*/}: ip utility not found (or it does not support netns),"\
              "cannot proceed"
     exit 1
 fi
 
 DIRECTORY=$(cd `dirname $0` && pwd)
+DOCKERHUB_USER="miniinterneteth"
 
 echo "$(date +%Y-%m-%d_%H-%M-%S)"
 
@@ -75,6 +67,13 @@ time ./setup/dns_config.sh "${DIRECTORY}"
 echo ""
 echo ""
 
+echo "rpki_config.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
+echo "rpki_config.sh: "
+time ./setup/rpki_config.sh "${DIRECTORY}"
+
+echo ""
+echo ""
+
 echo "vpn_config.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
 echo "vpn_config.sh: "
 time ./setup/vpn_config.sh "${DIRECTORY}"
@@ -98,7 +97,7 @@ echo ""
 
 echo "container_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
 echo "container_setup.sh: "
-time ./setup/container_setup.sh "${DIRECTORY}"
+time ./setup/container_setup.sh "${DIRECTORY}" "${DOCKERHUB_USER}"
 
 echo ""
 echo ""
@@ -138,7 +137,7 @@ echo ""
 echo "echo \"measurement links\"" >> "${DIRECTORY}"/groups/ip_setup.sh
 echo "measurement_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
 echo "measurement_setup.sh: "
-time ./setup/measurement_setup.sh "${DIRECTORY}"
+time ./setup/measurement_setup.sh "${DIRECTORY}" "${DOCKERHUB_USER}"
 
 echo ""
 echo ""
@@ -154,7 +153,7 @@ echo ""
 echo "echo \"matrix_setup\"" >> "${DIRECTORY}"/groups/ip_setup.sh
 echo "matrix_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
 echo "matrix_setup.sh: "
-time ./setup/matrix_setup.sh "${DIRECTORY}"
+time ./setup/matrix_setup.sh "${DIRECTORY}" "${DOCKERHUB_USER}"
 
 echo ""
 echo ""
@@ -162,7 +161,7 @@ echo ""
 echo "echo \"dns links\"" >> "${DIRECTORY}"/groups/ip_setup.sh
 echo "dns_setup.sh: "
 echo "dns_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
-time ./setup/dns_setup.sh "${DIRECTORY}"
+time ./setup/dns_setup.sh "${DIRECTORY}" "${DOCKERHUB_USER}"
 
 echo ""
 echo ""
@@ -189,7 +188,7 @@ sleep 10
 echo ""
 echo ""
 
-echo "dns_routes"
+echo "dns_routes.sh"
 echo "dns_routes $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
 time ./groups/dns_routes.sh
 
@@ -231,6 +230,30 @@ time ./setup/mpls_setup.sh "${DIRECTORY}"
 echo ""
 echo ""
 
+echo "Waiting 60sec for RPKI CA and proxy to startup.."
+sleep 60
+
+echo "rpki_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
+echo "rpki_setup.sh: "
+time ./setup/rpki_setup.sh "${DIRECTORY}"
+
+echo ""
+echo ""
+
+echo "website_setup.sh: "
+echo "website_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
+time ./setup/website_setup.sh "${DIRECTORY}"
+
+echo ""
+echo ""
+
+echo "webserver_links.sh: "
+echo "webserver_links.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
+time ./groups/rpki/webserver_links.sh
+
+echo ""
+echo ""
+
 echo "wait" >> "${DIRECTORY}"/groups/delay_throughput.sh
 echo "delay_throughput.sh: "
 echo "delay_throughput.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
@@ -249,9 +272,10 @@ echo "END $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
 echo ""
 echo ""
 
-# restart dns server with new configs
+# reload dns server config
 if [ -n "$(docker ps | grep "DNS")" ]; then
-    docker exec -d DNS service bind9 restart
+    # docker exec -d DNS service bind9 restart
+    docker kill --signal=HUP DNS
 fi
 
 echo "$(date +%Y-%m-%d_%H-%M-%S)"

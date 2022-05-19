@@ -88,6 +88,8 @@ done
 docker kill DNS &>/dev/null || true &
 docker kill MEASUREMENT &>/dev/null || true &
 docker kill MATRIX &>/dev/null || true &
+docker kill WEB &>/dev/null || true &
+docker kill PROXY &>/dev/null || true &
 
 wait
-docker system prune -f
+docker system prune -f --volumes

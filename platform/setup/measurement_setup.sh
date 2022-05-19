@@ -8,6 +8,7 @@ set -o pipefail
 set -o nounset
 
 DIRECTORY="$1"
+DOCKERHUB_USER="${2:-thomahol}"
 source "${DIRECTORY}"/config/subnet_config.sh
 
 # read configs
@@ -37,10 +38,12 @@ else
     subnet_dns="$(subnet_router_DNS -1 "dns")"
     docker run -itd --net='none' --dns="${subnet_dns%/*}" \
         --sysctl net.ipv4.icmp_ratelimit=0 \
-        --name="MEASUREMENT" --hostname="MEASUREMENT" --cpus=2 --pids-limit 100 \
+        --name="MEASUREMENT" --hostname="MEASUREMENT" \
+        --cpus=2 --pids-limit 100 \
         -v /etc/timezone:/etc/timezone:ro \
         -v /etc/localtime:/etc/localtime:ro \
-        --cap-add=NET_ADMIN thomahol/d_measurement
+        --cap-add=NET_ADMIN \
+        "${DOCKERHUB_USER}/d_measurement"
 
     # cache the docker pid for ovs-docker.sh
     source ${DIRECTORY}/groups/docker_pid.map

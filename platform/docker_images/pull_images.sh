@@ -6,7 +6,13 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
-for name in router ixp host ssh measurement dns switch matrix vpn vlc hostm; do
-    echo docker pull thomahol/d_$name
-    docker pull thomahol/d_$name
+images=(router ixp host ssh measurement dns switch matrix vpn vlc hostm krill routinator webserver)
+
+# If you want to use your custom docker containers and upload them into
+# docker hub, change the docker username with your own docker username.
+docker_name=miniinterneteth
+
+for image in "${images[@]}"; do
+    echo docker pull "${docker_name}/d_${image}"
+    docker pull "${docker_name}/d_${image}"
 done

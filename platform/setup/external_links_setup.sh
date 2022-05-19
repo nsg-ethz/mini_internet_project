@@ -13,7 +13,7 @@ source "${DIRECTORY}"/config/subnet_config.sh
 
 # read configs
 readarray groups < "${DIRECTORY}"/config/AS_config.txt
-readarray extern_links < "${DIRECTORY}"/config/external_links_config.txt
+readarray extern_links < "${DIRECTORY}"/config/aslevel_links.txt
 
 group_numbers=${#groups[@]}
 n_extern_links=${#extern_links[@]}

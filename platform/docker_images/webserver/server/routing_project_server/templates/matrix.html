@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% from 'macros.html' import update_message, h1 %}
+
+{# Use a repeating-linear-gradient to put a strping pattern over the #}
+{# progress bar if any element is at 0% #}
+{% macro stripes(condition) -%}
+{% if condition -%}
+style="background-image: repeating-linear-gradient(45deg, transparent, transparent 4px, white 4px, white 6px);"
+{%- endif %}
+{%- endmacro %}
+{% macro stacknumber(asn) -%}
+{% if asn >= 100 -%}<span style="margin-bottom:-0.25rem">{{ asn // 100}}</span>{% endif %}
+{% if asn >= 10 -%}<span style="margin-bottom:-0.25rem">{{ (asn % 100) // 10}}</span>{% endif %}
+<span>{{ asn % 10}}</span>
+{%- endmacro %}
+
+{% block head %}
+{{ super() }}
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta http-equiv="refresh" content="{{60 if not update_frequency else update_frequency}}" />
+{% endblock %}
+
+{% block body %}
+<!-- Column for text etc with fixed size. -->
+<div class="max-w-4xl mx-auto p-6">
+	{{ h1("connectivity matrix") }}
+	{{ update_message(update_frequency, last_updated)}}
+	<p class="mb-2">
+		This connectivity matrix indicates the networks that each group
+	</p>
+	<ul class="list-disc list-inside mb-2">
+		<li>can reach with a valid AS-level path (<span class="bg-[#56c157]">&nbsp;&nbsp;&nbsp;</span>);
+		</li>
+		<li>can reach with an invalid AS-level path (<span class="bg-[#f0ad4e]">&nbsp;&nbsp;&nbsp;</span>);
+		</li>
+		<li>cannot reach (<span class="bg-[#d5605e]">&nbsp;&nbsp;&nbsp;</span>). </li>
+	</ul>
+	<p class="mb-2">
+		We determine reachability by sending periodic pings between all networks,
+		if the ping succeeds, we consider the AS reachable.
+		In addition to the ping, we compare the BGP looking glass outputs with
+		the project topology to determine whether the path between two ASes is valid, i.e. if it does not violate any
+		policies.
+	</p>
+	<p class="mb-8">
+		Note that the period for pings between two ASes can be higher than the matrix update frequency, and it may take a few matrix updates until a
+		change for a particular pair of ASes is visible.
+	</p>
+	<!-- Progress bar -->
+	{% if valid or invalid or failure %}
+	<div class="w-full rounded-lg border border-neutral-300 bg-neutral-300 flex mb-8">
+		<div class="basis-[{{valid}}%] rounded-l-lg px-2 p-1 bg-[#56c157]"
+			title="Reachable with valid path: {{valid}}%" {{stripes(not valid)}}>
+			{{valid}}%
+		</div>
+		<div class="basis-[{{invalid}}%] px-2 p-1 bg-[#f0ad4e] border-x-2 border-white/50"
+			title="Reachable with invalid path: {{invalid}}%" {{stripes(not invalid)}}>
+			{{invalid}}%
+		</div>
+		<div class="basis-[{{failure}}%] px-2 p-1 rounded-r-lg bg-[#d5605e]" title="Not reachable: {{failure}}%"
+			{{stripes(not failure)}}>
+			{{failure}}%
+		</div>
+	</div>
+	{% else %}
+	<p class="italic text-neutral-500 mb-6 text-center mt-16">
+		Sorry, no data is available! Please check in later.
+	</p>
+	{% endif %}
+	<div
+		class="2xl:hidden mb-8 p-4 text-md border-l-4 bg-neutral-100 text-neutral-700 border-neutral-400 flex flex-row">
+		<div
+			class="flex shrink-0 items-center justify-center text-2xl row-span-2 w-12 h-12 mr-4 rounded-full bg-orange-300">
+			🚨
+		</div>
+		<p>
+			Your screen is not wide enough to properly display the connectivity
+			matrix!<br />We recommend a larger screen for the best experience.
+		</p>
+	</div>
+</div>
+
+<!-- Matrix is allowed to spread out more. -->
+<!-- We use a trick: padding-bottom is relative to cell _width_, -->
+<!-- Thus setting it to 85% gives us (almost) square cells. -->
+{% if connectivity %}
+{% set n = connectivity|length %}
+<div class="max-w-full mx-auto mb-16 overflow-x-auto">
+	<div class="grid border border-white/50 border-collapse mono {% if n>= 50 %}text-xs{% endif %}"
+		style="grid-template-columns: fit-content(100px) repeat({{ n }}, minmax(20px, 1fr));">
+		<!-- header row. -->
+		<div class="border border-white/50 text-center self-end">AS</div>
+		{% for asn in (connectivity|sort) %}
+		<div class="border border-white/50 text-center even:bg-neutral-200 flex flex-col justify-end">
+			{{ stacknumber(asn) }}
+		</div>
+		{% endfor %}
+		<!-- content rows -->
+		<!-- Add a little padding to ASN to make it look nicer. -->
+		{% for asn in connectivity|sort %}
+		<div class="border border-white/50 even:bg-neutral-200 text-right pr-1">{{asn}}</div>
+		{% for asn_dst in connectivity[asn]|sort %}
+		{% if not connectivity[asn][asn_dst] %}
+		<div class="border border-white/50 bg-[#d5605e]" title="AS{{asn}}&rarr;AS{{asn_dst}}: Not Reachable"
+			style="padding-bottom: 80%;">
+		</div>
+		{% else %}
+		{% if validity and (asn in validity) and (asn_dst in validity[asn]) %}
+		{% if validity[asn][asn_dst] %}
+		<div class="border border-white/50 bg-[#56c157]" title="AS{{asn}}&rarr;AS{{asn_dst}}: Reachable with valid path"
+			style="padding-bottom: 80%;">
+		</div>
+		{% else %}
+		<div class="border border-white/50 bg-[#f0ad4e]"
+			title="AS{{asn}}&rarr;AS{{asn_dst}}: Reachable with invalid path" style="padding-bottom: 80%;">
+		</div>
+		{% endif %}
+		{% else %}
+		<div class="border border-white/50 bg-[#56c157]"
+			title="AS{{asn}}&rarr;AS{{asn_dst}}: Reachable, but validity of path could not be verified."
+			style="padding-bottom: 80%;">
+		</div>
+		{% endif %}
+		{% endif %}
+		{% endfor %}
+		{% endfor %}
+	</div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% from 'macros.html' import h1 %}
+
+{% set icons = {
+'provider': ("🎩", 'bg-orange-300'),
+'customer': ("💳", 'bg-lime-200'),
+'peer': ("🤝", 'bg-blue-200'),
+'other': ("?", 'bg-neural-200'),
+} -%}
+{% macro icon(role) -%}
+{% set key = role|lower if role|lower in icons else 'other' %}
+<div
+    class="hidden sm:flex shrink-0 items-center justify-center text-2xl row-span-2 w-12 mr-4 rounded-full {{icons[key][1]}}">
+    {{icons[key][0]|safe}}
+</div>
+{%- endmacro %}
+{% macro tiny_icon(role) -%}
+{% set key = role|lower if role|lower in icons else 'other' %}
+<span
+    class="visible sm:hidden flex shrink-0 items-center justify-center text-xs w-5 mr-0.5 rounded-full {{icons[key][1]}}">
+    {{icons[key][0]|safe}}
+</span>
+{%- endmacro %}
+{% macro party(data) -%}
+<div class="w-full mb-2 p-2 px-4 rounded border border-neutral-300 flex flex-col">
+    <div class="self-center text-sm flex flex-row">
+        {{tiny_icon(data.role)}}
+        <span class="text-neutral-700">{{data.role|upper}}</span>
+    </div>
+    <div class="flex flex-row justify-center sm:justify-start">
+        {{icon(data.role)}}
+        <div class="flex flex-col">
+            <!-- IXP case -->
+            {% if "IXP" in data.router %}
+            <div class="font-bold"><b>AS {{data.router}}</b> </div>
+            <div class="text-sm text-neutral-700">{{data.ip if data.ip is not none else "N/A"}}</div>
+            <!-- Case of a normal AS -->
+            {% else %}
+            <div class="font-bold"><b>AS {{data.asn}}</b> <span class="text-neutral-500">/</span>
+                {{data.router}}</div>
+            <div class="text-sm text-neutral-700">{{data.ip if data.ip is not none else "N/A"}}</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{%- endmacro %}
+{% macro connected() -%}
+<div class="text-xl text-neutral-500 font-bold mono self-center mx-2 sm:mx-4 md:mx-8">
+    <>
+</div>
+{%- endmacro %}
+
+{% block body %}
+<div class="max-w-4xl mx-auto p-6">
+    {{ h1("AS connections") }}
+    <p>
+        This list shows all inter-AS connections. For each connection, it shows both involved ASes, the edge-routers at
+        which their networks are connected, as well as their business relationship.
+    </p>
+    <p class="mb-4">
+        Initially, the interfaces are not yet configured.
+        When setting them up, use the IP addresses provided below.
+    </p>
+
+    {% if connections %}
+    <div class="grid justify-center justify-items-center items-center overflow-x-auto mb-16"
+        style="grid-template-columns: min-content() fit-content(200px)  min-content();">
+        <!-- First row: reset button. -->
+        <div class="col-span-3 justify-self-center">
+            <form action="{{url_for('as_connections')}}">
+                <button type="submit" class="rounded border p-0 px-4
+                    text-black border-black
+                    disabled:text-neutral-400 disabled:border-neutral-300
+                    hover:text-[#ff7e79] hover:border-[#ff7e79]
+                    " {% if group is none %}disabled{% endif %}>reset
+                    filter</button>
+            </form>
+        </div>
+        <!-- Second row: filters. -->
+        <div class="mb-2 px-4">
+            <select class="bg-transparent font-bold border-0 border-b-2 border-neutral-400 hover:border-[#ff7e79]"
+                onchange="if (this.value) window.location.href=this.value">
+                <option {% if group is none %}selected{%endif%} value="{{url_for('as_connections', group=None)}}">
+                    any AS
+                </option>
+                {% for _group in dropdown_groups|sort %}
+                {# Always reset second field. #}
+                <option {% if _group==group %}selected{%endif%} value="{{url_for('as_connections', group=_group)}}">
+                    AS {{_group}}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        {{ connected() }}
+        <div class="mb-2 px-4">
+            <select
+                class="max-w-4xl m-2 bg-transparent font-bold border-0 border-b-2 border-neutral-400 hover:border-[#ff7e79]"
+                onchange="if (this.value) window.location.href=this.value">
+                <option {% if othergroup is none %}selected{%endif%} value="{{url_for('as_connections', group=group)}}">
+                    any AS
+                </option>
+                {% for _group in dropdown_others|sort %}
+                {# If group is None, selecting other selects group instead. #}
+                <option {% if _group==othergroup %}selected{%endif%}
+                    value="{{url_for('as_connections', group=group if group is not none else _group, othergroup=_group if group is not none else None)}}">
+                    AS {{_group}}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <!-- Following rows: connections. -->
+        {% for conn in connections %}
+        {{ party(conn[0])}}
+        {{ connected() }}
+        {{ party(conn[1])}}
+        {% endfor %}
+    </div>
+    {% else %}
+    <p>There are no connections!</p>
+    {% endif %}
+    {% endblock %}
+</div>

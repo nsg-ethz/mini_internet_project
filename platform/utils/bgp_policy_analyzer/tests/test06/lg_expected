@@ -1,5 +1,0 @@
-ERROR: AS 3 should have an announcement for 4.0.0.0/8 from AS 4
-ERROR: AS 3 should have an announcement for 5.0.0.0/8 from AS 4
-ERROR: AS 3 should have an announcement for 6.0.0.0/8 from AS 4
-EXP: AS 3 is using 1 to reach prefix 4.0.0.0/8 via a Customer-Provider relationship although there is a Peer-Peer route via 4
-EXP: AS 3 is using 2 to reach prefix 4.0.0.0/8 via a Customer-Provider relationship although there is a Peer-Peer route via 4
