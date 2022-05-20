@@ -1,3 +1,4 @@
+#!/bin/bash
 goto_complete() {
 	local narg="${#COMP_WORDS[@]}" regex
 	locations=$(sed -n 's/^if.*location}" == "\(.*\)" ] &&.*/\1/p' "$1" | sort -u)
@@ -22,3 +23,48 @@ goto_complete() {
 
 complete -F goto_complete goto.sh
 
+restore_configs_complete() {
+	local narg="${#COMP_WORDS[@]}" regex
+	if [ "$narg" = 2 ]
+	then
+		compopt -o filenames -o plusdirs
+		COMPREPLY=($(compgen -o filenames -f -X '!*.zip' -- "$2"))
+		return
+	fi
+
+	# Check the first argument is a valid file or directory
+	if [ ! -e "$3" ]
+	then
+		return
+	fi
+
+	# Second argument is being completed
+	if [ "$narg" = 3 ]
+	then
+		locations=$(sed -n 's/^if.*router_name" == "\(.*\)" ||.*/\1/p' "$1" | sort -u)
+		# Filter based on what is already typed
+		locations=$(echo "$locations"$'\n'all | grep -- "^$2")
+		COMPREPLY=($locations)
+		return
+	fi
+	# Only takes 2 arguments
+    return
+}
+
+complete -F restore_configs_complete restore_configs.sh
+
+restart_ospfd_complete() {
+	local narg="${#COMP_WORDS[@]}" regex
+	if [ "$narg" = 2 ]
+	then
+		locations=$(sed -n 's/^if.*router_name" == "\(.*\)" ||.*/\1/p' "$1" | sort -u)
+		# Filter based on what is already typed
+		locations=$(echo "$locations"$'\n'all | grep -- "^$2")
+		COMPREPLY=($locations)
+		return
+	fi
+	# Only takes 1 argument
+    return
+}
+
+complete -F restart_ospfd_complete restart_ospfd.sh

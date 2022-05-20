@@ -26,6 +26,8 @@ for ((k=0;k<n_groups;k++)); do
     group_layer2_hosts="${group_k[6]}"
     group_layer2_links="${group_k[7]}"
     file_loc="${DIRECTORY}"/groups/g"${group_number}"/save_configs.sh
+    restore_loc="${DIRECTORY}"/groups/g"${group_number}"/restore_configs.sh
+    restart_ospdf="${DIRECTORY}"/groups/g"${group_number}"/restart_ospfd.sh
 
     if [ "${group_as}" != "IXP" ];then
 
@@ -43,6 +45,8 @@ for ((k=0;k<n_groups;k++)); do
         echo "" >> "${file_loc}"
         echo "dirname=configs_\$(date +%m-%d-%Y_%H-%M-%S)" >> "${file_loc}"
         echo "mkdir \$dirname" >> "${file_loc}"
+        cp "${DIRECTORY}"/setup/restore_configs.sh "${restore_loc}"
+        cp "${DIRECTORY}"/setup/restart_ospfd.sh "${restart_ospdf}"
 
 
         chmod 0755 "${file_loc}"
@@ -80,6 +84,11 @@ for ((k=0;k<n_groups;k++)); do
                 echo "  subnet=""$(subnet_sshContainer_groupContainer "${group_number}" "${i}" -1  "router")" >> "${file_loc}"
                 echo "  ssh -t -o "StrictHostKeyChecking=no" root@\"\${subnet%???}\" \" vtysh -c 'sh run'\" >> \$dirname/$rname.txt" >> "${file_loc}"
             fi
+            # build restore_configs.sh and restart_ospfd.sh
+            echo 'if [[ "$router_name" == "'"$rname"'" || $router_name == "all" ]]; then' | tee -a "${restore_loc}" >> ${restart_ospdf}
+            echo "  subnet=""$(subnet_sshContainer_groupContainer "${group_number}" "${i}" -1  "router")" | tee -a "${restore_loc}" >> ${restart_ospdf}
+            echo '  main "$subnet" "'"${rname}"'" "'"${rcmd}"'"' | tee -a "${restore_loc}" >> ${restart_ospdf}
+            echo "fi" | tee -a "${restore_loc}" >> ${restart_ospdf}
         done
 
         for ((l=0;l<n_l2_switches;l++)); do
