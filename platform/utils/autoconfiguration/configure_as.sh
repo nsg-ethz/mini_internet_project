@@ -5,11 +5,11 @@
 # this variable is the absolute path to the platform directory.
 PLATFORM_DIR=
 # this variable includes all the AS number that need to be configured.
-WRITE_THE_ASN_TO_CONFIGURE_HERE=
+ASN_TO_CONFIGURE=
 # this variable contains all the router names that need to be configured.
 ROUTER_NAMES=
 
-for group_number in WRITE_THE_ASN_TO_CONFIGURE_HERE
+for group_number in ASN_TO_CONFIGURE
 do
     rid=1
     # This loop should iterate over the router, starting from lower ID to higher ID.
