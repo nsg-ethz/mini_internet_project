@@ -16,6 +16,9 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
+DIRECTORY="$1"
+DOCKERHUB_USER="${2:-thomahol}"
+
 ######################################
 ### UPDATE THE FOLLOWING VARIABLES ###
 ######################################
@@ -111,7 +114,7 @@ docker run -itd --name="WEB" --cpus=2 \
     -l traefik.http.routers.websecure.entrypoints=websecure \
     --hostname="web" \
     --privileged \
-    "d_webserver"
+    "${DOCKERHUB_USER}/d_webserver"
 
 # Next start the proxy
 # Setup based on the following tutorials:

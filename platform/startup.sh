@@ -249,7 +249,7 @@ echo ""
 
 echo "webserver_links.sh: "
 echo "webserver_links.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
-time ./groups/rpki/webserver_links.sh
+time ./groups/rpki/webserver_links.sh "${DIRECTORY}" "${DOCKERHUB_USER}"
 
 echo ""
 echo ""
