@@ -242,14 +242,14 @@ echo ""
 
 echo "website_setup.sh: "
 echo "website_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
-time ./setup/website_setup.sh "${DIRECTORY}"
+time ./setup/website_setup.sh "${DIRECTORY}" "${DOCKERHUB_USER}"
 
 echo ""
 echo ""
 
 echo "webserver_links.sh: "
 echo "webserver_links.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
-time ./groups/rpki/webserver_links.sh "${DIRECTORY}" "${DOCKERHUB_USER}"
+time ./groups/rpki/webserver_links.sh
 
 echo ""
 echo ""
