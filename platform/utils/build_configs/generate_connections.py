@@ -68,10 +68,10 @@ elif NB_ASES == 70:
 # Description of the routers used for every connection.
 # We differentiate between Transit, Tier1 and Stub ASes
 transit_as_topo = {
-    'provider1': 'MUNI',
-    'provider2': 'BASE',
-    'customer1': 'LYON',
-    'customer2': 'MILA',
+    'provider1': 'LYON',
+    'provider2': 'MILA',
+    'customer1': 'MUNI',
+    'customer2': 'BASE',
     'peer': 'LUGA',
     'ixp': 'VIEN'
 }
@@ -90,13 +90,6 @@ stub_topo = {
     'peer': 'ZURI',
     'customer1': 'ZURI',
     'customer2': 'ZURI' 
-}
-
-stub_topo = {
-    'ixp': 'BASE',
-    'peer': 'ZURI',
-    'provider1': 'ZURI',
-    'provider2': 'ZURI' 
 }
 
 all_tier1 = list(map(lambda x:str(x), sum(tier1, [])))
@@ -256,8 +249,8 @@ for b in transit:
             customer1 = b[i+2]
             customer2 = b[i+1]
 
-        print_connection(a, transit_as_topo['provider1'], 'Provider', customer1, transit_as_topo['customer2'], 'Customer')
-        print_connection(a, transit_as_topo['provider2'], 'Provider', customer2, transit_as_topo['customer1'], 'Customer')
+        print_connection(a, transit_as_topo['provider1'], 'Provider', customer1, stub_topo['customer2'], 'Customer')
+        print_connection(a, transit_as_topo['provider2'], 'Provider', customer2, stub_topo['customer1'], 'Customer')
 
         # Left AS.
         if i%2 == 0:
