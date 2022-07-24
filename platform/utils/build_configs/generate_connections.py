@@ -81,6 +81,13 @@ tier1_topo = {
     'ixp_out': 'BASE',
     'peer1': 'ZURI',
     'peer2': 'ZURI',
+    'provider1': 'ZURI',
+    'provider2': 'ZURI' 
+}
+
+stub_topo = {
+    'ixp': 'BASE',
+    'peer': 'ZURI',
     'customer1': 'ZURI',
     'customer2': 'ZURI' 
 }
@@ -167,8 +174,8 @@ for b in tier1:
     customer1 = transit[block_nb][2]
     customer2 = transit[block_nb][3]
 
-    print_connection(left, tier1_topo['customer1'], 'Customer', customer1, transit_as_topo['provider2'], 'Provider')
-    print_connection(left, tier1_topo['customer2'], 'Customer', customer2, transit_as_topo['provider1'], 'Provider')
+    print_connection(left, tier1_topo['provider1'], 'Provider', customer1, transit_as_topo['customer2'], 'Customer')
+    print_connection(left, tier1_topo['provider2'], 'Provider', customer2, transit_as_topo['customer1'], 'Customer')
 
     ixp1 = ixp_central
     print_connection(left, tier1_topo['ixp_central'], 'Peer', ixp1, None, 'Peer', ixp=','.join(all_tier1))
@@ -188,8 +195,8 @@ for b in tier1:
     customer1 = transit[block_nb][3]
     customer2 = transit[block_nb][2]
 
-    print_connection(right, tier1_topo['customer1'], 'Customer', customer1, transit_as_topo['provider2'], 'Provider')
-    print_connection(right, tier1_topo['customer2'], 'Customer', customer2, transit_as_topo['provider1'], 'Provider')
+    print_connection(right, tier1_topo['provider1'], 'Provider', customer1, transit_as_topo['customer2'], 'Customer')
+    print_connection(right, tier1_topo['provider2'], 'Provider', customer2, transit_as_topo['customer1'], 'Customer')
 
     ixp1 = ixp_central
     print_connection(right, tier1_topo['ixp_central'], 'Peer', ixp1, None, 'Peer', ixp=','.join(all_tier1))
@@ -216,8 +223,8 @@ for b in transit:
             customer1 = b[i+2]
             customer2 = b[i+1]
 
-        print_connection(a, transit_as_topo['customer1'], 'Customer', customer1, transit_as_topo['provider2'], 'Provider')
-        print_connection(a, transit_as_topo['customer2'], 'Customer', customer2, transit_as_topo['provider1'], 'Provider')
+        print_connection(a, transit_as_topo['provider1'], 'Provider', customer1, transit_as_topo['customer2'], 'Customer')
+        print_connection(a, transit_as_topo['provider2'], 'Provider', customer2, transit_as_topo['customer1'], 'Customer')
 
         # Left AS.
         if i%2 == 0:
@@ -249,8 +256,8 @@ for b in transit:
             customer1 = b[i+2]
             customer2 = b[i+1]
 
-        print_connection(a, transit_as_topo['customer1'], 'Customer', customer1, stub_topo['provider2'], 'Provider')
-        print_connection(a, transit_as_topo['customer2'], 'Customer', customer2, stub_topo['provider1'], 'Provider')
+        print_connection(a, transit_as_topo['provider1'], 'Provider', customer1, transit_as_topo['customer2'], 'Customer')
+        print_connection(a, transit_as_topo['provider2'], 'Provider', customer2, transit_as_topo['customer1'], 'Customer')
 
         # Left AS.
         if i%2 == 0:
