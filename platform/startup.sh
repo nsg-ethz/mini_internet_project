@@ -40,9 +40,9 @@ echo ""
 echo ""
 
 # change size of ARP table necessary for large networks
-sysctl net.ipv4.neigh.default.gc_thresh1=4096
-sysctl net.ipv4.neigh.default.gc_thresh2=8192
-sysctl net.ipv4.neigh.default.gc_thresh3=16384
+sysctl net.ipv4.neigh.default.gc_thresh1=16384
+sysctl net.ipv4.neigh.default.gc_thresh2=32768
+sysctl net.ipv4.neigh.default.gc_thresh3=131072
 sysctl -p
 
 # Increase the max number of running processes

@@ -8,7 +8,8 @@
 #   AllowTcpForwarding yes
 # then restart ssh: service ssh restart
 
-DIRECTORY=$(cd `dirname $0` && pwd)
+DIRECTORY=$(pwd)
+echo $DIRECTORY
 source "${DIRECTORY}"/config/subnet_config.sh
 
 readarray groups < "${DIRECTORY}"/config/AS_config.txt
