@@ -220,7 +220,7 @@ for ((k=0;k<group_numbers;k++)); do
 
             location="${DIRECTORY}"/groups/g"${group_number}"
             docker run -itd --net='none' --name="${group_number}""_IXP" \
-                --pids-limit 100 --hostname "${group_number}""_IXP" \
+                --pids-limit 200 --hostname "${group_number}""_IXP" \
                 -v "${location}"/daemons:/etc/quagga/daemons \
                 --privileged \
                 --sysctl net.ipv4.ip_forward=1 \
