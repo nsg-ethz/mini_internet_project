@@ -6,7 +6,7 @@ import subprocess
 import argparse
 
 def send_notification(title, content, group_nb):
-    url = "https://hooks.slack.com/services/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"
+    url = # SET YOUR WEBHOOK URL HERE!!
     message = (content)
     title = (":male-detective: Group {}: {} :zap:".format(group_nb, title))
     slack_data = {
@@ -26,8 +26,7 @@ def send_notification(title, content, group_nb):
             }
         ]
     }
-    byte_length = len(json.dumps(slack_data))
-    headers = {'Content-Type': "application/json", 'Content-Length': byte_length}
+    headers = {'Content-Type': "application/json"}
     response = requests.post(url, data=json.dumps(slack_data), headers=headers)
     if response.status_code != 200:
         raise Exception(response.status_code, response.text)
@@ -88,7 +87,7 @@ if __name__ == '__main__':
     for cid, nb_proc in groups.items():
         if nb_proc >= nb_proc_threshold:
             print ('send_notification: {} nb_proc: {}'.format(cid2group[cid], nb_proc))
-            send_notification("Warning SSH container", '<@U01LPJ0PPPW>: There are {} processes running in your SSH container.\nThis is too high, please fix this.'.format(nb_proc), cid2group[cid])
+            send_notification("Warning SSH container", 'There are {} processes running in your SSH container.\nThis is too high, please fix this.'.format(nb_proc), cid2group[cid])
 
         
 
