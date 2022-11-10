@@ -7,6 +7,7 @@ irrd:
     rpki:
         roa_source: null
         roa_import_timer: 3600
+        notify_invalid_enabled: false
         pseudo_irr_remarks: |
             This AS{asn} route object represents routing data retrieved
             from the RPKI. This route object is the result of an automated
@@ -30,6 +31,9 @@ irrd:
             max_connections: 10
     auth:
         gnupg_keyring: /home/irrd/gnupg-keyring
+        override_password: 4d4ecb2b511e6a05acdae7da8bc76ead
+
+
     log:
         logfile_path: /var/log/irrd/irrd.log
         level: DEBUG
@@ -48,3 +52,14 @@ irrd:
         smtp: localhost
         smtp: localhost
 
+    sources_default:
+        - AUTHDATABASE
+
+
+
+    sources:
+        AUTHDATABASE:
+            authoritative: true
+            keep_journal: true
+            export_destination: /home/irrd
+            export_timer: 7200
