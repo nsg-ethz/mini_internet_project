@@ -1,8 +1,18 @@
-FROM alpine
+FROM alpine:3.16
 
-RUN apk update \
-    && apk add g++ python3-dev postgresql-dev py3-pip linux-headers bash \
-    && pip3 install irrd --ignore-installed six
+RUN apk add --no-cache g++ python3-dev postgresql-dev py3-pip linux-headers bash\
+    && pip3 install --no-cache-dir irrd --ignore-installed six
+
+RUN apk add --no-cache tini bash bash-completion util-linux coreutils \
+                       binutils findutils grep vim nano tzdata \
+                       iputils net-tools bind-tools iperf3 tcptraceroute tcpdump nmap nmap-nping \
+    && echo "export PS1=\"\[\033[38;5;2m\]\u@\h \[\033[38;5;75m\]\w\e[m> \"" > /root/.bashrc \
+    && sed -i -e "s/bin\/ash/bin\/bash/" /etc/passwd
+
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL en_US.UTF-8
+ENV TZ="Europe/Paris"
 
 EXPOSE 43
 EXPOSE 8000
