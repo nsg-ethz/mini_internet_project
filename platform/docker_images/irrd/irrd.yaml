@@ -1,6 +1,6 @@
 irrd:
-    database_url: 'postgresql://irrd:irrd@172.17.0.3/irrd'
-    redis_url: 'redis://172.17.0.2'
+    database_url: 'postgresql://irrd:irrd@irrd_postgres/irrd'
+    redis_url: 'redis://irrd_redis'
     piddir: /var/run
     user: irrd
     group: irrd
@@ -14,24 +14,22 @@ irrd:
             RPKI-to-IRR conversion process performed by IRRd.
     access_lists:
         http_database_status:
-            - '::/32'
-            - '127.0.0.1'
-            - '172.0.0.0/8'
+            - '0.0.0.0/0'
 
     server:
         http:
-            interface: 172.17.0.4
-            port: 8000
+            interface: 2.101.0.1
+            port: 8080
             workers: 4
             forwarded_allowed_ips: 127.0.0.1
             status_access_list: http_database_status
         whois:
-            interface: '::0'
+            interface: 2.101.0.1
             port: 43
             max_connections: 10
     auth:
         gnupg_keyring: /home/irrd/gnupg-keyring
-        override_password: 4d4ecb2b511e6a05acdae7da8bc76ead
+        override_password: $1$cONbteMn$N960VSYm7iETjl9e4VcAY0
 
 
     log:
