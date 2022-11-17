@@ -26,6 +26,7 @@ RUN adduser -D irrd
 COPY irrd.yaml /etc/irrd.yaml
 COPY supervisord.conf /etc/supervisor/conf.d/processes.conf
 
+RUN rm /etc/supervisord.conf
 RUN mkdir /var/log/irrd
 RUN touch /var/log/irrd/irrd.log 
 RUN chown --recursive irrd:irrd /var/log/irrd
