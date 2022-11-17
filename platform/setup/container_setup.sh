@@ -200,7 +200,7 @@ for ((k=0;k<group_numbers;k++)); do
                     elif [[ "${htype}" ==  *"irrd"* ]]; then
 			additional_args+=("-p" "43:43")
 			additional_args+=("-p" "8080:8080")
-			net="irrd"
+			additional_args+=("--dns" "198.0.0.100")
                     fi
 
                     docker run -itd --network "$net" --dns="${subnet_dns%/*}"  \
