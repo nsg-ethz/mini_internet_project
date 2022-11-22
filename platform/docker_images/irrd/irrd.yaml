@@ -29,7 +29,7 @@ irrd:
             max_connections: 10
     auth:
         gnupg_keyring: /home/irrd/gnupg-keyring
-        override_password: $1$cONbteMn$N960VSYm7iETjl9e4VcAY0
+        override_password:
 
 
     log:
@@ -52,8 +52,6 @@ irrd:
 
     sources_default:
         - AUTHDATABASE
-
-
 
     sources:
         AUTHDATABASE:

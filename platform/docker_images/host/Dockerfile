@@ -4,7 +4,7 @@ FROM d_base:latest
 # cpanminus and build-essential needed for this
 # RUN cpanm Net::BGP
 
-RUN apk add --no-cache openssh-server \
+RUN apk add --no-cache openssh-server curl \
     && ssh-keygen -A \
     && sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/g' /etc/ssh/sshd_config \
     && sed -i 's/#PrintMotd yes/PrintMotd no/g' /etc/ssh/sshd_config \
