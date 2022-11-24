@@ -21,7 +21,6 @@ if grep -q "irrd" "${DIRECTORY}"/config/AS_config.txt; then
 
 	salt="$(openssl rand -hex 4)"
 	hashed_pw=$(openssl passwd -1 -salt "${salt}" "${passwd}")
-	echo $hashed_pw
 	docker exec -t 2_ZURIhost sed -i "s~override_password:~override_password: ${hashed_pw}~g" /etc/irrd.yaml
 
 	# use bridge from AS2-host

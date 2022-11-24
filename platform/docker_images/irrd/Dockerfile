@@ -1,6 +1,6 @@
 FROM d_base_supervisor:latest
 
-RUN apk add --no-cache g++ python3-dev postgresql-dev py3-pip linux-headers bash\
+RUN apk add --no-cache g++ python3-dev postgresql-dev py3-pip linux-headers bash curl \
     && pip3 install --no-cache-dir irrd --ignore-installed six
 
 RUN apk add --no-cache openssh-server \
