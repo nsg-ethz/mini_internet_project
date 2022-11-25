@@ -45,6 +45,8 @@ if grep -q "irrd" "${DIRECTORY}"/config/AS_config.txt; then
         group_router_config="${group_k[3]}"
         group_internal_links="${group_k[4]}"
 
+        AS_CUSTOMERS=""
+
         # Get the password and create the salt for the group
         passwd=$(awk "\$1 == \"${group_number}\" { print \$0 }" "${DIRECTORY}/groups/passwords.txt" | cut -f 2 -d ' ')
         salt=$(openssl rand -hex 4)
@@ -81,6 +83,7 @@ if grep -q "irrd" "${DIRECTORY}"/config/AS_config.txt; then
                     if [ "${grp_1}" == "${group_number}" ]; then
                         if [ "${relation_grp_1}" == "Provider" ]; then
                             echo -n "\\nimport: from AS${grp_2} action: local-preference = 100; accept ANY\nexport: to AS${grp_2} announce ANY" >> "${DIRECTORY}"/groups/irrd_config.json
+                            AS_CUSTOMERS="AS${grp_2} ${AS_CUSTOMERS}"
                         elif [ "${relation_grp_1}" == "Customer" ]; then
                             echo -n "\\nimport: from AS${grp_2} action: local-preference = 20; accept ANY\nexport: to AS${grp_2} announce AS${group_number}:AS-CUSTOMERS" >> "${DIRECTORY}"/groups/irrd_config.json
                         elif [ "${relation_grp_1}" == "Peer" ]; then
@@ -112,6 +115,7 @@ if grep -q "irrd" "${DIRECTORY}"/config/AS_config.txt; then
 		    elif [ "${grp_2}" == "${group_number}" ]; then
                         if [ "${relation_grp_2}" == "Provider" ]; then
                             echo -n "\\nimport: from AS${grp_1} action: local-preference = 100; accept ANY\nexport: to AS${grp_1} announce ANY" >> "${DIRECTORY}"/groups/irrd_config.json
+                            AS_CUSTOMERS="AS${grp_1} ${AS_CUSTOMERS}"
                         elif [ "${relation_grp_2}" == "Customer" ]; then
                             echo -n "\\nimport: from AS${grp_1} action: local-preference = 20; accept ANY\nexport: to AS${grp_1} announce AS${group_number}:AS-CUSTOMERS" >> "${DIRECTORY}"/groups/irrd_config.json
                         elif [ "${relation_grp_2}" == "Peer" ]; then
@@ -140,6 +144,13 @@ if grep -q "irrd" "${DIRECTORY}"/config/AS_config.txt; then
                         fi
 		    fi
 
+                done
+                echo "\"}" >> "${DIRECTORY}"/groups/irrd_config.json
+
+                # Create the AS-CUSTOMER as-set in IRRd
+                echo -n ",{\"object_text\": \"as-set: AS${group_number}:AS-CUSTOMERS\\nmnt-by: MAINT-GROUP-${group_number}\\nmnt-by: MAINT-TA-TEAM\\nsource: AUTHDATABASE\\nmembers: AS${group_number}" >> "${DIRECTORY}"/groups/irrd_config.json
+                for customer in ${AS_CUSTOMERS}; do
+                    echo -n ", ${customer}, ${customer}:AS-CUSTOMERS" >> "${DIRECTORY}"/groups/irrd_config.json
                 done
                 echo "\"}" >> "${DIRECTORY}"/groups/irrd_config.json
 	    fi

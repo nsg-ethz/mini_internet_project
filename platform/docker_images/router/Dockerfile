@@ -1,6 +1,20 @@
+FROM alpine:latest AS builder
+
+RUN apk upgrade && apk add git autoconf automake file gcc gzip libtool make musl-dev
+
+WORKDIR /root
+RUN git clone https://github.com/bgp/bgpq4.git
+
+WORKDIR /root/bgpq4
+
+RUN ./bootstrap
+RUN ./configure
+RUN make
+
 FROM d_base_supervisor:latest
 
-RUN apk add --no-cache openssh-server openssh-client frr frr-rpki frr-pythontools \
+RUN apk add --no-cache openssh-server openssh-client frr frr-rpki \
+                       frr-pythontools py3-passlib py3-requests \
     && ssh-keygen -A \
     && sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/g' /etc/ssh/sshd_config \
     && sed -i 's/#PrintMotd yes/PrintMotd no/g' /etc/ssh/sshd_config \
@@ -29,5 +43,7 @@ EXPOSE 22
 COPY supervisord.conf /etc/supervisor/conf.d/processes.conf
 COPY looking_glass.sh /usr/local/bin/looking_glass
 COPY run_frr.sh /usr/local/bin/run_frr
+COPY add_irrd_data.py /home/add_irrd_data.py
+COPY --from=builder /root/bgpq4/bgpq4 /usr/local/bin/bgpq4
 
 RUN chmod +x /usr/local/bin/looking_glass /usr/local/bin/run_frr
