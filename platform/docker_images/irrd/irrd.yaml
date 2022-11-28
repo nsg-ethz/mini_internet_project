@@ -4,6 +4,7 @@ irrd:
     piddir: /var/run
     user: irrd
     group: irrd
+
     rpki:
         roa_source: null
         roa_import_timer: 3600
@@ -12,29 +13,30 @@ irrd:
             This AS{asn} route object represents routing data retrieved
             from the RPKI. This route object is the result of an automated
             RPKI-to-IRR conversion process performed by IRRd.
+
     access_lists:
         http_database_status:
             - '0.0.0.0/0'
 
     server:
         http:
-            interface: 2.101.0.1
+            interface: 0.0.0.0
             port: 8080
             workers: 4
             forwarded_allowed_ips: 127.0.0.1
             status_access_list: http_database_status
         whois:
-            interface: 2.101.0.1
+            interface: 0.0.0.0
             port: 43
             max_connections: 10
     auth:
         gnupg_keyring: /home/irrd/gnupg-keyring
         override_password:
 
-
     log:
         logfile_path: /var/log/irrd/irrd.log
         level: DEBUG
+
     email:
         footer: ''
         notification_header: |
@@ -47,7 +49,6 @@ irrd:
             of the object(s), or the upd-to attribute on the maintainer of a
             parent of newly created object(s).
         from: example@example.com
-        smtp: localhost
         smtp: localhost
 
     sources_default:
