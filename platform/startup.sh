@@ -248,16 +248,16 @@ time ./setup/rpki_setup.sh "${DIRECTORY}"
 echo ""
 echo ""
 
-echo "irrd_config.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
-echo "irrd_config.sh: "
-time ./setup/irrd_config.sh "${DIRECTORY}"
-
-echo ""
-echo ""
-
 echo "website_setup.sh: "
 echo "website_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
 time ./setup/website_setup.sh "${DIRECTORY}" "${DOCKERHUB_USER}"
+
+echo ""
+echo ""
+
+echo "irrd_config.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
+echo "irrd_config.sh: "
+time ./setup/irrd_config.sh "${DIRECTORY}"
 
 echo ""
 echo ""

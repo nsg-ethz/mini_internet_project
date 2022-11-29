@@ -28,6 +28,12 @@ subnet_irrd () {
     elif [ "$device" = "client" ] ; then
       echo "199.0.1.2/24"
     fi
+  elif [ "$service" = "web" ] ; then
+    if [ "$device" = "irrd" ] ; then
+      echo "199.0.2.2/24"
+    elif [ "$device" = "webserver" ] ; then
+      echo "199.0.2.1/24"
+    fi
   fi
 }
 

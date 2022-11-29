@@ -21,7 +21,7 @@ irrd:
     server:
         http:
             interface: 0.0.0.0
-            port: 8080
+            port: 80
             workers: 4
             forwarded_allowed_ips: 127.0.0.1
             status_access_list: http_database_status

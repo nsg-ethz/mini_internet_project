@@ -10,6 +10,7 @@ DIRECTORY="$1"
 
 source "${DIRECTORY}"/config/subnet_config.sh
 source "${DIRECTORY}"/setup/_parallel_helper.sh
+source "${DIRECTORY}"/setup/ovs-docker.sh
 
 # Check if IRRd is used
 if grep -q "irrd" "${DIRECTORY}"/config/AS_config.txt; then
@@ -169,4 +170,22 @@ if grep -q "irrd" "${DIRECTORY}"/config/AS_config.txt; then
     else
         echo -e "ERROR: The default IRRd data was not successfully transferred into the database.\nYou can find the file with the configurations under groups/irrd_config.json.\nYou can try to manually POST this from a host within the mini-internet with a similar command:\ncurl -X POST -H "Content-Type: application/json" -d @/root/irrd_config.json http://host-ZURI.group2:8080/v1/submit/"
     fi
+
+    # Create network setup for the webserver
+    webserver_irrd_ip="$(subnet_irrd "web" "webserver")"
+    irrd_webserver_ip="$(subnet_irrd "web" "irrd")"
+
+    ip link add irrd_webserver type veth peer name webserver_irrd
+
+    PID=$(docker inspect -f '{{.State.Pid}}' 2_ZURIhost)
+    create_netns_link
+    ip link set netns $PID dev irrd_webserver
+    ip netns exec $PID ip a add "${irrd_webserver_ip}" dev irrd_webserver
+    ip netns exec $PID ip link set dev irrd_webserver up
+
+    PID=$(docker inspect -f '{{.State.Pid}}' WEB)
+    create_netns_link
+    ip link set netns $PID dev webserver_irrd
+    ip netns exec $PID ip a add "${webserver_irrd_ip}" dev webserver_irrd
+    ip netns exec $PID ip link set dev webserver_irrd up
 fi

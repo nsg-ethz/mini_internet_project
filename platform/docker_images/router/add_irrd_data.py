@@ -126,7 +126,7 @@ if __name__ == '__main__':
             text_file.write(json.dumps(request, indent=4))
     else:
         if args.delete:
-            server_reply=requests.delete(host, data=json.dumps(request))
+            server_reply = requests.delete(host, data=json.dumps(request))
         else:
             server_reply = requests.post(host, json=request)
 
