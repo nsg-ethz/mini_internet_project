@@ -1,1 +1,23 @@
 /* Plase for custom css */
+
+input[type=submit] {
+  background-color: #04AA6D;
+  border: none;
+  color: white;
+  padding: 6px 13px;
+  text-decoration: none;
+  margin: 4px 2px;
+  cursor: pointer;
+}
+
+input[type=text]:focus {
+  border: 3px solid black;
+}
+
+ input[type=text] {
+  border: 2px solid black;
+  border-radius: 4px;
+  width: 50%;
+  box-sizing: border-box;
+  margin-bottom: 40px;
+}

@@ -39,7 +39,7 @@ if grep -q "irrd" "${DIRECTORY}"/config/AS_config.txt; then
 	"${DOCKERHUB_USER}/d_irrd_postgres"
 
 	# Add PIDs to pidfile
-	source "${DIRECTORY}/groups/docker_pid.map"
+	source "${DIRECTORY}"/groups/docker_pid.map
 	DOCKER_TO_PID["irrd_postgres"]=$(docker inspect -f '{{.State.Pid}}' irrd_postgres)
 	DOCKER_TO_PID["irrd_redis"]=$(docker inspect -f '{{.State.Pid}}' irrd_redis)
 	declare -p DOCKER_TO_PID > "${DIRECTORY}/groups/docker_pid.map"

@@ -162,13 +162,13 @@ if grep -q "irrd" "${DIRECTORY}"/config/AS_config.txt; then
     echo "], \"override\": \"${override_password}\"}" >> ${DIRECTORY}/groups/irrd_config.json
 
     docker cp ${DIRECTORY}/groups/irrd_config.json 2_BASEhost:/root/irrd_config.json
-    response=$(docker exec -t 2_BASEhost curl --write-out '%{http_code}' --silent --output /dev/null -X POST -H "Content-Type: application/json" -d @/root/irrd_config.json http://host-ZURI.group2:8080/v1/submit/)
+    response=$(docker exec -t 2_BASEhost curl --write-out '%{http_code}' --silent --output /dev/null -X POST -H "Content-Type: application/json" -d @/root/irrd_config.json http://host-ZURI.group2/v1/submit/)
 
     # Check if the HTTP request was successful
     if [[ $response -eq 200 ]]; then
         echo "Default IRRd data was successfully transferred into the database"
     else
-        echo -e "ERROR: The default IRRd data was not successfully transferred into the database.\nYou can find the file with the configurations under groups/irrd_config.json.\nYou can try to manually POST this from a host within the mini-internet with a similar command:\ncurl -X POST -H "Content-Type: application/json" -d @/root/irrd_config.json http://host-ZURI.group2:8080/v1/submit/"
+        echo -e "ERROR: The default IRRd data was not successfully transferred into the database.\nYou can find the file with the configurations under groups/irrd_config.json.\nYou can try to manually POST this from a host within the mini-internet with a similar command:\ncurl -X POST -H "Content-Type: application/json" -d @/root/irrd_config.json http://host-ZURI.group2/v1/submit/"
     fi
 
     # Create network setup for the webserver

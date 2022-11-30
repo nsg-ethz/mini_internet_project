@@ -7,7 +7,7 @@ from passlib.hash import md5_crypt
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='python ./add_irrd_data.py', description='IRRd helper for object creation')
-    parser.add_argument('-H', '--host', type=str, default='http://host-ZURI.group2:8080/v1/submit/', help='Host with the server running IRRd')
+    parser.add_argument('-H', '--host', type=str, default='http://host-ZURI.group2/v1/submit/', help='Host with the server running IRRd')
     parser.add_argument('-j', '--json', action='store_true', help='Export the JSON file, do not update on server')
     parser.add_argument('-o', '--override', type=str, help='Use an override password (only for TAs)')
     parser.add_argument('-d', '--delete', action='store_true', help='Delete the object. Configure as normal, but the object will be deleted')

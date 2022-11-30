@@ -16,6 +16,7 @@ import math
 import os
 import pickle
 import traceback
+import requests
 from datetime import datetime as dt
 from datetime import timezone
 from multiprocessing import Process
@@ -230,12 +231,26 @@ def create_app(config=None):
             dropdown_others={conn[1]['asn'] for conn in selected_connections},
         )
 
+    @app.route("/irrd-request")
+    def irrd_request():
+        """Make a request for an IRRd object"""
+        irrd_data = ""
+        if request.args.get('object') is not None:
+            r=requests.get('http://199.0.2.2/v1/whois/?q={}'.format(request.args.get('object')), timeout=2)
+            if r.status_code == 200:
+                irrd_data=r.text
+            elif r.status_code == 204:
+                irrd_data="No data found for this request"
+            else:
+                irrd_data="Your request failed with the following issue: {}".format(r.text)
+
+        return render_template("irrd_data.html", irrd_data=irrd_data)
+
     # Start workers if configured.
     if app.config["BACKGROUND_WORKERS"] and app.config['AUTO_START_WORKERS']:
         start_workers(app.config)
 
     return app
-
 
 # Worker functions.
 # =================
