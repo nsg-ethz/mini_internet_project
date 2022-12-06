@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% from 'macros.html' import h1 %}
+
+{% block head %}
+{{ super() }}
+<style>
+form {
+  border: 1px solid black;
+  border-radius: 10px;
+  padding: 20px 20px;
+  margin: 10px 10px;
+  box-sizing: border-box;
+  margin-bottom: 40px;
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="max-w-4xl mx-auto p-6">
+        {{ h1("IRRd modify") }}
+        <font color="RED"><b>SUCCESSFUL REQUESTS TAKE A BIT OF TIME TO BE WRITTEN. BE PATIENT</b></font><br>
+        <p class="mb-2">
+                <pre>
+{{ irrd_reply }}
+                </pre>
+
+                <form action="{{ url_for('irrd_change') }}" method="post">
+                        <b>Change request for a Route</b><br><br>
+                        <label>Route</label>
+                        <input type="text" name="route" placeholder="X.Y.0.0/16" autocomplete="off" required><br>
+                        <label>Origin</label>
+                        <input type="text" name="origin" placeholder="ASX" autocomplete="off" required><br>
+                        <label>Maintainer</label>
+                        <input type="text" name="mntner" placeholder="MAINT-GROUP-X" autocomplete="off" required><br>
+                        <label>Password</label>
+                        <input type="password" name="password" required><br>
+                        <input type="submit" value="Submit">
+                </form>
+                <form action="{{ url_for('irrd_change') }}" method="post">
+                        <b>Change request for an AS-SET</b><br><br>
+                        <label>AS-SET</label>
+                        <input type="text" name="asset" placeholder="ASX:AS-CUSTOMERS" autocomplete="off" required><br>
+                        <label>Members</label>
+                        <input type="text" name="members" placeholder="ASX,ASY,ASX:AS-CUSTOMERS" autocomplete="off" required><br>
+                        <label>Maintainer</label>
+                        <input type="text" name="mntner" placeholder="MAINT-GROUP-X" autocomplete="off" required><br>
+                        <label>Password</label>
+                        <input type="password" name="password" required><br>
+                        <input type="submit" value="Submit"> 
+                </form>
+        </p>
+</div>
+
+{% endblock %}

@@ -1,5 +1,11 @@
 /* Plase for custom css */
 
+label {
+  display: inline-block;
+  width: 150px;
+  text-align: right;
+}
+
 input[type=submit] {
   background-color: #04AA6D;
   border: none;
@@ -10,14 +16,14 @@ input[type=submit] {
   cursor: pointer;
 }
 
-input[type=text]:focus {
+input[type=text]:focus, input[type=password]:focus {
   border: 3px solid black;
 }
 
- input[type=text] {
+input[type=text], input[type=password] {
   border: 2px solid black;
   border-radius: 4px;
-  width: 50%;
+  width: 500px;
   box-sizing: border-box;
   margin-bottom: 40px;
 }

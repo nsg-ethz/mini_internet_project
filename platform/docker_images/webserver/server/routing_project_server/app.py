@@ -246,6 +246,48 @@ def create_app(config=None):
 
         return render_template("irrd_data.html", irrd_data=irrd_data)
 
+    @app.route("/irrd-change", methods = ['GET', 'POST'])
+    def irrd_change():
+        """Make a change to an IRRd object"""
+        if request.method == 'GET':
+            return render_template("irrd_change.html", irrd_reply="")
+        elif request.method == 'POST':
+            requested = {}
+            attributes = []
+            list_objects = [{'attributes': attributes}]
+            requested['objects']=list_objects
+            if 'route' in request.form.keys():
+                attributes.append({'name': 'route', 'value': request.form['route']})
+                attributes.append({'name': 'origin', 'value': request.form['origin']})
+                attributes.append({'name': 'mnt-by', 'value': request.form['mntner']})
+                attributes.append({'name': 'source', 'value': 'AUTHDATABASE'})
+                requested['passwords'] = [request.form['password']]
+            elif 'asset' in request.form.keys():
+                attributes.append({'name': 'as-set', 'value': request.form['asset']})
+                attributes.append({'name': 'members', 'value': request.form['members']})
+                attributes.append({'name': 'mnt-by', 'value': request.form['mntner']})
+                attributes.append({'name': 'source', 'value': 'AUTHDATABASE'})
+                requested['passwords'] = [request.form['password']]
+            else:
+                return render_template("irrd_change.html", irrd_reply="")
+
+            #if request.form['delete']:
+            #    server_reply = requests.delete('http://199.0.2.2/v1/submit/', data=json.dumps(requested))
+            #else:
+            print("doing web request now")
+            server_reply = requests.post('http://199.0.2.2/v1/submit/', json=requested)
+            print("web request done")
+
+            if server_reply.status_code == 200:
+                reply_json = server_reply.json()
+                if reply_json['objects'][0]['successful']:
+                    irrd_reply="Request successful"
+                else:
+                    irrd_reply=reply_json['objects'][0]['error_messages'][0]
+            else:
+                irrd_reply=server_reply.text
+            return render_template("irrd_change.html", irrd_reply=irrd_reply)
+
     # Start workers if configured.
     if app.config["BACKGROUND_WORKERS"] and app.config['AUTO_START_WORKERS']:
         start_workers(app.config)

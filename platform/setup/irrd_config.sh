@@ -188,4 +188,9 @@ if grep -q "irrd" "${DIRECTORY}"/config/AS_config.txt; then
     ip link set netns $PID dev webserver_irrd
     ip netns exec $PID ip a add "${webserver_irrd_ip}" dev webserver_irrd
     ip netns exec $PID ip link set dev webserver_irrd up
+else
+    # Remove IRRd pages from website navigation bar
+    docker exec WEB bash -c "sed -i '/irrd_request/d' /server/routing_project_server/templates/base.html"
+    docker exec WEB bash -c "sed -i '/irrd_change/d' /server/routing_project_server/templates/base.html"
+    docker restart WEB
 fi
