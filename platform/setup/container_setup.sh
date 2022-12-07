@@ -63,9 +63,12 @@ for ((k=0;k<group_numbers;k++)); do
                 --cpus=2 --pids-limit 100 --hostname="g${group_number}-proxy" --cap-add=NET_ADMIN \
                 -v "${location}"/goto.sh:/root/goto.sh  \
                 -v "${location}"/save_configs.sh:/root/save_configs.sh \
+                -v "${location}"/restore_configs.sh:/root/restore_configs.sh \
+                -v "${location}"/restart_ospfd.sh:/root/restart_ospfd.sh \
                 -v /etc/timezone:/etc/timezone:ro \
                 -v /etc/localtime:/etc/localtime:ro \
                 -v "${DIRECTORY}"/config/welcoming_message.txt:/etc/motd:ro \
+		        --log-opt max-size=1m --log-opt max-file=3 \
                 "${DOCKERHUB_USER}/d_ssh"
 
             CONTAINERS+=("${group_number}_ssh")
@@ -78,7 +81,7 @@ for ((k=0;k<group_numbers;k++)); do
                 sname="${switch_l[1]}"
 
                 docker run -itd --net='none' --dns="${subnet_dns%/*}" --cap-add=NET_ADMIN \
-                    --cpus=2 --pids-limit 256 --hostname "${sname}" \
+                    --cpus=2 --pids-limit 1024 --hostname "${sname}" \
                     --name=${group_number}_L2_${l2name}_${sname} \
                     --cap-add=ALL \
                     --cap-drop=SYS_RESOURCE \
@@ -94,7 +97,9 @@ for ((k=0;k<group_numbers;k++)); do
                     --sysctl net.ipv6.icmp.ratelimit=0 \
                     -v /etc/timezone:/etc/timezone:ro \
                     -v /etc/localtime:/etc/localtime:ro \
+		            --log-opt max-size=1m --log-opt max-file=3 \
                     "${DOCKERHUB_USER}/d_switch"
+                    echo ${group_number}_L2_${l2name}_${sname}
 
                 CONTAINERS+=(${group_number}_L2_${l2name}_${sname})
             done
@@ -116,7 +121,9 @@ for ((k=0;k<group_numbers;k++)); do
                         --sysctl net.ipv6.conf.all.disable_ipv6=0 \
                         --sysctl net.ipv6.icmp.ratelimit=0 \
                         -v /etc/timezone:/etc/timezone:ro \
-                        -v /etc/localtime:/etc/localtime:ro $dname
+                        -v /etc/localtime:/etc/localtime:ro \
+			            --log-opt max-size=1m --log-opt max-file=3 \
+		    	        $dname
 
                     CONTAINERS+=("${group_number}""_L2_""${l2name}""_""${hname}")
                 fi
@@ -157,6 +164,7 @@ for ((k=0;k<group_numbers;k++)); do
                     -v "${location}"/daemons:/etc/frr/daemons \
                     -v "${location}"/frr.conf:/etc/frr/frr.conf \
                     -v /etc/timezone:/etc/timezone:ro \
+		            --log-opt max-size=1m --log-opt max-file=3 \
                     "${DOCKERHUB_USER}/d_router"
 
                 CONTAINERS+=("${group_number}""_""${rname}""router")
@@ -205,6 +213,7 @@ for ((k=0;k<group_numbers;k++)); do
                         --sysctl net.ipv6.icmp.ratelimit=0 \
                         -v /etc/timezone:/etc/timezone:ro \
                         -v /etc/localtime:/etc/localtime:ro \
+			            --log-opt max-size=1m --log-opt max-file=3 \
                         "${additional_args[@]}" \
                         $dname
                         # add this for bgpsimple -v ${DIRECTORY}/docker_images/host/bgpsimple.pl:/home/bgpsimple.pl \
@@ -217,7 +226,7 @@ for ((k=0;k<group_numbers;k++)); do
 
             location="${DIRECTORY}"/groups/g"${group_number}"
             docker run -itd --net='none' --name="${group_number}""_IXP" \
-                --pids-limit 100 --hostname "${group_number}""_IXP" \
+                --pids-limit 200 --hostname "${group_number}""_IXP" \
                 -v "${location}"/daemons:/etc/quagga/daemons \
                 --privileged \
                 --sysctl net.ipv4.ip_forward=1 \
@@ -233,6 +242,7 @@ for ((k=0;k<group_numbers;k++)); do
                 -v /etc/timezone:/etc/timezone:ro \
                 -v /etc/localtime:/etc/localtime:ro \
                 -v "${location}"/looking_glass.txt:/home/looking_glass.txt \
+		        --log-opt max-size=1m --log-opt max-file=3 \
                 "${DOCKERHUB_USER}/d_ixp"
 
             CONTAINERS+=("${group_number}""_IXP")
