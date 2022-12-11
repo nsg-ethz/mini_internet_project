@@ -271,12 +271,7 @@ def create_app(config=None):
             else:
                 return render_template("irrd_change.html", irrd_reply="")
 
-            #if request.form['delete']:
-            #    server_reply = requests.delete('http://199.0.2.2/v1/submit/', data=json.dumps(requested))
-            #else:
-            print("doing web request now")
             server_reply = requests.post('http://199.0.2.2/v1/submit/', json=requested)
-            print("web request done")
 
             if server_reply.status_code == 200:
                 reply_json = server_reply.json()
