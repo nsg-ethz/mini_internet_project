@@ -125,6 +125,7 @@ if __name__ == '__main__':
         with open('config.json', 'w') as text_file:
             text_file.write(json.dumps(request, indent=4))
     else:
+        print("Request was sent to the server. Waiting for a reply.")
         if args.delete:
             server_reply = requests.delete(host, data=json.dumps(request))
         else:

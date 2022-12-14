@@ -23,7 +23,7 @@ if grep -q "irrd" "${DIRECTORY}"/config/AS_config.txt; then
 
     # create a default password for the TA Team
     passwd=$(openssl rand -hex 8)
-    echo "IRRd TA Team password: ${passwd}" > "${DIRECTORY}"/groups/irrd-ta-password.txt
+    echo "IRRd TA Team password: ${passwd}" > "${DIRECTORY}"/groups/irrd_ta_password.txt
 
     # hash the default password
     salt=$(openssl rand -hex 4)
