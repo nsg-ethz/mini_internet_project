@@ -132,10 +132,10 @@ for ((j=0;j<n_groups;j++)); do
                             echo "  },"
                             echo "  \"locallyAddedAssertions\": {"
                             echo "    \"prefixAssertions\": [ "
-                            for i in $(seq 1 253); do
+                            for seqv in $(seq 1 253); do
                                 echo "    { "
                                 echo "      \"asn\": 10000, "
-                                echo "      \"prefix\": \"200.$i.0.0/16\", "
+                                echo "      \"prefix\": \"200.$seqv.0.0/16\", "
                                 echo "      \"maxPrefixLength\": 16, "
                                 echo "      \"comment\": \"used by the autograder container\" "
                                 echo "    }, "
