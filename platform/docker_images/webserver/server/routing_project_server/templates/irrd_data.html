@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% from 'macros.html' import h1 %}
+
+{% block body %}
+<!-- Column for text etc with fixed size. -->
+<div class="max-w-4xl mx-auto p-6">
+        {{ h1("IRRd whois") }}
+        <p class="mb-2">
+                <form action="http://ee-tik-nsgvm009.ethz.ch:8000/irrd-request" method="GET">
+                        <input type="text" name="object" placeholder="AS3">
+                        <input type="submit" value="Submit">
+                </form>
+
+                <pre>
+{{ irrd_data }}
+                </pre>
+        </p>
+</div>
+{% endblock %}

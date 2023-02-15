@@ -1,0 +1,62 @@
+irrd:
+    database_url: 'postgresql://irrd:irrd@199.0.0.1/irrd'
+    redis_url: 'redis://199.0.1.1'
+    piddir: /var/run
+    user: irrd
+    group: irrd
+
+    rpki:
+        roa_source: null
+        roa_import_timer: 3600
+        notify_invalid_enabled: false
+        pseudo_irr_remarks: |
+            This AS{asn} route object represents routing data retrieved
+            from the RPKI. This route object is the result of an automated
+            RPKI-to-IRR conversion process performed by IRRd.
+
+    access_lists:
+        http_database_status:
+            - '0.0.0.0/0'
+
+    server:
+        http:
+            interface: 0.0.0.0
+            port: 80
+            workers: 4
+            forwarded_allowed_ips: 127.0.0.1
+            status_access_list: http_database_status
+        whois:
+            interface: 0.0.0.0
+            port: 43
+            max_connections: 10
+    auth:
+        gnupg_keyring: /home/irrd/gnupg-keyring
+        override_password:
+
+    log:
+        logfile_path: /var/log/irrd/irrd.log
+        level: DEBUG
+
+    email:
+        footer: ''
+        notification_header: |
+            This is to notify you of changes in the {sources_str} database
+            or object authorisation failures.
+
+            You may receive this message because you are listed in
+            the notify attribute on the changed object(s), because
+            you are listed in the mnt-nfy or upd-to attribute on a maintainer
+            of the object(s), or the upd-to attribute on the maintainer of a
+            parent of newly created object(s).
+        from: example@example.com
+        smtp: localhost
+
+    sources_default:
+        - AUTHDATABASE
+
+    sources:
+        AUTHDATABASE:
+            authoritative: true
+            keep_journal: true
+            export_destination: /home/irrd
+            export_timer: 7200

@@ -14,6 +14,30 @@ subnet_group () {
   echo "${n_grp}"".0.0.0/8"
 }
 
+subnet_irrd () {
+  local service="$1" device="$2"
+  if [ "$service" = "postgres" ] ; then
+    if [ "$device" = "db" ] ; then
+      echo "199.0.0.1/24"
+    elif [ "$device" = "client" ] ; then
+      echo "199.0.0.2/24"
+    fi
+  elif [ "$service" = "redis" ] ; then
+    if [ "$device" = "db" ] ; then
+      echo "199.0.1.1/24"
+    elif [ "$device" = "client" ] ; then
+      echo "199.0.1.2/24"
+    fi
+  elif [ "$service" = "web" ] ; then
+    if [ "$device" = "irrd" ] ; then
+      echo "199.0.2.2/24"
+    elif [ "$device" = "webserver" ] ; then
+      echo "199.0.2.1/24"
+    fi
+  fi
+}
+
+
 subnet_host_router () {
   local n_grp="$1" n_router="$2" device="$3"
 

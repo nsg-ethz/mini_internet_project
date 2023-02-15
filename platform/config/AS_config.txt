@@ -1,5 +1,5 @@
 1	AS	Config	l3_routers_krill.txt	l3_links_krill.txt	empty.txt	empty.txt	empty.txt
-2	AS	Config	l3_routers_tier1_and_stub.txt	l3_links_tier1_and_stub.txt	empty.txt	empty.txt	empty.txt
+2	AS	Config	l3_routers_irrd.txt	l3_links_irrd.txt	empty.txt	empty.txt	empty.txt
 11	AS	Config	l3_routers_tier1_and_stub.txt	l3_links_tier1_and_stub.txt	empty.txt	empty.txt	empty.txt
 12	AS	Config	l3_routers_tier1_and_stub.txt	l3_links_tier1_and_stub.txt	empty.txt	empty.txt	empty.txt
 5	AS	Config	l3_routers_tier1_and_stub.txt	l3_links_tier1_and_stub.txt	empty.txt	empty.txt	empty.txt

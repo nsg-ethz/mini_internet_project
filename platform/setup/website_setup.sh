@@ -137,3 +137,9 @@ docker run -d --name='PROXY' \
     "--entrypoints.web.address=:${SERVER_PORT_HTTP}" \
     "--entrypoints.websecure.address=:${SERVER_PORT_HTTPS}" \
     "--entrypoints.krill.address=:${PORT_KRILL}"
+
+# Add PIDs to pidfile
+source "${DIRECTORY}/groups/docker_pid.map"
+DOCKER_TO_PID["WEB"]=$(docker inspect -f '{{.State.Pid}}' WEB)
+DOCKER_TO_PID["PROXY"]=$(docker inspect -f '{{.State.Pid}}' PROXY)
+declare -p DOCKER_TO_PID > "${DIRECTORY}/groups/docker_pid.map"

@@ -10,7 +10,7 @@ RUN apk add --no-cache --virtual .deps \
     musl-dev gcc git && \
     # Keep libev for running bjoern, libjpeg and zlib for Pillow
     apk add --no-cache libev-dev zlib-dev jpeg-dev && \
-    pip install bjoern
+    pip install bjoern requests
 
 COPY server /server
 RUN pip install -e /server

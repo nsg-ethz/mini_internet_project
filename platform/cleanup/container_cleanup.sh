@@ -91,5 +91,8 @@ docker kill MATRIX &>/dev/null || true &
 docker kill WEB &>/dev/null || true &
 docker kill PROXY &>/dev/null || true &
 
+docker kill irrd_redis &>/dev/null || true &
+docker kill irrd_postgres &>/dev/null || true &
+
 wait
 docker system prune -f --volumes

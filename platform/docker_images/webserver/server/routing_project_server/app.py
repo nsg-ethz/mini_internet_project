@@ -16,6 +16,7 @@ import math
 import os
 import pickle
 import traceback
+import requests
 from datetime import datetime as dt
 from datetime import timezone
 from multiprocessing import Process
@@ -230,12 +231,63 @@ def create_app(config=None):
             dropdown_others={conn[1]['asn'] for conn in selected_connections},
         )
 
+    @app.route("/irrd-request")
+    def irrd_request():
+        """Make a request for an IRRd object"""
+        irrd_data = ""
+        if request.args.get('object') is not None:
+            r=requests.get('http://199.0.2.2/v1/whois/?q={}'.format(request.args.get('object')), timeout=2)
+            if r.status_code == 200:
+                irrd_data=r.text
+            elif r.status_code == 204:
+                irrd_data="No data found for this request"
+            else:
+                irrd_data="Your request failed with the following issue: {}".format(r.text)
+
+        return render_template("irrd_data.html", irrd_data=irrd_data)
+
+    @app.route("/irrd-change", methods = ['GET', 'POST'])
+    def irrd_change():
+        """Make a change to an IRRd object"""
+        if request.method == 'GET':
+            return render_template("irrd_change.html", irrd_reply="")
+        elif request.method == 'POST':
+            requested = {}
+            attributes = []
+            list_objects = [{'attributes': attributes}]
+            requested['objects']=list_objects
+            if 'route' in request.form.keys():
+                attributes.append({'name': 'route', 'value': request.form['route']})
+                attributes.append({'name': 'origin', 'value': request.form['origin']})
+                attributes.append({'name': 'mnt-by', 'value': request.form['mntner']})
+                attributes.append({'name': 'source', 'value': 'AUTHDATABASE'})
+                requested['passwords'] = [request.form['password']]
+            elif 'asset' in request.form.keys():
+                attributes.append({'name': 'as-set', 'value': request.form['asset']})
+                attributes.append({'name': 'members', 'value': request.form['members']})
+                attributes.append({'name': 'mnt-by', 'value': request.form['mntner']})
+                attributes.append({'name': 'source', 'value': 'AUTHDATABASE'})
+                requested['passwords'] = [request.form['password']]
+            else:
+                return render_template("irrd_change.html", irrd_reply="")
+
+            server_reply = requests.post('http://199.0.2.2/v1/submit/', json=requested)
+
+            if server_reply.status_code == 200:
+                reply_json = server_reply.json()
+                if reply_json['objects'][0]['successful']:
+                    irrd_reply="Request successful"
+                else:
+                    irrd_reply=reply_json['objects'][0]['error_messages'][0]
+            else:
+                irrd_reply=server_reply.text
+            return render_template("irrd_change.html", irrd_reply=irrd_reply)
+
     # Start workers if configured.
     if app.config["BACKGROUND_WORKERS"] and app.config['AUTO_START_WORKERS']:
         start_workers(app.config)
 
     return app
-
 
 # Worker functions.
 # =================

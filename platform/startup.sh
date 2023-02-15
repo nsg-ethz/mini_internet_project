@@ -110,6 +110,14 @@ time ./setup/host_links_setup.sh "${DIRECTORY}"
 echo ""
 echo ""
 
+echo "echo \"irrd setup\"" >> "${DIRECTORY}"/groups/ip_setup.sh
+echo "irrd_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
+echo "irrd_setup.sh "
+time ./setup/irrd_setup.sh "${DIRECTORY}" "${DOCKERHUB_USER}"
+
+echo ""
+echo ""
+
 echo "echo \"layer2 links\"" >> "${DIRECTORY}"/groups/ip_setup.sh
 echo "layer2_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
 echo "layer2_setup.sh: "
@@ -243,6 +251,13 @@ echo ""
 echo "website_setup.sh: "
 echo "website_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
 time ./setup/website_setup.sh "${DIRECTORY}" "${DOCKERHUB_USER}"
+
+echo ""
+echo ""
+
+echo "irrd_config.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
+echo "irrd_config.sh: "
+time ./setup/irrd_config.sh "${DIRECTORY}"
 
 echo ""
 echo ""
