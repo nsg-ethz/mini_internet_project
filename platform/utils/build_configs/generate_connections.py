@@ -1,321 +1,270 @@
-from netaddr import *
-import random
-import string
+"""This script generates the connections between the routers in the topology.
 
-# Pick the size of the topology that you want.
-# The Topology will always follow the same pattern, with different regions, Tier1, Stub and transit.
-# Two ASes in every raw in a region. One central IXP and one between each neighboring region.
-NB_ASES = 12
-
-if NB_ASES == 12:
-    # 12 ASes
-    tier1 = [[1,2],[11,12]]
-    transit = [[1,2,3,4,5,6],[11,12,13,14,15,16]]
-    ixp_central = 80
-    ixp_out = [81,82]
-elif NB_ASES == 20:
-    # 20 ASes
-    tier1 = [[1,2],[11,12]]
-    transit = [[1,2,3,4,5,6,7,8,9,10],[11,12,13,14,15,16,17,18,19,20]]
-    ixp_central = 80
-    ixp_out = [81,82]
-elif NB_ASES == 30:
-    # 30 ASes
-    tier1 = [[1,2],[11,12],[21,22]]
-    transit = [[1,2,3,4,5,6,7,8,9,10],[11,12,13,14,15,16,17,18,19,20],[21,22,23,24,25,26,27,28,29,30]]
-    ixp_central = 80
-    ixp_out = [81,82,83]
-elif NB_ASES == 40:
-    # 40 ASes
-    tier1 = [[1,2],[11,12],[21,22],[31,32]]
-    transit = [[1,2,3,4,5,6,7,8,9,10],[11,12,13,14,15,16,17,18,19,20],[21,22,23,24,25,26,27,28,29,30], [31,32,33,34,35,36,37,38,39,40]]
-    ixp_central = 80
-    ixp_out = [81,82,83,84]
-elif NB_ASES == 60:
-    # 60 ASes
-    tier1 = [[1,2],[11,12],[21,22],[31,32],[41,42],[51,52]]
-    transit = [[1,2,3,4,5,6,7,8,9,10],[11,12,13,14,15,16,17,18,19,20],[21,22,23,24,25,26,27,28,29,30], \
-    [31,32,33,34,35,36,37,38,39,40],[41,42,43,44,45,46,47,48,49,50],[51,52,53,54,55,56,57,58,59,60]]
-    ixp_central = 80
-    ixp_out = [81,82,83,84,85,86]
-elif NB_ASES == 72:
-    # 72 ASes
-    tier1 = [[1,2],[21,22],[41,42],[61,62],[81,82],[101,102]]
-    transit = [[1,2,3,4,5,6,7,8,9,10,11,12],[21,22,23,24,25,26,27,28,29,30,31,32], \
-    [41,42,43,44,45,46,47,48,49,50,51,52], [61,62,63,64,65,66,67,68,69,70,71,72], \
-    [81,82,83,84,85,86,87,88,89,90,91,92],[101,102,103,104,105,106,107,108,109,110,111,112]]
-    ixp_central = 120
-    ixp_out = [121,122,123,124,125,126]
-elif NB_ASES == 76:
-    # 76 ASes
-    tier1 = [[1,2],[21,22],[41,42],[61,62],[81,82],[101,102]]
-    transit = [[1,2,3,4,5,6,7,8,9,10,11,12,13,14],[21,22,23,24,25,26,27,28,29,30,31,32], \
-    [41,42,43,44,45,46,47,48,49,50,51,52,53,54], [61,62,63,64,65,66,67,68,69,70,71,72], \
-    [81,82,83,84,85,86,87,88,89,90,91,92],[101,102,103,104,105,106,107,108,109,110,111,112]]
-    ixp_central = 120
-    ixp_out = [121,122,123,124,125,126]
-elif NB_ASES == 70:
-    # 78 ASes
-    tier1 = [[1,2],[21,22],[41,42],[61,62],[81,82],[101,102]]
-    transit = [[1,2,3,4,5,6,7,8,9,10,11,12,13,14],[21,22,23,24,25,26,27,28,29,30,31,32,33,34], \
-    [41,42,43,44,45,46,47,48,49,50,51,52,53,54], [61,62,63,64,65,66,67,68,69,70,71,72], \
-    [81,82,83,84,85,86,87,88,89,90,91,92],[101,102,103,104,105,106,107,108,109,110,111,112]]
-    ixp_central = 120
-    ixp_out = [121,122,123,124,125,126]
+General layout: each area has two Tier1 ASes, and a number of transit ASes,
+and two stub ASes. More in the wiki.
+"""
+import math
 
 
+# Adjust parameters and where in the topology ASes are connected.
+# ===============================================================
 
-# Description of the routers used for every connection.
-# We differentiate between Transit, Tier1 and Stub ASes
+# Size of the topology.
+# ---------------------
+
+AREAS = 2
+ASES_PER_AREA = 6
+FIRST_IXP = 80
+
+# Define the connections and roles of the ASes in each topology.
+# --------------------------------------------------------------
+
+default_link = ("100000", "300 ")  # throughput, delay
+delay_link = ("100000", "1000")    # throughput, delay
+customer = "Customer"
+provider = "Provider"
+peer = "Peer    "  # Spaces to align with the other roles in config file.
+
 transit_as_topo = {
-    'provider1': 'LYON',
-    'provider2': 'MILA',
-    'customer1': 'MUNI',
-    'customer2': 'BASE',
-    'peer': 'LUGA',
-    'ixp': 'VIEN'
+    # connection of AS to X: (AS city, AS role, link properties)
+    # Example: The connection to the first provider is at Basel, and the AS
+    # takes the role of a customer.
+    # First provider is normal.
+    'provider1': ('BASE', customer, default_link),
+    'customer1': ('LAUS', provider, default_link),
+    # Second one has a delayed link.
+    'customer2': ('LUGA', provider, delay_link),
+    'provider2': ('ZURI', customer, delay_link),
+    # Peer and IXP.
+    'peer': ('STGA', peer, default_link),
+    'ixp': ('GENE', peer, default_link),
 }
 
 tier1_topo = {
-    'ixp_central': 'ZURI',
-    'ixp_out': 'BASE',
-    'peer1': 'ZURI',
-    'peer2': 'ZURI',
-    'provider1': 'ZURI',
-    'provider2': 'ZURI' 
+    # Tier 1 Ases have no providers, but more peers and two IXPs.
+    'ixp_central': ('STGA', peer, default_link),
+    'ixp': ('GENE', peer, default_link),
+    # Other Tier 1.
+    'peer1': ('BASE', peer, default_link),
+    'peer2': ('ZURI', peer, default_link),
+    # Connections to customers.
+    'customer1': ('LAUS', provider, default_link),
+    'customer2': ('LUGA', provider, delay_link),  # Delayed link.
 }
 
-stub_topo = {
-    'ixp': 'BASE',
-    'peer': 'ZURI',
-    'customer1': 'ZURI',
-    'customer2': 'ZURI' 
+ixp_topo = {
+    "as": ("None", peer, default_link),
 }
 
-all_tier1 = list(map(lambda x:str(x), sum(tier1, [])))
+stub_topo = transit_as_topo
 
-THROUGHPUT=100000
-DELAY=1000
-FD = open('aslevel_links.txt', 'w')
-FD_STUDENTS = open('aslevel_links_students.txt', 'w')
-LINE_NB = 0
-
-# Utility functions used to derive which IP subnet to use for a given connection.
-def update_subnet_ebgp():
-    global LINE_NB
-    LINE_NB += 1
-
-def get_subnet_ebgp(n=0):
-    global LINE_NB
-
-    mod = LINE_NB%100
-    div = int(LINE_NB/100)
-
-    return '179.'+str(div)+'.'+str(mod)+'.'+str(n)+'/24'
-
-# This is the main function used to print every external connection within the mini-Internet.
-def print_connection(grp1, r1, type1, grp2, r2, type2, ixp=None):
-    global FD
-    global FD_STUDENTS
-    global THROUGHPUT
-    global DELAY
-
-    ixp_addr1 = '180.{}.0.{}/24'.format(grp2, grp1)
-    ixp_addr2 = '180.{}.0.{}/24'.format(grp2, grp2)
-
-    if ixp is None: update_subnet_ebgp()
-    FD.write('{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format( \
-        str(grp1), \
-        r1, \
-        type1, \
-        str(grp2), \
-        r2, \
-        type2,
-        THROUGHPUT, \
-        DELAY, \
-        get_subnet_ebgp() if ixp is None else ixp))
-
-    FD_STUDENTS.write('{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format( \
-        str(grp1), \
-        r1, \
-        type1, \
-        str(grp2), \
-        r2, \
-        type2,
-        get_subnet_ebgp(1) if ixp is None else ixp_addr1))
-
-    FD_STUDENTS.write('{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format( \
-        str(grp2), \
-        r2, \
-        type2, \
-        str(grp1), \
-        r1, \
-        type1,
-        get_subnet_ebgp(2) if ixp is None else ixp_addr2))
+# stub_topo = {
+#     'ixp': 'BASE',
+#     'peer': 'ZURI',
+#     'customer1': 'ZURI',
+#     'customer2': 'ZURI'
+# }
 
 
-# First focuses on the connections that pertain to Tier1 ASes
-block_nb = 0
-for b in tier1:
-    left = b[0]
-    right = b[1]
+# STEP 1: Enumerate the different ASes and IXPs and determine connections.
+# ========================================================================
 
-    # Commections specific to the Tier1 AS on the left of the block
-    peer_other_block = tier1[(block_nb+1)%len(transit)][1]
-    print_connection(left, tier1_topo['peer2'], 'Peer', peer_other_block, tier1_topo['peer2'], 'Peer')
+# Compute the different areas and IXPs.
+# Ensure areas start at "nice" numbers, i.e. 1, 11, 21, etc.
+_area_max = 10 * math.ceil((ASES_PER_AREA + 1) / 10)
+transit = [
+    list(range(_area_max*n + 1, _area_max*n + 1 + ASES_PER_AREA))
+    for n in range(AREAS)
+]
 
-    customer1 = transit[block_nb][2]
-    customer2 = transit[block_nb][3]
+# IXPs
+assert FIRST_IXP > max([max(_t) for _t in transit])
+ixp_central = FIRST_IXP
+# IXP between two areas each, so we need as many as areas.
+ixp_out = list(range(FIRST_IXP + 1, FIRST_IXP + 1 + AREAS))
 
-    print_connection(left, tier1_topo['provider1'], 'Provider', customer1, transit_as_topo['customer2'], 'Customer')
-    print_connection(left, tier1_topo['provider2'], 'Provider', customer2, transit_as_topo['customer1'], 'Customer')
+# STEP 2: Generate the connections.
+# =================================
 
-    ixp1 = ixp_central
-    print_connection(left, tier1_topo['ixp_central'], 'Peer', ixp1, None, 'Peer', ixp=','.join(all_tier1))
+# First some helpers.
+# Lookup tables for tier1, stub-ases and direct+indirect customers.
+tier1 = [_t for _ts in transit for _t in _ts[:2]]
+stub = [_t for _ts in transit for _t in _ts[-2:]]
+customers = {
+    asn: [
+        _t for _t in _ts
+        # Always pairs of two, one-based indexing; e.g., customers for 1&2 are
+        # 3 and above, for 3 and 4 are 5 and above, etc.
+        if _t > math.ceil(asn / 2) * 2
+    ]
+    for _ts in transit for asn in _ts
+}
 
-    ixp2 = ixp_out[block_nb]
-    print_connection(left, tier1_topo['ixp_out'], 'Peer', ixp2, None, 'Peer', \
-        ixp=','.join(map(lambda x:str(x), transit[(block_nb+1)%len(tier1)])))
+# Mapping of ASes to outer IXPs. (center IXP is connected only to Tier1.)
+ixp_to_ases = {ixp: [] for ixp in ixp_out}
+as_to_ixp = {}
+for _i, _ts in enumerate(transit):
+    left_ixp = ixp_out[_i]
+    right_ixp = ixp_out[(_i + 1) % AREAS]  # Wrap around.
+
+    left_ases = _ts[::2]
+    right_ases = _ts[1::2]
+
+    ixp_to_ases[left_ixp] += left_ases
+    ixp_to_ases[right_ixp] += right_ases
+    for _a in left_ases:
+        as_to_ixp[_a] = left_ixp
+    for _a in right_ases:
+        as_to_ixp[_a] = right_ixp
 
 
-    # Connections shared between the left and right ASes
-    print_connection(left, tier1_topo['peer1'], 'Peer', right, tier1_topo['peer1'], 'Peer')
+def get_subnet_and_ips(asn1, asn2):
+    """Generate the subnet, which follows the following pattern:
+
+    If both ASes are not IXPs:
+
+        Subnet:  179.<smaller asn>.<larger asn>.0/24
+        IP ASN1: 179.<smaller asn>.<larger asn>.<asn1>/24
+        IP ASN2: 179.<smaller asn>.<larger asn>.<asn2>/24
+
+    If AS 2 is an IXP:
+
+        Subnet:  180.<ixp>.0.0/24
+        IP ASN1: 180.<ixp>.0.<asn1>/24
+        IP IXP: 180.<ixp>.0.<ixp>/24
+    """
+    if (asn2 == ixp_central) or (asn2 in ixp_out):
+        ixp = asn2
+        return (
+            f"180.{ixp}.0.0/24",
+            f"180.{ixp}.0.{asn1}/24",
+            f"180.{ixp}.0.{ixp}/24",
+        )
+
+    _middle_octets = f"{min(asn1, asn2)}.{max(asn1, asn2)}"
+    return (
+        f"179.{_middle_octets}.0/24",
+        f"179.{_middle_octets}.{asn1}/24",
+        f"179.{_middle_octets}.{asn2}/24",
+    )
 
 
-    # Commections specific to the Tier1 AS on the right of the block
-    peer_other_block = tier1[(block_nb-1)%len(transit)][0]
+def get_topo(asn):
+    """Return relevant topology."""
+    if asn in tier1:
+        return tier1_topo
+    elif asn in stub:
+        return stub_topo
+    elif (asn == ixp_central) or (asn in ixp_out):
+        return ixp_topo
+    return transit_as_topo
 
-    customer1 = transit[block_nb][3]
-    customer2 = transit[block_nb][2]
 
-    print_connection(right, tier1_topo['provider1'], 'Provider', customer1, transit_as_topo['customer2'], 'Customer')
-    print_connection(right, tier1_topo['provider2'], 'Provider', customer2, transit_as_topo['customer1'], 'Customer')
+def get_config(asn1, key1, asn2, key2, both_ways=False):
+    """Return config lines.
 
-    ixp1 = ixp_central
-    print_connection(right, tier1_topo['ixp_central'], 'Peer', ixp1, None, 'Peer', ixp=','.join(all_tier1))
+    Returns both the "aslevel_links" and "aslevel_links_students" lines.
+    If both_ways is True, also returns the reverse link for the
+    aslevel_links_students.
+    """
+    subnet, ip1, ip2 = get_subnet_and_ips(asn1, asn2)
+    city1, role1, link = get_topo(asn1)[key1]
+    city2, role2, _ = get_topo(asn2)[key2]
 
-    ixp2 = ixp_out[block_nb-1]
-    print_connection(right, tier1_topo['ixp_out'], 'Peer', ixp2, None, 'Peer', \
-        ixp=','.join(map(lambda x:str(x), transit[(block_nb-1)%len(tier1)])))
+    common_info = (asn1, city1, role1, asn2, city2, role2)
+    common_info_rev = (asn2, city2, role2, asn1, city1, role1)
 
-    block_nb += 1
+    # Last config entry is different for IXPs and ASes.
+    if asn2 == ixp_central:
+        # Central IXP is used by Tier1 to peer with each other.
+        last_col = ",".join(map(str, tier1))
+    elif asn2 in ixp_out:
+        # Other IXPs are used by all ASes; they must not advertise to customers.
+        last_col = ",".join([
+            str(asn) for asn in ixp_to_ases[asn2]
+            if (asn not in customers[asn1]) and (asn != asn1)
+        ])
+    else:  # non-IXP
+        last_col = subnet
 
-# Then focuses on the connections that pertain to Transit ASes.
-block_nb = 0
-for b in transit:
-    i = 2
+    if both_ways:
+        return (
+            # aslevel_links
+            "\t".join(map(str, (*common_info, *link, last_col))),
+            # aslevel_links_students line 1/2.
+            (
+                "\t".join(map(str, (*common_info, ip1))) + "\n" +
+                "\t".join(map(str, (*common_info_rev, ip2)))
+            ),
+        )
+    return (
+        "\t".join(map(str, (*common_info, *link, last_col))),
+        "\t".join(map(str, (*common_info, ip1))),
+    )
 
-    # Commections specific to the Transit AS that only have connections with other transit ASes.
-    for a in b[2:-4]:
-        # Left AS.
-        if i%2 == 0:
-            customer1 = b[i+2]
-            customer2 = b[i+3]
-        # Right AS.
+
+config = []
+
+for as_block in transit:
+    for asn in as_block:
+        # remember that ASes are in pairs of two.
+        # 1, 3, ... are provider/customer 1 and
+        # 2, 4, ... are provider/customer 2.
+        asn_pos = 1 if asn % 2 else 2
+        asn_partner = asn + 1 if asn % 2 else asn - 1
+        asn_first = asn if asn % 2 else asn_partner
+
+        # Providers. (not for Tier1, i.e. the first two ASes in each block)
+        # ----------
+
+        if not asn in tier1:
+            provider1 = asn_first - 2
+            provider2 = asn_first - 1
+            label = f"customer{asn_pos}"  # 1 or 2.
+            config.append(get_config(asn, "provider1", provider1, label))
+            config.append(get_config(asn, "provider2", provider2, label))
+
+        # Customers (not for stub ASes).
+        # ----------
+
+        if not asn in stub:
+            customer1 = asn_first + 2
+            customer2 = asn_first + 3
+            label = f"provider{asn_pos}"  # 1 or 2.
+            config.append(get_config(asn, "customer1", customer1, label))
+            config.append(get_config(asn, "customer2", customer2, label))
+
+        # Peers. (Tier 1 peers differently)
+        # ------
+        if not asn in tier1:
+            config.append(get_config(asn, "peer", asn_partner, "peer"))
         else:
-            customer1 = b[i+2]
-            customer2 = b[i+1]
+            # Peer with tier 1 in the same block and in the adjacent block.
+            tier1_index = tier1.index(asn)
+            peer1 = tier1[(tier1_index + 1) % len(tier1)]
+            peer2 = tier1[(tier1_index - 1) % len(tier1)]
+            config.append(get_config(asn, "peer1", peer1, "peer2"))
+            config.append(get_config(asn, "peer2", peer2, "peer1"))
 
-        print_connection(a, transit_as_topo['provider1'], 'Provider', customer1, transit_as_topo['customer2'], 'Customer')
-        print_connection(a, transit_as_topo['provider2'], 'Provider', customer2, transit_as_topo['customer1'], 'Customer')
+        # IXPs.
+        # -----
+        if asn in tier1:  # IXP central only for Tier1.
+            # IXPs (add both directions to student config so they can see the
+            # IXP ip address, too).
+            config.append(
+                get_config(asn, "ixp_central", ixp_central, "as", True)
+            )
 
-        # Left AS.
-        if i%2 == 0:
-            peer1 = b[i+1]
-            peer2 = ixp_out[block_nb]
-
-            print_connection(a, transit_as_topo['peer'], 'Peer', peer1, transit_as_topo['peer'], 'Peer')
-            print_connection(a, transit_as_topo['ixp'], 'Peer', peer2, None, 'Peer', \
-                ixp=','.join(map(lambda x:str(x), transit[(block_nb+1)%len(tier1)])))
-
-        # Right AS.
-        else:
-            peer1 = b[i-1]
-            peer2 = ixp_out[block_nb-1]
-
-            print_connection(a, transit_as_topo['ixp'], 'Peer', peer2, None, 'Peer', \
-                ixp=','.join(map(lambda x:str(x), transit[(block_nb-1)%len(tier1)])))
-
-        i += 1
-
-    # Commections specific to the Transit AS that have connections with Stub ASes.
-    for a in b[-4:-2]:
-        # Left AS.
-        if i%2 == 0:
-            customer1 = b[i+2]
-            customer2 = b[i+3]
-        # Right AS.
-        else:
-            customer1 = b[i+2]
-            customer2 = b[i+1]
-
-        print_connection(a, transit_as_topo['provider1'], 'Provider', customer1, stub_topo['customer2'], 'Customer')
-        print_connection(a, transit_as_topo['provider2'], 'Provider', customer2, stub_topo['customer1'], 'Customer')
-
-        # Left AS.
-        if i%2 == 0:
-            peer1 = b[i+1]
-            peer2 = ixp_out[block_nb]
-
-            print_connection(a, transit_as_topo['peer'], 'Peer', peer1, transit_as_topo['peer'], 'Peer')
-            print_connection(a, transit_as_topo['ixp'], 'Peer', peer2, None, 'Peer', 
-                ixp=','.join(map(lambda x:str(x), transit[(block_nb+1)%len(tier1)])))
-
-        # Right AS.
-        else:
-            peer1 = b[i-1]
-            peer2 = ixp_out[block_nb-1]
-
-            print_connection(a, transit_as_topo['ixp'], 'Peer', peer2, None, 'Peer', \
-                ixp=','.join(map(lambda x:str(x), transit[(block_nb-1)%len(tier1)])))
-
-        i += 1
-
-    block_nb += 1
+        config.append(get_config(asn, "ixp", as_to_ixp[asn], "as", True))
 
 
-# Configure the Stub AS
-block_nb = 0
-for b in transit:
-    # Left AS
-    left = b[-2]
-    peer1 = b[-1]
-    peer2 = ixp_out[block_nb]
+# STEP 2: Generate the config files.
+# ==================================
 
-    print_connection(left, stub_topo['peer'], 'Peer', peer1, stub_topo['peer'], 'Peer')
-    print_connection(left, stub_topo['ixp'], 'Peer', peer2, None, 'Peer', \
-        ixp=','.join(map(lambda x:str(x), transit[(block_nb+1)%len(tier1)])))
+config, student_config = zip(*config)
 
-    # Right AS
-    right = b[-1]
-    peer1 = b[-2]
-    peer2 = ixp_out[block_nb-1]
-    print_connection(right, stub_topo['ixp'], 'Peer', peer2, None, 'Peer', \
-        ixp=','.join(map(lambda x:str(x), transit[(block_nb-1)%len(tier1)])))
+with open('aslevel_links.txt', 'w') as file:
+    file.write("\n".join(config))
 
-    block_nb += 1
-
-
-# Compute and store all the Tier1 ASes, Transit and Stub ASes in lists
-all_transit = sum(list(map(lambda x:x[2:-2], transit)), [])
-all_stub = sum(list(map(lambda x:x[-2:], transit)), [])
-all_ixp = ixp_out
-all_ixp.append(ixp_central)
-
-# Write the AS_config.txt file, with AS1 hosting krill.
-with open('AS_config.txt', 'w') as fd:
-    for asn in all_tier1+all_stub:
-        # By default we set krill in AS1
-        if asn == '1':
-            fd.write(str(asn)+'\tAS\tConfig\tl3_routers_krill.txt\tl3_links_krill.txt\tempty.txt\tempty.txt\tempty.txt\n')
-        else:
-            fd.write(str(asn)+'\tAS\tConfig\tl3_routers_tier1_and_stub.txt\tl3_links_tier1_and_stub.txt\tempty.txt\tempty.txt\tempty.txt\n')
-
-    for asn in all_transit:
-        fd.write(str(asn)+'\tAS\tConfig\tl3_routers.txt\tl3_links.txt\tl2_switches.txt\tl2_hosts.txt\tl2_links.txt\n')
-
-    for asn in all_ixp:
-        fd.write(str(asn)+'\tIXP\tConfig\tN/A\tN/A\tN/A\tN/A\tN/A\n')
-
-
-# cat external_links_config_students.txt | sort -k 1,1 -k 4,4 -n | cut -f 1,2,3,4,7 | sed  -e 's/Customer/customer2provider/g' | sed  -e 's/Provider/provider2customer/g' | sed  -e 's/Peer/peer2peer/g' > tmp.txt
+with open('aslevel_links_students.txt', 'w') as file:
+    file.write("\n".join(student_config))
