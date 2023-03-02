@@ -268,3 +268,25 @@ with open('aslevel_links.txt', 'w') as file:
 
 with open('aslevel_links_students.txt', 'w') as file:
     file.write("\n".join(student_config))
+
+
+# STEP 3: Generate the file with contains which configs to use.
+# =============================================================
+
+with open('AS_config.txt', 'w') as fd:
+    for as_block in transit:
+        for asn in as_block:
+            if asn == 1:  # By default we set krill in AS1
+                fd.write(f'{asn}\tAS\tConfig\tl3_routers_krill.txt\t'
+                         'l3_links_krill.txt\tempty.txt\tempty.txt\t'
+                         'empty.txt\n')
+            elif (asn in tier1) or (asn in stub):
+                fd.write(f'{asn}\tAS\tConfig\tl3_routers_tier1_and_stub.txt\t'
+                         'tl3_links_tier1_and_stub.txt\tempty.txt\tempty.txt\t'
+                         'empty.txt\n')
+            else:
+                fd.write(f'{asn}\tAS\tConfig\tl3_routers.txt\t'
+                         'l3_links.txt\tl2_switches.txt\tl2_hosts.txt\t'
+                         'l2_links.txt\n')
+    for asn in [ixp_central, *ixp_out]:
+        fd.write(f'{asn}\tIXP\tConfig\tN/A\tN/A\tN/A\tN/A\tN/A\n')
