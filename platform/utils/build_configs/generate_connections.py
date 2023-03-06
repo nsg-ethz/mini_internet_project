@@ -282,7 +282,7 @@ with open('AS_config.txt', 'w') as fd:
                          'empty.txt\n')
             elif (asn in tier1) or (asn in stub):
                 fd.write(f'{asn}\tAS\tConfig\tl3_routers_tier1_and_stub.txt\t'
-                         'tl3_links_tier1_and_stub.txt\tempty.txt\tempty.txt\t'
+                         'l3_links_tier1_and_stub.txt\tempty.txt\tempty.txt\t'
                          'empty.txt\n')
             else:
                 fd.write(f'{asn}\tAS\tConfig\tl3_routers.txt\t'

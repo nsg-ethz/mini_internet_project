@@ -1,7 +1,7 @@
-ADMIN_ETH           miniinterneteth/d_host  RNN S1  10000   1000    10
-RESEARCH_ETH        miniinterneteth/d_host  RNN S1  10000   1000    20
-ADMIN_LEONHARD      miniinterneteth/d_host  RNN S2  10000   1000    10
-RESEARCH_LEONHARD   miniinterneteth/d_host  RNN S2  10000   1000    20
-ADMIN_EULER         miniinterneteth/d_host  RNS S3  10000   1000    10
-RESEARCH_EULER      miniinterneteth/d_host  RNS S3  10000   1000    20
-VPN                 miniinterneteth/d_host  RNN S1  10000   1000    30
+A_ETH       miniinterneteth/d_host  N S1  10000   1000    10
+R_ETH       miniinterneteth/d_host  N S1  10000   1000    20
+A_LEON      miniinterneteth/d_host  N S2  10000   1000    10
+R_LEON      miniinterneteth/d_host  N S2  10000   1000    20
+VPN         miniinterneteth/d_host  N S1  10000   1000    30
+A_EULER     miniinterneteth/d_host  S S3  10000   1000    10
+R_EULER     miniinterneteth/d_host  S S3  10000   1000    20
