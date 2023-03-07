@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# remove all container, bridges and temporary files
+# remove all container, bridges, network namespaces, and temporary files
 
 # kill all container
 for container in `docker ps -q`; do
@@ -26,6 +26,9 @@ for n in $(ip -o link show | awk -F': ' '{print $2}'); do
         ip link delete $(echo $n | cut -d'@' -f 1)
     fi
 done
+
+# Delete all network namespaces
+ip -all netns delete
 
 # delete old running config files
 if [ -e groups ]; then
