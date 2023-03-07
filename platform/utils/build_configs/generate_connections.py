@@ -1,6 +1,6 @@
 """This script generates the connections between the routers in the topology.
 
-General layout: each area has two Tier1 ASes, and a number of transit ASes,
+General layout: each area has two Tier1 ASes, and a number of areas ASes,
 and two stub ASes. More in the wiki.
 """
 import math
@@ -72,13 +72,13 @@ stub_topo = transit_as_topo
 # Compute the different areas and IXPs.
 # Ensure areas start at "nice" numbers, i.e. 1, 11, 21, etc.
 _area_max = 10 * math.ceil((ASES_PER_AREA + 1) / 10)
-transit = [
+areas = [
     list(range(_area_max*n + 1, _area_max*n + 1 + ASES_PER_AREA))
     for n in range(AREAS)
 ]
 
 # IXPs
-assert FIRST_IXP > max([max(_t) for _t in transit])
+assert FIRST_IXP > max([max(area) for area in areas])
 ixp_central = FIRST_IXP
 # IXP between two areas each, so we need as many as areas.
 ixp_out = list(range(FIRST_IXP + 1, FIRST_IXP + 1 + AREAS))
@@ -88,27 +88,18 @@ ixp_out = list(range(FIRST_IXP + 1, FIRST_IXP + 1 + AREAS))
 
 # First some helpers.
 # Lookup tables for tier1, stub-ases and direct+indirect customers.
-tier1 = [_t for _ts in transit for _t in _ts[:2]]
-stub = [_t for _ts in transit for _t in _ts[-2:]]
-customers = {
-    asn: [
-        _t for _t in _ts
-        # Always pairs of two, one-based indexing; e.g., customers for 1&2 are
-        # 3 and above, for 3 and 4 are 5 and above, etc.
-        if _t > math.ceil(asn / 2) * 2
-    ]
-    for _ts in transit for asn in _ts
-}
+tier1 = [asn for area in areas for asn in area[:2]]
+stub = [asn for area in areas for asn in area[-2:]]
 
 # Mapping of ASes to outer IXPs. (center IXP is connected only to Tier1.)
 ixp_to_ases = {ixp: [] for ixp in ixp_out}
 as_to_ixp = {}
-for _i, _ts in enumerate(transit):
+for _i, area in enumerate(areas):
     left_ixp = ixp_out[_i]
     right_ixp = ixp_out[(_i + 1) % AREAS]  # Wrap around.
 
-    left_ases = _ts[::2]
-    right_ases = _ts[1::2]
+    left_ases = area[::2]
+    right_ases = area[1::2]
 
     ixp_to_ases[left_ixp] += left_ases
     ixp_to_ases[right_ixp] += right_ases
@@ -179,10 +170,13 @@ def get_config(asn1, key1, asn2, key2, both_ways=False):
         # Central IXP is used by Tier1 to peer with each other.
         last_col = ",".join(map(str, tier1))
     elif asn2 in ixp_out:
-        # Other IXPs are used by all ASes; they must not advertise to customers.
+        # Other IXPs are used by all ASes;
+        # they must not advertise to customers or providers, as this would
+        # go against business relationships.
+        # Concretely, do not advertise to same area.
+        asn1_area = next(area for area in areas if asn1 in area)
         last_col = ",".join([
-            str(asn) for asn in ixp_to_ases[asn2]
-            if (asn not in customers[asn1]) and (asn != asn1)
+            str(asn) for asn in ixp_to_ases[asn2] if asn not in asn1_area
         ])
     else:  # non-IXP
         last_col = subnet
@@ -205,7 +199,7 @@ def get_config(asn1, key1, asn2, key2, both_ways=False):
 
 config = []
 
-for as_block in transit:
+for as_block in areas:
     for asn in as_block:
         # remember that ASes are in pairs of two.
         # 1, 3, ... are provider/customer 1 and
@@ -274,8 +268,8 @@ with open('aslevel_links_students.txt', 'w') as file:
 # =============================================================
 
 with open('AS_config.txt', 'w') as fd:
-    for as_block in transit:
-        for asn in as_block:
+    for area in areas:
+        for asn in area:
             if asn == 1:  # By default we set krill in AS1
                 fd.write(f'{asn}\tAS\tConfig\tl3_routers_krill.txt\t'
                          'l3_links_krill.txt\tempty.txt\tempty.txt\t'
