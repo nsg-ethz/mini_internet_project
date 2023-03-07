@@ -36,12 +36,10 @@ if [[ "$is_matrix" -eq 0 ]]; then
 else
 
     location="${DIRECTORY}"/groups/matrix/
-    mkdir $location
+    mkdir -p $location
 
     touch "$location"/destination_ips.txt
-    chmod +x "${location}"/destination_ips.txt
     touch "$location"/connectivity.txt
-    chmod +x "${location}"/connectivity.txt
 
     # start matrix container
     docker run -itd --net='none' --name="MATRIX" --hostname="MATRIX" \
@@ -52,7 +50,8 @@ else
         -v "${DIRECTORY}"/config/welcoming_message.txt:/etc/motd:rw \
         -v "${location}"/destination_ips.txt:/home/destination_ips.txt \
         -v "${location}"/connectivity.txt:/home/connectivity.txt \
-        "${DOCKERHUB_USER}/d_matrix"
+        matrix_new
+        #"${DOCKERHUB_USER}/d_matrix"
 
     # cache the docker pid for ovs-docker.sh
     source ${DIRECTORY}/groups/docker_pid.map

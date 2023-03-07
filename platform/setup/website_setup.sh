@@ -26,7 +26,7 @@ DOCKERHUB_USER="${2:-thomahol}"
 # You need to specify the hostname of the server and an email for
 # LetsEncrypt to be enabled.
 # UPDATE THOSE VARIABLES. HOSTNAME -> hostname of the server and EMAIL -> empty string (for http)
-HOSTNAME="pc-10328.ethz.ch"
+HOSTNAME="localhost"
 ACME_MAIL=""
 
 # Hostname and ports for the webserver and krill on the host.
