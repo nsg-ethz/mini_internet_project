@@ -34,9 +34,9 @@ for ((j=0;j<n_krill_containers;j++)); do
             group_number="${container_data[0]}"
             container_name="${container_data[1]}"
 
-            # Enable ssh port forwarding to krill webserver via ssh proxy container (and only port forwarding)  
+            # Enable ssh port forwarding to krill webserver via ssh proxy container (and only port forwarding)
             docker exec ${group_number}_ssh bash -c "echo 'restrict,port-forwarding,command=\"/bin/false\" $(cat groups/rpki/id_rsa_krill_webserver.pub)' >> ~/.ssh/authorized_keys"
-            
+
             # Setup Certificate Authority and predefined ROAs
             docker exec $container_name /bin/bash /home/setup.sh
             sleep 5
@@ -255,11 +255,11 @@ for ((i=0;i<n_extern_links;i++)); do
             subnet="${row_i[8]}"
 
             if [ "$subnet" != "N/A" ]; then
-                subnet1=${subnet%????}1/24
-                subnet2=${subnet%????}2/24
+                subnet1=${subnet%????}${grp_1}/24
+                subnet2=${subnet%????}${grp_2}/24
             else
-                subnet1="$(subnet_router_router_extern "${i}" 1)"
-                subnet2="$(subnet_router_router_extern "${i}" 2)"
+                subnet1="$(subnet_router_router_extern $grp_1 $grp_2)"
+                subnet2="$(subnet_router_router_extern $grp_2 $grp_1)"
             fi
 
             location1="${DIRECTORY}"/groups/g"${grp_1}"/"${router_grp_1}"/init_rpki_conf.sh

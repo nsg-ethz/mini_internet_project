@@ -2,6 +2,11 @@
 
 General layout: each area has two Tier1 ASes, and a number of areas ASes,
 and two stub ASes. More in the wiki.
+
+Important to consider: the config file configures _both_ ends of the connection,
+so we need to ensure that we only have one config line for each two endpoints.
+Concretely, we define config only for providers, not for customers, and only
+for the peer on the "left" in the topology.
 """
 import math
 
@@ -208,15 +213,16 @@ for as_block in areas:
         asn_partner = asn + 1 if asn % 2 else asn - 1
         asn_first = asn if asn % 2 else asn_partner
 
-        # Providers. (not for Tier1, i.e. the first two ASes in each block)
-        # ----------
+        # Not needed -> one-directional only!
+        # # Providers. (not for Tier1, i.e. the first two ASes in each block)
+        # # ----------
 
-        if not asn in tier1:
-            provider1 = asn_first - 2
-            provider2 = asn_first - 1
-            label = f"customer{asn_pos}"  # 1 or 2.
-            config.append(get_config(asn, "provider1", provider1, label))
-            config.append(get_config(asn, "provider2", provider2, label))
+        # if not asn in tier1:
+        #     provider1 = asn_first - 2
+        #     provider2 = asn_first - 1
+        #     label = f"customer{asn_pos}"  # 1 or 2.
+        #     config.append(get_config(asn, "provider1", provider1, label))
+        #     config.append(get_config(asn, "provider2", provider2, label))
 
         # Customers (not for stub ASes).
         # ----------
@@ -231,14 +237,17 @@ for as_block in areas:
         # Peers. (Tier 1 peers differently)
         # ------
         if not asn in tier1:
-            config.append(get_config(asn, "peer", asn_partner, "peer"))
+            # Only for the "left" AS.
+            if asn % 2:
+                config.append(get_config(asn, "peer", asn + 1, "peer"))
         else:
             # Peer with tier 1 in the same block and in the adjacent block.
             tier1_index = tier1.index(asn)
             peer1 = tier1[(tier1_index + 1) % len(tier1)]
-            peer2 = tier1[(tier1_index - 1) % len(tier1)]
             config.append(get_config(asn, "peer1", peer1, "peer2"))
-            config.append(get_config(asn, "peer2", peer2, "peer1"))
+            # Do not peer with the previous AS.
+            # peer2 = tier1[(tier1_index - 1) % len(tier1)]
+            # config.append(get_config(asn, "peer2", peer2, "peer1"))
 
         # IXPs.
         # -----

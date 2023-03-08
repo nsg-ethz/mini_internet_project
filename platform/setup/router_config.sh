@@ -287,11 +287,11 @@ for ((i=0;i<n_extern_links;i++)); do
         subnet="${row_i[8]}"
 
         if [ "$subnet" != "N/A" ]; then
-            subnet1=${subnet%????}1/24
-            subnet2=${subnet%????}2/24
+            subnet1=${subnet%????}${grp_1}/24
+            subnet2=${subnet%????}${grp_2}/24
         else
-            subnet1="$(subnet_router_router_extern "${i}" 1)"
-            subnet2="$(subnet_router_router_extern "${i}" 2)"
+            subnet1="$(subnet_router_router_extern $grp_1 $grp_2)"
+            subnet2="$(subnet_router_router_extern $grp_2 $grp_1)"
         fi
 
         location1="${DIRECTORY}"/groups/g"${grp_1}"/"${router_grp_1}"/init_full_conf.sh
