@@ -213,16 +213,19 @@ for as_block in areas:
         asn_partner = asn + 1 if asn % 2 else asn - 1
         asn_first = asn if asn % 2 else asn_partner
 
-        # Not needed -> one-directional only!
-        # # Providers. (not for Tier1, i.e. the first two ASes in each block)
-        # # ----------
+        # Not needed -> one-directional only for AS_level config.
+        # Providers. (not for Tier1, i.e. the first two ASes in each block)
+        # ----------
 
-        # if not asn in tier1:
-        #     provider1 = asn_first - 2
-        #     provider2 = asn_first - 1
-        #     label = f"customer{asn_pos}"  # 1 or 2.
-        #     config.append(get_config(asn, "provider1", provider1, label))
-        #     config.append(get_config(asn, "provider2", provider2, label))
+        if not asn in tier1:
+            provider1 = asn_first - 2
+            provider2 = asn_first - 1
+            label = f"customer{asn_pos}"  # 1 or 2.
+            # None for AS config.
+            config.append(
+                (None, get_config(asn, "provider1", provider1, label)[1]))
+            config.append(
+                (None, get_config(asn, "provider2", provider2, label)[1]))
 
         # Customers (not for stub ASes).
         # ----------
@@ -267,10 +270,11 @@ for as_block in areas:
 config, student_config = zip(*config)
 
 with open('aslevel_links.txt', 'w') as file:
-    file.write("\n".join(config))
+    file.write("\n".join([line for line in config if line is not None]))
 
 with open('aslevel_links_students.txt', 'w') as file:
-    file.write("\n".join(student_config))
+    file.write(
+        "\n".join([line for line in student_config if line is not None]))
 
 
 # STEP 3: Generate the file with contains which configs to use.
