@@ -3,7 +3,11 @@
 # targeting the mini-Internet webservers and ssh ports. 
 # Most of rules come from: https://javapipe.com/blog/iptables-ddos-protection/
 
+#####################################
+### UPDATE THE FOLLOWING VARIABLE ###
+#####################################
 CONFIG_DIR=/home/thomas/mini_internet_project/platform/config
+######################################
 SSH_PORT_BASE=2000
 WEBSERVER_PORT=80
 KRILL_PORT=3080
