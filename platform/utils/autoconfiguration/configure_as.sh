@@ -15,11 +15,12 @@ do
     # This loop should iterate over the router, starting from lower ID to higher ID.
     for router_name in ROUTER_NAMES
     do
-        chmod 755 $PLATFORM_DIR/groups/g${group_number}/${router_name}/init_rpki_conf.sh
-        docker cp $PLATFORM_DIR/groups/g${group_number}/${router_name}/init_full_conf.sh ${group_number}_${router_name}router:/home/
-        docker cp $PLATFORM_DIR/groups/g${group_number}/${router_name}/init_rpki_conf.sh ${group_number}_${router_name}router:/home/
-        docker exec -it ${group_number}_${router_name}router ./home/init_full_conf.sh
-        docker exec -it ${group_number}_${router_name}router ./home/init_rpki_conf.sh
+        config_dir="$PLATFORM_DIR/groups/g${group_number}/${router_name}/config"
+        for config_file in init.conf full.conf rpki.conf; do
+            chmod 755 "${config_dir}/${config_file}"
+            docker cp "${config_dir}/${config_file}" "${group_number}_${router_name}router":/home/ > /dev/null
+            docker exec -it "${group_number}_${router_name}router" bash -c "'cat /home/${config_file} | vtysh'"
+        done
 
         docker exec -it ${group_number}_${router_name}host ip address add ${group_number}.$((100+$rid)).0.1/24 dev ${router_name}router 
         docker exec -it ${group_number}_${router_name}host ip route add default via ${group_number}.$((100+$rid)).0.2
