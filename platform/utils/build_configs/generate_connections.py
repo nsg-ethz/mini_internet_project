@@ -32,6 +32,8 @@ FIRST_IXP = 80
 # Define the connections and roles of the ASes in each topology.
 # --------------------------------------------------------------
 
+do_not_hijack = [1,]  # Hosts krill, so we need it reachable.
+
 default_link = ("100000", "300 ")  # throughput, delay
 delay_link = ("100000", "1000")    # throughput, delay
 customer = "Customer"
@@ -321,7 +323,8 @@ for asn in stub:
     victim = next(asn2 for asn2 in stub
                   if (asn2 != asn) and (asn2 in asn_area))
     other_ases = [asn2 for asn2 in asn_area
-                  if (asn2 != asn) and (asn2 in ixp_to_ases[asn_ixp])]
+                  if (asn2 != asn) and (asn2 in ixp_to_ases[asn_ixp])
+                  and (asn2 not in do_not_hijack)]
 
     node_towards_victim, *_ = stub_topo['peer']
     node_towards_ixp, *_ = stub_topo['ixp']

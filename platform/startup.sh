@@ -230,13 +230,6 @@ time ./setup/mpls_setup.sh "${DIRECTORY}"
 echo ""
 echo ""
 
-echo "hijacks: "
-echo "hijacks $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
-time ./setup/hijack_config.py "${DIRECTORY}"
-
-echo ""
-echo ""
-
 echo "Waiting 60sec for RPKI CA and proxy to startup.."
 sleep 60
 
@@ -284,5 +277,12 @@ if [ -n "$(docker ps | grep "DNS")" ]; then
     # docker exec -d DNS service bind9 restart
     docker kill --signal=HUP DNS
 fi
+
+echo ""
+echo ""
+
+echo "hijacks: "
+echo "hijacks $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
+time ./setup/hijack_config.py "${DIRECTORY}"
 
 echo "$(date +%Y-%m-%d_%H-%M-%S)"
