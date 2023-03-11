@@ -230,6 +230,13 @@ time ./setup/mpls_setup.sh "${DIRECTORY}"
 echo ""
 echo ""
 
+echo "hijacks: "
+echo "hijacks $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
+time ./setup/hijack_config.py "${DIRECTORY}"
+
+echo ""
+echo ""
+
 echo "Waiting 60sec for RPKI CA and proxy to startup.."
 sleep 60
 
