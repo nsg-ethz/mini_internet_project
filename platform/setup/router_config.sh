@@ -8,21 +8,21 @@ set -o pipefail
 set -o nounset
 
 DIRECTORY="$1"
-source "${DIRECTORY}"/config/subnet_config.sh
-source "${DIRECTORY}"/setup/_parallel_helper.sh
+source "${DIRECTORY}/config/subnet_config.sh"
+source "${DIRECTORY}/setup/_parallel_helper.sh"
 
 # read configs
-readarray groups < "${DIRECTORY}"/config/AS_config.txt
-readarray extern_links < "${DIRECTORY}"/config/aslevel_links.txt
-readarray l2_switches < "${DIRECTORY}"/config/l2_switches.txt
-readarray l2_links < "${DIRECTORY}"/config/l2_links.txt
-readarray l2_hosts < "${DIRECTORY}"/config/l2_hosts.txt
+readarray groups < "${DIRECTORY}/config/AS_config.txt"
+readarray extern_links < "${DIRECTORY}/config/aslevel_links.txt"
+readarray l2_switches < "${DIRECTORY}/config/l2_switches.txt"
+readarray l2_links < "${DIRECTORY}/config/l2_links.txt"
+readarray l2_hosts < "${DIRECTORY}/config/l2_hosts.txt"
 
-group_numbers=${#groups[@]}
-n_extern_links=${#extern_links[@]}
-n_l2_switches=${#l2_switches[@]}
-n_l2_links=${#l2_links[@]}
-n_l2_hosts=${#l2_hosts[@]}
+group_numbers="${#groups[@]}"
+n_extern_links="${#extern_links[@]}"
+n_l2_switches="${#l2_switches[@]}"
+n_l2_links="${#l2_links[@]}"
+n_l2_hosts="${#l2_hosts[@]}"
 
 
 # create initial configuration for each router
@@ -34,12 +34,12 @@ for ((k=0;k<group_numbers;k++));do
     group_router_config="${group_k[3]}"
     group_internal_links="${group_k[4]}"
 
-    if [ "${group_as}" != "IXP" ];then
+    if [ "${group_as}" != "IXP" ]; then
 
-        readarray routers < "${DIRECTORY}"/config/$group_router_config
-        readarray intern_links < "${DIRECTORY}"/config/$group_internal_links
-        n_routers=${#routers[@]}
-        n_intern_links=${#intern_links[@]}
+        readarray routers < "${DIRECTORY}/config/${group_router_config}"
+        readarray intern_links < "${DIRECTORY}/config/${group_internal_links}"
+        n_routers="${#routers[@]}"
+        n_intern_links="${#intern_links[@]}"
 
         # Initlization the associative array to configure the layer2 subnet advertisements
         declare -A l2_id
@@ -74,61 +74,60 @@ for ((k=0;k<group_numbers;k++));do
                 exit 1
             fi
 
-            touch "${DIRECTORY}"/groups/g"${group_number}"/"${rname}"/init_conf.sh
-            chmod +x "${DIRECTORY}"/groups/g"${group_number}"/"${rname}"/init_conf.sh
-
-            touch "${DIRECTORY}"/groups/g"${group_number}"/"${rname}"/init_full_conf.sh
-            chmod +x "${DIRECTORY}"/groups/g"${group_number}"/"${rname}"/init_full_conf.sh
-
-            location="${DIRECTORY}"/groups/g"${group_number}"/"${rname}"/init_full_conf.sh
+            configdir="${DIRECTORY}/groups/g${group_number}/${rname}/config"
+            # Create files and directoryu
+            mkdir -p "${configdir}"
+            echo "#!/usr/bin/vtysh -f" > "${configdir}/conf_init.sh"
+            chmod +x "${configdir}/conf_init.sh"
+            echo "#!/usr/bin/vtysh -f" > "${configdir}/conf_full.sh"
+            chmod +x "${configdir}/conf_full.sh"
+            location="${configdir}/conf_full.sh"
 
             {
-                echo "#!/bin/bash"
-                echo "vtysh  -c 'conf t' \\"
-                echo " -c 'interface lo' \\"
-                echo " -c 'ip address "$(subnet_router "${group_number}" "${i}")"' \\"
-                echo " -c 'exit' \\"
+                echo "interface lo"
+                echo "ip address $(subnet_router ${group_number} ${i})"
+                echo "exit"
                 if [[ ! -z "${dname}" ]];then
-                    echo " -c 'interface host' \\"
-                    echo " -c 'ip address "$(subnet_host_router "${group_number}" "${i}" "router")"' \\"
-                    echo " -c 'exit' \\"
-                    echo " -c 'router ospf' \\"
-                    echo " -c 'network "$(subnet_host_router "${group_number}" "${i}" "router")" area 0' \\"
-                    echo " -c 'exit' \\"
+                    echo "interface host"
+                    echo "ip address $(subnet_host_router ${group_number} ${i} router)"
+                    echo "exit"
+                    echo "router ospf"
+                    echo "network $(subnet_host_router ${group_number} ${i} router) area 0"
+                    echo "exit"
                 fi
 
                 if [[ "${property2}" == *L2* ]];then
-                        echo " -c 'router ospf' \\"
-                        echo " -c 'network "$(subnet_l2_router "${group_number}" $((${l2_id[$property2]}-1)))" area 0' \\"
-                        echo " -c 'exit'\\"
+                        echo "router ospf"
+                        echo "network $(subnet_l2_router ${group_number} $((${l2_id[$property2]}-1))) area 0"
+                        echo "exit"
                 fi
 
-                router_id=$(subnet_router "${group_number}" "${i}")
+                router_id="$(subnet_router ${group_number} ${i})"
 
-                echo " -c 'router ospf' \\"
-                echo " -c 'ospf router-id "${router_id%/*}"' \\"
-                echo " -c 'network "$(subnet_router "${group_number}" "${i}")" area 0' \\"
-                echo " -c 'exit'\\"
-                echo " -c 'ip route "$(subnet_group "${group_number}")" null0' \\"
-                echo " -c 'ip prefix-list OWN_PREFIX seq 5 permit "$(subnet_group "${group_number}")"' \\"
-                echo " -c 'route-map OWN_PREFIX permit 10' \\"
-                echo " -c 'match ip address prefix-list OWN_PREFIX' \\"
-                echo " -c 'exit' \\"
+                echo "router ospf"
+                echo "ospf router-id ${router_id%/*}"
+                echo "network $(subnet_router ${group_number} ${i}) area 0"
+                echo "exit"
+                echo "ip route $(subnet_group ${group_number}) null0"
+                echo "ip prefix-list OWN_PREFIX seq 5 permit $(subnet_group ${group_number})"
+                echo "route-map OWN_PREFIX permit 10"
+                echo "match ip address prefix-list OWN_PREFIX"
+                echo "exit"
 
                 for ((j=0;j<n_routers;j++)); do
                     router_j=(${routers[$j]})
                     rname2="${router_j[0]}"
                     if [ "${rname}" != "${rname2}" ]; then
-                        subnet="$(subnet_router "${group_number}" "${j}")"
-                        echo " -c 'router bgp "${group_number}"' \\"
-                        echo " -c 'network "$(subnet_group "${group_number}")"' \\"
-                        echo " -c 'neighbor "${subnet%???}" remote-as "${group_number}"' \\"
-                        echo " -c 'neighbor "${subnet%???}" update-source lo' \\"
-                        echo " -c 'neighbor "${subnet%???}" next-hop-self' \\"
-                        # echo " -c 'address-family ipv6 unicast' \\"
-                        # echo " -c 'neighbor "${subnet%???}" activate' \\"
-                        # echo " -c 'exit' \\"
-                        echo " -c 'exit' \\"
+                        subnet="$(subnet_router ${group_number} ${j})"
+                        echo "router bgp ${group_number}"
+                        echo "network $(subnet_group ${group_number})"
+                        echo "neighbor ${subnet%???} remote-as ${group_number}"
+                        echo "neighbor ${subnet%???} update-source lo"
+                        echo "neighbor ${subnet%???} next-hop-self"
+                        # echo "address-family ipv6 unicast"
+                        # echo "neighbor ${subnet%???} activate"
+                        # echo "exit"
+                        echo "exit"
                     fi
                 done
             } >> "${location}"
@@ -138,38 +137,39 @@ for ((k=0;k<group_numbers;k++));do
             row_i=(${intern_links[$i]})
             router1="${row_i[0]}"
             router2="${row_i[1]}"
-            location1="${DIRECTORY}"/groups/g"${group_number}"/"${router1}"/init_full_conf.sh
-            location2="${DIRECTORY}"/groups/g"${group_number}"/"${router2}"/init_full_conf.sh
+            location1="${DIRECTORY}/groups/g${group_number}/${router1}/config/conf_full.sh"
+            location2="${DIRECTORY}/groups/g${group_number}/${router2}/config/conf_full.sh"
             {
-                echo " -c 'interface port_"${router2}"' \\"
-                echo " -c 'ip address "$(subnet_router_router_intern "${group_number}" "${i}" 1)"' \\"
-                echo " -c 'ip ospf cost 1' \\"
-                echo " -c 'exit' \\"
-                echo " -c 'router ospf' \\"
-                echo " -c 'network "$(subnet_router_router_intern "${group_number}" "${i}" 1)" area 0' \\"
-                echo " -c 'exit' \\"
+                echo "interface port_${router2}"
+                echo "ip address $(subnet_router_router_intern ${group_number} ${i} 1)"
+                echo "ip ospf cost 1"
+                echo "exit"
+                echo "router ospf"
+                echo "network $(subnet_router_router_intern ${group_number} ${i} 1) area 0"
+                echo "exit"
             } >> "${location1}"
             {
-                echo " -c 'interface port_"${router1}"' \\"
-                echo " -c 'ip address "$(subnet_router_router_intern "${group_number}" "${i}" 2)"' \\"
-                echo " -c 'ip ospf cost 1' \\"
-                echo " -c 'exit' \\"
-                echo " -c 'router ospf' \\"
-                echo " -c 'network "$(subnet_router_router_intern "${group_number}" "${i}" 2)" area 0' \\"
-                echo " -c 'exit' \\"
+                echo "interface port_${router1}"
+                echo "ip address $(subnet_router_router_intern ${group_number} ${i} 2)"
+                echo "ip ospf cost 1"
+                echo "exit"
+                echo "router ospf"
+                echo "network $(subnet_router_router_intern ${group_number} ${i} 2) area 0"
+                echo "exit"
             } >> "${location2}"
         done
 
     else # If IXP
-        touch "${DIRECTORY}"/groups/g"${group_number}"/init_full_conf.sh
-        chmod +x "${DIRECTORY}"/groups/g"${group_number}"/init_full_conf.sh
-
-        location="${DIRECTORY}"/groups/g"${group_number}"/init_full_conf.sh
+        configdir="${DIRECTORY}/groups/g${group_number}/config"
+        mkdir -p "${configdir}"
+        echo "#!/usr/bin/vtysh -f" > "${configdir}/conf_init.sh"
+        chmod +x "${configdir}/conf_init.sh"
+        echo "#!/usr/bin/vtysh -f" > "${configdir}/conf_full.sh"
+        chmod +x "${configdir}/conf_full.sh"
+        location="${configdir}/conf_full.sh"
 
         {
-            echo "#!/bin/bash"
-            echo "vtysh  -c 'conf t' \\"
-            echo "-c 'bgp multiple-instance' \\"
+            echo "bgp multiple-instance"
 
             for ((i=0;i<n_extern_links;i++)); do
                 row_i=(${extern_links[$i]})
@@ -178,34 +178,34 @@ for ((k=0;k<group_numbers;k++));do
                 grp_2="${row_i[3]}"
                 router_grp_2="${row_i[4]}"
 
-                if [ "${group_number}" = "${grp_1}" ] || [ "${group_number}" = "${grp_2}" ];then
-                    if [ "${group_number}" = "${grp_1}" ];then
+                if [ "${group_number}" = "${grp_1}" ] || [ "${group_number}" = "${grp_2}" ]; then
+                    if [ "${group_number}" = "${grp_1}" ]; then
                         grp_1="${row_i[2]}"
                         router_grp_1="${row_i[3]}"
                         grp_2="${row_i[0]}"
                         router_grp_2="${row_i[1]}"
                     fi
 
-                    subnet1="$(subnet_router_IXP "${grp_1}" "${grp_2}" "group")"
-                    subnet2="$(subnet_router_IXP "${grp_1}" "${grp_2}" "IXP")"
+                    subnet1="$(subnet_router_IXP ${grp_1} ${grp_2} group)"
+                    subnet2="$(subnet_router_IXP ${grp_1} ${grp_2} IXP)"
 
-                    echo " -c 'ip community-list "${grp_1}" permit "${grp_2}"":""${grp_1}"' \\"
-                    echo " -c 'route-map "${grp_1}"_EXPORT permit 10' \\"
-                    echo " -c 'set ip next-hop "${subnet1%/*}"' \\"
-                    echo " -c 'exit' \\"
-                    echo " -c 'route-map "${grp_1}"_IMPORT permit 10' \\"
-                    echo " -c 'match community "${grp_1}"' \\"
-                    echo " -c 'exit' \\"
-                    echo " -c 'router bgp "${grp_2}"' \\"
-                    echo " -c 'bgp router-id 180.80.${grp_2}.0' \\"
-                    echo " -c 'neighbor "${subnet1%/*}" remote-as "${grp_1}"' \\"
-                    echo " -c 'neighbor "${subnet1%/*}" activate' \\"
-                    echo " -c 'neighbor "${subnet1%/*}" route-server-client' \\"
-                    echo " -c 'neighbor "${subnet1%/*}" route-map "${grp_1}"_IMPORT import' \\"
-                    echo " -c 'neighbor "${subnet1%/*}" route-map "${grp_1}"_EXPORT export' \\"
-                    echo " -c 'exit' \\"
+                    echo "ip community-list ${grp_1} permit ${grp_2}:${grp_1}"
+                    echo "route-map ${grp_1}_EXPORT permit 10"
+                    echo "set ip next-hop ${subnet1%/*}"
+                    echo "exit"
+                    echo "route-map ${grp_1}_IMPORT permit 10"
+                    echo "match community ${grp_1}"
+                    echo "exit"
+                    echo "router bgp ${grp_2}"
+                    echo "bgp router-id 180.80.${grp_2}.0"
+                    echo "neighbor ${subnet1%/*} remote-as ${grp_1}"
+                    echo "neighbor ${subnet1%/*} activate"
+                    echo "neighbor ${subnet1%/*} route-server-client"
+                    echo "neighbor ${subnet1%/*} route-map ${grp_1}_IMPORT import"
+                    echo "neighbor ${subnet1%/*} route-map ${grp_1}_EXPORT export"
+                    echo "exit"
 
-                    docker exec -d "${group_number}"_IXP bash -c "ovs-vsctl add-port IXP grp_${grp_1}"
+                    docker exec -d "${group_number}_IXP" bash -c "ovs-vsctl add-port IXP grp_${grp_1}"
                 fi
             done
         } >> "${location}"
@@ -247,156 +247,156 @@ for ((i=0;i<n_extern_links;i++)); do
 
         ixp_peers="${row_i[8]}"
 
-        subnet1="$(subnet_router_IXP "${grp_1}" "${grp_2}" "group")"
-        subnet2="$(subnet_router_IXP "${grp_1}" "${grp_2}" "IXP")"
-        location="${DIRECTORY}"/groups/g"${grp_1}"/"${router_grp_1}"/init_full_conf.sh
+        subnet1="$(subnet_router_IXP ${grp_1} ${grp_2} group)"
+        subnet2="$(subnet_router_IXP ${grp_1} ${grp_2} IXP)"
+        location="${DIRECTORY}/groups/g${grp_1}/${router_grp_1}/config/conf_full.sh"
 
         {
-            echo " -c 'interface ixp_"${grp_2}"' \\"
-            echo " -c 'ip address "${subnet1}"' \\"
-            echo " -c 'exit' \\"
-            echo " -c 'router bgp "${grp_1}"' \\"
-            echo " -c 'network "$(subnet_group "${grp_1}")"' \\"
-            echo " -c 'neighbor "${subnet2%???}" remote-as "${grp_2}"' \\"
-            echo " -c 'neighbor "${subnet2%???}" activate' \\"
-            echo " -c 'neighbor "${subnet2%???}" route-map IXP_OUT_${grp_2} out' \\"
-            echo " -c 'neighbor "${subnet2%???}" route-map IXP_IN_${grp_2} in' \\"
-            echo " -c 'exit' \\"
+            echo "interface ixp_${grp_2}"
+            echo "ip address ${subnet1}"
+            echo "exit"
+            echo "router bgp ${grp_1}"
+            echo "network $(subnet_group ${grp_1})"
+            echo "neighbor ${subnet2%???} remote-as ${grp_2}"
+            echo "neighbor ${subnet2%???} activate"
+            echo "neighbor ${subnet2%???} route-map IXP_OUT_${grp_2} out"
+            echo "neighbor ${subnet2%???} route-map IXP_IN_${grp_2} in"
+            echo "exit"
 
             str_tmp=''
             for peer in $(echo $ixp_peers | sed "s/,/ /g"); do
-                str_tmp=${str_tmp}${grp_2}:${peer}" "
+                str_tmp="${str_tmp}${grp_2}:${peer} "
             done
 
-            echo " -c 'bgp community-list 1 permit $grp_1:10' \\"
-            echo " -c 'route-map IXP_OUT_${grp_2} permit 10' \\"
-            echo " -c 'set community $str_tmp' \\"
-            echo " -c 'match ip address prefix-list OWN_PREFIX' \\"
-            echo " -c 'exit' \\"
-            echo " -c 'route-map IXP_OUT_${grp_2} permit 20' \\"
-            echo " -c 'set community $str_tmp' \\"
-            echo " -c 'match community 1' \\"
-            echo " -c 'exit' \\"
-            echo " -c 'route-map IXP_IN_${grp_2} permit 10' \\"
-            echo " -c 'set community $grp_1:20' \\"
-            echo " -c 'set local-preference 50' \\"
+            echo "bgp community-list 1 permit ${grp_1}:10"
+            echo "route-map IXP_OUT_${grp_2} permit 10"
+            echo "set community $str_tmp"
+            echo "match ip address prefix-list OWN_PREFIX"
+            echo "exit"
+            echo "route-map IXP_OUT_${grp_2} permit 20"
+            echo "set community $str_tmp"
+            echo "match community 1"
+            echo "exit"
+            echo "route-map IXP_IN_${grp_2} permit 10"
+            echo "set community ${grp_1}:20"
+            echo "set local-preference 50"
 
-            echo " -c 'exit' \\"
+            echo "exit"
         } >> "${location}"
     else
         subnet="${row_i[8]}"
 
         if [ "$subnet" != "N/A" ]; then
-            subnet1=${subnet%????}${grp_1}/24
-            subnet2=${subnet%????}${grp_2}/24
+            subnet1="${subnet%????}${grp_1}/24"
+            subnet2="${subnet%????}${grp_2}/24"
         else
-            subnet1="$(subnet_router_router_extern $grp_1 $grp_2)"
-            subnet2="$(subnet_router_router_extern $grp_2 $grp_1)"
+            subnet1="$(subnet_router_router_extern ${grp_1} ${grp_2})"
+            subnet2="$(subnet_router_router_extern ${grp_2} ${grp_1})"
         fi
 
-        location1="${DIRECTORY}"/groups/g"${grp_1}"/"${router_grp_1}"/init_full_conf.sh
+        location1="${DIRECTORY}/groups/g${grp_1}/${router_grp_1}/config/conf_full.sh"
         {
-            echo " -c 'interface ext_"${grp_2}"_"${router_grp_2}"' \\"
-            echo " -c 'ip address "${subnet1}"' \\"
-            echo " -c 'exit' \\"
-            echo " -c 'router bgp "${grp_1}"' \\"
-            echo " -c 'neighbor "${subnet2%???}" remote-as "${grp_2}"' \\"
-            echo " -c 'neighbor "${subnet2%???}" route-map LOCAL_PREF_IN_${grp_2} in' \\"
-            echo " -c 'neighbor "${subnet2%???}" route-map LOCAL_PREF_OUT_${grp_2} out' \\"
-            echo " -c 'network "$(subnet_group "${grp_1}")"' \\"
-            echo " -c 'exit' \\"
+            echo "interface ext_${grp_2}_${router_grp_2}"
+            echo "ip address ${subnet1}"
+            echo "exit"
+            echo "router bgp ${grp_1}"
+            echo "neighbor ${subnet2%???} remote-as ${grp_2}"
+            echo "neighbor ${subnet2%???} route-map LOCAL_PREF_IN_${grp_2} in"
+            echo "neighbor ${subnet2%???} route-map LOCAL_PREF_OUT_${grp_2} out"
+            echo "network $(subnet_group ${grp_1})"
+            echo "exit"
 
             if [ $relation_grp_1 == 'Provider' ]; then
-                echo " -c 'bgp community-list 2 permit $grp_1:10' \\"
-                echo " -c 'bgp community-list 2 permit $grp_1:20' \\"
-                echo " -c 'bgp community-list 2 permit $grp_1:30' \\"
-                echo " -c 'route-map LOCAL_PREF_IN_${grp_2} permit 10' \\"
-                echo " -c 'set community $grp_1:10' \\"
-                echo " -c 'set local-preference 100' \\"
-                echo " -c 'exit' \\"
-                echo " -c 'route-map LOCAL_PREF_OUT_${grp_2} permit 5' \\"
-                echo " -c 'match ip address prefix-list OWN_PREFIX' \\"
-                echo " -c 'exit' \\"
-                echo " -c 'route-map LOCAL_PREF_OUT_${grp_2} permit 10' \\"
-                echo " -c 'match community 2' \\"
-                echo " -c 'exit' \\"
+                echo "bgp community-list 2 permit ${grp_1}:10"
+                echo "bgp community-list 2 permit ${grp_1}:20"
+                echo "bgp community-list 2 permit ${grp_1}:30"
+                echo "route-map LOCAL_PREF_IN_${grp_2} permit 10"
+                echo "set community ${grp_1}:10"
+                echo "set local-preference 100"
+                echo "exit"
+                echo "route-map LOCAL_PREF_OUT_${grp_2} permit 5"
+                echo "match ip address prefix-list OWN_PREFIX"
+                echo "exit"
+                echo "route-map LOCAL_PREF_OUT_${grp_2} permit 10"
+                echo "match community 2"
+                echo "exit"
             elif [ $relation_grp_1 == 'Customer' ]; then
-                echo " -c 'bgp community-list 1 permit $grp_1:10' \\"
-                echo " -c 'route-map LOCAL_PREF_IN_${grp_2} permit 10' \\"
-                echo " -c 'set community $grp_1:30' \\"
-                echo " -c 'set local-preference 20' \\"
-                echo " -c 'exit' \\"
-                echo " -c 'route-map LOCAL_PREF_OUT_${grp_2} permit 5' \\"
-                echo " -c 'match ip address prefix-list OWN_PREFIX' \\"
-                echo " -c 'exit' \\"
-                echo " -c 'route-map LOCAL_PREF_OUT_${grp_2} permit 10' \\"
-                echo " -c 'match community 1' \\"
-                echo " -c 'exit' \\"
+                echo "bgp community-list 1 permit ${grp_1}:10"
+                echo "route-map LOCAL_PREF_IN_${grp_2} permit 10"
+                echo "set community ${grp_1}:30"
+                echo "set local-preference 20"
+                echo "exit"
+                echo "route-map LOCAL_PREF_OUT_${grp_2} permit 5"
+                echo "match ip address prefix-list OWN_PREFIX"
+                echo "exit"
+                echo "route-map LOCAL_PREF_OUT_${grp_2} permit 10"
+                echo "match community 1"
+                echo "exit"
             elif [ $relation_grp_1 == 'Peer' ]; then
-                echo " -c 'bgp community-list 1 permit $grp_1:10' \\"
-                echo " -c 'route-map LOCAL_PREF_IN_${grp_2} permit 10' \\"
-                echo " -c 'set community $grp_1:20' \\"
-                echo " -c 'set local-preference 50' \\"
-                echo " -c 'exit' \\"
-                echo " -c 'route-map LOCAL_PREF_OUT_${grp_2} permit 5' \\"
-                echo " -c 'match ip address prefix-list OWN_PREFIX' \\"
-                echo " -c 'exit' \\"
-                echo " -c 'route-map LOCAL_PREF_OUT_${grp_2} permit 10' \\"
-                echo " -c 'match community 1' \\"
-                echo " -c 'exit' \\"
+                echo "bgp community-list 1 permit ${grp_1}:10"
+                echo "route-map LOCAL_PREF_IN_${grp_2} permit 10"
+                echo "set community ${grp_1}:20"
+                echo "set local-preference 50"
+                echo "exit"
+                echo "route-map LOCAL_PREF_OUT_${grp_2} permit 5"
+                echo "match ip address prefix-list OWN_PREFIX"
+                echo "exit"
+                echo "route-map LOCAL_PREF_OUT_${grp_2} permit 10"
+                echo "match community 1"
+                echo "exit"
             fi
         } >> "${location1}"
 
-        location2="${DIRECTORY}"/groups/g"${grp_2}"/"${router_grp_2}"/init_full_conf.sh
+        location2="${DIRECTORY}/groups/g${grp_2}/${router_grp_2}/config/conf_full.sh"
         {
-            echo " -c 'interface ext_"${grp_1}"_"${router_grp_1}"' \\"
-            echo " -c 'ip address "${subnet2}"' \\"
-            echo " -c 'exit' \\"
-            echo " -c 'router bgp "${grp_2}"' \\"
-            echo " -c 'neighbor "${subnet1%???}" remote-as "${grp_1}"' \\"
-            echo " -c 'neighbor "${subnet1%???}" route-map LOCAL_PREF_IN_${grp_1} in' \\"
-            echo " -c 'neighbor "${subnet1%???}" route-map LOCAL_PREF_OUT_${grp_1} out' \\"
-            echo " -c 'network "$(subnet_group "${grp_2}")"' \\"
-            echo " -c 'exit' \\"
+            echo "interface ext_${grp_1}_${router_grp_1}"
+            echo "ip address ${subnet2}"
+            echo "exit"
+            echo "router bgp ${grp_2}"
+            echo "neighbor ${subnet1%???} remote-as ${grp_1}"
+            echo "neighbor ${subnet1%???} route-map LOCAL_PREF_IN_${grp_1} in"
+            echo "neighbor ${subnet1%???} route-map LOCAL_PREF_OUT_${grp_1} out"
+            echo "network $(subnet_group ${grp_2})"
+            echo "exit"
 
             if [ $relation_grp_2 == 'Provider' ]; then
-                echo " -c 'bgp community-list 2 permit $grp_2:10' \\"
-                echo " -c 'bgp community-list 2 permit $grp_2:20' \\"
-                echo " -c 'bgp community-list 2 permit $grp_2:30' \\"
-                echo " -c 'route-map LOCAL_PREF_IN_${grp_1} permit 10' \\"
-                echo " -c 'set community $grp_2:10' \\"
-                echo " -c 'set local-preference 100' \\"
-                echo " -c 'exit' \\"
-                echo " -c 'route-map LOCAL_PREF_OUT_${grp_1} permit 5' \\"
-                echo " -c 'match ip address prefix-list OWN_PREFIX' \\"
-                echo " -c 'exit' \\"
-                echo " -c 'route-map LOCAL_PREF_OUT_${grp_1} permit 10' \\"
-                echo " -c 'match community 2' \\"
-                echo " -c 'exit' \\"
+                echo "bgp community-list 2 permit ${grp_2}:10"
+                echo "bgp community-list 2 permit ${grp_2}:20"
+                echo "bgp community-list 2 permit ${grp_2}:30"
+                echo "route-map LOCAL_PREF_IN_${grp_1} permit 10"
+                echo "set community ${grp_2}:10"
+                echo "set local-preference 100"
+                echo "exit"
+                echo "route-map LOCAL_PREF_OUT_${grp_1} permit 5"
+                echo "match ip address prefix-list OWN_PREFIX"
+                echo "exit"
+                echo "route-map LOCAL_PREF_OUT_${grp_1} permit 10"
+                echo "match community 2"
+                echo "exit"
             elif [ $relation_grp_2 == 'Customer' ]; then
-                echo " -c 'bgp community-list 1 permit $grp_2:10' \\"
-                echo " -c 'route-map LOCAL_PREF_IN_${grp_1} permit 10' \\"
-                echo " -c 'set community $grp_2:30' \\"
-                echo " -c 'set local-preference 20' \\"
-                echo " -c 'exit' \\"
-                echo " -c 'route-map LOCAL_PREF_OUT_${grp_1} permit 5' \\"
-                echo " -c 'match ip address prefix-list OWN_PREFIX' \\"
-                echo " -c 'exit' \\"
-                echo " -c 'route-map LOCAL_PREF_OUT_${grp_1} permit 10' \\"
-                echo " -c 'match community 1' \\"
-                echo " -c 'exit' \\"
+                echo "bgp community-list 1 permit ${grp_2}:10"
+                echo "route-map LOCAL_PREF_IN_${grp_1} permit 10"
+                echo "set community ${grp_2}:30"
+                echo "set local-preference 20"
+                echo "exit"
+                echo "route-map LOCAL_PREF_OUT_${grp_1} permit 5"
+                echo "match ip address prefix-list OWN_PREFIX"
+                echo "exit"
+                echo "route-map LOCAL_PREF_OUT_${grp_1} permit 10"
+                echo "match community 1"
+                echo "exit"
             elif [ $relation_grp_2 == 'Peer' ]; then
-                echo " -c 'bgp community-list 1 permit $grp_2:10' \\"
-                echo " -c 'route-map LOCAL_PREF_IN_${grp_1} permit 10' \\"
-                echo " -c 'set community $grp_2:20' \\"
-                echo " -c 'set local-preference 50' \\"
-                echo " -c 'exit' \\"
-                echo " -c 'route-map LOCAL_PREF_OUT_${grp_1} permit 5' \\"
-                echo " -c 'match ip address prefix-list OWN_PREFIX' \\"
-                echo " -c 'exit' \\"
-                echo " -c 'route-map LOCAL_PREF_OUT_${grp_1} permit 10' \\"
-                echo " -c 'match community 1' \\"
-                echo " -c 'exit' \\"
+                echo "bgp community-list 1 permit ${grp_2}:10"
+                echo "route-map LOCAL_PREF_IN_${grp_1} permit 10"
+                echo "set community ${grp_2}:20"
+                echo "set local-preference 50"
+                echo "exit"
+                echo "route-map LOCAL_PREF_OUT_${grp_1} permit 5"
+                echo "match ip address prefix-list OWN_PREFIX"
+                echo "exit"
+                echo "route-map LOCAL_PREF_OUT_${grp_1} permit 10"
+                echo "match community 1"
+                echo "exit"
             fi
         } >> "${location2}"
     fi
@@ -414,7 +414,7 @@ for ((k=0;k<group_numbers;k++)); do
 
     if [ "${group_as}" != "IXP" ];then
 
-        readarray routers < "${DIRECTORY}"/config/$group_router_config
+        readarray routers < "${DIRECTORY}/config/${group_router_config}"
         n_routers=${#routers[@]}
 
         for ((i=0;i<n_routers;i++)); do
@@ -423,16 +423,14 @@ for ((k=0;k<group_numbers;k++)); do
             property1="${router_i[1]}"
 
             if [ "${property1}" = "MEASUREMENT"  ];then
-                location="${DIRECTORY}"/groups/g"${group_number}"/"${rname}"/init_conf.sh
+                location="${DIRECTORY}/groups/g${group_number}/${rname}/config/conf_init.sh"
                 {
-                    echo "#!/bin/bash"
-                    echo "vtysh  -c 'conf t' \\"
-                    echo " -c 'interface measurement_"${group_number}"' \\"
-                    echo " -c 'ip address "$(subnet_router_MEASUREMENT "${group_number}" "group")"' \\"
-                    echo " -c 'exit' \\"
-                    echo " -c 'router ospf' \\"
-                    echo " -c '"network "$(subnet_router_MEASUREMENT "${group_number}" "group")" area 0"' \\"
-                    echo " -c 'exit' \\"
+                    echo "interface measurement_${group_number}"
+                    echo "ip address $(subnet_router_MEASUREMENT ${group_number} group)"
+                    echo "exit"
+                    echo "router ospf"
+                    echo "network $(subnet_router_MEASUREMENT ${group_number} group) area 0"
+                    echo "exit"
                 } >> "${location}"
             fi
         done
@@ -450,7 +448,7 @@ for ((k=0;k<group_numbers;k++)); do
 
     if [ "${group_as}" != "IXP" ];then
 
-        readarray routers < "${DIRECTORY}"/config/$group_router_config
+        readarray routers < "${DIRECTORY}/config/$group_router_config"
         n_routers=${#routers[@]}
 
         for ((i=0;i<n_routers;i++)); do
@@ -459,16 +457,14 @@ for ((k=0;k<group_numbers;k++)); do
             property1="${router_i[1]}"
 
             if [ "${property1}" = "MATRIX"  ];then
-                location="${DIRECTORY}"/groups/g"${group_number}"/"${rname}"/init_conf.sh
+                location="${DIRECTORY}/groups/g${group_number}/${rname}/config/conf_init.sh"
                 {
-                    echo "#!/bin/bash"
-                    echo "vtysh  -c 'conf t' \\"
-                    echo " -c 'interface matrix_"${group_number}"' \\"
-                    echo " -c 'ip address "$(subnet_router_MATRIX "${group_number}" "group")"' \\"
-                    echo " -c 'exit' \\"
-                    echo " -c 'router ospf' \\"
-                    echo " -c 'network "$(subnet_router_MATRIX "${group_number}" "group")" area 0' \\"
-                    echo " -c 'exit' \\"
+                    echo "interface matrix_${group_number}"
+                    echo "ip address $(subnet_router_MATRIX ${group_number} group)"
+                    echo "exit"
+                    echo "router ospf"
+                    echo "network $(subnet_router_MATRIX ${group_number} group) area 0"
+                    echo "exit"
                 } >> "${location}"
             fi
         done
@@ -487,7 +483,7 @@ for ((k=0;k<group_numbers;k++)); do
 
     if [ "${group_as}" != "IXP" ];then
 
-        readarray routers < "${DIRECTORY}"/config/$group_router_config
+        readarray routers < "${DIRECTORY}/config/$group_router_config"
         n_routers=${#routers[@]}
 
         for ((i=0;i<n_routers;i++)); do
@@ -496,16 +492,14 @@ for ((k=0;k<group_numbers;k++)); do
             property1="${router_i[1]}"
 
             if [ "${property1}" = "DNS"  ];then
-                location="${DIRECTORY}"/groups/g"${group_number}"/"${rname}"/init_conf.sh
+                location="${DIRECTORY}/groups/g${group_number}/${rname}/config/conf_init.sh"
                 {
-                    echo "#!/bin/bash"
-                    echo "vtysh  -c 'conf t' \\"
-                    echo " -c 'interface dns_"${group_number}"' \\"
-                    echo " -c 'ip address "$(subnet_router_DNS "${group_number}" "group")"' \\"
-                    echo " -c 'exit' \\"
-                    echo " -c 'router ospf' \\"
-                    echo " -c 'network "$(subnet_router_DNS "${group_number}" "group")" area 0' \\"
-                    echo " -c 'exit' \\"
+                    echo "interface dns_${group_number}"
+                    echo "ip address $(subnet_router_DNS ${group_number} group)"
+                    echo "exit"
+                    echo "router ospf"
+                    echo "network $(subnet_router_DNS ${group_number} group) area 0"
+                    echo "exit"
                 }  >> "${location}"
             fi
         done
@@ -526,7 +520,7 @@ for ((k=0;k<group_numbers;k++)); do
 
     if [ "${group_as}" != "IXP" ];then
 
-        readarray routers < "${DIRECTORY}"/config/$group_router_config
+        readarray routers < "${DIRECTORY}/config/${group_router_config}"
         n_routers=${#routers[@]}
 
         for ((i=0;i<n_routers;i++)); do
@@ -534,24 +528,27 @@ for ((k=0;k<group_numbers;k++)); do
             rname="${router_i[0]}"
             property1="${router_i[1]}"
 
-            #run initial config
-            echo " -c 'exit' -c 'write' " >> "${DIRECTORY}"/groups/g"${group_number}"/"${rname}"/init_full_conf.sh
+            config_dir="${DIRECTORY}/groups/g${group_number}/${rname}/config"
 
-            docker cp "${DIRECTORY}"/groups/g"${group_number}"/"${rname}"/init_conf.sh "${group_number}"_"${rname}"router:/home/init_conf.sh
-            docker exec -d "${group_number}"_"${rname}"router bash ./home/init_conf.sh &
+            docker cp "${config_dir}/conf_init.sh" "${group_number}_${rname}router":/home/conf_init.sh > /dev/null
+            docker exec -d "${group_number}_${rname}router" ./home/conf_init.sh &
 
             if [ "$group_config" == "Config" ]; then
-                docker cp "${DIRECTORY}"/groups/g"${group_number}"/"${rname}"/init_full_conf.sh "${group_number}"_"${rname}"router:/home/init_full_conf.sh
-                docker exec -d "${group_number}"_"${rname}"router bash ./home/init_full_conf.sh &
+                docker cp "${config_dir}/conf_full.sh" "${group_number}_${rname}router":/home/conf_full.sh > /dev/null
+                docker exec -d "${group_number}_${rname}router" ./home/conf_full.sh &
             fi
 
         done
-    else
-        echo " -c 'exit' -c 'write' " >> "${DIRECTORY}"/groups/g"${group_number}"/init_full_conf.sh
-        docker cp "${DIRECTORY}"/groups/g"${group_number}"/init_full_conf.sh "${group_number}"_IXP:/init_full_conf.sh
-        docker exec -d "${group_number}"_IXP bash ./init_full_conf.sh &
+    else  # IXP
+        config_dir="${DIRECTORY}/groups/g${group_number}/config"
+        docker cp "${config_dir}/conf_full.sh" "${group_number}_IXP":/conf_full.sh > /dev/null
+        # The IXP is running an older Quagga version that does not support the
+        # -f command, so we need to feed the file in manually as a workaround.
+        # docker exec -d "${group_number}_IXP" ./conf_full.sh &
+        # tail -n +2 removes the first shebang line of the file.
+        docker exec -d "${group_number}_IXP" bash -c 'vtysh -c "conf t" -c "$(tail -n +2 conf_full.sh)" -c "exit"' &
 
-        docker exec -d "${group_number}"_IXP bash -c "ifconfig IXP 180.${group_number}.0.${group_number}/24"
+        docker exec -d "${group_number}_IXP" bash -c "ifconfig IXP 180.${group_number}.0.${group_number}/24" &
     fi
 done
 

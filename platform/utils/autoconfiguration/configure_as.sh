@@ -16,10 +16,11 @@ do
     for router_name in ROUTER_NAMES
     do
         config_dir="$PLATFORM_DIR/groups/g${group_number}/${router_name}/config"
-        for config_file in init.conf full.conf rpki.conf; do
-            chmod 755 "${config_dir}/${config_file}"
-            docker cp "${config_dir}/${config_file}" "${group_number}_${router_name}router":/home/ > /dev/null
-            docker exec -it "${group_number}_${router_name}router" bash -c "'cat /home/${config_file} | vtysh'"
+        for config_file_full in "${config_dir}/"* ; do
+            config_file=$(basename "${config_file_full}")
+            chmod 755 "${config_file_full}"
+            docker cp "${config_file_full}" "${group_number}_${router_name}router":"/home/${config_file}" > /dev/null
+            docker exec -it "${group_number}_${router_name}router" "./home/${config_file}"
         done
 
         docker exec -it ${group_number}_${router_name}host ip address add ${group_number}.$((100+$rid)).0.1/24 dev ${router_name}router 
