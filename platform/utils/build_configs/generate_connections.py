@@ -1,5 +1,13 @@
 """This script generates the connections between the routers in the topology.
 
+Create four files:
+- AS_config.txt: which config files to use for each AS and whether to
+    auto-configure.
+- aslevel_links.txt: which ASes are connected to which ASes and how.
+- aslevel_links_students.txt: same as above, but with concrete IP addresses,
+    meant as a lookup for students. Read by the webserver.
+- hijack_config.txt: ASes that try to hijack prefixes for the RPKI task.
+
 General layout: each area has two Tier1 ASes, and a number of areas ASes,
 and two stub ASes. More in the wiki.
 
@@ -297,3 +305,31 @@ with open('AS_config.txt', 'w') as fd:
                          'l2_links.txt\n')
     for asn in [ixp_central, *ixp_out]:
         fd.write(f'{asn}\tIXP\tConfig\tN/A\tN/A\tN/A\tN/A\tN/A\n')
+
+
+# STEP 4: Specify hijacks.
+# ========================
+# Currently, stub ASes try to hijack each other, but only for ASes in the same
+# area to limit the "blast radius".
+
+hijacks = []
+for asn in stub:
+    # Towards other ASes in the same area _and_ connected to the same IXP,
+    # we hijack the other stub AS in the same area via the IXP.
+    asn_area = next(area for area in areas if asn in area)
+    asn_ixp = as_to_ixp[asn]
+    victim = next(asn2 for asn2 in stub
+                  if (asn2 != asn) and (asn2 in asn_area))
+    other_ases = [asn2 for asn2 in asn_area
+                  if (asn2 != asn) and (asn2 in ixp_to_ases[asn_ixp])]
+
+    node_towards_victim, *_ = stub_topo['peer']
+    node_towards_ixp, *_ = stub_topo['ixp']
+    hijacks.append((
+        asn, victim, ",".join(map(str, other_ases)), asn_ixp,
+        node_towards_victim, node_towards_ixp
+    ))
+
+with open('hijacks.txt', 'w') as file:
+    for hijack in hijacks:
+        file.write("\t".join(map(str, hijack)) + "\n")
