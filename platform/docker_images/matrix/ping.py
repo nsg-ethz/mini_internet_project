@@ -1,10 +1,14 @@
-from subprocess import Popen, PIPE
+import json
+import os
 import shlex
 import time
+from datetime import datetime as dt
+from datetime import timedelta
 from random import shuffle
-from datetime import datetime as dt, timedelta
+from subprocess import PIPE, Popen
 
-update_frequency = timedelta(minutes=1)
+update_frequency_envvar = 'UPDATE_FREQUENCY'
+default_update_frequency_seconds = 60
 
 while True:
     # Reload the config at every loop.
@@ -93,12 +97,27 @@ while True:
                 # print(output_tmp)
                 # print output_tmp.split('\n')[3]
 
-    print("Writing results to file")
-    with open('connectivity.txt', 'w') as fd_out:
+    # Check environment for update frequency, use default otherwise.
+    update_frequency = timedelta(seconds=int(os.getenv(
+        update_frequency_envvar, default_update_frequency_seconds)))
+    current_time = dt.utcnow()
+    update_time = dt.utcnow() - start_ts
+
+    print("Writing stats to file.")
+    with open('stats.txt', 'w') as file:
+        json.dump({
+            'current_time': current_time.isoformat(),
+            'update_time': update_time.total_seconds(),
+            'update_frequency': update_frequency.total_seconds(),
+        }, file)
+
+    print("Writing results to file.")
+    with open('connectivity.txt', 'w') as file:
         for from_g in co_dic:
             for to_g in co_dic:
-                fd_out.write(f'{from_g}\t{to_g}\t{co_dic[from_g][to_g]}\n')
+                file.write(f'{from_g}\t{to_g}\t{co_dic[from_g][to_g]}\n')
 
+    # Re-compute update time to account for file writing.
     update_time = dt.utcnow() - start_ts
     print("Update time: ", update_time)
     if update_time < update_frequency:

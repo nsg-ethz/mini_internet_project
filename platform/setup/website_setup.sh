@@ -88,7 +88,8 @@ LOCATIONS = {
     "as_connections_public": "${CONFIGDIR_SERVER}/aslevel_links_students.txt",
     "as_connections": "${CONFIGDIR_SERVER}/aslevel_links.txt",
     'groups': '${DATADIR_SERVER}',
-    "matrix": "${DATADIR_SERVER}/matrix/connectivity.txt"
+    "matrix": "${DATADIR_SERVER}/matrix/connectivity.txt",
+    "matrix_stats": "${DATADIR_SERVER}/matrix/stats.txt",
 }
 KRILL_URL="${KRILL_SCHEME}://{hostname}:${PORT_KRILL}/index.html"
 BASIC_AUTH_USERNAME = 'admin'

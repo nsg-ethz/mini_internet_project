@@ -184,12 +184,23 @@ def parse_matrix_connectivity(filename: os.PathLike):
     results = []
     reader = csv.reader(_read_clean(filename), delimiter='\t')
     for row in reader:
-        results.append((int(row[0]), int(row[1]), True if row[2] == 'True' else False))
+        results.append((int(row[0]), int(row[1]),
+                       True if row[2] == 'True' else False))
     return results
 
 
+def parse_matrix_stats(filename: os.PathLike):
+    """Read the matrix stats file."""
+    try:
+        with open(filename) as file:
+            stats = json.load(file)
+    except (FileNotFoundError, json.decoder.JSONDecodeError):
+        return None, None
+    return stats['current_time'], stats['update_frequency'].total_seconds()
+
+
 def _read_json_safe(filename: os.PathLike, sleep_time=0.01, max_attempts=200):
-    """Read a json file, waiting if the file si currently modified."""
+    """Read a json file, waiting if the file is currently modified."""
     path = Path(filename)
     for current_attempt in range(1, max_attempts+1):
         try:
@@ -198,11 +209,11 @@ def _read_json_safe(filename: os.PathLike, sleep_time=0.01, max_attempts=200):
         except json.decoder.JSONDecodeError as error:
             if current_attempt == max_attempts:
                 # raise error
-                print ('WARNING: could not read {} and path validity.'.format(filename))
-                print ('We assume empty BGP configuration for this router')
-    
+                print('WARNING: could not read {} and path validity.'.format(filename))
+                print('We assume empty BGP configuration for this router')
+
                 # return the same json as if BGP was not running in the router.
-                return {'warning':'Default BGP instance not found'}
+                return {'warning': 'Default BGP instance not found'}
 
             # The file may have changed, wait a bit.
             time.sleep(sleep_time)

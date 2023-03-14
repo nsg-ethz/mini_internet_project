@@ -38,7 +38,8 @@ config_defaults = {
         "../../../config/external_links_config_students.txt",
         "as_connections": "../../../config/external_links_config.txt",
         "config_directory": "../../../config",
-        "matrix": "../../../groups/matrix/connectivity.txt"
+        "matrix": "../../../groups/matrix/connectivity.txt",
+        "matrix_stats": "../../../groups/matrix/stats.txt",
     },
     'KRILL_URL': "http://{hostname}:3080/index.html",
     'BASIC_AUTH_USERNAME': 'admin',
@@ -48,7 +49,7 @@ config_defaults = {
     # Background processing for resource-intensive tasks.
     'BACKGROUND_WORKERS': False,
     'AUTO_START_WORKERS': True,
-    'MATRIX_UPDATE_FREQUENCY': 60,  # seconds
+    'MATRIX_UPDATE_FREQUENCY': 30,  # seconds
     'ANALYSIS_UPDATE_FREQUENCY': 300,  # seconds
     'MATRIX_CACHE': '/tmp/cache/matrix.pickle',
     'ANALYSIS_CACHE': '/tmp/cache/analysis.db',
@@ -313,16 +314,15 @@ def prepare_matrix(config, worker=False):
     connectivity_data = parsers.parse_matrix_connectivity(
         config['LOCATIONS']['matrix']
     )
+    last_updated, update_frequency = parsers.parse_matrix_stats(
+        config['LOCATIONS']['matrix_stats']
+    )
 
     # Compute results
     connectivity = matrix.check_connectivity(
         as_data, connectivity_data)
     validity = matrix.check_validity(
         as_data, connection_data, looking_glass_data)
-
-    last_updated = dt.utcnow()
-    update_frequency = (config["MATRIX_UPDATE_FREQUENCY"]
-                        if config["BACKGROUND_WORKERS"] else None)
 
     results = (last_updated, update_frequency, connectivity, validity)
 
