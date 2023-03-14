@@ -25,9 +25,9 @@ import math
 # Size of the topology.
 # ---------------------
 
-AREAS = 2
-ASES_PER_AREA = 6
-FIRST_IXP = 80
+AREAS = 6
+ASES_PER_AREA = 14  # 8 student ASes, 2 Tier1, 2 stub, and 2 buffer bc. hijack.
+FIRST_IXP = 120
 
 # Define the connections and roles of the ASes in each topology.
 # --------------------------------------------------------------
@@ -93,7 +93,8 @@ areas = [
 ]
 
 # IXPs
-assert FIRST_IXP > max([max(area) for area in areas])
+highest_as = max([max(area) for area in areas])
+assert FIRST_IXP > highest_as, f"IXP must be above {highest_as}"
 ixp_central = FIRST_IXP
 # IXP between two areas each, so we need as many as areas.
 ixp_out = list(range(FIRST_IXP + 1, FIRST_IXP + 1 + AREAS))
