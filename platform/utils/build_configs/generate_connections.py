@@ -8,8 +8,25 @@ Create four files:
     meant as a lookup for students. Read by the webserver.
 - hijack_config.txt: ASes that try to hijack prefixes for the RPKI task.
 
-General layout: each area has two Tier1 ASes, and a number of areas ASes,
-and two stub ASes. More in the wiki.
+General layout:
+- Areas with two "columns" of ASes.
+- ASes in the same row are peers, ASes in the row above are providers,
+    ASes in the row below are customers.
+- Consquently, each area has two Tier1 ASes, and two stub ASes.
+- The areas are arranged in a circle, and between two neighboring areas there
+    is an IXP.
+- A central IXP connects all Tier1 ASes and additionally, the Tier1 ASes also
+    peer with the tier1 in the adjacent area. That is, the Tier1 is a ring of
+    peers with a central IXP in the middle, such that each Tier1 can peer with
+    all other Tier1s.
+- The two stub ASes in each area try to hijack each others prefixes.
+- To configuration easier, students do not control:
+    - The Tier1 ASes.
+    - The stub ASes.
+    - The IXPs.
+    - The ASes adjacent to the hijacking ASes (they are a buffer).
+- This means that each area has an overhead of 6 ASes: 2 Tier 1, 2 stub,
+    2 buffer.
 
 Important to consider: the config file configures _both_ ends of the connection,
 so we need to ensure that we only have one config line for each two endpoints.
@@ -25,9 +42,11 @@ import math
 # Size of the topology.
 # ---------------------
 
-AREAS = 6
-ASES_PER_AREA = 14  # 8 student ASes, 2 Tier1, 2 stub, and 2 buffer bc. hijack.
-FIRST_IXP = 120
+AREAS = 7
+CONFIGURABLE_PER_AREA = 8  # Number of ASes that can be configured by students.
+FIRST_IXP = 140
+
+AUTOCONF_EVERYTHING = True  # Set true to test the topology.
 
 # Define the connections and roles of the ASes in each topology.
 # --------------------------------------------------------------
@@ -86,6 +105,8 @@ stub_topo = transit_as_topo
 
 # Compute the different areas and IXPs.
 # Ensure areas start at "nice" numbers, i.e. 1, 11, 21, etc.
+assert CONFIGURABLE_PER_AREA % 2 == 0, "Must be even."
+ASES_PER_AREA = CONFIGURABLE_PER_AREA + 6
 _area_max = 10 * math.ceil((ASES_PER_AREA + 1) / 10)
 areas = [
     list(range(_area_max*n + 1, _area_max*n + 1 + ASES_PER_AREA))
@@ -106,6 +127,8 @@ ixp_out = list(range(FIRST_IXP + 1, FIRST_IXP + 1 + AREAS))
 # Lookup tables for tier1, stub-ases and direct+indirect customers.
 tier1 = [asn for area in areas for asn in area[:2]]
 stub = [asn for area in areas for asn in area[-2:]]
+# buffer to hijacking stubs
+buffer = [asn for area in areas for asn in area[-4:-2]]
 
 # Mapping of ASes to outer IXPs. (center IXP is connected only to Tier1.)
 ixp_to_ases = {ixp: [] for ixp in ixp_out}
@@ -302,8 +325,12 @@ with open('AS_config.txt', 'w') as fd:
                 fd.write(f'{asn}\tAS\tConfig\tl3_routers_tier1_and_stub.txt\t'
                          'l3_links_tier1_and_stub.txt\tempty.txt\tempty.txt\t'
                          'empty.txt\n')
-            else:
-                fd.write(f'{asn}\tAS\tConfig\tl3_routers.txt\t'
+            else:  # "Normal" ASes.
+                if AUTOCONF_EVERYTHING or asn in buffer:
+                    conf = "Config"
+                else:
+                    conf = "NoConfig"
+                fd.write(f'{asn}\tAS\t{conf}\tl3_routers.txt\t'
                          'l3_links.txt\tl2_switches.txt\tl2_hosts.txt\t'
                          'l2_links.txt\n')
     for asn in [ixp_central, *ixp_out]:
