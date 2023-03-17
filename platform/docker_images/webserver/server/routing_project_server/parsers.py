@@ -10,6 +10,7 @@ import re
 import time
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
+from datetime import datetime as dt
 
 
 def find_looking_glass_textfiles(directory: os.PathLike) \
@@ -160,8 +161,8 @@ def parse_as_connections(filename: os.PathLike) \
         row["a_asn"] = int(row["a_asn"])
         row["b_asn"] = int(row["b_asn"])
         link = {
-            'bandwith': int(row['bw']),
-            'delay': int(row['delay']),
+            'bandwith': row['bw'],
+            'delay': row['delay'],
             'subnet': row['subnet'],
         }
 
@@ -196,7 +197,11 @@ def parse_matrix_stats(filename: os.PathLike):
             stats = json.load(file)
     except (FileNotFoundError, json.decoder.JSONDecodeError):
         return None, None
-    return stats['current_time'], stats['update_frequency'].total_seconds()
+
+    return (
+        dt.fromisoformat(stats['current_time']),
+        stats['update_frequency'],
+    )
 
 
 def _read_json_safe(filename: os.PathLike, sleep_time=0.01, max_attempts=200):

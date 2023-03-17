@@ -35,8 +35,8 @@ config_defaults = {
         'groups': '../../../groups',
         'as_config': "../../../config/AS_config.txt",
         "as_connections_public":
-        "../../../config/external_links_config_students.txt",
-        "as_connections": "../../../config/external_links_config.txt",
+        "../../../config/aslevel_links_students.txt",
+        "as_connections": "../../../config/aslevel_links.txt",
         "config_directory": "../../../config",
         "matrix": "../../../groups/matrix/connectivity.txt",
         "matrix_stats": "../../../groups/matrix/stats.txt",
