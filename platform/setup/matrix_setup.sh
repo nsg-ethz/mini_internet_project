@@ -57,6 +57,9 @@ else
         -e "UPDATE_FREQUENCY=${MATRIX_FREQUENCY}" \
         "${DOCKERHUB_USER}/d_matrix"
 
+    # Pause container to reduce load; can be unpaused on demand.
+    docker pause MATRIX
+
     # cache the docker pid for ovs-docker.sh
     source ${DIRECTORY}/groups/docker_pid.map
     DOCKER_TO_PID['MATRIX']=$(docker inspect -f '{{.State.Pid}}' MATRIX)
@@ -131,5 +134,3 @@ else
     wait
 fi
 
-# Pause container; to be started on demand to reduce load.
-docker pause MATRIX
