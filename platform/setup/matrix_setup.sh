@@ -12,7 +12,7 @@ DOCKERHUB_USER="${2:-thomahol}"
 source "${DIRECTORY}"/config/subnet_config.sh
 source "${DIRECTORY}"/setup/_parallel_helper.sh
 
-MATRIX_FREQUENCY=120  # seconds
+MATRIX_FREQUENCY=300  # seconds
 
 # read configs
 readarray groups < "${DIRECTORY}"/config/AS_config.txt
