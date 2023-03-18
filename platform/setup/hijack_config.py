@@ -14,12 +14,12 @@ import argparse
 
 def router_ip(asn, router_id):
     """Router IP within group network."""
-    return f"{asn}.{151 + router_id}.0.1"
+    return f"{asn}.{150 + router_id}.0.1"
 
 
-def measurement_subnets(asn):
+def measurement_subnets(asn, router_id):
     """Measurement source and destination IP within group network."""
-    return (f"{asn}.0.198.0/24", f"{asn}.101.0.0/24")
+    return (f"{asn}.0.198.0/24", f"{asn}.{100 + router_id}.0.0/24")
 
 
 parser = argparse.ArgumentParser()
@@ -60,13 +60,16 @@ def load_config(current_directory):
 
             asn_ips = {}
             with open(router_config_file) as router_file:
-                for id, line in enumerate(router_file):
-                    router, *_ = line.split()
+                for id, rline in enumerate(router_file, 1):
+                    router, *_ = rline.split()
                     asn_ips[router] = router_ip(asn, id)
+
+                    if "matrix" in rline.lower():
+                        # The destination router for the hijack
+                        measurement_nets[asn] = measurement_subnets(asn, id)
 
             if asn_ips:  # Skip ASes without routers, i.e. IXPs.
                 router_ips[asn] = asn_ips
-                measurement_nets[asn] = measurement_subnets(asn)
 
     return hijacks, router_ips, measurement_nets
 
@@ -126,6 +129,7 @@ def hijack_via_ixp(*, attacker, node, victim, ases, ixp,
 
 def do_hijack(*, attacker, node, prefixes, existing_map, existing_map_update="",
               router_ips, directory, min_seq=100, undo=False, dry=False):
+    """Execute the hijack."""
     no = "no " if undo else ""
     # First get all static routes, otherwise we can't advertise the prefixes.
     static_routes = "\n".join([f"{no}ip route {prefix} Null0"
@@ -208,9 +212,10 @@ def docker_cp_exec(*, group, node, commands, directory, dry=False):
     container_file = "/home/conf_hijack.sh"
     subprocess.run(
         f"docker cp {config_file} {container}:{container_file} > /dev/null",
-        shell=True,
+        shell=True, check=True,
     )
-    subprocess.run(f"docker exec {container} .{container_file}", shell=True)
+    subprocess.run(f"docker exec {container} .{container_file}",
+                   shell=True, check=True)
 
 
 def make_executable(path):
@@ -225,21 +230,21 @@ def make_executable(path):
 
 if __name__ == "__main__":
     parsed = parser.parse_args()
-    directory = parsed.directory
+    _dir = parsed.directory
     undo = parsed.undo
     dry = parsed.dry
 
-    hijacks, router_ips, measurement_nets = load_config(directory)
+    _hijacks, _router_ips, _measurement_nets = load_config(_dir)
     config = dict(
-        router_ips=router_ips, measurement_nets=measurement_nets,
-        directory=directory, undo=undo, dry=dry,
+        router_ips=_router_ips, measurement_nets=_measurement_nets,
+        directory=_dir, undo=undo, dry=dry,
     )
 
-    for current, hijacks_spec in enumerate(hijacks, 1):
-        print(f"Hijack {current}/{len(hijacks)}:",
+    for current, hijacks_spec in enumerate(_hijacks, 1):
+        print(f"Hijack {current}/{len(_hijacks)}:",
               f"AS {hijacks_spec['attacker']} hijacks",
               f"AS {hijacks_spec['victim']}.",
               end="\r")
         hijack(**hijacks_spec, **config)
     # Add enough space to overwrite the last line.
-    print(f"{len(hijacks)} hijacks complete.                          ")
+    print(f"{len(_hijacks)} hijacks complete.                          ")
