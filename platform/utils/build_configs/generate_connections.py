@@ -51,10 +51,10 @@ AUTOCONF_EVERYTHING = True  # Set true to test the topology.
 # Define the connections and roles of the ASes in each topology.
 # --------------------------------------------------------------
 
-do_not_hijack = [1,]  # Hosts krill, so we need it reachable.
+do_not_hijack = [1, ]  # Hosts krill, so we need it reachable.
 
-default_link = ("100000", "300 ")  # throughput, delay
-delay_link = ("100000", "1000")    # throughput, delay
+default_link = ("100000", "1ms ")  # throughput, delay
+delay_link = ("100000",   "30ms")    # throughput, delay
 customer = "Customer"
 provider = "Provider"
 peer = "Peer    "  # Spaces to align with the other roles in config file.
@@ -76,8 +76,8 @@ transit_as_topo = {
 
 tier1_topo = {
     # Tier 1 Ases have no providers, but more peers and two IXPs.
-    'ixp_central': ('STGA', peer, default_link),
-    'ixp': ('GENE', peer, default_link),
+    'ixp_central': ('ZURI', peer, default_link),
+    'ixp': ('ZURI', peer, default_link),
     # Other Tier 1.
     'peer1': ('BASE', peer, default_link),
     'peer2': ('ZURI', peer, default_link),
@@ -86,18 +86,30 @@ tier1_topo = {
     'customer2': ('LUGA', provider, delay_link),  # Delayed link.
 }
 
+stub_topo = {
+    # Same providers, but IXP and peer. are somewhere else.
+    'provider1': ('BASE', customer, default_link),
+    'provider2': ('ZURI', customer, delay_link),  # Delayed link.
+    # Peer and IXP at same host to simplify hijack.
+    'peer': ('LUGA', peer, default_link),
+    'ixp': ('LAUS', peer, default_link),
+}
+
+buffer_topo = {
+    # Same providers, but IXP and peer. are somewhere else.
+    'provider1': ('BASE', customer, default_link),
+    'provider2': ('ZURI', customer, delay_link),  # Delayed link.
+    # Customers.
+    'customer1': ('LAUS', provider, default_link),
+    'customer2': ('LUGA', provider, delay_link),  # Delayed link.
+    # Peer and IXP.
+    'peer': ('LUGA', peer, default_link),
+    'ixp': ('LAUS', peer, default_link),
+}
+
 ixp_topo = {
     "as": ("None", peer, default_link),
 }
-
-stub_topo = transit_as_topo
-
-# stub_topo = {
-#     'ixp': 'BASE',
-#     'peer': 'ZURI',
-#     'customer1': 'ZURI',
-#     'customer2': 'ZURI'
-# }
 
 
 # STEP 1: Enumerate the different ASes and IXPs and determine connections.
@@ -185,24 +197,26 @@ def get_topo(asn):
         return tier1_topo
     elif asn in stub:
         return stub_topo
+    elif asn in buffer:
+        return buffer_topo
     elif (asn == ixp_central) or (asn in ixp_out):
         return ixp_topo
     return transit_as_topo
 
 
-def get_config(asn1, key1, asn2, key2, both_ways=False):
+def get_config(asn1, key1, asn2, key2):
     """Return config lines.
 
     Returns both the "aslevel_links" and "aslevel_links_students" lines.
-    If both_ways is True, also returns the reverse link for the
-    aslevel_links_students.
+
+    For the student config, always return both directions.
     """
     subnet, ip1, ip2 = get_subnet_and_ips(asn1, asn2)
     city1, role1, link = get_topo(asn1)[key1]
     city2, role2, _ = get_topo(asn2)[key2]
 
-    common_info = (asn1, city1, role1, asn2, city2, role2)
-    common_info_rev = (asn2, city2, role2, asn1, city1, role1)
+    as_info = (asn1, city1, role1, asn2, city2, role2)
+    as_info_rev = (asn2, city2, role2, asn1, city1, role1)
 
     # Last config entry is different for IXPs and ASes.
     if asn2 == ixp_central:
@@ -213,27 +227,44 @@ def get_config(asn1, key1, asn2, key2, both_ways=False):
         # they must not advertise to customers or providers, as this would
         # go against business relationships.
         # Concretely, do not advertise to same area.
+        # The buffer ASes do _not_ follow this rule and advertise to their own
+        # area so that the students can debug denying those.
         asn1_area = next(area for area in areas if asn1 in area)
         last_col = ",".join([
-            str(asn) for asn in ixp_to_ases[asn2] if asn not in asn1_area
+            str(asn) for asn in ixp_to_ases[asn2] if (
+                (asn not in asn1_area)
+                or ((asn1 in buffer) and (asn != asn1))
+            )
         ])
     else:  # non-IXP
         last_col = subnet
 
-    if both_ways:
-        return (
-            # aslevel_links
-            "\t".join(map(str, (*common_info, *link, last_col))),
-            # aslevel_links_students line 1/2.
-            (
-                "\t".join(map(str, (*common_info, ip1))) + "\n" +
-                "\t".join(map(str, (*common_info_rev, ip2)))
-            ),
-        )
+    # If both ASes are student ASes, only return subnets;
+    # student should discuss IP addresses!
+    if is_student(asn1) and is_student(asn2):
+        ip1 = ip2 = subnet
+
     return (
-        "\t".join(map(str, (*common_info, *link, last_col))),
-        "\t".join(map(str, (*common_info, ip1))),
+        # aslevel_links
+        "\t".join(map(str, (*as_info, *link, last_col))),
+        # aslevel_links_students line 1/2.
+        (
+            "\t".join(map(str, (*as_info, ip1))) + "\n" +
+            "\t".join(map(str, (*as_info_rev, ip2)))
+        ),
     )
+
+
+def is_student(asn):
+    """Return True if the AS is a (potential) student AS."""
+    return not any((
+        # All the following are TA-managed.
+        asn in tier1,
+        asn in buffer,
+        asn in stub,
+        asn in ixp_out,
+        asn == ixp_central,
+    ))
 
 
 config = []
@@ -248,18 +279,18 @@ for as_block in areas:
         asn_first = asn if asn % 2 else asn_partner
 
         # Not needed -> one-directional only for AS_level config.
-        # Providers. (not for Tier1, i.e. the first two ASes in each block)
-        # ----------
+        # # Providers. (not for Tier1, i.e. the first two ASes in each block)
+        # # ----------
 
-        if not asn in tier1:
-            provider1 = asn_first - 2
-            provider2 = asn_first - 1
-            label = f"customer{asn_pos}"  # 1 or 2.
-            # None for AS config.
-            config.append(
-                (None, get_config(asn, "provider1", provider1, label)[1]))
-            config.append(
-                (None, get_config(asn, "provider2", provider2, label)[1]))
+        # if not asn in tier1:
+        #     provider1 = asn_first - 2
+        #     provider2 = asn_first - 1
+        #     label = f"customer{asn_pos}"  # 1 or 2.
+        #     # None for AS config.
+        #     config.append(
+        #         (None, get_config(asn, "provider1", provider1, label)[1]))
+        #     config.append(
+        #         (None, get_config(asn, "provider2", provider2, label)[1]))
 
         # Customers (not for stub ASes).
         # ----------
@@ -291,11 +322,9 @@ for as_block in areas:
         if asn in tier1:  # IXP central only for Tier1.
             # IXPs (add both directions to student config so they can see the
             # IXP ip address, too).
-            config.append(
-                get_config(asn, "ixp_central", ixp_central, "as", True)
-            )
+            config.append(get_config(asn, "ixp_central", ixp_central, "as"))
 
-        config.append(get_config(asn, "ixp", as_to_ixp[asn], "as", True))
+        config.append(get_config(asn, "ixp", as_to_ixp[asn], "as"))
 
 
 # STEP 2: Generate the config files.
@@ -318,23 +347,23 @@ with open('AS_config.txt', 'w') as fd:
     for area in areas:
         for asn in area:
             if asn == 1:  # By default we set krill in AS1
-                fd.write(f'{asn}\tAS\tConfig\tl3_routers_krill.txt\t'
+                fd.write(f'{asn}\tAS\tConfig  \tl3_routers_krill.txt\t'
                          'l3_links_krill.txt\tempty.txt\tempty.txt\t'
                          'empty.txt\n')
-            elif (asn in tier1) or (asn in stub):
-                fd.write(f'{asn}\tAS\tConfig\tl3_routers_tier1_and_stub.txt\t'
+            elif asn in (tier1 + stub + buffer):
+                fd.write(f'{asn}\tAS\tConfig  \tl3_routers_tier1_and_stub.txt\t'
                          'l3_links_tier1_and_stub.txt\tempty.txt\tempty.txt\t'
                          'empty.txt\n')
             else:  # "Normal" ASes.
                 if AUTOCONF_EVERYTHING or asn in buffer:
-                    conf = "Config"
+                    conf = "Config  "
                 else:
                     conf = "NoConfig"
                 fd.write(f'{asn}\tAS\t{conf}\tl3_routers.txt\t'
                          'l3_links.txt\tl2_switches.txt\tl2_hosts.txt\t'
                          'l2_links.txt\n')
     for asn in [ixp_central, *ixp_out]:
-        fd.write(f'{asn}\tIXP\tConfig\tN/A\tN/A\tN/A\tN/A\tN/A\n')
+        fd.write(f'{asn}\tIXP\tConfig  \tN/A\tN/A\tN/A\tN/A\tN/A\n')
 
 
 # STEP 4: Specify hijacks.
