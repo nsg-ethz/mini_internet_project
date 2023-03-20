@@ -51,6 +51,7 @@ AUTOCONF_EVERYTHING = True  # Set true to test the topology.
 # Define the connections and roles of the ASes in each topology.
 # --------------------------------------------------------------
 
+skip_groups = [127, ]  # 127 is a reserved IP range, cannot use as AS prefix.
 do_not_hijack = [1, ]  # Hosts krill, so we need it reachable.
 
 default_link = ("100000", "1ms ")  # throughput, delay
@@ -119,10 +120,22 @@ ixp_topo = {
 # Ensure areas start at "nice" numbers, i.e. 1, 11, 21, etc.
 assert CONFIGURABLE_PER_AREA % 2 == 0, "Must be even."
 ASES_PER_AREA = CONFIGURABLE_PER_AREA + 6
-_area_max = 10 * math.ceil((ASES_PER_AREA + 1) / 10)
+# Leave enough space if we have to skip some ASes.
+_area_max = 10 * math.ceil((ASES_PER_AREA + 1 + len(skip_groups)) / 10)
+
+
+def _area_ases(start):
+    """Append ASes to the list, skipping the ones in skip_groups."""
+    _ases = []
+    while len(_ases) < ASES_PER_AREA:
+        if start not in skip_groups:
+            _ases.append(start)
+        start += 1
+    return _ases
+
+
 areas = [
-    list(range(_area_max*n + 1, _area_max*n + 1 + ASES_PER_AREA))
-    for n in range(AREAS)
+    _area_ases(_area_max*n + 1) for n in range(AREAS)
 ]
 
 # IXPs
@@ -270,13 +283,13 @@ def is_student(asn):
 config = []
 
 for as_block in areas:
-    for asn in as_block:
+    for idx, asn in enumerate(as_block):
         # remember that ASes are in pairs of two.
         # 1, 3, ... are provider/customer 1 and
         # 2, 4, ... are provider/customer 2.
-        asn_pos = 1 if asn % 2 else 2
-        asn_partner = asn + 1 if asn % 2 else asn - 1
-        asn_first = asn if asn % 2 else asn_partner
+        asn_pos = 2 if idx % 2 else 1
+        asn_partner = as_block[idx - 1 if idx % 2 else idx + 1]
+        asn_first = asn_partner if idx % 2 else asn
 
         # Not needed -> one-directional only for AS_level config.
         # # Providers. (not for Tier1, i.e. the first two ASes in each block)
@@ -306,8 +319,8 @@ for as_block in areas:
         # ------
         if not asn in tier1:
             # Only for the "left" AS.
-            if asn % 2:
-                config.append(get_config(asn, "peer", asn + 1, "peer"))
+            if (idx % 2) == 0:
+                config.append(get_config(asn, "peer", asn_partner, "peer"))
         else:
             # Peer with tier 1 in the same block and in the adjacent block.
             tier1_index = tier1.index(asn)
