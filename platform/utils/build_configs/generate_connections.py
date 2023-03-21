@@ -289,7 +289,7 @@ for as_block in areas:
         # 2, 4, ... are provider/customer 2.
         asn_pos = 2 if idx % 2 else 1
         asn_partner = as_block[idx - 1 if idx % 2 else idx + 1]
-        asn_first = asn_partner if idx % 2 else asn
+        first_idx = idx - 1 if idx % 2 else idx
 
         # Not needed -> one-directional only for AS_level config.
         # # Providers. (not for Tier1, i.e. the first two ASes in each block)
@@ -309,8 +309,8 @@ for as_block in areas:
         # ----------
 
         if not asn in stub:
-            customer1 = asn_first + 2
-            customer2 = asn_first + 3
+            customer1 = as_block[first_idx + 2]
+            customer2 = as_block[first_idx + 3]
             label = f"provider{asn_pos}"  # 1 or 2.
             config.append(get_config(asn, "customer1", customer1, label))
             config.append(get_config(asn, "customer2", customer2, label))
