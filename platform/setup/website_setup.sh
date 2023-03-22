@@ -27,7 +27,7 @@ DOCKERHUB_USER="${2:-thomahol}"
 # LetsEncrypt to be enabled.
 # UPDATE THOSE VARIABLES. HOSTNAME -> hostname of the server and EMAIL -> empty string (for http)
 HOSTNAME="duvel.ethz.ch"
-ACME_MAIL="comm-net@ethz.ch"
+ACME_MAIL=""  #"comm-net@ethz.ch"
 
 # Hostname and ports for the webserver and krill on the host.
 # (must be publicly available)
