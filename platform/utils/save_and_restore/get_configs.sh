@@ -30,7 +30,7 @@ for ((k=0;k<n_groups;k++)); do
 done
 wait
 
-echo "Download configs from containers in $OUTPUT_DIR"
+echo "Download configs from containers into $OUTPUT_DIR"
 for ((k=0;k<n_groups;k++)); do
     group_k=(${groups[$k]})
     group_number="${group_k[0]}"
