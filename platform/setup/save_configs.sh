@@ -88,18 +88,28 @@ for ((k=0;k<n_groups;k++)); do
 
             # Router
             if [ "${rcmd}" == "vtysh" ]; then  # vtysh is already the command.
-                echo "save $savedir/router.conf $subnet_router -- -c 'sh run'" >> $file_loc
+                echo "save $savedir/router.conf     $subnet_router -- -c 'sh run'" >> $file_loc
             elif [ "${rcmd}" == "linux" ]; then
-                echo "save $savedir/router.conf $subnet_router \"vtysh -c 'sh run'\"" >> $file_loc
+                # If we have linux access, we may also configure tunnels, so store that output.
+                echo "save $savedir/router.conf     $subnet_router \"vtysh -c 'sh run'\"" >> $file_loc
+                echo "save $savedir/router.tunnels  $subnet_router \"ip tunnel show\"" >> $file_loc
             fi
 
             # Host
-            echo "save $savedir/host.ip     $subnet_host \"ip addr\"" >> $file_loc
-            echo "save $savedir/host.route  $subnet_host \"ip route\"" >> $file_loc
-            echo "save $savedir/host.route6 $subnet_host \"ip -6 route\"" >> $file_loc
-            echo "save $savedir/host.tunnel $subnet_host \"ip tunnel show\"" >> $file_loc
+            echo "save $savedir/host.ip         $subnet_host \"ip addr\"" >> $file_loc
+            echo "save $savedir/host.route      $subnet_host \"ip route\"" >> $file_loc
+            echo "save $savedir/host.route6     $subnet_host \"ip -6 route\"" >> $file_loc
 
-            # TODO
+            # If the host runs routinator, save routinator cache.
+            htype=$(echo $property2 | cut -d ':' -f 1)
+            dname=$(echo $property2 | cut -d ':' -f 2)
+            if [[ ! -z "${dname}" ]]; then
+                if [[ "${htype}" == *"routinator"* ]]; then
+                    echo "save $savedir/host.rpki_cache $subnet_host \"routinator update ; tar -cz /root/.rpki-cache/repository\"" >> $file_loc
+                fi
+            fi
+            
+            # TODO: Check whether this needs an update.
             # build restore_configs.sh and restart_ospfd.sh
             echo 'if [[ "$router_name" == "'"$rname"'" || $router_name == "all" ]]; then' | tee -a "${restore_loc}" >> ${restart_ospdf}
             echo "  subnet=""$(subnet_sshContainer_groupContainer "${group_number}" "${i}" -1  "router")" | tee -a "${restore_loc}" >> ${restart_ospdf}
@@ -116,11 +126,29 @@ for ((k=0;k<n_groups;k++)); do
 
             echo "# ${sname}" >> $file_loc
             echo "mkdir -p $savedir" >> $file_loc
-            echo "save $savedir/switch.out $subnet \"ovs-vsctl show\"" >> $file_loc
-            echo "save $savedir/switch.db   $subnet \"ovsdb-client backup\"" >> $file_loc
+            echo "save $savedir/switch.db $subnet \"ovsdb-client backup\"" >> $file_loc
 
             l2_cur[$l2_name]=$((${l2_cur[$l2_name]}+1))
         done
+
+        for ((l=0;l<n_l2_hosts;l++)); do
+            host_l=(${l2_hosts[$l]})
+            hname="${host_l[0]}"
+            if [[ "$hname" != *VPN* ]];then
+                l2_name="${host_l[2]}"
+                subnet=$(subnet_sshContainer_groupContainer "${group_number}" "${l2_id[$l2_name]}" "${l2_cur[$l2_name]}" "L2")
+                savedir="\${dirname}/${hname}"
+
+                echo "# ${hname}" >> $file_loc
+                echo "mkdir -p $savedir" >> $file_loc
+                echo "save $savedir/host.ip     $subnet \"ip addr\"" >> $file_loc
+                echo "save $savedir/host.route  $subnet \"ip route\"" >> $file_loc
+                echo "save $savedir/host.route6 $subnet \"ip -6 route\"" >> $file_loc
+
+                l2_cur[$l2_name]=$((${l2_cur[$l2_name]}+1))
+            fi
+        done
+
     fi
 
     echo "" >> $file_loc
