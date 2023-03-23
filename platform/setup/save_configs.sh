@@ -30,7 +30,8 @@ for ((k=0;k<n_groups;k++)); do
     restart_ospdf="${DIRECTORY}"/groups/g"${group_number}"/restart_ospfd.sh
 
     if [ "${group_as}" != "IXP" ];then
-
+        touch $file_loc
+        chmod 0755 $file_loc
         readarray routers < "${DIRECTORY}"/config/$group_router_config
         readarray l2_switches < "${DIRECTORY}"/config/$group_layer2_switches
         readarray l2_hosts < "${DIRECTORY}"/config/$group_layer2_hosts
@@ -41,15 +42,17 @@ for ((k=0;k<n_groups;k++)); do
         n_l2_links=${#l2_links[@]}
 
         l2_rname="-"
-        echo "#!/bin/bash" > "${file_loc}"
-        echo "" >> "${file_loc}"
-        echo "dirname=configs_\$(date +%m-%d-%Y_%H-%M-%S)" >> "${file_loc}"
-        echo "mkdir \$dirname" >> "${file_loc}"
+        echo "#!/bin/bash" > $file_loc
+        echo "" >> $file_loc
+        echo 'dirname=configs_${1:-$(date +%m-%d-%Y_%H-%M-%S)}' >> $file_loc
+        echo "mkdir -p \$dirname" >> $file_loc
+        echo "" >> $file_loc
+        echo '# Arguments: filename, subnet, command' >> $file_loc
+        echo 'save() { ssh -t -o StrictHostKeyChecking=no root@"${2%???}" ${@:3} >> $1 ; }' >> $file_loc
+        echo "" >> $file_loc
         cp "${DIRECTORY}"/setup/restore_configs.sh "${restore_loc}"
         cp "${DIRECTORY}"/setup/restart_ospfd.sh "${restart_ospdf}"
 
-
-        chmod 0755 "${file_loc}"
 
         declare -A l2_id
         declare -A l2_cur
@@ -64,6 +67,7 @@ for ((k=0;k<n_groups;k++)); do
             l2_cur[$l2_name]=0
         done
 
+        # Routers and hosts.
         for ((i=0;i<n_routers;i++)); do
             router_i=(${routers[$i]})
             rname="${router_i[0]}"
@@ -71,19 +75,31 @@ for ((k=0;k<n_groups;k++)); do
             property2="${router_i[2]}"
             rcmd="${router_i[3]}"
             l2_name=$(echo $property2 | cut -d ':' -f 1 | cut -f 2 -d '-')
+            subnet_router=$(subnet_sshContainer_groupContainer "${group_number}" "${i}" -1  "router")
+            subnet_host=$(subnet_sshContainer_groupContainer "${group_number}" "${i}" -1  "host")
+            savedir="\${dirname}/$rname"
 
             if [[ ${l2_id[$l2_name]} == 1000000 ]]; then
                 l2_id[$l2_name]=$i
             fi
 
-            #ssh to router vtysh
-            if [ "${rcmd}" == "vtysh" ]; then
-                echo "  subnet=""$(subnet_sshContainer_groupContainer "${group_number}" "${i}" -1  "router")" >> "${file_loc}"
-                echo "  ssh -t -o "StrictHostKeyChecking=no" root@\"\${subnet%???}\" -- -c 'sh run' >> \$dirname/$rname.txt" >> "${file_loc}"
+            echo "# ${rname}" >> $file_loc
+            echo "mkdir -p $savedir" >> $file_loc
+
+            # Router
+            if [ "${rcmd}" == "vtysh" ]; then  # vtysh is already the command.
+                echo "save $savedir/router.conf $subnet_router -- -c 'sh run'" >> $file_loc
             elif [ "${rcmd}" == "linux" ]; then
-                echo "  subnet=""$(subnet_sshContainer_groupContainer "${group_number}" "${i}" -1  "router")" >> "${file_loc}"
-                echo "  ssh -t -o "StrictHostKeyChecking=no" root@\"\${subnet%???}\" \" vtysh -c 'sh run'\" >> \$dirname/$rname.txt" >> "${file_loc}"
+                echo "save $savedir/router.conf $subnet_router \"vtysh -c 'sh run'\"" >> $file_loc
             fi
+
+            # Host
+            echo "save $savedir/host.ip     $subnet_host \"ip addr\"" >> $file_loc
+            echo "save $savedir/host.route  $subnet_host \"ip route\"" >> $file_loc
+            echo "save $savedir/host.route6 $subnet_host \"ip -6 route\"" >> $file_loc
+            echo "save $savedir/host.tunnel $subnet_host \"ip tunnel show\"" >> $file_loc
+
+            # TODO
             # build restore_configs.sh and restart_ospfd.sh
             echo 'if [[ "$router_name" == "'"$rname"'" || $router_name == "all" ]]; then' | tee -a "${restore_loc}" >> ${restart_ospdf}
             echo "  subnet=""$(subnet_sshContainer_groupContainer "${group_number}" "${i}" -1  "router")" | tee -a "${restore_loc}" >> ${restart_ospdf}
@@ -95,17 +111,22 @@ for ((k=0;k<n_groups;k++)); do
             switch_l=(${l2_switches[$l]})
             l2_name="${switch_l[0]}"
             sname="${switch_l[1]}"
+            subnet=$(subnet_sshContainer_groupContainer "${group_number}" "${l2_id[$l2_name]}" "${l2_cur[$l2_name]}" "L2")
+            savedir="\${dirname}/$sname"
 
-            echo "  subnet=""$(subnet_sshContainer_groupContainer "${group_number}" "${l2_id[$l2_name]}" "${l2_cur[$l2_name]}" "L2")" >> "${file_loc}"
-            echo "  ssh -t -o "StrictHostKeyChecking=no" root@\${subnet%???} \"ovsdb-client dump\" >> \$dirname/$sname.txt" >> "${file_loc}"
+            echo "# ${sname}" >> $file_loc
+            echo "mkdir -p $savedir" >> $file_loc
+            echo "save $savedir/switch.out $subnet \"ovs-vsctl show\"" >> $file_loc
+            echo "save $savedir/switch.db   $subnet \"ovsdb-client backup\"" >> $file_loc
 
             l2_cur[$l2_name]=$((${l2_cur[$l2_name]}+1))
         done
     fi
 
-    echo "zip \${dirname}.zip \${dirname}/*" >> "${file_loc}"
-    echo "echo \"Download zip file:\"" >> "${file_loc}"
-    echo "echo \"    scp -P $((2000 + ${group_number})) root@duvel.ethz.ch:\${dirname}.zip .\"" >> "${file_loc}"
-    echo "echo \"Overwrite the config folder in the current directory:\"" >> "${file_loc}"
-    echo "echo \"    scp -r -P $((2000 + ${group_number})) root@duvel.ethz.ch:\${dirname} config\"" >> "${file_loc}"
+    echo "" >> $file_loc
+    echo "tar -czf \${dirname}.tar.gz \${dirname}/*" >> $file_loc
+    echo "echo \"Download the archive file:\"" >> $file_loc
+    echo "echo \"    scp -P $((2000 + ${group_number})) root@duvel.ethz.ch:\${dirname}.tar.gz .\"" >> $file_loc
+    echo "echo \"Overwrite the config folder in the current directory:\"" >> $file_loc
+    echo "echo \"    scp -r -P $((2000 + ${group_number})) root@duvel.ethz.ch:\${dirname} config\"" >> $file_loc
 done
