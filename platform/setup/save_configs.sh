@@ -27,7 +27,7 @@ for ((k=0;k<n_groups;k++)); do
     group_layer2_links="${group_k[7]}"
     file_loc="${DIRECTORY}"/groups/g"${group_number}"/save_configs.sh
     restore_loc="${DIRECTORY}"/groups/g"${group_number}"/restore_configs.sh
-    restart_ospdf="${DIRECTORY}"/groups/g"${group_number}"/restart_ospfd.sh
+    restart_ospfd="${DIRECTORY}"/groups/g"${group_number}"/restart_ospfd.sh
 
     # Skip IXPS.
     if [ "${group_as}" == "IXP" ]; then continue ; fi
@@ -58,9 +58,11 @@ for ((k=0;k<n_groups;k++)); do
     cp "${DIRECTORY}/setup/restore_configs.sh" "${restore_loc}"
 
     # Restart OSPFd.
-    cp "${DIRECTORY}/setup/restart_ospfd.sh" "${restart_ospdf}"
+    cp "${DIRECTORY}/setup/restart_ospfd.sh" "${restart_ospfd}"
 
-    # chmod 0755 $file_loc
+    chmod 0755 $file_loc
+    chmod 0755 $restore_loc
+    chmod 0755 $restart_ospfd
 
 
     # Now fill them with content.
@@ -100,9 +102,13 @@ for ((k=0;k<n_groups;k++)); do
         # Router
         if [ "${rcmd}" == "vtysh" ]; then  # vtysh is already the command.
             echo "save $savedir/router.conf     $subnet_router -- -c 'sh run'" >> $file_loc
+            echo "save $savedir/router.rib.json $subnet_router -- -c 'sh ip route json'" >> $file_loc
+            echo "save $savedir/router.fib.json $subnet_router -- -c 'sh ip fib json'" >> $file_loc
         elif [ "${rcmd}" == "linux" ]; then
             # If we have linux access, we may also configure tunnels, so store that output.
             echo "save $savedir/router.conf     $subnet_router \"vtysh -c 'sh run'\"" >> $file_loc
+            echo "save $savedir/router.rib.json $subnet_router \"vtysh -c 'sh ip route json'\"" >> $file_loc
+            echo "save $savedir/router.fib.json $subnet_router \"vtysh -c 'sh ip fib json'\"" >> $file_loc
             echo "save $savedir/router.tunnels  $subnet_router \"ip tunnel show\"" >> $file_loc
         fi
 
@@ -126,10 +132,10 @@ for ((k=0;k<n_groups;k++)); do
 
         # TODO: Check whether this needs an update.
         # build restore_configs.sh and restart_ospfd.sh
-        echo 'if [[ "$device_name" == "'"$rname"'" || $device_name == "all" ]]; then' | tee -a ${restart_ospdf} ${restore_loc} > /dev/null
+        echo 'if [[ "$device_name" == "'"$rname"'" || $device_name == "all" ]]; then' | tee -a ${restart_ospfd} ${restore_loc} > /dev/null
         echo "  restore_router_config $subnet_router $rname $rcmd" >> ${restore_loc}
-        echo "  main $subnet_router $rname $rcmd" >> ${restart_ospdf}
-        echo "fi" | tee -a ${restart_ospdf} ${restore_loc} > /dev/null
+        echo "  main $subnet_router $rname $rcmd" >> ${restart_ospfd}
+        echo "fi" | tee -a ${restart_ospfd} ${restore_loc} > /dev/null
     done
 
     for ((l=0;l<n_l2_switches;l++)); do
