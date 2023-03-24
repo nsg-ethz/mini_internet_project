@@ -54,63 +54,79 @@ AUTOCONF_EVERYTHING = True  # Set true to test the topology.
 skip_groups = [127, ]  # 127 is a reserved IP range, cannot use as AS prefix.
 do_not_hijack = [1, ]  # Hosts krill, so we need it reachable.
 
-default_link = ("100000", "1ms ")  # throughput, delay
-delay_link = ("100000",   "30ms")    # throughput, delay
+default_link = ("100000", "2.5ms ")  # throughput, delay
+delay_link = ("100000",   "25ms")    # throughput, delay
 customer = "Customer"
 provider = "Provider"
 peer = "Peer    "  # Spaces to align with the other roles in config file.
 
 transit_as_topo = {
-    # connection of AS to X: (AS city, AS role, link properties)
+    # connection of AS to X: (AS city, AS role)
     # Example: The connection to the first provider is at Basel, and the AS
     # takes the role of a customer.
     # First provider is normal.
-    'provider1': ('BASE', customer, default_link),
-    'customer1': ('LAUS', provider, default_link),
+    'provider1': ('BASE', customer),
+    'customer1': ('LAUS', provider),
     # Second one has a delayed link.
-    'customer2': ('LUGA', provider, delay_link),
-    'provider2': ('ZURI', customer, delay_link),
+    'customer2': ('LUGA', provider),
+    'provider2': ('ZURI', customer),
     # Peer and IXP.
-    'peer': ('STGA', peer, default_link),
-    'ixp': ('GENE', peer, default_link),
+    'peer': ('STGA', peer),
+    'ixp': ('GENE', peer),
 }
 
 tier1_topo = {
     # Tier 1 Ases have no providers, but more peers and two IXPs.
-    'ixp_central': ('ZURI', peer, default_link),
-    'ixp': ('ZURI', peer, default_link),
+    'ixp_central': ('ZURI', peer),
+    'ixp': ('ZURI', peer),
     # Other Tier 1.
-    'peer1': ('BASE', peer, default_link),
-    'peer2': ('ZURI', peer, default_link),
+    'peer1': ('BASE', peer),
+    'peer2': ('ZURI', peer),
     # Connections to customers.
-    'customer1': ('LAUS', provider, default_link),
-    'customer2': ('LUGA', provider, delay_link),  # Delayed link.
+    'customer1': ('LAUS', provider),
+    'customer2': ('LUGA', provider),  # Delayed link.
 }
 
 stub_topo = {
     # Same providers, but IXP and peer. are somewhere else.
-    'provider1': ('BASE', customer, default_link),
-    'provider2': ('ZURI', customer, delay_link),  # Delayed link.
+    'provider1': ('BASE', customer),
+    'provider2': ('ZURI', customer),  # Delayed link.
     # Peer and IXP at same host to simplify hijack.
-    'peer': ('LUGA', peer, default_link),
-    'ixp': ('LAUS', peer, default_link),
+    'peer': ('LUGA', peer),
+    'ixp': ('LAUS', peer),
 }
 
 buffer_topo = {
     # Same providers, but IXP and peer. are somewhere else.
-    'provider1': ('BASE', customer, default_link),
-    'provider2': ('ZURI', customer, delay_link),  # Delayed link.
+    'provider1': ('BASE', customer),
+    'provider2': ('ZURI', customer),  # Delayed link.
     # Customers.
-    'customer1': ('LAUS', provider, default_link),
-    'customer2': ('LUGA', provider, delay_link),  # Delayed link.
+    'customer1': ('LAUS', provider),
+    'customer2': ('LUGA', provider),  # Delayed link.
     # Peer and IXP.
-    'peer': ('LUGA', peer, default_link),
-    'ixp': ('LAUS', peer, default_link),
+    'peer': ('LUGA', peer),
+    'ixp': ('LAUS', peer),
 }
 
 ixp_topo = {
-    "as": ("None", peer, default_link),
+    "as": ("None", peer),
 }
+
+def get_delay(role1, role2):
+    """Selectively slow down links.
+
+    In this version, we slow down the link to the provider in the other column,
+    e.g. between 1 and 3, and between 2 and 4; but not the links in the same,
+    e.g. 1 and 4, and 2 and 3.
+    """
+    nodes = set([role1, role2])
+    delayed = [
+        # "left" ASes
+        {'provider1', 'customer2'},
+        # "right" ASes
+        {'provider2', 'customer1'},
+    ]
+    return delay_link if nodes in delayed else default_link
 
 
 # STEP 1: Enumerate the different ASes and IXPs and determine connections.
@@ -225,8 +241,9 @@ def get_config(asn1, key1, asn2, key2):
     For the student config, always return both directions.
     """
     subnet, ip1, ip2 = get_subnet_and_ips(asn1, asn2)
-    city1, role1, link = get_topo(asn1)[key1]
-    city2, role2, _ = get_topo(asn2)[key2]
+    city1, role1 = get_topo(asn1)[key1]
+    city2, role2 = get_topo(asn2)[key2]
+    link = get_delay(key1, key2)
 
     as_info = (asn1, city1, role1, asn2, city2, role2)
     as_info_rev = (asn2, city2, role2, asn1, city1, role1)
