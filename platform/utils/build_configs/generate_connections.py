@@ -46,7 +46,7 @@ AREAS = 7
 CONFIGURABLE_PER_AREA = 8  # Number of ASes that can be configured by students.
 FIRST_IXP = 140
 
-AUTOCONF_EVERYTHING = True  # Set true to test the topology.
+AUTOCONF_EVERYTHING = False  # Set true to test the topology.
 
 # Define the connections and roles of the ASes in each topology.
 # --------------------------------------------------------------
@@ -111,6 +111,7 @@ buffer_topo = {
 ixp_topo = {
     "as": ("None", peer),
 }
+
 
 def get_delay(role1, role2):
     """Selectively slow down links.

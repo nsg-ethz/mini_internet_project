@@ -5,8 +5,22 @@
 # Remove all containers
 docker rm -f $(docker ps -q) 2>/dev/null || echo "No containers to remove".
 
-# Remove _everything_ from the Open vSwitch.
+
+# Remove all ovs-bridges
+if [ "$(ovs-vsctl list-br | wc -l )" != "0" ];then
+  echo -n "ovs-vsctl " > tmp.txt
+
+  for bridge in $(ovs-vsctl list-br); do
+    echo -n "-- del-br ""${bridge}"" " >> tmp.txt
+  done
+
+  bash  < tmp.txt
+  rm -f tmp.txt
+fi
+
+# Remove _everything_ thats left from the Open vSwitch.
 ovs-vsctl emer-reset
+
 
 # Delete virtual interfaces except for known system interfaces.
 for n in $(ip -o link show | awk -F': ' '{print $2}'); do
