@@ -2,19 +2,52 @@
 # Template script installed to ssh hosts, to restore a saved configuration
 # save_configs.sh appends the list of if-statements for each router to this file
 
-echo_red() {
-  tput setaf 1
-  echo "$@"
-  tput sgr0
+if [[ "$#" -le 1 ]] || [[ ! -e "$1" ]]; then
+  echo "This script restores saved configuration to a router, switches are not currently supported."
+  echo "Usage: $0 <saved_config> <router name (default 'all')>"
+  exit 1
+fi
+
+config_path="$1"
+device_name="${2:-all}"
+case "$1" in
+*".tar.gz")
+  config_path="$(mktemp -d)"
+  trap 'rm -r -- "$config_path"' EXIT
+  tar -xzf $1 -C "$config_path" --strip-components=1
+  ;;
+*) ;;
+esac
+
+if [[ ! -d "$config_path" ]]; then
+  echo_red "Cannot open configuration directory"
+  exit 1
+fi
+
+echo "This script will wipe the current configuration from: $2"
+echo "Consider saving your current configuration first!"
+echo ""
+read -p "Are you sure you want to restore saved configuration? [y/N]" -n 1 -r
+echo
+if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+  echo "Restore cancelled"
+  exit 1
+fi
+
+# _ssh <subnet> <commands>
+_ssh() {
+  ssh -qt -o StrictHostKeyChecking=no root@"${1%???}" "${@:2}"
 }
+
+echo_red() { echo -e "\033[31m$@\033[0m" ; }
 
 # clear_config_vtysh <router ip> <router name>
 clear_config_vtysh() {
-  local router_ip="$1"
+  local router_subnet="$1"
   local router_name="$2"
   local config
   echo -n "Clearing $router_name configuration: "
-  if ! config="$(ssh -q -t -o StrictHostKeyChecking=no root@"$router_ip" -- -c 'sh run')"; then
+  if ! config="$(_ssh $router_subnet -- -c 'sh run')"; then
     echo_red "Failed to load the current running configuration."
     return 1
   fi
@@ -46,6 +79,7 @@ clear_config_vtysh() {
       '!'*) ;;        # Skip configuration separators
       'end'*) ;;      # Skip the final 'end'
       'line'*) ;;     # Don't remove 'line vty'
+      'rpki'*) ;;     # There is no `no rpki` command.
       'hostname'*) ;; # Don't remove the hostname
       'interface'*)   # Interfaces are a special case, remove the config instead
         state="interface"
@@ -75,8 +109,9 @@ clear_config_vtysh() {
       esac
     fi
   done
+  clear_command="${clear_command}exit"$'\n'
 
-  if ssh -q -t -o StrictHostKeyChecking=no root@"$router_ip" -- -c "${clear_command}"; then
+  if  _ssh "$router_subnet" -- -c "$clear_command" ; then
     echo "Success"
   else
     echo_red "Failed, will attempt the restore regardless"
@@ -86,7 +121,7 @@ clear_config_vtysh() {
 
 # restore_config_vtysh <router ip> <config> <router name>
 restore_config_vtysh() {
-  local router_ip="$1"
+  local router_subnet="$1"
   local config="$2"
   local router_name="$3"
 
@@ -94,7 +129,7 @@ restore_config_vtysh() {
   local build_command="configure"$'\n'"${config#*frr defaults traditional}"
   echo -n "Restoring $router_name configuration: "
 
-  if ssh -q -t -o StrictHostKeyChecking=no root@"$router_ip" -- -c "${build_command}"; then
+  if _ssh "$router_subnet" -- -c "${build_command}" ; then
     echo "Success"
   else
     echo_red "Failed"
@@ -103,13 +138,13 @@ restore_config_vtysh() {
 
 # check_config_vtysh <router ip> <config file> <router name>
 check_config_vtysh() {
-  local router_ip="$1"
+  local router_subnet="$1"
   local config_file="$2"
   local running_config
   local config_restored
   config_restored="$(cat "$config_file")"
   echo -n "Verifying restored configuration on $3: "
-  if ! running_config="$(ssh -q -t -o StrictHostKeyChecking=no root@"$router_ip" -- -c 'sh run')"; then
+  if ! running_config="$(_ssh $router_subnet -- -c 'sh run')"; then
     echo_red "Failed to load the current running configuration."
     return 1
   fi
@@ -117,7 +152,7 @@ check_config_vtysh() {
   if [[ "$config_restored" != "$running_config" ]]; then
     echo_red "There is a difference between the backup and running config"
     echo_red "You should manually review and correct this difference"
-    diff --color=auto -u "$config_file" <(echo "$running_config")
+    diff -u "$config_file" <(echo "$running_config")
     echo
   else
     echo "Success"
@@ -125,29 +160,27 @@ check_config_vtysh() {
 }
 
 # restore_config <subnet> <router name> <vtysh/linux>
-restore_config() {
-  local new_config_file="$config_path/$2.txt"
-  local router_ip="${1%???}"
+restore_router_config() {
+  local router_subnet="$1"
   local router_name="$2"
   local terminal_type="$3"
+  local new_config_file="${config_path}/${router_name}/router.conf"
   local new_config
 
   if new_config=$(cat "$new_config_file"); then
     case "$terminal_type" in
     "vtysh")
-      if ! clear_config_vtysh "$router_ip" "$2"; then
+      if ! clear_config_vtysh "$router_subnet" "$2"; then
         return
       fi
-      restore_config_vtysh "$router_ip" "$new_config" "$2"
-      check_config_vtysh "$router_ip" "$new_config_file" "$2"
+      restore_config_vtysh "$router_subnet" "$new_config" "$2"
+      check_config_vtysh "$router_subnet" "$new_config_file" "$2"
       ;;
     "linux")
-      echo "Stopping FRR on $router_name"
-      ssh -q -t -o StrictHostKeyChecking=no root@"$router_ip" /usr/lib/frr/frrinit.sh stop || echo_red "Failed to stopping FRR"
       echo "Copying new configuration to $router_name"
-      scp -o StrictHostKeyChecking=no "$new_config_file" root@"$router_ip":/etc/frr/frr.conf || echo_red "Failed to copy new configuration"
-      echo "Starting FRR on $router_name"
-      ssh -q -t -o StrictHostKeyChecking=no root@"$router_ip" /usr/lib/frr/frrinit.sh start || echo_red "Failed to start FRR"
+      _ssh "$router_subnet" "cat > /etc/frr/frr.conf" < $new_config_file
+      echo "Restarting FRR on $router_name"
+      _ssh "$router_subnet" /usr/lib/frr/frrinit.sh restart > /dev/null || echo_red "Failed to restart FRR"
       ;;
     "*")
       echo_red "Cannot restore $router_name: misconfigured terminal type $terminal_type"
@@ -157,39 +190,3 @@ restore_config() {
     echo_red "Cannot restore $router_name: configuration not found in backup"
   fi
 }
-# Map main to restore_config, the generated code for each router will call main
-main() {
-  restore_config "$@"
-}
-
-if [[ "$#" -ne 2 ]] || [[ ! -e "$1" ]]; then
-  echo "This script restores saved configuration to a router, switches are not currently supported."
-  echo "Usage: $0 <saved_config> <router name or 'all'>"
-  exit 1
-fi
-
-config_path="$1"
-router_name="$2"
-case "$1" in
-*".zip")
-  config_path="$(mktemp -d)"
-  trap 'rm -r -- "$config_path"' EXIT
-  unzip -j "$1" -d "$config_path" >/dev/null
-  ;;
-*) ;;
-esac
-
-if [[ ! -d "$config_path" ]]; then
-  echo_red "Cannot open configuration directory"
-  exit 1
-fi
-
-echo "You this script will wipe the current router configuration from: $2"
-echo "Consider saving your current configuration first!"
-echo ""
-read -p "Are you sure you want to restore saved router configuration? [y/N]" -n 1 -r
-echo
-if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-  echo "Restore cancelled"
-  exit 1
-fi
