@@ -157,3 +157,4 @@ cython_debug/
 # Ignore generated config directories and files
 groups/
 log.txt
+save_friday/*
