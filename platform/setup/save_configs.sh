@@ -51,7 +51,7 @@ for ((k=0;k<n_groups;k++)); do
     echo "mkdir -p \$dirname" >> $file_loc
     echo "" >> $file_loc
     echo '# Arguments: filename, subnet, command' >> $file_loc
-    echo 'save() { ssh -qt -o StrictHostKeyChecking=no root@"${2%???}" ${@:3} >> $1 ; }' >> $file_loc
+    echo 'save() { ssh -qt -o StrictHostKeyChecking=no root@"${2%???}" ${@:3} > $1 ; }' >> $file_loc
     echo "" >> $file_loc
 
     # Restore config.
@@ -101,15 +101,15 @@ for ((k=0;k<n_groups;k++)); do
 
         # Router
         if [ "${rcmd}" == "vtysh" ]; then  # vtysh is already the command.
-            echo "save $savedir/router.conf     $subnet_router -- -c 'sh run'" >> $file_loc
-            echo "save $savedir/router.rib.json $subnet_router -- -c 'sh ip route json'" >> $file_loc
-            echo "save $savedir/router.fib.json $subnet_router -- -c 'sh ip fib json'" >> $file_loc
+            echo "save $savedir/router.conf      $subnet_router -- -c 'sh run'" >> $file_loc
+            echo "save $savedir/router.rib.json  $subnet_router -- -c 'sh ip route json'" >> $file_loc
         elif [ "${rcmd}" == "linux" ]; then
             # If we have linux access, we may also configure tunnels, so store that output.
-            echo "save $savedir/router.conf     $subnet_router \"vtysh -c 'sh run'\"" >> $file_loc
-            echo "save $savedir/router.rib.json $subnet_router \"vtysh -c 'sh ip route json'\"" >> $file_loc
-            echo "save $savedir/router.fib.json $subnet_router \"vtysh -c 'sh ip fib json'\"" >> $file_loc
-            echo "save $savedir/router.tunnels  $subnet_router \"ip tunnel show\"" >> $file_loc
+            echo "save $savedir/router.conf      $subnet_router \"vtysh -c 'sh run'\"" >> $file_loc
+            echo "save $savedir/router.rib.json  $subnet_router \"vtysh -c 'sh ip route json'\"" >> $file_loc
+            # Add tunnels and ipv6 routes.
+            echo "save $savedir/router.rib6.json $subnet_router \"vtysh -c 'sh ipv6 route json'\"" >> $file_loc
+            echo "save $savedir/router.tunnels   $subnet_router \"ip tunnel show\"" >> $file_loc
         fi
 
         # Host
