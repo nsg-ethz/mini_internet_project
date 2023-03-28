@@ -174,6 +174,14 @@ for ((k=0;k<n_groups;k++)); do
     echo "tar -czf \${dirname}.tar.gz \${dirname}/*" >> $file_loc
     echo "echo \"Download the archive file:\"" >> $file_loc
     echo "echo \"    scp -P $((2000 + ${group_number})) root@duvel.ethz.ch:\${dirname}.tar.gz .\"" >> $file_loc
+    echo "echo 'Extract the archive:'" >> $file_loc
+    echo "echo \"    tar -xzf \${dirname}.tar.gz\"" >> $file_loc
     echo "echo \"Overwrite the config folder in the current directory:\"" >> $file_loc
     echo "echo \"    scp -r -P $((2000 + ${group_number})) root@duvel.ethz.ch:\${dirname} config\"" >> $file_loc
+    echo "echo ''" >> $file_loc
+    echo "echo 'If the scp commands do not work for you, use ssh:'" >> $file_loc
+    echo "echo '(Reliable only on UNIX systems. On Windows, you may use WinSCP instead)'" >> $file_loc
+    echo "echo \"    ssh -q -p $((2000 + ${group_number})) root@duvel.ethz.ch cat \${dirname}.tar.gz > \${dirname}.tar.gz\"" >> $file_loc
+    
+    
 done
