@@ -37,7 +37,7 @@ for ((k=0;k<n_groups;k++)); do
     group_as="${group_k[1]}"
 
     if [ "${group_as}" != "IXP" ];then
-        docker cp "${group_number}_ssh:/configs_admin" "${OUTPUT_DIR}/g${group_number}" > /dev/null &
+        docker cp "${group_number}_ssh:/configs_admin/." "${OUTPUT_DIR}/g${group_number}" > /dev/null &
     fi
 done
 wait
