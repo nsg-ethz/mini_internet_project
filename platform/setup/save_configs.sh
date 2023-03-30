@@ -51,7 +51,7 @@ for ((k=0;k<n_groups;k++)); do
     echo "mkdir -p \$dirname" >> $file_loc
     echo "" >> $file_loc
     echo '# Arguments: filename, subnet, command' >> $file_loc
-    echo 'save() { ssh -q -o StrictHostKeyChecking=no root@"${2%???}" ${@:3} > $1 ; }' >> $file_loc
+    echo 'save() { eval "ssh -q -o StrictHostKeyChecking=no root@${2%???} ${@:3} > $1" ; }' >> $file_loc
     echo "" >> $file_loc
 
     # Restore config.
@@ -101,22 +101,22 @@ for ((k=0;k<n_groups;k++)); do
 
         # Router
         if [ "${rcmd}" == "vtysh" ]; then  # vtysh is already the command.
-            echo "save $savedir/router.conf      $subnet_router -- -c 'sh run'" >> $file_loc
-            echo "save $savedir/router.rib.json  $subnet_router -- -c 'sh ip route json'" >> $file_loc
+            echo "save $savedir/router.conf      $subnet_router -- -c \\'sh run\\'" >> $file_loc
+            echo "save $savedir/router.rib.json  $subnet_router -- -c \\'sh ip route json\\' \\| grep -v uptime" >> $file_loc
         elif [ "${rcmd}" == "linux" ]; then
             # If we have linux access, we may also configure tunnels, so store that output.
-            echo "save $savedir/router.conf      $subnet_router \"vtysh -c 'sh run'\"" >> $file_loc
-            echo "save $savedir/router.rib.json  $subnet_router \"vtysh -c 'sh ip route json'\"" >> $file_loc
+            echo "save $savedir/router.conf      $subnet_router \\\"vtysh -c \\'sh run\\'\\\"" >> $file_loc
+            echo "save $savedir/router.rib.json  $subnet_router \\\"vtysh -c \\'sh ip route json\\'\\\" \\| grep -v uptime" >> $file_loc
             # Add tunnels and ipv6 routes.
-            echo "save $savedir/router.rib6.json $subnet_router \"vtysh -c 'sh ipv6 route json'\"" >> $file_loc
-            echo "save $savedir/router.tunnels   $subnet_router \"ip tunnel show\"" >> $file_loc
+            echo "save $savedir/router.rib6.json $subnet_router \\\"vtysh -c \\'sh ipv6 route json\\'\\\" \\| grep -v uptime" >> $file_loc
+            echo "save $savedir/router.tunnels   $subnet_router ip tunnel show" >> $file_loc
         fi
 
         # Host
         echo "echo ${rname} host" >> $file_loc
-        echo "save $savedir/host.ip         $subnet_host \"ip addr\"" >> $file_loc
-        echo "save $savedir/host.route      $subnet_host \"ip route\"" >> $file_loc
-        echo "save $savedir/host.route6     $subnet_host \"ip -6 route\"" >> $file_loc
+        echo "save $savedir/host.ip         $subnet_host ip addr" >> $file_loc
+        echo "save $savedir/host.route      $subnet_host ip route" >> $file_loc
+        echo "save $savedir/host.route6     $subnet_host ip -6 route" >> $file_loc
 
         # If the host runs routinator, save routinator cache.
         htype=$(echo $property2 | cut -d ':' -f 1)
@@ -181,7 +181,8 @@ for ((k=0;k<n_groups;k++)); do
     echo "echo ''" >> $file_loc
     echo "echo 'If the scp commands do not work for you, use ssh:'" >> $file_loc
     echo "echo '(Reliable only on UNIX systems. On Windows, you may use WinSCP instead)'" >> $file_loc
+    echo "echo \"Download the archive:\"" >> $file_loc
     echo "echo \"    ssh -q -p $((2000 + ${group_number})) root@duvel.ethz.ch cat \${dirname}.tar.gz > \${dirname}.tar.gz\"" >> $file_loc
-    
-    
+    echo "echo \"Download and unpack the archive:\"" >> $file_loc
+    echo "echo \"    ssh -q -p $((2000 + ${group_number})) root@duvel.ethz.ch cat \${dirname}.tar.gz | tar -xz\"" >> $file_loc
 done
