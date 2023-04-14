@@ -28,6 +28,10 @@ General layout:
 - This means that each area has an overhead of 6 ASes: 2 Tier 1, 2 stub,
     2 buffer.
 
+You can disable the stub hijacks by setting ENABLE_STUB_HIJACKS to False.
+If you disable the hijacks, there will also be no buffer ASes, and each area
+only has an overhead of 4 ASes (2 Tier 1, 2 stub).
+
 Important to consider: the config file configures _both_ ends of the connection,
 so we need to ensure that we only have one config line for each two endpoints.
 Concretely, we define config only for providers, not for customers, and only
@@ -39,14 +43,22 @@ import math
 # Adjust parameters and where in the topology ASes are connected.
 # ===============================================================
 
+# General settings.
+# -----------------
+
+ENABLE_STUB_HIJACKS = True   # If true, stub ASes in the same area try to hijack
+                             # each others prefixes. Also, add two TA-configured
+                             # ASes between the stubs and student ASes so that
+                             # no student AS is directly connected to a
+                             # malicious AS.
+AUTOCONF_EVERYTHING = True   # Set true to test the topology.
+
 # Size of the topology.
 # ---------------------
 
-AREAS = 7
-CONFIGURABLE_PER_AREA = 8  # Number of ASes that can be configured by students.
+AREAS = 2
+CONFIGURABLE_PER_AREA = 2  # Number of ASes that can be configured by students.
 FIRST_IXP = 140
-
-AUTOCONF_EVERYTHING = False  # Set true to test the topology.
 
 # Define the connections and roles of the ASes in each topology.
 # --------------------------------------------------------------
@@ -136,7 +148,9 @@ def get_delay(role1, role2):
 # Compute the different areas and IXPs.
 # Ensure areas start at "nice" numbers, i.e. 1, 11, 21, etc.
 assert CONFIGURABLE_PER_AREA % 2 == 0, "Must be even."
-ASES_PER_AREA = CONFIGURABLE_PER_AREA + 6
+ASES_PER_AREA = CONFIGURABLE_PER_AREA + 4  # 2 stub, 2 provider
+if ENABLE_STUB_HIJACKS:
+    ASES_PER_AREA += 2  # add 2 ASes as buffer between students and hijackers.
 # Leave enough space if we have to skip some ASes.
 _area_max = 10 * math.ceil((ASES_PER_AREA + 1 + len(skip_groups)) / 10)
 
@@ -170,7 +184,10 @@ ixp_out = list(range(FIRST_IXP + 1, FIRST_IXP + 1 + AREAS))
 tier1 = [asn for area in areas for asn in area[:2]]
 stub = [asn for area in areas for asn in area[-2:]]
 # buffer to hijacking stubs
-buffer = [asn for area in areas for asn in area[-4:-2]]
+if ENABLE_STUB_HIJACKS:
+    buffer = [asn for area in areas for asn in area[-4:-2]]
+else:
+    buffer = []
 
 # Mapping of ASes to outer IXPs. (center IXP is connected only to Tier1.)
 ixp_to_ases = {ixp: [] for ixp in ixp_out}
@@ -402,23 +419,24 @@ with open('AS_config.txt', 'w') as fd:
 # Currently, stub ASes try to hijack each other, but only for ASes in the same
 # area to limit the "blast radius".
 
-hijacks = []
-for asn in stub:
-    # Towards other ASes in the same area _and_ connected to the same IXP,
-    # we hijack the other stub AS in the same area via the IXP.
-    asn_area = next(area for area in areas if asn in area)
-    asn_ixp = as_to_ixp[asn]
-    victim = next(asn2 for asn2 in stub
-                  if (asn2 != asn) and (asn2 in asn_area))
-    other_ases = [asn2 for asn2 in asn_area
-                  if (asn2 != asn) and (asn2 in ixp_to_ases[asn_ixp])
-                  and (asn2 not in do_not_hijack)]
+if ENABLE_STUB_HIJACKS:
+    hijacks = []
+    for asn in stub:
+        # Towards other ASes in the same area _and_ connected to the same IXP,
+        # we hijack the other stub AS in the same area via the IXP.
+        asn_area = next(area for area in areas if asn in area)
+        asn_ixp = as_to_ixp[asn]
+        victim = next(asn2 for asn2 in stub
+                    if (asn2 != asn) and (asn2 in asn_area))
+        other_ases = [asn2 for asn2 in asn_area
+                    if (asn2 != asn) and (asn2 in ixp_to_ases[asn_ixp])
+                    and (asn2 not in do_not_hijack)]
 
-    node_towards_victim, *_ = stub_topo['peer']
-    node_towards_ixp, *_ = stub_topo['ixp']
-    hijacks.append((
-        asn, victim, ",".join(map(str, other_ases)), asn_ixp,
-        node_towards_victim, node_towards_ixp
+        node_towards_victim, *_ = stub_topo['peer']
+        node_towards_ixp, *_ = stub_topo['ixp']
+        hijacks.append((
+            asn, victim, ",".join(map(str, other_ases)), asn_ixp,
+            node_towards_victim, node_towards_ixp
     ))
 
 with open('hijacks.txt', 'w') as file:
