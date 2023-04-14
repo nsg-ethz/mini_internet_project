@@ -140,6 +140,10 @@ class AS:
 
 
 def path_checker(dic_as, aspath):
+    """Check if the path is valid."""
+    # Ignore repeated ASes, e.g. path prepending.
+    # The following works becauuse python dicts guarantee ordered keys.
+    aspath = list(dict.fromkeys(aspath))
 
     if len(aspath) <= 1:
         return False

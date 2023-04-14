@@ -231,8 +231,10 @@ def create_app(config=None):
             dropdown_others={conn[1]['asn'] for conn in selected_connections},
         )
 
-    # Start workers if configured.
+    # Start workers if configured (and clear cache first).
     if app.config["BACKGROUND_WORKERS"] and app.config['AUTO_START_WORKERS']:
+        Path(app.config["MATRIX_CACHE"]).unlink(missing_ok=True)
+        Path(app.config["ANALYSIS_CACHE"]).unlink(missing_ok=True)
         start_workers(app.config)
 
     return app
