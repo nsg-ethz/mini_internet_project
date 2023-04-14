@@ -123,7 +123,9 @@ for ((k=0;k<n_groups;k++)); do
         dname=$(echo $property2 | cut -d ':' -f 2)
         if [[ ! -z "${dname}" ]]; then
             if [[ "${htype}" == *"routinator"* ]]; then
-                echo "save $savedir/host.rpki_cache $subnet_host \"/usr/local/bin/routinator -qq update \; tar -czC /root/.rpki-cache repository\"" >> $file_loc
+                # echo "save $savedir/host.rpki_cache $subnet_host \"/usr/local/bin/routinator -qq update \; tar -czC /root/.rpki-cache repository\"" >> $file_loc
+                # Without update to speed up things.
+                echo "save $savedir/host.rpki_cache $subnet_host \"tar -czC /root/.rpki-cache repository\"" >> $file_loc
             fi
         fi
 
@@ -147,7 +149,8 @@ for ((k=0;k<n_groups;k++)); do
 
         echo "echo ${sname}" >> $file_loc
         echo "mkdir -p $savedir" >> $file_loc
-        echo "save $savedir/switch.db $subnet \"ovsdb-client backup\"" >> $file_loc
+        echo "save $savedir/switch.db      $subnet \"ovsdb-client backup\"" >> $file_loc
+        echo "save $savedir/switch.summary $subnet \"ovs-vsctl show\"" >> $file_loc
 
         l2_cur[$l2_name]=$((${l2_cur[$l2_name]}+1))
     done
