@@ -87,19 +87,22 @@ subnet_router_router_intern () {
 }
 
 subnet_router_router_extern () {
-    local n_grp1="$1" n_grp2="$2"
+    local n_net="$1" device="$2"
 
-    # Smaller group number first, larger second.
-    first=$((${n_grp1} < ${n_grp2} ? ${n_grp1} : ${n_grp2}))
-    second=$((${n_grp1} < ${n_grp2} ? ${n_grp2} : ${n_grp1}))
+    mod=$((${n_net} % 100))
+    div=$((${n_net} / 100))
 
-    if [ "${device}" = "bridge" ] ; then
+    if [ "${device}" = "1" ] ; then
 
-        echo "179.${first}.${second}.0/24"
+        echo "179."${div}"."${mod}".1/24"
 
-    else
+    elif [ "${device}" = "2" ] ; then
 
-        echo "179.${first}.${second}.${n_grp1}/24"
+        echo "179."${div}"."${mod}".2/24"
+
+    elif [ "${device}" = "bridge" ] ; then
+
+        echo "179."${div}"."${mod}".0/24"
 
     fi
 }

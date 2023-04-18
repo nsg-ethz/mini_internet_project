@@ -1,4 +1,3 @@
-ZURI	MATRIX        krill:miniinterneteth/d_krill           linux
-BASE	MATRIX_TARGET routinator:miniinterneteth/d_routinator vtysh
-LAUS	MEASUREMENT   host:miniinterneteth/d_host             vtysh
-LUGA	DNS           host:miniinterneteth/d_host             linux
+ZURI    DNS krill:miniinterneteth/d_krill vtysh
+BASE    MATRIX_TARGET routinator:miniinterneteth/d_routinator  vtysh
+GENE	MATRIX host:miniinterneteth/d_host    vtysh

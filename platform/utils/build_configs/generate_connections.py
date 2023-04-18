@@ -46,19 +46,29 @@ import math
 # General settings.
 # -----------------
 
-ENABLE_STUB_HIJACKS = True   # If true, stub ASes in the same area try to hijack
-                             # each others prefixes. Also, add two TA-configured
-                             # ASes between the stubs and student ASes so that
-                             # no student AS is directly connected to a
-                             # malicious AS.
-AUTOCONF_EVERYTHING = True   # Set true to test the topology.
+# If true, stub ASes in the same area try to hijack each others prefixes. Also,
+# add two TA-configured ASes between the stubs and student ASes so that no
+# student AS is directly connected to a malicious AS.
+ENABLE_STUB_HIJACKS = False
+
+# Set true to test the topology.
+AUTOCONF_EVERYTHING = False
+
+# If true, links between student ASes are only assigned a subnet in the
+# aslevel_links_students.txt file. If False, they are assigned an IP address.
+SUBNETS_ONLY_FOR_STUDENTS = True
+
+# If true, the buffer (or stub, if no hijacks) ASes advertise their prefix to
+# the same region via the IXP, so the students can better debug denying those
+# advertisements.
+BUFFER_ADVERTISES_ALL_VIA_IXP = True
 
 # Size of the topology.
 # ---------------------
 
 AREAS = 2
 CONFIGURABLE_PER_AREA = 2  # Number of ASes that can be configured by students.
-FIRST_IXP = 140
+FIRST_IXP = 80
 
 # Define the connections and roles of the ASes in each topology.
 # --------------------------------------------------------------
@@ -67,7 +77,7 @@ skip_groups = [127, ]  # 127 is a reserved IP range, cannot use as AS prefix.
 do_not_hijack = [1, ]  # Hosts krill, so we need it reachable.
 
 default_link = ("100000", "2.5ms ")  # throughput, delay
-delay_link = ("100000",   "25ms")    # throughput, delay
+delay_link = ("100000",   "25ms")    # throughput, delay (not used by default)
 customer = "Customer"
 provider = "Provider"
 peer = "Peer    "  # Spaces to align with the other roles in config file.
@@ -76,70 +86,63 @@ transit_as_topo = {
     # connection of AS to X: (AS city, AS role)
     # Example: The connection to the first provider is at Basel, and the AS
     # takes the role of a customer.
-    # First provider is normal.
-    'provider1': ('BASE', customer),
-    'customer1': ('LAUS', provider),
-    # Second one has a delayed link.
-    'customer2': ('LUGA', provider),
-    'provider2': ('ZURI', customer),
+    'provider1': ('MUNI', customer),
+    'provider2': ('BASE', customer),
+    'customer1': ('LYON', provider),
+    'customer2': ('MILA', provider),
     # Peer and IXP.
-    'peer': ('STGA', peer),
-    'ixp': ('GENE', peer),
+    'peer': ('LUGA', peer),
+    'ixp': ('VIEN', peer),
 }
 
 tier1_topo = {
     # Tier 1 Ases have no providers, but more peers and two IXPs.
     'ixp_central': ('ZURI', peer),
-    'ixp': ('ZURI', peer),
+    'ixp': ('BASE', peer),
     # Other Tier 1.
-    'peer1': ('BASE', peer),
+    'peer1': ('ZURI', peer),
     'peer2': ('ZURI', peer),
     # Connections to customers.
-    'customer1': ('LAUS', provider),
-    'customer2': ('LUGA', provider),  # Delayed link.
+    'customer1': ('ZURI', provider),
+    'customer2': ('ZURI', provider),
 }
 
 stub_topo = {
     # Same providers, but IXP and peer. are somewhere else.
-    'provider1': ('BASE', customer),
-    'provider2': ('ZURI', customer),  # Delayed link.
-    # Peer and IXP at same host to simplify hijack.
-    'peer': ('LUGA', peer),
-    'ixp': ('LAUS', peer),
+    'provider1': ('ZURI', customer),
+    'provider2': ('ZURI', customer),
+    'peer': ('ZURI', peer),
+    'ixp': ('BASE', peer),
 }
 
-buffer_topo = {
-    # Same providers, but IXP and peer. are somewhere else.
-    'provider1': ('BASE', customer),
-    'provider2': ('ZURI', customer),  # Delayed link.
-    # Customers.
-    'customer1': ('LAUS', provider),
-    'customer2': ('LUGA', provider),  # Delayed link.
-    # Peer and IXP.
-    'peer': ('LUGA', peer),
-    'ixp': ('LAUS', peer),
-}
+# Same topo, but could be adapted.
+buffer_topo = transit_as_topo
 
 ixp_topo = {
     "as": ("None", peer),
 }
 
 
-def get_delay(role1, role2):
-    """Selectively slow down links.
+def get_link(role1, role2):
+    """Here, you can define the link properties between neighbors."""
+    return default_link
+    # Alternative:
+    # In this version, we slow down the link to the provider in the other
+    # column, e.g. between 1 and 3, and between 2 and 4; but not the links in
+    # the same, e.g. 1 and 4, and 2 and 3.
+    #
+    # nodes = set([role1, role2])
+    # delayed = [
+    #     # "left" ASes
+    #     {'provider1', 'customer2'},
+    #     # "right" ASes
+    #     {'provider2', 'customer1'},
+    # ]
+    # return delay_link if nodes in delayed else default_link
 
-    In this version, we slow down the link to the provider in the other column,
-    e.g. between 1 and 3, and between 2 and 4; but not the links in the same,
-    e.g. 1 and 4, and 2 and 3.
-    """
-    nodes = set([role1, role2])
-    delayed = [
-        # "left" ASes
-        {'provider1', 'customer2'},
-        # "right" ASes
-        {'provider2', 'customer1'},
-    ]
-    return delay_link if nodes in delayed else default_link
+
+# DONE. You should not need to change anything below this line.
+# ============================================================
 
 
 # STEP 1: Enumerate the different ASes and IXPs and determine connections.
@@ -261,7 +264,7 @@ def get_config(asn1, key1, asn2, key2):
     subnet, ip1, ip2 = get_subnet_and_ips(asn1, asn2)
     city1, role1 = get_topo(asn1)[key1]
     city2, role2 = get_topo(asn2)[key2]
-    link = get_delay(key1, key2)
+    link = get_link(key1, key2)
 
     as_info = (asn1, city1, role1, asn2, city2, role2)
     as_info_rev = (asn2, city2, role2, asn1, city1, role1)
@@ -277,11 +280,19 @@ def get_config(asn1, key1, asn2, key2):
         # Concretely, do not advertise to same area.
         # The buffer ASes do _not_ follow this rule and advertise to their own
         # area so that the students can debug denying those.
+        # If there are no buffer ASes, the stub ASes are used instead.
+        advertise_too_much = []
+        if BUFFER_ADVERTISES_ALL_VIA_IXP:
+            if buffer:
+                advertise_too_much = buffer
+            else:
+                advertise_too_much = stub
+
         asn1_area = next(area for area in areas if asn1 in area)
         last_col = ",".join([
             str(asn) for asn in ixp_to_ases[asn2] if (
                 (asn not in asn1_area)
-                or ((asn1 in buffer) and (asn != asn1))
+                or ((asn1 in advertise_too_much) and (asn != asn1))
             )
         ])
     else:  # non-IXP
@@ -289,7 +300,7 @@ def get_config(asn1, key1, asn2, key2):
 
     # If both ASes are student ASes, only return subnets;
     # student should discuss IP addresses!
-    if is_student(asn1) and is_student(asn2):
+    if SUBNETS_ONLY_FOR_STUDENTS and is_student(asn1) and is_student(asn2):
         ip1 = ip2 = subnet
 
     return (
@@ -419,25 +430,25 @@ with open('AS_config.txt', 'w') as fd:
 # Currently, stub ASes try to hijack each other, but only for ASes in the same
 # area to limit the "blast radius".
 
+hijacks = []
 if ENABLE_STUB_HIJACKS:
-    hijacks = []
     for asn in stub:
         # Towards other ASes in the same area _and_ connected to the same IXP,
         # we hijack the other stub AS in the same area via the IXP.
         asn_area = next(area for area in areas if asn in area)
         asn_ixp = as_to_ixp[asn]
         victim = next(asn2 for asn2 in stub
-                    if (asn2 != asn) and (asn2 in asn_area))
+                      if (asn2 != asn) and (asn2 in asn_area))
         other_ases = [asn2 for asn2 in asn_area
-                    if (asn2 != asn) and (asn2 in ixp_to_ases[asn_ixp])
-                    and (asn2 not in do_not_hijack)]
+                      if (asn2 != asn) and (asn2 in ixp_to_ases[asn_ixp])
+                      and (asn2 not in do_not_hijack)]
 
         node_towards_victim, *_ = stub_topo['peer']
         node_towards_ixp, *_ = stub_topo['ixp']
         hijacks.append((
             asn, victim, ",".join(map(str, other_ases)), asn_ixp,
             node_towards_victim, node_towards_ixp
-    ))
+        ))
 
 with open('hijacks.txt', 'w') as file:
     for hijack in hijacks:
