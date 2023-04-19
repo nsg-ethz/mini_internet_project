@@ -350,7 +350,7 @@ def prepare_bgp_analysis(config, asn=None, worker=False):
         freq = config['ANALYSIS_UPDATE_FREQUENCY']
         if not db_file.is_file():
             last = None
-            msgs = []
+            msgs = None
         elif asn is not None:
             last, msgs = bgp_policy_analyzer.load_analysis(db_file, asn)
         else:
