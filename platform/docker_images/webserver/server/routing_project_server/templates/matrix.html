@@ -45,6 +45,12 @@ style="background-image: repeating-linear-gradient(45deg, transparent, transpare
 		We determine <em>validity</em> by comparing the BGP looking glass outputs with the project topology and business
 		relationships.
 		A path is valid if it does not violate any business policies.
+		Importantly, we check <em>both</em> the best advertisement as well as backups.
+		A path is only considered valid if all advertised paths are valid.
+	</p>
+	<p class="mb-2">
+		If your path is invalid because you receive invalid advertisements from other groups, we encourage you to reach
+		out to them to fix the issue together.
 	</p>
 	<p class="mb-8">
 		Note that the period for pings between two ASes can be higher than the matrix update frequency, and it may take
