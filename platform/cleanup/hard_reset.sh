@@ -43,5 +43,5 @@ for pid in $(ps aux | grep vpn | awk '{print $2}'); do
 done
 
 # Clean up and restart docker.
-docker system prune -f -v
+docker system prune -f --volumes
 service docker restart

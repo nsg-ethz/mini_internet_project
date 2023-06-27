@@ -5,7 +5,7 @@
 # this variable is the absolute path to the platform directory.
 PLATFORM_DIR=/home/alex/mini_internet_project/platform
 # this variable includes all the AS number that need to be configured.
-ASN_TO_CONFIGURE="50 89 90 103 104 105 106 107 108 109 110"
+ASN_TO_CONFIGURE="30 69 88"
 # this variable contains all the router names that need to be configured.
 # The order is important, as it will be used to assign IP addresses to the routers.
 ROUTER_NAMES="ZURI BERN LUCE BASE GENE LAUS LUGA STGA"

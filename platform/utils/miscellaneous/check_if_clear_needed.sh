@@ -1,6 +1,12 @@
 #!/bin/bash
 #
-# Clear all BGP sessions.
+# If RPKI is configured _after_ an invalid route has been accepeted, this
+# route is not removed from the routing table. This script checks if there
+# are any invalid routes in the routing table and if so, it prints the
+# command to clear the BGP session that will remove the invalid routes.
+#
+# Remove the "echo" on line 61 if you want to clear the BGP session directly.
+
 
 set -o errexit
 set -o pipefail
@@ -36,14 +42,23 @@ for ((k=0;k<group_numbers;k++)); do
             n_routers=${#routers[@]}
             n_routinator_addrs=${#routinator_addrs[@]}
 
+            needs_clear=false
             if [ $n_routinator_addrs -ne 0 ]; then
                 for ((i=0;i<n_routers;i++)); do
                     router_i=(${routers[$i]})
                     rname="${router_i[0]}"
 
-                    docker exec "${group_number}_${rname}router" vtysh \
-                        -c 'clear ip bgp *'
+                    container="${group_number}_${rname}router"
+
+                    # Match invalid routes, but ignore static routes
+                    # (i.e. self-setup hijacks)
+                    if docker exec ${container} vtysh -c 'show ip bgp' | grep '^I' | grep -v 0.0.0.0 > /dev/null ; then
+                        needs_clear=true
+                    fi
                 done
+            fi
+            if [ "$needs_clear" = true ]; then
+                echo "sudo ./setup/bgp_clear.sh . ${group_number}"
             fi
         fi
     ) &
