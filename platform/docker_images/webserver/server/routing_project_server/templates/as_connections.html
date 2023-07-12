@@ -30,16 +30,9 @@
     <div class="flex flex-row justify-center sm:justify-start">
         {{icon(data.role)}}
         <div class="flex flex-col">
-            <!-- IXP case -->
-            {% if "IXP" in data.router %}
-            <div class="font-bold"><b>AS {{data.router}}</b> </div>
-            <div class="text-sm text-neutral-700">{{data.ip if data.ip is not none else "N/A"}}</div>
-            <!-- Case of a normal AS -->
-            {% else %}
             <div class="font-bold"><b>AS {{data.asn}}</b> <span class="text-neutral-500">/</span>
-                {{data.router}}</div>
+                {{data.router if "None" not in data.router else "IXP"}}</div>
             <div class="text-sm text-neutral-700">{{data.ip if data.ip is not none else "N/A"}}</div>
-            {% endif %}
         </div>
     </div>
 </div>

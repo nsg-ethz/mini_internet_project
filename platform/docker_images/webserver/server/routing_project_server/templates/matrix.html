@@ -38,21 +38,30 @@ style="background-image: repeating-linear-gradient(45deg, transparent, transpare
 		<li>cannot reach (<span class="bg-[#d5605e]">&nbsp;&nbsp;&nbsp;</span>). </li>
 	</ul>
 	<p class="mb-2">
-		We determine reachability by sending periodic pings between all networks,
-		if the ping succeeds, we consider the AS reachable.
-		In addition to the ping, we compare the BGP looking glass outputs with
-		the project topology to determine whether the path between two ASes is valid, i.e. if it does not violate any
-		policies.
+		We determine <em>reachability</em> by sending periodic pings between hosts in all networks, if the ping
+		succeeds, we consider the AS reachable.
+	</p>
+	<p class="mb-2">
+		We determine <em>validity</em> by comparing the BGP looking glass outputs with the project topology and business
+		relationships.
+		A path is valid if it does not violate any business policies.
+		Importantly, we check <em>both</em> the best advertisement as well as backups.
+		A path is only considered valid if all advertised paths are valid.
+	</p>
+	<p class="mb-2">
+		If your path is invalid because you receive invalid advertisements from other groups, we encourage you to reach
+		out to them to fix the issue together.
 	</p>
 	<p class="mb-8">
-		Note that the period for pings between two ASes can be higher than the matrix update frequency, and it may take a few matrix updates until a
+		Note that the period for pings between two ASes can be higher than the matrix update frequency, and it may take
+		a few matrix updates until a
 		change for a particular pair of ASes is visible.
 	</p>
 	<!-- Progress bar -->
 	{% if valid or invalid or failure %}
 	<div class="w-full rounded-lg border border-neutral-300 bg-neutral-300 flex mb-8">
-		<div class="basis-[{{valid}}%] rounded-l-lg px-2 p-1 bg-[#56c157]"
-			title="Reachable with valid path: {{valid}}%" {{stripes(not valid)}}>
+		<div class="basis-[{{valid}}%] rounded-l-lg px-2 p-1 bg-[#56c157]" title="Reachable with valid path: {{valid}}%"
+			{{stripes(not valid)}}>
 			{{valid}}%
 		</div>
 		<div class="basis-[{{invalid}}%] px-2 p-1 bg-[#f0ad4e] border-x-2 border-white/50"

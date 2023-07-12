@@ -12,6 +12,8 @@ DOCKERHUB_USER="${2:-thomahol}"
 source "${DIRECTORY}"/config/subnet_config.sh
 source "${DIRECTORY}"/setup/_parallel_helper.sh
 
+MATRIX_FREQUENCY=300  # seconds
+
 # read configs
 readarray groups < "${DIRECTORY}"/config/AS_config.txt
 group_numbers=${#groups[@]}
@@ -36,12 +38,11 @@ if [[ "$is_matrix" -eq 0 ]]; then
 else
 
     location="${DIRECTORY}"/groups/matrix/
-    mkdir $location
+    mkdir -p $location
 
     touch "$location"/destination_ips.txt
-    chmod +x "${location}"/destination_ips.txt
     touch "$location"/connectivity.txt
-    chmod +x "${location}"/connectivity.txt
+    touch "$location"/stats.txt
 
     # start matrix container
     docker run -itd --net='none' --name="MATRIX" --hostname="MATRIX" \
@@ -52,7 +53,12 @@ else
         -v "${DIRECTORY}"/config/welcoming_message.txt:/etc/motd:rw \
         -v "${location}"/destination_ips.txt:/home/destination_ips.txt \
         -v "${location}"/connectivity.txt:/home/connectivity.txt \
+        -v "${location}"/stats.txt:/home/stats.txt \
+        -e "UPDATE_FREQUENCY=${MATRIX_FREQUENCY}" \
         "${DOCKERHUB_USER}/d_matrix"
+
+    # Pause container to reduce load; can be unpaused on demand.
+    docker pause MATRIX
 
     # cache the docker pid for ovs-docker.sh
     source ${DIRECTORY}/groups/docker_pid.map
@@ -127,3 +133,4 @@ else
 
     wait
 fi
+

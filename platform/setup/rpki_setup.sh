@@ -34,9 +34,9 @@ for ((j=0;j<n_krill_containers;j++)); do
             group_number="${container_data[0]}"
             container_name="${container_data[1]}"
 
-            # Enable ssh port forwarding to krill webserver via ssh proxy container (and only port forwarding)  
+            # Enable ssh port forwarding to krill webserver via ssh proxy container (and only port forwarding)
             docker exec ${group_number}_ssh bash -c "echo 'restrict,port-forwarding,command=\"/bin/false\" $(cat groups/rpki/id_rsa_krill_webserver.pub)' >> ~/.ssh/authorized_keys"
-            
+
             # Setup Certificate Authority and predefined ROAs
             docker exec $container_name /bin/bash /home/setup.sh
             sleep 5
@@ -157,19 +157,19 @@ for ((k=0;k<group_numbers;k++)); do
         for ((i=0;i<n_routers;i++)); do
             router_i=(${routers[$i]})
             rname="${router_i[0]}"
-            location="${DIRECTORY}/groups/g${group_number}/${rname}/init_rpki_conf.sh"
+            location="${DIRECTORY}/groups/g${group_number}/${rname}/config/conf_rpki.sh"
+            echo "#!/usr/bin/vtysh -f" > "${location}"
+            chmod +x "${location}"
 
             # Configure rpki cache servers with port 3323
             {
-                echo "#!/bin/bash"
-                echo "vtysh  -c 'conf t' \\"
-                echo " -c 'rpki' \\"
-                echo " -c 'rpki reset' \\"
-                echo " -c 'rpki polling_period 60' \\"
+                echo "rpki"
+                echo "rpki reset"
+                echo "rpki polling_period 60"
                 for ((j=0;j<n_routinator_addrs;j++)); do
-                    echo " -c 'rpki cache ${routinator_addrs[$j]%$'\n'} 3323 pref ${j+1}' \\"
+                    echo "rpki cache ${routinator_addrs[$j]%$'\n'} 3323 pref ${j+1}"
                 done
-                echo " -c 'exit' \\"
+                echo "exit"
             } >> "${location}"
         done
     fi
@@ -230,110 +230,110 @@ for ((i=0;i<n_extern_links;i++)); do
             fi
 
             ixp_peers="${row_i[8]}"
-            location="${DIRECTORY}"/groups/g"${grp_1}"/"${router_grp_1}"/init_rpki_conf.sh
+            location="${DIRECTORY}/groups/g${grp_1}/${router_grp_1}/config/conf_rpki.sh"
 
             {
                 # Set highest local preference where rpki validation returns a valid state
-                echo " -c 'route-map IXP_IN_${grp_2} permit 4' \\"
-                echo " -c 'match rpki valid' \\"
-                echo " -c 'set community $grp_1:20' \\"
-                echo " -c 'set local-preference 150' \\"
-                echo " -c 'exit' \\"
+                echo "route-map IXP_IN_${grp_2} permit 4"
+                echo "match rpki valid"
+                echo "set community $grp_1:20"
+                echo "set local-preference 150"
+                echo "exit"
                 # Drop all announcements where rpki validation returns an invalid state
-                echo " -c 'route-map IXP_IN_${grp_2} deny 8' \\"
-                echo " -c 'match rpki invalid' \\"
-                echo " -c 'exit' \\"
+                echo "route-map IXP_IN_${grp_2} deny 8"
+                echo "match rpki invalid"
+                echo "exit"
                 # All announcements where rpki validation returns notfound get
                 # a lower local-preference.
-                echo " -c 'route-map IXP_IN_${grp_2} permit 6' \\"
-                echo " -c 'match rpki notfound' \\"
-                echo " -c 'set community $grp_1:20' \\"
-                echo " -c 'set local-preference 40' \\"
-                echo " -c 'exit' \\"
+                echo "route-map IXP_IN_${grp_2} permit 6"
+                echo "match rpki notfound"
+                echo "set community $grp_1:20"
+                echo "set local-preference 40"
+                echo "exit"
             } >> "${location}"
         else
             subnet="${row_i[8]}"
 
             if [ "$subnet" != "N/A" ]; then
-                subnet1=${subnet%????}1/24
-                subnet2=${subnet%????}2/24
+                subnet1=${subnet%????}${grp_1}/24
+                subnet2=${subnet%????}${grp_2}/24
             else
-                subnet1="$(subnet_router_router_extern "${i}" 1)"
-                subnet2="$(subnet_router_router_extern "${i}" 2)"
+                subnet1="$(subnet_router_router_extern $grp_1 $grp_2)"
+                subnet2="$(subnet_router_router_extern $grp_2 $grp_1)"
             fi
 
-            location1="${DIRECTORY}"/groups/g"${grp_1}"/"${router_grp_1}"/init_rpki_conf.sh
+            location1="${DIRECTORY}/groups/g${grp_1}/${router_grp_1}/config/conf_rpki.sh"
             {
                 # Set highest local preference where rpki validation returns a valid state
-                echo " -c 'route-map LOCAL_PREF_IN_${grp_2} permit 4' \\"
-                echo " -c 'match rpki valid' \\"
+                echo "route-map LOCAL_PREF_IN_${grp_2} permit 4"
+                echo "match rpki valid"
                 if [ $relation_grp_1 == 'Provider' ]; then
-                    echo " -c 'set community $grp_1:10' \\"
-                    echo " -c 'set local-preference 200' \\"
+                    echo "set community $grp_1:10"
+                    echo "set local-preference 200"
                 elif [ $relation_grp_1 == 'Customer' ]; then
-                    echo " -c 'set community $grp_1:30' \\"
-                    echo " -c 'set local-preference 120' \\"
+                    echo "set community $grp_1:30"
+                    echo "set local-preference 120"
                 elif [ $relation_grp_1 == 'Peer' ]; then
-                    echo " -c 'set community $grp_1:20' \\"
-                    echo " -c 'set local-preference 150' \\"
+                    echo "set community $grp_1:20"
+                    echo "set local-preference 150"
                 fi
-                echo " -c 'exit' \\"
+                echo "exit"
                 # Drop all announcements where rpki validation returns an invalid state
-                echo " -c 'route-map LOCAL_PREF_IN_${grp_2} deny 8' \\"
-                echo " -c 'match rpki invalid' \\"
-                echo " -c 'exit' \\"
+                echo "route-map LOCAL_PREF_IN_${grp_2} deny 8"
+                echo "match rpki invalid"
+                echo "exit"
                 # All announcements where rpki validation returns notfound get
                 # a lower local-preference.
-                echo " -c 'route-map LOCAL_PREF_IN_${grp_2} permit 6' \\"
-                echo " -c 'match rpki notfound' \\"
+                echo "route-map LOCAL_PREF_IN_${grp_2} permit 6"
+                echo "match rpki notfound"
                 if [ $relation_grp_1 == 'Provider' ]; then
-                    echo " -c 'set community $grp_1:10' \\"
-                    echo " -c 'set local-preference 90' \\"
+                    echo "set community $grp_1:10"
+                    echo "set local-preference 90"
                 elif [ $relation_grp_1 == 'Customer' ]; then
-                    echo " -c 'set community $grp_1:30' \\"
-                    echo " -c 'set local-preference 10' \\"
+                    echo "set community $grp_1:30"
+                    echo "set local-preference 10"
                 elif [ $relation_grp_1 == 'Peer' ]; then
-                    echo " -c 'set community $grp_1:20' \\"
-                    echo " -c 'set local-preference 40' \\"
+                    echo "set community $grp_1:20"
+                    echo "set local-preference 40"
                 fi
-                echo " -c 'exit' \\"
+                echo "exit"
             } >> "${location1}"
 
-            location2="${DIRECTORY}"/groups/g"${grp_2}"/"${router_grp_2}"/init_rpki_conf.sh
+            location2="${DIRECTORY}/groups/g${grp_2}/${router_grp_2}/config/conf_rpki.sh"
             {
                 # Set highest local preference where rpki validation returns a valid state
-                echo " -c 'route-map LOCAL_PREF_IN_${grp_1} permit 4' \\"
-                echo " -c 'match rpki valid' \\"
+                echo "route-map LOCAL_PREF_IN_${grp_1} permit 4"
+                echo "match rpki valid"
                 if [ $relation_grp_2 == 'Provider' ]; then
-                    echo " -c 'set community $grp_2:10' \\"
-                    echo " -c 'set local-preference 200' \\"
+                    echo "set community $grp_2:10"
+                    echo "set local-preference 200"
                 elif [ $relation_grp_2 == 'Customer' ]; then
-                    echo " -c 'set community $grp_2:30' \\"
-                    echo " -c 'set local-preference 120' \\"
+                    echo "set community $grp_2:30"
+                    echo "set local-preference 120"
                 elif [ $relation_grp_2 == 'Peer' ]; then
-                    echo " -c 'set community $grp_2:20' \\"
-                    echo " -c 'set local-preference 150' \\"
+                    echo "set community $grp_2:20"
+                    echo "set local-preference 150"
                 fi
-                echo " -c 'exit' \\"
+                echo "exit"
                 # Drop all announcements where rpki validation returns an invalid state
-                echo " -c 'route-map LOCAL_PREF_IN_${grp_1} deny 8' \\"
-                echo " -c 'match rpki invalid' \\"
-                echo " -c 'exit' \\"
+                echo "route-map LOCAL_PREF_IN_${grp_1} deny 8"
+                echo "match rpki invalid"
+                echo "exit"
                 # All announcements where rpki validation returns notfound get
                 # a lower local-preference.
-                echo " -c 'route-map LOCAL_PREF_IN_${grp_1} permit 6' \\"
-                echo " -c 'match rpki notfound' \\"
+                echo "route-map LOCAL_PREF_IN_${grp_1} permit 6"
+                echo "match rpki notfound"
                 if [ $relation_grp_2 == 'Provider' ]; then
-                    echo " -c 'set community $grp_2:10' \\"
-                    echo " -c 'set local-preference 90' \\"
+                    echo "set community $grp_2:10"
+                    echo "set local-preference 90"
                 elif [ $relation_grp_2 == 'Customer' ]; then
-                    echo " -c 'set community $grp_2:30' \\"
-                    echo " -c 'set local-preference 10' \\"
+                    echo "set community $grp_2:30"
+                    echo "set local-preference 10"
                 elif [ $relation_grp_2 == 'Peer' ]; then
-                    echo " -c 'set community $grp_2:20' \\"
-                    echo " -c 'set local-preference 40' \\"
+                    echo "set community $grp_2:20"
+                    echo "set local-preference 40"
                 fi
-                echo " -c 'exit' \\"
+                echo "exit"
             } >> "${location2}"
         fi
     ) &
@@ -364,16 +364,14 @@ for ((k=0;k<group_numbers;k++)); do
             for ((i=0;i<n_routers;i++)); do
                 router_i=(${routers[$i]})
                 rname="${router_i[0]}"
-                location="${DIRECTORY}/groups/g${group_number}/${rname}/init_rpki_conf.sh"
-
-                echo " -c 'exit' -c 'write' " >> "${location}"
+                location="${DIRECTORY}/groups/g${group_number}/${rname}/config/conf_rpki.sh"
 
                 if [ "$group_config" == "Config" ]; then
                     if [[ $n_routinator_addrs -eq 0 ]]; then
                         echo "WARN: Group ${group_number} has no routinator instance! Skip RPKI router configuration."
                     else
-                        docker cp "${location}" "${group_number}"_"${rname}"router:/home/init_rpki_conf.sh
-                        docker exec -d "${group_number}"_"${rname}"router bash /home/init_rpki_conf.sh &
+                        docker cp "${location}" "${group_number}_${rname}router":/home/rpki.conf > /dev/null
+                        docker exec -d "${group_number}_${rname}router" ./home/rpki.conf &
                     fi
                 fi
             done

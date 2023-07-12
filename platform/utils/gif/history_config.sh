@@ -86,8 +86,8 @@ do
     sudo -H -u $USERNAME git -C $GITDIR add $GITDIR/images/$d.html
 
     # Commit and push.
-    sudo -H -u thomas git -C $GITDIR commit -m "Config $d"
-    sudo -H -u thomas git -C $GITDIR push
+    sudo -H -u $USERNAME git -C $GITDIR commit -m "Config $d"
+    sudo -H -u $USERNAME git -C $GITDIR push
 
     sleep 600
 done
