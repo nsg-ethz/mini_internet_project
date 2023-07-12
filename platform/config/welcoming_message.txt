@@ -1,6 +1,6 @@
 +------------------------------------------------------+
 |                                                      |
-|   Communication Networks 2022  - Routing Project     |
+|   Communication Networks 2023  - Routing Project     |
 |             Build your mini-Internet!                |
 |                                                      |
 |                                                      |                    |

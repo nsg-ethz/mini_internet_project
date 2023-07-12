@@ -81,7 +81,11 @@
 
     {{ h1("policy analysis") }}
     {{ update_message(update_frequency, last_updated)}}
-    {% if not bgp_hints %}
+    {% if bgp_hints is none %}
+    <p>
+        The BGP advertisements of <b>AS {{group}}</b> are not analyzed yet.
+    </p>
+    {% elif not bgp_hints %}
     <p>
         The BGP advertisements of <b>AS {{group}}</b> do not seem to violate any policies.
     </p>

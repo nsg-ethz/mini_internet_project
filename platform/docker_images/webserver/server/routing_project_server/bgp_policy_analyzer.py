@@ -1,7 +1,9 @@
 import datetime
 import os
+import shutil
 import sqlite3
 import sys
+import tempfile
 from itertools import chain
 
 from .analyzer_helpers import load_config, load_looking_glass
@@ -53,10 +55,13 @@ def bgp_report(as_data, connection_data, looking_glass_data):
 def update_db(db_file, as_data, connection_data, looking_glass_data):
     """Update the database."""
     try:
-        connection = sqlite3.connect(db_file)
-        load_config(connection, as_data, connection_data)
-        load_looking_glass(connection, looking_glass_data)
-        compute_results(connection)
+        with tempfile.NamedTemporaryFile() as db_tmp:
+            connection = sqlite3.connect(db_tmp.name)
+            load_config(connection, as_data, connection_data)
+            load_looking_glass(connection, looking_glass_data)
+            compute_results(connection)
+            # Copy results to the actual database.
+            shutil.copy(db_tmp.name, db_file)
     finally:
         connection.close()
 
@@ -297,7 +302,7 @@ def compute_results(connection):
                     "although there is a Peer-Peer route via {}".format(
                         number, nextas, prefix, relationship, pe))
 
-        #print("from {} to {} via {}".format(number, prefix, path))
+        # print("from {} to {} via {}".format(number, prefix, path))
 
     # IXP handling:
     # No customer receives a peer route from a provider or customer

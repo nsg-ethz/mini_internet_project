@@ -2,11 +2,7 @@
 # Template script installed to ssh hosts, to restart/reload OSPF configuration
 # save_configs.sh appends the list of if-statements for each router to this file
 
-echo_red() {
-  tput setaf 1
-  echo "$@"
-  tput sgr0
-}
+echo_red() { echo -e "\033[31m$@\033[0m" ; }
 
 # run_vtysh_command <router ip> <vtysh/linux> <command>
 run_vtysh_command() {
@@ -93,10 +89,10 @@ main() {
   reload_ospf "$@"
 }
 
-if [[ "$#" -ne 1 ]] || [[ ${1:0:1} == "-" ]]; then
+if [[ ${1:0:1} == "-" ]]; then
   echo "Reloads the ospfd configuration so that the updated router-id (etc.) takes effect"
-  echo "Usage: $0 <router name or 'all'>"
+  echo "Usage: $0 <router name (default: all)>"
   exit 1
 fi
 
-router_name="$1"
+device_name="${1:-all}"

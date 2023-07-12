@@ -26,7 +26,7 @@ DOCKERHUB_USER="${2:-thomahol}"
 # You need to specify the hostname of the server and an email for
 # LetsEncrypt to be enabled.
 # UPDATE THOSE VARIABLES. HOSTNAME -> hostname of the server and EMAIL -> empty string (for http)
-HOSTNAME="pc-10328.ethz.ch"
+HOSTNAME="localhost"
 ACME_MAIL=""
 
 # Hostname and ports for the webserver and krill on the host.
@@ -88,7 +88,8 @@ LOCATIONS = {
     "as_connections_public": "${CONFIGDIR_SERVER}/aslevel_links_students.txt",
     "as_connections": "${CONFIGDIR_SERVER}/aslevel_links.txt",
     'groups': '${DATADIR_SERVER}',
-    "matrix": "${DATADIR_SERVER}/matrix/connectivity.txt"
+    "matrix": "${DATADIR_SERVER}/matrix/connectivity.txt",
+    "matrix_stats": "${DATADIR_SERVER}/matrix/stats.txt",
 }
 KRILL_URL="${KRILL_SCHEME}://{hostname}:${PORT_KRILL}/index.html"
 BASIC_AUTH_USERNAME = 'admin'

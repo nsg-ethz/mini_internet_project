@@ -45,10 +45,10 @@ else
         -v /etc/localtime:/etc/localtime:ro \
         "${DOCKERHUB_USER}/d_dns"
 
-    docker cp "${DIRECTORY}"/groups/dns/group_config DNS:/etc/bind/group_config
-    docker cp "${DIRECTORY}"/groups/dns/zones DNS:/etc/bind/zones
-    docker cp "${DIRECTORY}"/groups/dns/named.conf.local DNS:/etc/bind/named.conf.local
-    docker cp "${DIRECTORY}"/groups/dns/named.conf.options DNS:/etc/bind/named.conf.options
+    docker cp "${DIRECTORY}"/groups/dns/group_config DNS:/etc/bind/group_config > /dev/null
+    docker cp "${DIRECTORY}"/groups/dns/zones DNS:/etc/bind/zones > /dev/null
+    docker cp "${DIRECTORY}"/groups/dns/named.conf.local DNS:/etc/bind/named.conf.local > /dev/null
+    docker cp "${DIRECTORY}"/groups/dns/named.conf.options DNS:/etc/bind/named.conf.options > /dev/null
 
     docker start DNS
 
