@@ -44,7 +44,7 @@ run_hijack () {
 
     # read configs
     readarray groups < config/AS_config.txt
-    readarray extern_links < config/external_links_config.txt
+    readarray extern_links < config/external_links_config_students.txt
 
     group_numbers=${#groups[@]}
     n_extern_links=${#extern_links[@]}
