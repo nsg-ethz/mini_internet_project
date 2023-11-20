@@ -224,6 +224,7 @@ for ((i=0;i<n_extern_links;i++)); do
     relation_grp_2="${row_i[5]}"
     throughput="${row_i[6]}"
     delay="${row_i[7]}"
+    buffer="${row_i[8]}"
 
     for ((k=0;k<group_numbers;k++)); do
         group_k=(${groups[$k]})
@@ -245,7 +246,7 @@ for ((i=0;i<n_extern_links;i++)); do
             router_grp_2="${row_i[1]}"
         fi
 
-        ixp_peers="${row_i[8]}"
+        ixp_peers="${row_i[9]}"
 
         subnet1="$(subnet_router_IXP ${grp_1} ${grp_2} group)"
         subnet2="$(subnet_router_IXP ${grp_1} ${grp_2} IXP)"
@@ -284,7 +285,7 @@ for ((i=0;i<n_extern_links;i++)); do
             echo "exit"
         } >> "${location}"
     else
-        subnet="${row_i[8]}"
+        subnet="${row_i[9]}"
 
         if [ "$subnet" != "N/A" ]; then
             subnet1="${subnet%????}${grp_1}/24"

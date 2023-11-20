@@ -1,4 +1,4 @@
-FROM debian:12
+FROM debian:stretch
 RUN apt-get update && apt-get install -y rsyslog locales iputils-ping traceroute \
         openssh-server vim tcpdump net-tools dnsutils iperf3 build-essential smcroute vlc git \
     && rm -rf /var/lib/apt/lists/* \
