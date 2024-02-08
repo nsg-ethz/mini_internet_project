@@ -17,7 +17,7 @@ set -o pipefail
 set -o nounset
 
 DIRECTORY="$1"
-DOCKERHUB_USER="${2:-thomahol}"
+DOCKERHUB_USER="${2:-miniinterneteth}"
 
 ######################################
 ### UPDATE THE FOLLOWING VARIABLES ###
