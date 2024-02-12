@@ -59,7 +59,6 @@ LETSENCRYPT="${DATADIR}/webserver/letsencrypt"
 DATADIR_SERVER='/server/data'
 CONFIGDIR_SERVER='/server/configs'
 
-DOCKERHUB_USER="${2:-thomahol}"
 source "${DIRECTORY}"/config/subnet_config.sh
 source "${DIRECTORY}"/setup/_parallel_helper.sh
 
