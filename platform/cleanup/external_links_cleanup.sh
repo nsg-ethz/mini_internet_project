@@ -27,6 +27,7 @@ for ((i=0;i<n_extern_links;i++)); do
     relation_grp_2="${row_i[5]}"
     throughput="${row_i[6]}"
     delay="${row_i[7]}"
+    buffer="${row_i[8]}"
 
   for ((k=0;k<group_numbers;k++)); do
     group_k=(${groups[$k]})
