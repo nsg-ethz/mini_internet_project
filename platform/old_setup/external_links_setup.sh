@@ -28,7 +28,6 @@ for ((i=0;i<n_extern_links;i++)); do
     relation_grp_2="${row_i[5]}"
     throughput="${row_i[6]}"
     delay="${row_i[7]}"
-    buffer="${row_i[8]}"
 
     for ((k=0;k<group_numbers;k++)); do
         group_k=(${groups[$k]})
@@ -57,9 +56,9 @@ for ((i=0;i<n_extern_links;i++)); do
         echo "ip link set dev ${br_name} up" >> "${DIRECTORY}"/groups/ip_setup.sh
 
         ./setup/ovs-docker.sh add-port  "${br_name}" ixp_"${grp_2}" \
-          "${grp_1}"_"${router_grp_1}"router --delay="${delay}" --throughput="${throughput}" --buffer="${buffer}"
+          "${grp_1}"_"${router_grp_1}"router --delay="${delay}" --throughput="${throughput}"
         ./setup/ovs-docker.sh add-port "${br_name}" grp_"${grp_1}" \
-          "${grp_2}""_IXP" --delay="${delay}" --throughput="${throughput}" --buffer="${buffer}"
+          "${grp_2}""_IXP" --delay="${delay}" --throughput="${throughput}"
     else
         br_name="ext-""${i}"
 
@@ -67,9 +66,9 @@ for ((i=0;i<n_extern_links;i++)); do
         echo "ip link set dev ${br_name} up" >> "${DIRECTORY}"/groups/ip_setup.sh
 
         ./setup/ovs-docker.sh add-port  "${br_name}" ext_"${grp_2}"_"${router_grp_2}" \
-        "${grp_1}"_"${router_grp_1}"router --delay="${delay}" --throughput="${throughput}" --buffer="${buffer}"
+        "${grp_1}"_"${router_grp_1}"router --delay="${delay}" --throughput="${throughput}"
 
         ./setup/ovs-docker.sh add-port "${br_name}" ext_"${grp_1}"_"${router_grp_1}" \
-        "${grp_2}"_"${router_grp_2}"router  --delay="${delay}" --throughput="${throughput}" --buffer="${buffer}"
+        "${grp_2}"_"${router_grp_2}"router  --delay="${delay}" --throughput="${throughput}"
     fi
 done

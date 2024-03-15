@@ -66,14 +66,26 @@ for ((k=0;k<n_groups;k++)); do
             dname=$(echo $property2 | cut -s -d ':' -f 2)
             l2_name=$(echo $property2 | cut -d ':' -f 1 | cut -f 2 -d '-')
 
+            all_in_one="false"
+            if [[ ${#router_i[@]} -gt 4 ]]; then
+                if [[ "${router_i[4]}" == "ALL" ]]; then
+                    all_in_one="true"
+                fi
+            fi
+
             if [[ ${l2_id[$l2_name]} == 1000000 ]]; then
                 l2_id[$l2_name]=$i
             fi
 
             if [[ ! -z "${dname}" ]];then
+
+                extra=""
+                if [[ "$all_in_one" == "true" ]]; then
+                    extra="${i}"
+                fi
                 # ssh to host
-                echo "if [ \"\${location}\" == \"$rname\" ] && [ \"\${device}\" == \""host"\" ]; then" >> "${file_loc}"
-                echo "  subnet=""$(subnet_sshContainer_groupContainer "${group_number}" "${i}" -1  "host")" >> "${file_loc}"
+                echo "if [ \"\${location}\" == \"$rname\" ] && [ \"\${device}\" == \"host${extra}\" ]; then" >> "${file_loc}"
+                echo "  subnet=""$(subnet_sshContainer_groupContainer "${group_number}" "${i}" -1  "L3-host")" >> "${file_loc}"
                 echo "  exec ssh -t -o "StrictHostKeyChecking=no" root@\"\${subnet%???}"\" >> "${file_loc}"
                 echo "fi" >> "${file_loc}"
             fi
@@ -108,7 +120,7 @@ for ((k=0;k<n_groups;k++)); do
             sname="${switch_l[1]}"
 
             echo "if [ \"\${location}\" == \"$l2_name\" ] && [ \"\${device}\" == \""${sname}"\" ]; then" >> "${file_loc}"
-            echo "  subnet=""$(subnet_sshContainer_groupContainer "${group_number}" "${l2_id[$l2_name]}" "${l2_cur[$l2_name]}" "L2")" >> "${file_loc}"
+            echo "  subnet=""$(subnet_sshContainer_groupContainer "${group_number}" -1 "${l}" "switch")" >> "${file_loc}"
             echo "  exec ssh -t -o StrictHostKeyChecking=no root@\"\${subnet%???}"\" >> "${file_loc}"
             echo "fi" >> "${file_loc}"
 
@@ -127,7 +139,7 @@ for ((k=0;k<n_groups;k++)); do
                 l2_name="${host_l[2]}"
 
                 echo "if [ \"\${location}\" == \"$l2_name\" ] && [ \"\${device}\" == \""$hname"\" ]; then" >> "${file_loc}"
-                echo "  subnet=""$(subnet_sshContainer_groupContainer "${group_number}" "${l2_id[$l2_name]}" "${l2_cur[$l2_name]}" "L2")" >> "${file_loc}"
+                echo "  subnet=""$(subnet_sshContainer_groupContainer "${group_number}" -1 "${l}" "L2-host")" >> "${file_loc}"
                 echo "  exec ssh -t -o StrictHostKeyChecking=no root@\"\${subnet%???}"\" >> "${file_loc}"
                 echo "fi" >> "${file_loc}"
 

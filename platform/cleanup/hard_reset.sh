@@ -39,7 +39,7 @@ fi
 
 # Kill the openvpn processes
 for pid in $(ps aux | grep vpn | awk '{print $2}'); do
-    kill -9 $pid 2>&1 >/dev/null
+    kill -9 $pid 2>&1 > /dev/null
 done
 
 # Clean up and restart docker.

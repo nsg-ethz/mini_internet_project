@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """This script generates the connections between the routers in the topology.
 
 Create four files:
@@ -52,7 +54,7 @@ import math
 ENABLE_STUB_HIJACKS = False
 
 # Set true to test the topology.
-AUTOCONF_EVERYTHING = False
+AUTOCONF_EVERYTHING = True
 
 # If true, links between student ASes are only assigned a subnet in the
 # aslevel_links_students.txt file. If False, they are assigned an IP address.
@@ -76,8 +78,8 @@ FIRST_IXP = 80
 skip_groups = [127, ]  # 127 is a reserved IP range, cannot use as AS prefix.
 do_not_hijack = [1, ]  # Hosts krill, so we need it reachable.
 
-default_link = ("100000", "2.5ms ")  # throughput, delay
-delay_link = ("100000",   "25ms")    # throughput, delay (not used by default)
+default_link = ("100000", "2.5ms", "50ms")  # throughput, delay, buffer,
+delay_link =   ("100000", "25ms ", "50ms")  # as above, not used by default
 customer = "Customer"
 provider = "Provider"
 peer = "Peer    "  # Spaces to align with the other roles in config file.
@@ -98,7 +100,7 @@ transit_as_topo = {
 tier1_topo = {
     # Tier 1 Ases have no providers, but more peers and two IXPs.
     'ixp_central': ('ZURI', peer),
-    'ixp': ('BASE', peer),
+    'ixp': ('ZURI', peer),
     # Other Tier 1.
     'peer1': ('ZURI', peer),
     'peer2': ('ZURI', peer),
@@ -112,7 +114,7 @@ stub_topo = {
     'provider1': ('ZURI', customer),
     'provider2': ('ZURI', customer),
     'peer': ('ZURI', peer),
-    'ixp': ('BASE', peer),
+    'ixp': ('ZURI', peer),
 }
 
 # Same topo, but could be adapted.
@@ -391,10 +393,13 @@ for as_block in areas:
 
 config, student_config = zip(*config)
 
-with open('aslevel_links.txt', 'w') as file:
+# assume the script is run from the platform directory
+aslevel_link_file = './config/aslevel_links.txt'
+with open(aslevel_link_file, 'w') as file:
     file.write("\n".join([line for line in config if line is not None]))
 
-with open('aslevel_links_students.txt', 'w') as file:
+aslevel_link_students_file = './config/aslevel_links_students.txt'
+with open(aslevel_link_students_file, 'w') as file:
     file.write(
         "\n".join([line for line in student_config if line is not None]))
 
@@ -402,7 +407,8 @@ with open('aslevel_links_students.txt', 'w') as file:
 # STEP 3: Generate the file with contains which configs to use.
 # =============================================================
 
-with open('AS_config.txt', 'w') as fd:
+as_config_file = './config/AS_config.txt'
+with open(as_config_file, 'w') as fd:
     for area in areas:
         for asn in area:
             if asn == 1:  # By default we set krill in AS1

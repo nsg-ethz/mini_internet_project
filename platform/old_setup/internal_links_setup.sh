@@ -43,24 +43,20 @@ for ((k=0;k<group_numbers;k++)); do
                 router2="${row_i[1]}"
                 IFS=',' read -r -a throughput_array <<< "${row_i[2]}"
                 IFS=',' read -r -a delay_array <<< "${row_i[3]}"
-                IFS=',' read -r -a buffer_array <<< "${row_i[4]}"
                 throughput_array_index=$((group_number%${#throughput_array[@]}))
                 throughput="${throughput_array[$throughput_array_index]}"
 
                 delay_array_index=$((group_number%${#delay_array[@]}))
                 delay="${delay_array[$delay_array_index]}"
 
-                buffer_array_index=$((group_number%${#buffer_array[@]}))
-                buffer="${buffer_array[$buffer_array_index]}"
-
                 subnet_router1="$(subnet_router_router_intern ${group_number} ${i} 1)"
                 subnet_router2="$(subnet_router_router_intern ${group_number} ${i} 2)"
 
                 ./setup/ovs-docker.sh add-port "${br_name}" "port_""${router2}" \
-                "${group_number}"_"${router1}"router --delay="${delay}" --throughput="${throughput}" --buffer="${buffer}"
+                "${group_number}"_"${router1}"router --delay="${delay}" --throughput="${throughput}"
 
                 ./setup/ovs-docker.sh add-port "${br_name}" "port_""${router1}" \
-                "${group_number}"_"${router2}"router --delay="${delay}" --throughput="${throughput}" --buffer="${buffer}"
+                "${group_number}"_"${router2}"router --delay="${delay}" --throughput="${throughput}"
 
                 ./setup/ovs-docker.sh connect-ports "${br_name}" \
                 "port_""${router2}" "${group_number}"_"${router1}"router \

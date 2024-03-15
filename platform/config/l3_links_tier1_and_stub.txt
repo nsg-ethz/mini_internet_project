@@ -1,3 +1,0 @@
-ZURI	BASE	100000	10ms    50ms
-BASE    GENE    100000  10ms    50ms
-GENE    ZURI    100000  10ms    50ms

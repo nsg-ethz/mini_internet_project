@@ -43,7 +43,7 @@ else
         -v /etc/timezone:/etc/timezone:ro \
         -v /etc/localtime:/etc/localtime:ro \
         --cap-add=NET_ADMIN \
-        "${DOCKERHUB_USER}/d_measurement"
+        "${DOCKERHUB_USER}/d_measurement" > /dev/null
 
     # cache the docker pid for ovs-docker.sh
     source ${DIRECTORY}/groups/docker_pid.map
@@ -55,7 +55,6 @@ else
     echo -e ""${passwd}"\n"${passwd}"" | docker exec -i MEASUREMENT passwd root
 
     subnet_ssh_measurement="$(subnet_ext_sshContainer -1 "MEASUREMENT")"
-    ./setup/ovs-docker.sh add-port ssh_to_group ssh_in MEASUREMENT --ipaddress="${subnet_ssh_measurement}"
 
     echo -n "-- add-br measurement " >> "${DIRECTORY}"/groups/add_bridges.sh
     echo "ip link set dev measurement up" >> "${DIRECTORY}"/groups/ip_setup.sh

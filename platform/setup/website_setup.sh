@@ -101,8 +101,12 @@ EOM
 # First start the web container, adding labels for the traefik proxy.
 # We only have one webserver; traffic for any hostname will go to it.
 # NOTE: Can we define all dynamic labels for krill here?
+
+krill_bname="krill_bridge"
+subnet_krill_web=$(subnet_krill_webserver -1 "web")
 docker run -itd --name="WEB" --cpus=2 \
-    --network bridge -p 8000:8000 \
+    --network="${krill_bname}" --ip="${subnet_krill_web%/*}" \
+    -p 8000:8000 \
     --pids-limit 100 \
     -v ${DATADIR}:${DATADIR_SERVER} \
     -v ${CONFIGDIR}:${CONFIGDIR_SERVER} \
@@ -114,7 +118,12 @@ docker run -itd --name="WEB" --cpus=2 \
     -l traefik.http.routers.websecure.entrypoints=websecure \
     --hostname="web" \
     --privileged \
-    "${DOCKERHUB_USER}/d_webserver"
+    "${DOCKERHUB_USER}/d_webserver" > /dev/null
+
+# rename eth0 to web
+docker exec -it WEB ip link set eth0 down
+docker exec -it WEB ip link set eth0 name web
+docker exec -it WEB ip link set web up
 
 # Next start the proxy
 # Setup based on the following tutorials:
@@ -122,8 +131,9 @@ docker run -itd --name="WEB" --cpus=2 \
 # https://doc.traefik.io/traefik/user-guides/docker-compose/acme-http/
 # To enable the dashboard for debugging, add -p 8080:8080
 # and the command "--api.insecure=true" (at the very end).
+subnet_krill_proxy=$(subnet_krill_webserver -1 "proxy")
 docker run -d --name='PROXY' \
-    --network bridge \
+    --network="${krill_bname}" --ip="${subnet_krill_proxy%/*}" \
     -p ${SERVER_PORT_HTTP}:${SERVER_PORT_HTTP} \
     -p ${SERVER_PORT_HTTPS}:${SERVER_PORT_HTTPS} \
     -p ${PORT_KRILL}:${PORT_KRILL} \
@@ -136,4 +146,9 @@ docker run -d --name='PROXY' \
     "--providers.docker.defaultRule=Host(\"${HOSTNAME}\")" \
     "--entrypoints.web.address=:${SERVER_PORT_HTTP}" \
     "--entrypoints.websecure.address=:${SERVER_PORT_HTTPS}" \
-    "--entrypoints.krill.address=:${PORT_KRILL}"
+    "--entrypoints.krill.address=:${PORT_KRILL}" > /dev/null
+
+# rename eth0 to proxy
+docker exec -it PROXY ip link set eth0 down
+docker exec -it PROXY ip link set eth0 name proxy
+docker exec -it PROXY ip link set proxy up

@@ -1,6 +1,21 @@
 #!/bin/bash
 #
 # generates dns config files for the dns server in groups/dns/
+#
+# BIND: a DNS server on unix
+# named.conf (inclding named.conf.* files): configuration files in BIND
+# zone files: plain text files that contain mapping between domain names and IP addresses
+# A: map a hostname to a 32-bit IPV4 address, e.g., example.com IN A 192.0.2.1
+# AAAA: IPV6
+# NS: delegate a DNS zone to use the given authoritative name server,
+# e.g., example.com IN NS ns1.example.com
+# SOA: basic infoormation about the domain
+# PTR: reverse DNS lookups, maping an IP address to a domain name
+# e.g., 1.2.0.192-in-addr.arpa. IN PTR example.com
+#
+# for each domain, a zone file is created and referenced in named.conf.local
+# e.g., zone "example.com" { type master; file "/etc/bind/zones/db.example.com"; };
+# the master/slave is used for redundancy
 
 set -o errexit
 set -o pipefail
@@ -27,8 +42,18 @@ echo "" >> "${location_options}"
 echo "    recursion no;" >> "${location_options}"
 echo -n "    listen-on { " >> "${location_options}"
 
-subnet_router="$(subnet_router_DNS -1 "dns")"
-echo -n "${subnet_router%???}""; " >> "${location_options}"
+# subnet_router="$(subnet_router_DNS -1 "dns")"
+# echo -n "${subnet_router%???}""; " >> "${location_options}"
+# listen on all group interfaces
+for ((i=0;i<n_groups;i++)); do
+    group_i=(${groups[$i]})
+    group_number="${group_i[0]}"
+    subnet_router="$(subnet_router_DNS "${group_number}" "dns-group")"
+    echo -n "${subnet_router%???}""; " >> "${location_options}"
+done
+# also add measurement interface
+subnet_measurement="$(subnet_router_DNS -1 "dns-measurement")"
+echo -n "${subnet_measurement%???}""; " >> "${location_options}"
 
 echo "};" >> "${location_options}"
 echo "    allow-transfer { none; };" >> "${location_options}"
@@ -67,7 +92,7 @@ for ((i=0;i<n_groups;i++)); do
                 echo "};"
             } >> "${location_grp}"
         fi
-    ) &
+    ) &  # create the dns config for each group in parallel
 
     wait_if_n_tasks_are_running
 done
@@ -82,6 +107,8 @@ for ((j=0;j<n_groups;j++)); do
     group_router_config="${group_j[3]}"
     group_internal_links="${group_j[4]}"
 
+    # create zone definitions for both forward (db.group[number]
+    # and reverse (db.[number) DNS records
     location_db="groups/dns/zones/db.""${group_number}"
     location_grp="groups/dns/zones/db.group""${group_number}"
 
@@ -92,6 +119,8 @@ for ((j=0;j<n_groups;j++)); do
         n_routers=${#routers[@]}
         n_intern_links=${#intern_links[@]}
 
+        # define SOA, NS, A records for routers and host-router interfaces
+        # and PTR records for reverse DNS mapping
         echo ";" >> "${location_db}"
         echo "; BIND reverse data file for local loopback interface" >> "${location_db}"
         echo ";" >> "${location_db}"
@@ -123,7 +152,7 @@ for ((j=0;j<n_groups;j++)); do
         echo "        IN      NS      ns.group${group_number}." >> "${location_grp}"
         echo "" >> "${location_grp}"
 
-        subnet="$(subnet_router_DNS "${group_number}" "dns")"
+        subnet="$(subnet_router_DNS "${group_number}" "dns-group")"
 
         echo "ns.group""$group_number"".      IN      A       ""${subnet%???}" >> "${location_grp}"
         echo "" >> "${location_grp}"

@@ -55,7 +55,7 @@ else
         -v "${location}"/connectivity.txt:/home/connectivity.txt \
         -v "${location}"/stats.txt:/home/stats.txt \
         -e "UPDATE_FREQUENCY=${MATRIX_FREQUENCY}" \
-        "${DOCKERHUB_USER}/d_matrix"
+        "${DOCKERHUB_USER}/d_matrix" > /dev/null
 
     # Pause container to reduce load; can be unpaused on demand.
     docker pause MATRIX

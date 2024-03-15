@@ -78,20 +78,20 @@ for ((k=0;k<group_numbers;k++)); do
             switch2="${row_l[3]}"
             throughput="${row_l[4]}"
             delay="${row_l[5]}"
-            buffer="${row_l[6]}"
 
             ./setup/ovs-docker.sh add-port "${br_name}" "${group_number}"-"${switch2}" \
             "${group_number}""_L2_""${l2name1}"_${switch1} \
-            --delay="${delay}" --throughput="${throughput}" --buffer="${buffer}"
+            --delay="${delay}" --throughput="${throughput}"
 
             ./setup/ovs-docker.sh add-port "${br_name}" "${group_number}"-"${switch1}" \
             "${group_number}""_L2_""${l2name2}"_${switch2} \
-            --delay="${delay}" --throughput="${throughput}" --buffer="${buffer}"
+            --delay="${delay}" --throughput="${throughput}"
 
             ./setup/ovs-docker.sh connect-ports "${br_name}" \
             "${group_number}"-"${switch2}" "${group_number}""_L2_""${l2name1}"_${switch1} \
             "${group_number}"-"${switch1}" "${group_number}""_L2_""${l2name2}"_${switch2}
 
+            # the configuration can only be done after the interface is up!
             echo "docker exec -d "${group_number}""_L2_""${l2name1}_${switch1}" ovs-vsctl" \
                  "add-port br0 "${group_number}"-"${switch2}"" \
                  "-- set Port "${group_number}"-"${switch2}" trunks=0" >> "${DIRECTORY}"/groups/l2_init_switch.sh

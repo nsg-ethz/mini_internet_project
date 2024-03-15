@@ -11,23 +11,23 @@ touch "${new_script}"
 while read -r line; do
   case "$line" in
   'port_id1=`ovs-vsctl get Interface'*)
-    echo "$line" >>"${new_script}"
+    echo "$line" >> "${new_script}"
     ;;
   'port_id2=`ovs-vsctl get Interface'*)
-    echo "$line" >>"${new_script}"
+    echo "$line" >> "${new_script}"
     ;;
   'ovs-ofctl add-flow'*)
-    echo "$line" >>"${new_script}"
+    echo "$line" >> "${new_script}"
     ;;
   *netns*);;  # Skip netns related lines, these interfaces are within containers
   PID*);;
   '#'*);;
   source*);;
   *)          # The remaining commands configure interfaces in the main OvS instance
-  echo "$line" >>"${new_script}"
+  echo "$line" >> "${new_script}"
   ;;
   esac
-done <"$ip_setup"
+done < "$ip_setup"
 
 chmod +x "${new_script}"
 
