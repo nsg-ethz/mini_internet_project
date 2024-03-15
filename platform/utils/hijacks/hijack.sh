@@ -26,7 +26,7 @@ run_hijack () {
         case $1 in
             "--origin_as")
                 ORIGIN_AS=$2
-                shift 
+                shift
                 shift
                 ;;
             "--clear")
@@ -40,7 +40,7 @@ run_hijack () {
         esac
     done
 
-    echo $HIJACKER_AS $HIJACKED_PREFIX $SEQ $ORIGIN_AS $CLEAR 
+    echo $HIJACKER_AS $HIJACKED_PREFIX $SEQ $ORIGIN_AS $CLEAR
 
     # read configs
     readarray groups < config/AS_config.txt
@@ -69,7 +69,7 @@ run_hijack () {
                     router_i=(${routers[$i]})
                     rname="${router_i[0]}"
 
-                    if [ -z "$ORIGIN_AS" ]; then 
+                    if [ -z "$ORIGIN_AS" ]; then
 
                         docker exec -it ${group_number}_${rname}router vtysh -c "conf t" -c "router bgp ${group_number}" -c "address-family ipv4 unicast" -c "$CLEAR network $HIJACKED_PREFIX"
                         docker exec -it ${group_number}_${rname}router vtysh -c "conf t" -c "$CLEAR ip prefix-list OWN_PREFIX seq $SEQ permit $HIJACKED_PREFIX"
@@ -86,7 +86,7 @@ run_hijack () {
                             relation_grp_2="${row_j[5]}"
                             throughput="${row_j[6]}"
                             delay="${row_j[7]}"
-
+                            buffer="${row_j[8]}"
 
                             bgp_peer_num=''
                             if [ "${grp_1}" == "${group_number}" ] && [ "${router_grp_1}" == "$rname" ] ;then
@@ -96,7 +96,7 @@ run_hijack () {
                                 bgp_peer_num="${grp_1}"
                             fi
 
-                            if [ ! -z "$bgp_peer_num" ]; then 
+                            if [ ! -z "$bgp_peer_num" ]; then
                                 str_tmp=''
 
                                 # Check if the router is connected to an IXP or not
@@ -108,7 +108,7 @@ run_hijack () {
                                     if [ "${bgp_peer_num}" = "${group_number_tmp}" ];then
                                         if [ "${group_as_tmp}" = "IXP" ];then
                                             route_map_name="IXP_OUT_"$bgp_peer_num
-                                            ixp_peers="${row_j[8]}"
+                                            ixp_peers="${row_j[9]}"
                                             for peer in $(echo $ixp_peers | sed "s/,/ /g"); do
                                                 str_tmp=${str_tmp}${grp_2}:${peer}" "
                                             done
@@ -126,7 +126,7 @@ run_hijack () {
                                         -c "route-map $route_map_name permit $route_map_permit" \
                                         -c "match ip address prefix-list HIJACKED_PREFIX_$ORIGIN_AS" \
                                         -c "set as-path prepend $ORIGIN_AS $ORIGIN_AS $ORIGIN_AS $ORIGIN_AS"
-                                    
+
                                     # Set communities in case the peer is an IXP
                                     if [ ! -z "$str_tmp" ]; then
                                         docker exec -it ${group_number}_${rname}router vtysh \

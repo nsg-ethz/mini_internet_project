@@ -60,16 +60,16 @@ for ((k = 0; k < GroupNumber; k++)); do
 
         # only allow vtysh command in router container
         echo 'command="vtysh" '$(cat "${GroupDirectory}"/id_rsa.pub) > "${GroupDirectory}"/id_rsa_command.pub
-        docker cp "${GroupDirectory}"/id_rsa "${GroupAS}"_ssh:/root/.ssh/id_rsa >/dev/null
-        docker cp "${GroupDirectory}"/id_rsa.pub "${GroupAS}"_ssh:/root/.ssh/id_rsa.pub >/dev/null
+        docker cp "${GroupDirectory}"/id_rsa "${GroupAS}"_ssh:/root/.ssh/id_rsa > /dev/null
+        docker cp "${GroupDirectory}"/id_rsa.pub "${GroupAS}"_ssh:/root/.ssh/id_rsa.pub > /dev/null
 
         # authorize TA key
-        docker cp "${DIRECTORY}"/groups/authorized_keys "${GroupSSHContainer}:/root/.ssh/authorized_keys" >/dev/null
-        # docker cp "${DIRECTORY}"/groups/authorized_keys "${GroupSSHContainer}:/etc/ssh/authorized_keys" >/dev/null
+        docker cp "${DIRECTORY}"/groups/authorized_keys "${GroupSSHContainer}:/root/.ssh/authorized_keys" > /dev/null
+        # docker cp "${DIRECTORY}"/groups/authorized_keys "${GroupSSHContainer}:/etc/ssh/authorized_keys" > /dev/null
 
         # set password for the ssh container login
         Passwd=$(awk "\$1 == \"${GroupAS}\" { print \$2 }" "${DIRECTORY}/groups/passwords.txt")
-        echo -e ""${Passwd}"\n"${Passwd}"" | docker exec -i "${GroupSSHContainer}" passwd root >/dev/null
+        echo -e ""${Passwd}"\n"${Passwd}"" | docker exec -i "${GroupSSHContainer}" passwd root > /dev/null
         # reload sshd config
         docker exec "${GroupSSHContainer}" bash -c "kill -HUP \$(cat /var/run/sshd.pid)"
 
@@ -85,9 +85,9 @@ for ((k = 0; k < GroupNumber; k++)); do
             # for all-in-one AS, this could copy the same router multiple times
             # but in general the overhead should be small
             if [ "${RouterCommand}" == "vtysh" ]; then
-                docker cp "${GroupDirectory}"/id_rsa_command.pub "${RouterContainer}:/root/.ssh/authorized_keys" >/dev/null
+                docker cp "${GroupDirectory}"/id_rsa_command.pub "${RouterContainer}:/root/.ssh/authorized_keys" > /dev/null
             else
-                docker cp "${GroupDirectory}"/id_rsa.pub "${RouterContainer}:/root/.ssh/authorized_keys" >/dev/null
+                docker cp "${GroupDirectory}"/id_rsa.pub "${RouterContainer}:/root/.ssh/authorized_keys" > /dev/null
             fi
 
             # copy the public key to the L3 host container
@@ -98,7 +98,7 @@ for ((k = 0; k < GroupNumber; k++)); do
 
             if [[ -n "${HostImage}" ]]; then
                 HostContainer="${GroupAS}_${RouterRegion}host${HostSuffix}"
-                docker cp "${GroupDirectory}"/id_rsa.pub "${HostContainer}:/root/.ssh/authorized_keys" >/dev/null
+                docker cp "${GroupDirectory}"/id_rsa.pub "${HostContainer}:/root/.ssh/authorized_keys" > /dev/null
                 # reload ssh config
                 docker exec "${HostContainer}" bash -c "kill -HUP \$(cat /var/run/sshd.pid)"
             fi
@@ -112,7 +112,7 @@ for ((k = 0; k < GroupNumber; k++)); do
 
             SwCtnName="${GroupAS}_L2_${DCName}_${SWName}"
 
-            docker cp "${GroupDirectory}"/id_rsa.pub "${SwCtnName}:/root/.ssh/authorized_keys" >/dev/null
+            docker cp "${GroupDirectory}"/id_rsa.pub "${SwCtnName}:/root/.ssh/authorized_keys" > /dev/null
         done
 
         # add ssh public key in each L2 host container
@@ -125,7 +125,7 @@ for ((k = 0; k < GroupNumber; k++)); do
             # skip vpn
             if [[ ! ${HostName} == vpn* ]]; then
                 HostContainer="${GroupAS}_L2_${DCName}_${HostName}"
-                docker cp "${GroupDirectory}"/id_rsa.pub "${HostContainer}:/root/.ssh/authorized_keys" >/dev/null
+                docker cp "${GroupDirectory}"/id_rsa.pub "${HostContainer}:/root/.ssh/authorized_keys" > /dev/null
                 # reload ssh config
                 docker exec "${HostContainer}" bash -c "kill -HUP \$(cat /var/run/sshd.pid)"
             fi

@@ -78,8 +78,8 @@ FIRST_IXP = 80
 skip_groups = [127, ]  # 127 is a reserved IP range, cannot use as AS prefix.
 do_not_hijack = [1, ]  # Hosts krill, so we need it reachable.
 
-default_link = ("100000", "2.5ms", "50ms")  # throughput, delay, buffer,
-delay_link =   ("100000", "25ms ", "50ms")  # as above, not used by default
+default_link = ("100kbit", "2.5ms", "50ms")  # throughput, delay, buffer,
+delay_link =   ("100kbit", "25ms ", "50ms")  # as above; not used by default
 customer = "Customer"
 provider = "Provider"
 peer = "Peer    "  # Spaces to align with the other roles in config file.

@@ -1,5 +1,0 @@
-UNIV    CERN    GENE	aa:aa:aa:aa:aa:aa  1
-UNIV    ETHZ    ZURI	bb:bb:bb:bb:bb:bb  2
-UNIV    EPFL	N/A    cc:cc:cc:cc:cc:cc  3
-NEWYCITY    STATION NEWY    ee:ee:ee:ee:ee:ee   1
-NEWYCITY    AIRPORT N/A    11:11:11:11:11:11    2

@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# set -x
 set -o errexit
 set -o pipefail
 set -o nounset
@@ -59,7 +60,7 @@ for ((k = 0; k < group_numbers; k++)); do
                 declare -A vlanl2set
                 for ((l = 0; l < n_l2_hosts; l++)); do
                     host_l=(${l2_hosts[$l]})
-                    vlan="${host_l[6]}"
+                    vlan="${host_l[7]}"
                     vlanset[$vlan]=0
                     vlanl2set[${property2} - ${vlan}]=0
                 done
@@ -132,7 +133,8 @@ for ((k = 0; k < group_numbers; k++)); do
             sname="${host_l[3]}"
             throughput="${host_l[4]}"
             delay="${host_l[5]}"
-            vlan="${host_l[6]}"
+            buffer="${host_l[6]}"
+            vlan="${host_l[7]}"
 
             if [ "$group_config" == "Config" ] && [ "$vlan" != "0" ]; then
                 docker exec -d "${group_number}""_L2_""${l2name}_${sname}" \
