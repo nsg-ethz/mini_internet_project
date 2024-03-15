@@ -64,7 +64,7 @@ source "${DIRECTORY}"/setup/_connect_utils.sh
 python3 "${DIRECTORY}"/setup/_compute_independent_ext_links.py "${DIRECTORY}"
 
 # for each aslevel_links_*.txt file
-for CurrentLinkFile in "${DIRECTORY}"/config/_aslevel_links_*.txt; do
+for CurrentLinkFile in "${DIRECTORY}"/groups/aslevel_links/aslevel_links_*.txt; do
     connect_one_link_group "${CurrentLinkFile}" # different link groups cannot be parallelized
     echo "Connected external links in ${CurrentLinkFile}"
 done

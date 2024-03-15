@@ -298,13 +298,13 @@ for ((k = 0; k < group_numbers; k++)); do
 
                     if [[ "${htype}" == *"krill"* ]]; then
                         # create a docker network to connect krill server, website and proxy
-                        krill_bname="krill_bridge"
-                        subnet_krill_bridge="$(subnet_krill_webserver -1 "bridge")"
-                        docker network create --driver bridge --subnet="${subnet_krill_bridge}" "${krill_bname}" > /dev/null
+                        web_bname="web_bridge"
+                        subnet_web_bridge="$(subnet_krill_webserver -1 "bridge")"
+                        docker network create --driver bridge --subnet="${subnet_web_bridge}" "${web_bname}" > /dev/null
 
                         # connect the krill host to the krill bridge
                         subnet_krill_host="$(subnet_krill_webserver "${group_number}" "krill")"
-                        docker network connect --ip="${subnet_krill_host%/*}" "${krill_bname}" "${container_name}" > /dev/null
+                        docker network connect --ip="${subnet_krill_host%/*}" "${web_bname}" "${container_name}" > /dev/null
 
                         # rename eth1 interface to krill in the host container
                         docker exec "${container_name}" ip link set dev eth1 down

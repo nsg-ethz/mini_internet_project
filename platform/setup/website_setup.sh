@@ -62,6 +62,12 @@ CONFIGDIR_SERVER='/server/configs'
 source "${DIRECTORY}"/config/subnet_config.sh
 source "${DIRECTORY}"/setup/_parallel_helper.sh
 
+# Docker bridge connecting all web containers (PROXY, WEB, KRILL)
+# and subnets for each container in the bridge network.
+WEB_BRIDGE="web_bridge"
+SUBNET_WEB=$(subnet_krill_webserver -1 "web")
+SUBNET_PROXY=$(subnet_krill_webserver -1 "proxy")
+
 # TLS and LetsEncrypt
 if [ ! -z "$ACME_MAIL" ] && [ ! -z "$HOSTNAME" ] && [ "$HOSTNAME" != "localhost" ] ; then
     IFS=" " read -ra TLSCONF <<< "\
@@ -102,10 +108,8 @@ EOM
 # We only have one webserver; traffic for any hostname will go to it.
 # NOTE: Can we define all dynamic labels for krill here?
 
-krill_bname="krill_bridge"
-subnet_krill_web=$(subnet_krill_webserver -1 "web")
 docker run -itd --name="WEB" --cpus=2 \
-    --network="${krill_bname}" --ip="${subnet_krill_web%/*}" \
+    --network="${WEB_BRIDGE}" --ip="${SUBNET_WEB%/*}" \
     -p 8000:8000 \
     --pids-limit 100 \
     -v ${DATADIR}:${DATADIR_SERVER} \
@@ -131,9 +135,11 @@ docker exec -it WEB ip link set web up
 # https://doc.traefik.io/traefik/user-guides/docker-compose/acme-http/
 # To enable the dashboard for debugging, add -p 8080:8080
 # and the command "--api.insecure=true" (at the very end).
-subnet_krill_proxy=$(subnet_krill_webserver -1 "proxy")
+# The dashboard is then available at http://localhost:8080/dashboard/
+# If anything goes wrong, add "--log.level=DEBUG" to enable logging,
+# and then use "sudo docker logs PROXY" to see the logs.
 docker run -d --name='PROXY' \
-    --network="${krill_bname}" --ip="${subnet_krill_proxy%/*}" \
+    --network="${WEB_BRIDGE}" --ip="${SUBNET_PROXY%/*}" \
     -p ${SERVER_PORT_HTTP}:${SERVER_PORT_HTTP} \
     -p ${SERVER_PORT_HTTPS}:${SERVER_PORT_HTTPS} \
     -p ${PORT_KRILL}:${PORT_KRILL} \
@@ -141,7 +147,8 @@ docker run -d --name='PROXY' \
     -v ${LETSENCRYPT}:/letsencrypt \
     --privileged \
     traefik:v2.6 \
-    "--providers.docker=True"\
+    "--providers.docker=True" \
+    "--providers.docker.network=${WEB_BRIDGE}" \
     "--providers.docker.exposedbydefault=false" ${TLSCONF[@]} \
     "--providers.docker.defaultRule=Host(\"${HOSTNAME}\")" \
     "--entrypoints.web.address=:${SERVER_PORT_HTTP}" \
