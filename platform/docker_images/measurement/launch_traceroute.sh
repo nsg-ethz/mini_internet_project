@@ -10,18 +10,6 @@ trap "exit" SIGINT
 src_grp=$1
 dst_ip=$2
 
-mod=$((${src_grp} % 100))
-div=$((${src_grp} / 100))
-
-if [ $mod -lt 10 ];then
-    mod="0"$mod
-fi
-if [ $div -lt 10 ];then
-    div="0"$div
-fi
-
-dst_mac="aa:22:22:22:"$div":"$mod
-
 for hop in `seq 30`
 do
     echo -e 'Hop '$hop':  \c'

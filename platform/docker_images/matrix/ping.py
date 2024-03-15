@@ -24,8 +24,6 @@ while True:
                 dest_ip = linetab[1]
                 as_list[asn] = dest_ip
 
-        # Load the MAC addresses of the mgt interface on HOUS
-        mac_dic = {}
         # Connectivity dictionnary
         co_dic = {}
         # Ping processes dic
@@ -45,8 +43,6 @@ while True:
             if div < 10:
                 div = "0"+str(div)
 
-            mac_dic[asn] = "aa:11:11:11:"+str(div)+":"+str(mod)
-
         print("Starting the ping measurements.")
         start_ts = dt.utcnow()
 
@@ -59,8 +55,7 @@ while True:
 
                 if to_g >= from_g:
 
-                    cmd = ("nping --dest-mac "
-                           + mac_dic[from_g]
+                    cmd = ("nping "
                            + " --source-ip "+str(from_g)
                            + ".0.198.2 --dest-ip "
                            + str(as_list[to_g])

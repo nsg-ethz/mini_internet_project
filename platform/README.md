@@ -4,11 +4,12 @@ The documentation is available in the [**wiki**](https://github.com/nsg-ethz/min
 
 ### 2024 Routing project (25 March!)
 
--[ ] Fix the website/krill unreachable issue.
+-[x] Fix the website/krill unreachable issue.
 
 -[ ] Finish and test the new restart script for each containers.
 
 -[ ] Check and test the automatic matrix snapshot and config backup.
+     Alex: make it a container/service instead so its easier to use!
 
 -[ ] Design this year's topology (Africa).
 
@@ -40,10 +41,10 @@ The documentation is available in the [**wiki**](https://github.com/nsg-ethz/min
 
 -[ ] Test restarting any container.
 
-=[ ] Document the ALL option in l3 configs.
+-[ ] Document the ALL option in l3 configs.
 
-=[ ] Plenty of scripts in /groups are not used anymore. Are they still created? check that.
+-[ ] Plenty of scripts in /groups are not used anymore. Are they still created? check that.
 
-=[ ] Uncomment hijack.
+-[ ] Uncomment hijack.
 
 -[ ] VPN?

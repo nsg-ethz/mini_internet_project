@@ -4,8 +4,7 @@
 #
 
 # sanity check
-# set -x
-trap 'exit 1' ERR # catch more error
+# set -e
 set -o errexit
 set -o pipefail
 set -o nounset
@@ -125,17 +124,19 @@ if [[ "$MatrixRequired" == "True" ]]; then
         -v "${MatrixConfigDir}"/connectivity.txt:/home/connectivity.txt \
         -v "${MatrixConfigDir}"/stats.txt:/home/stats.txt \
         -e "UPDATE_FREQUENCY=${MatrixFrequency}" \
-        "yuchen14/d_matrix" > /dev/null # use a new image
+        "${DOCKERHUB_USER}/d_matrix" > /dev/null
 
     # Pause container to reduce load
-    # docker pause MATRIX
+    docker pause MATRIX
 
     # cache the container PID
     DOCKER_TO_PID['MATRIX']=$(docker inspect -f '{{.State.Pid}}' MATRIX)
     declare -p DOCKER_TO_PID > ${DIRECTORY}/groups/docker_pid.map
 
-    # start a tmux session to run ping.py
-    docker exec MATRIX tmux new -d -s matrix "python3 ping.py"
+    # TODO: Let's try it without; we should be able to just restart the matrix
+    # If we can't get restarting the matrix to work, use this as a fallback.
+    ## start a tmux session to run ping.py
+    #docker exec MATRIX tmux new -d -s matrix "python3 ping.py"
 else
     echo "MATRIX service is not required"
 fi
