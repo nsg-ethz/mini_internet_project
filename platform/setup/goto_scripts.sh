@@ -150,6 +150,13 @@ for ((k=0;k<n_groups;k++)); do
 
         done
 
+        # Add a link to go to the measurement container
+        echo "if [ \"\${location}\" == \"measurement\" ]; then" >> "${file_loc}"
+        echo "  subnet=""$(subnet_sshContainer_groupContainer "${group_number}" -1 -1 "MEASUREMENT")" >> "${file_loc}"
+        echo "  exec ssh -t -o StrictHostKeyChecking=no root@\"\${subnet%???}"\" >> "${file_loc}"
+        echo "fi" >> "${file_loc}"
+
+
         echo "echo \"invalid arguments\"" >> "${file_loc}"
         echo "echo \"valid examples:\"" >> "${file_loc}"
         echo "echo \"./goto.sh $rname router\"" >> "${file_loc}"
@@ -159,5 +166,7 @@ for ((k=0;k<n_groups;k++)); do
             echo "echo \"./goto.sh ${last_l2name_s} ${last_sname_s}\"" >> "${file_loc}"
             echo "echo \"./goto.sh ${last_l2name_h} ${last_hname}\"" >> "${file_loc}"
         fi
+
+        echo "echo \"./goto.sh measurement\"" >> "${file_loc}"
     fi
 done

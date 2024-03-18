@@ -225,4 +225,13 @@ for ((j=0;j<n_groups;j++)); do
             } >> "${location_grp}"
         done
     fi
+
+    # Also add an entry for the MEASUREMENT interface
+    subnet="$(subnet_router_MEASUREMENT "${group_number}" "group")"
+    first_sub="${subnet#*.}"
+    second_sub="${subnet#*.*.}"
+    third_sub="${subnet#*.*.*.}"
+    reverse="${third_sub%/*}"".""${second_sub%.*}"".""${first_sub%.*.*}"
+    echo "${reverse} IN  PTR measurement.group${group_number}." >> "${location_db}"
+    echo "measurement.group${group_number}.       IN      A      ${subnet%/*}" >> "${location_grp}"
 done

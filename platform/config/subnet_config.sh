@@ -244,6 +244,10 @@ subnet_sshContainer_groupContainer() {
 
     echo "158."$n_grp".0.2/16"
 
+  elif [ "${device}" = "MEASUREMENT" ]; then
+
+    echo "158."$n_grp".0.3/16"
+
   elif [ "${device}" = "router" ]; then
 
     echo "158."$n_grp".$((n_router + 10)).1/16"

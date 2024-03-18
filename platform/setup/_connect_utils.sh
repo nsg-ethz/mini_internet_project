@@ -605,7 +605,7 @@ connect_one_measurement() {
 
     local MeasurementCtnName="MEASUREMENT"
     local GroupCtnName="${CurrentAS}_${CurrentRegion}router"
-    local MeasurementIntf="group_${CurrentAS}"
+    local MeasurementIntf="group${CurrentAS}"  # No space to match DNS entry.
     local GroupIntf="measurement_${CurrentAS}"
     local MeasurementSubnet="$(subnet_router_MEASUREMENT ${CurrentAS} "measurement")"
     local GroupSubnet="$(subnet_router_MEASUREMENT ${CurrentAS} "group")"
@@ -614,6 +614,41 @@ connect_one_measurement() {
         $MeasurementCtnName $MeasurementIntf $MeasurementSubnet \
         $GroupCtnName $GroupIntf $GroupSubnet $CurrentAS
 
+}
+
+connect_one_ssh_measurement() {
+
+    if (($UID != 0)); then
+        echo "$0 needs to be run as root"
+        exit 1
+    fi
+
+    # check enough arguments are provided
+    if [ "$#" -ne 2 ]; then
+        echo "Usage: connect_one_ssh_measurement <AS> <Public Key>"
+        exit 1
+    fi
+
+    local CurrentAS=$1
+    local Public_Key=$2
+    local MeasurementCtnName="MEASUREMENT"
+    local SSHSubnet="$(subnet_sshContainer_groupContainer ${CurrentAS} -1 -1 "MEASUREMENT")"
+    local BridgeName="${CurrentAS}_ssh"
+    local sshifname="ssh_group${CurrentAS}"
+
+    docker network connect --ip="${SSHSubnet%/*}" "${BridgeName}" "${MeasurementCtnName}" > /dev/null
+
+    # Find name of new interface and rename it.
+    local ifname=$(docker exec "${MeasurementCtnName}" ip -oneline addr show | grep "${SSHSubnet%/*}" | cut -f 2 -d ' ')
+
+    docker exec "${MeasurementCtnName}" ip link set dev "${ifname}" down
+    docker exec "${MeasurementCtnName}" \
+    ip link set dev "${ifname}" name "${sshifname}"
+    docker exec "${MeasurementCtnName}" ip link set dev "${sshifname}" up
+
+    # Append public key
+    docker exec -d "${MeasurementCtnName}" \
+        bash -c "echo $Public_Key >> /root/.ssh/authorized_keys"
 }
 
 connect_one_matrix() {

@@ -31,13 +31,14 @@ The documentation is available in the [**wiki**](https://github.com/nsg-ethz/min
 
 -[ ] Search for all FIXME and TODOs and address them.
 
--[ ] Test launch traceroute and the matrix. I'm not sure I understand the matrix updates.
+-[x] Test launch traceroute and the matrix. I'm not sure I understand the matrix updates.
 
 -[ ] Test goto commands, also in stub and tier1.
 
 -[ ] Is the examples folder of any use nowadays? Maybe just remove it.
 
--[ ] Can I get from one ssh proxy to another via the network? Or ping others via the ssh proxy?
+-[x] Can I get from one ssh proxy to another via the network? Or ping others via the ssh proxy?
+     I think this is working as intended.
 
 -[ ] Test restarting any container.
 
@@ -49,6 +50,6 @@ The documentation is available in the [**wiki**](https://github.com/nsg-ethz/min
 
 -[ ] VPN?
 
--[ ] ./go-to MEASUREMENT?
+-[x] Add ./go-to MEASUREMENT?
 
--[ ] MEASUREMENT Welcome message?
+-[x] Create a MEASUREMENT Welcome message.

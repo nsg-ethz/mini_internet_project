@@ -65,6 +65,7 @@ DNSRequired=$(_check_service_is_required "DNS")
 MatrixRequired=$(_check_service_is_required "MATRIX")
 
 # start measurement container
+# ssh is configured for remote access, and we add direct access below.
 if [[ "$MeasureRequired" == "True" ]]; then
     SubnetDNS="$(subnet_router_DNS -1 "dns-measurement")"
     SubNetSsh="$(subnet_ext_sshContainer -1 "MEASUREMENT")"
@@ -76,6 +77,8 @@ if [[ "$MeasureRequired" == "True" ]]; then
         --cpus=2 --pids-limit 100 \
         -v /etc/timezone:/etc/timezone:ro \
         -v /etc/localtime:/etc/localtime:ro \
+        -v \
+        "${DIRECTORY}"/config/measurement_welcoming_message.txt:/etc/motd:rw \
         --cap-add=NET_ADMIN \
         --net="${SshBridge}" --ip="${SubNetSsh%/*}" \
         -p 2099:22 \
@@ -96,9 +99,10 @@ if [[ "$MeasureRequired" == "True" ]]; then
     echo "${Passwd}" >> "${DIRECTORY}"/groups/ssh_measurement.txt
     echo -e ""${Passwd}"\n"${Passwd}"" | docker exec -i MEASUREMENT passwd root > /dev/null
 
-    # update the launching script
-    docker cp "${DIRECTORY}"/docker_images/measurement/launch_traceroute.sh \
-        MEASUREMENT:/root/launch_traceroute.sh > /dev/null
+    # TODO DEPRECATED
+    # # update the launching script
+    # docker cp "${DIRECTORY}"/docker_images/measurement/launch_traceroute.sh \
+    #     MEASUREMENT:/root/launch_traceroute.sh > /dev/null
 else
     echo "MEASUREMENT service is not required"
 fi
@@ -119,7 +123,6 @@ if [[ "$MatrixRequired" == "True" ]]; then
         --sysctl net.ipv4.ip_forward=0 \
         -v /etc/timezone:/etc/timezone:ro \
         -v /etc/localtime:/etc/localtime:ro \
-        -v "${DIRECTORY}"/config/welcoming_message.txt:/etc/motd:rw \
         -v "${MatrixConfigDir}"/destination_ips.txt:/home/destination_ips.txt \
         -v "${MatrixConfigDir}"/connectivity.txt:/home/connectivity.txt \
         -v "${MatrixConfigDir}"/stats.txt:/home/stats.txt \
@@ -182,6 +185,14 @@ for ((k = 0; k < GroupNumber; k++)); do
         readarray Routers < "${DIRECTORY}"/config/$GroupRouterConfig
         RouterNumber=${#Routers[@]}
 
+        # Direct ssh access to the measurement container for each group:
+        # connect the group ssh container to the measurement container
+        if [[ "$MeasureRequired" == "True" ]]; then
+            PubKey=$(cat "${DIRECTORY}"/groups/g${GroupAS}/id_rsa.pub)
+            connect_one_ssh_measurement "${GroupAS}" "${PubKey}"
+            echo "${GroupAS}: connected MEASUREMENT to SSH"
+        fi
+
         for ((i = 0; i < RouterNumber; i++)); do
             RouterI=(${Routers[$i]})      # router config file array
             RouterRegion="${RouterI[0]}"  # region name
@@ -190,7 +201,7 @@ for ((k = 0; k < GroupNumber; k++)); do
             # connect the measurement container to each group
             if [[ "$RouterService" == "MEASUREMENT" ]]; then
                 connect_one_measurement "${GroupAS}" "${RouterRegion}"
-                echo "Connected MEASUREMENT to ${GroupAS}"
+                echo "${GroupAS}: connected MEASUREMENT to network"
             fi
 
             # record the destination IP
@@ -202,13 +213,13 @@ for ((k = 0; k < GroupNumber; k++)); do
             # connect the matrix container to each group
             if [[ "$RouterService" == "MATRIX" ]]; then
                 connect_one_matrix "${GroupAS}" "${RouterRegion}"
-                echo "Connected MATRIX to ${GroupAS}"
+                echo "${GroupAS}: connected MATRIX"
             fi
 
             # # connect the dns container to each group
             if [[ "$RouterService" == "DNS" ]]; then
                 connect_one_dns "${GroupAS}" "${RouterRegion}"
-                echo "Connected DNS to ${GroupAS}"
+                echo "${GroupAS}: connected DNS"
             fi
         done
     fi
