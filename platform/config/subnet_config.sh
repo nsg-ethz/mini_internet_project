@@ -170,7 +170,7 @@ subnet_router_DNS() {
 
   elif [ "${device}" = "measurement" ]; then
 
-    echo "198.200.0.1/24"
+    echo "198.255.0.1/24"
 
   elif [ "${device}" = "dns-group" ]; then
 
@@ -184,7 +184,7 @@ subnet_router_DNS() {
   elif [ "${device}" = "dns-measurement" ]; then
 
     # echo "198.0.0.100/24"
-    echo "198.200.0.1/24"
+    echo "198.255.0.2/24"
 
   elif [ "${device}" = "bridge" ]; then
 

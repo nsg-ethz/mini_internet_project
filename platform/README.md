@@ -48,3 +48,7 @@ The documentation is available in the [**wiki**](https://github.com/nsg-ethz/min
 -[ ] Uncomment hijack.
 
 -[ ] VPN?
+
+-[ ] ./go-to MEASUREMENT?
+
+-[ ] MEASUREMENT Welcome message?

@@ -216,6 +216,8 @@ done
 
 # connect measurement to dns
 if [[ "$DNSRequired" == "True" ]]; then
-    connect_service_interfaces "DNS" "measurement" "$(subnet_router_DNS -1 "dns-measurement")" \
-        "MEASUREMENT" "dns" "$(subnet_router_DNS -1 "measurement")" -1
+    connect_service_interfaces \
+        "DNS" "measurement" "$(subnet_router_DNS -1 "dns-measurement")" \
+        "MEASUREMENT" "dns" "$(subnet_router_DNS -1 "measurement")" \
+        -1  # -1 to set up IPs in both containers but no default routes.
 fi

@@ -204,6 +204,12 @@ connect_two_interfaces() {
 
 # create a veth pair between a service container and a group container
 # the throughput and delay is not configured
+# If ClientGroup != -1, add a default route to the service container (see
+# below), needed for MATRIX and MEASUREMENT to reach each group;
+# Otherwise, assume that both containers are services.
+# We need a metric value for the default route and use ClientGroup for that,
+# so each group must have a unique ClientGroup value (which it should).
+# for this interface. We add
 connect_service_interfaces() {
 
     if (($UID != 0)); then
@@ -213,7 +219,7 @@ connect_service_interfaces() {
 
     if [ "$#" -ne 7 ]; then
         echo "Usage: connect_service_interfaces <ServiceContainer> <ServiceInterface> <ServiceSubnet> " \
-            "<ClientContainer> <ClientInterface> <ClientSubnet> <GroupSubnet>"
+            "<ClientContainer> <ClientInterface> <ClientSubnet> <ClientGroup>"
         exit 1
     fi
 
@@ -223,7 +229,7 @@ connect_service_interfaces() {
     local client_container=$4
     local client_interface=$5
     local client_subnet=$6
-    local group_subnet=$7
+    local client_group=$7
 
     # generate unique veth interface names
     local identifier="${service_container}_${service_interface}_${client_container}_${client_interface}"
@@ -254,12 +260,17 @@ connect_service_interfaces() {
 
     # add the address
     ip netns exec $pid_service ip addr add $service_subnet dev $service_interface
-    # the router configuration will configure this later
-    # ip netns exec $pid_client ip addr add $client_subnet dev $client_interface
+    # Do not configure the client IP address if the client is a host; the
+    # router configuration will do this later. But if client is also a service
+    # we need to do it now.
+    if [ "$client_group" == "-1" ]; then
+        ip netns exec $pid_client ip addr add $client_subnet dev $client_interface
+    fi
 
     # configure static route to each group if group_subnet is not -1
-    if [ "$group_subnet" != "-1" ]; then
-        ip netns exec $pid_service ip route add $group_subnet via ${client_subnet%/*}
+    # Different metrics are needed to add multiple default groups.
+    if [ "$client_group" != "-1" ]; then
+        ip netns exec $pid_service ip route add default via ${client_subnet%/*} metric $client_group
     fi
 }
 
@@ -599,8 +610,9 @@ connect_one_measurement() {
     local MeasurementSubnet="$(subnet_router_MEASUREMENT ${CurrentAS} "measurement")"
     local GroupSubnet="$(subnet_router_MEASUREMENT ${CurrentAS} "group")"
 
-    connect_service_interfaces $MeasurementCtnName $MeasurementIntf $MeasurementSubnet \
-        $GroupCtnName $GroupIntf $GroupSubnet $(subnet_group ${CurrentAS})
+    connect_service_interfaces \
+        $MeasurementCtnName $MeasurementIntf $MeasurementSubnet \
+        $GroupCtnName $GroupIntf $GroupSubnet $CurrentAS
 
 }
 
@@ -627,8 +639,9 @@ connect_one_matrix() {
     local MatrixSubnet="$(subnet_router_MATRIX ${CurrentAS} "matrix")"
     local GroupSubnet="$(subnet_router_MATRIX ${CurrentAS} "group")"
 
-    connect_service_interfaces $MatrixCtnName $MatrixIntf $MatrixSubnet \
-        $GroupCtnName $GroupIntf $GroupSubnet $(subnet_group ${CurrentAS})
+    connect_service_interfaces \
+        $MatrixCtnName $MatrixIntf $MatrixSubnet \
+        $GroupCtnName $GroupIntf $GroupSubnet $CurrentAS
 
 }
 
@@ -655,7 +668,8 @@ connect_one_dns() {
     local DNSSubnet="$(subnet_router_DNS ${CurrentAS} "dns-group")"
     local GroupSubnet="$(subnet_router_DNS ${CurrentAS} "group")"
 
-    connect_service_interfaces $DNSCtnName $DNSIntf $DNSSubnet \
-        $GroupCtnName $GroupIntf $GroupSubnet $(subnet_group ${CurrentAS})
+    connect_service_interfaces \
+        $DNSCtnName $DNSIntf $DNSSubnet \
+        $GroupCtnName $GroupIntf $GroupSubnet $CurrentAS
 
 }
