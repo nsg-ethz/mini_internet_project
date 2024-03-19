@@ -9,8 +9,9 @@
 |   use the `-i` flag to select an interface and       |
 |   thus send probes via the corresponding group.      |
 |                                                      |
-|   Example: From group 1 to ZURI-host in group 2:     |
+|   Example: from group 1 to group 2 (router or host)  |
 |                                                      |
-|       traceroute -i group1 ZURI-host.group2          |
+|       traceroute -i group1 cair.group2               |
+|       traceroute -i group1 host.cair.group2          |
 |                                                      |
 +------------------------------------------------------+

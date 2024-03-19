@@ -100,7 +100,7 @@ for ((k = 0; k < GroupNumber; k++)); do
             Delay="${L2HostI[5]}"      # delay
             Buffer="${L2HostI[6]}"     # buffer latency (in ms)
 
-            connect_one_l2_host "${GroupAS}" "${DCName}" "${SWName}" "${HostName}" "${Throughput}" "${Delay}" "${Buffer}"
+            connect_one_l2_host "${GroupAS}" "${DCName}" "${SWName}" "${HostName}" "${Throughput}" "${Delay}" "${Buffer}" > /dev/null
         done
 
         # connect the switch and the gateway router

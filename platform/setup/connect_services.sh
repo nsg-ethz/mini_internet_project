@@ -78,7 +78,7 @@ if [[ "$MeasureRequired" == "True" ]]; then
         -v /etc/timezone:/etc/timezone:ro \
         -v /etc/localtime:/etc/localtime:ro \
         -v \
-        "${DIRECTORY}"/config/measurement_welcoming_message.txt:/etc/motd:rw \
+        "${DIRECTORY}"/config/measurement_welcome_message.txt:/etc/motd:rw \
         --cap-add=NET_ADMIN \
         --net="${SshBridge}" --ip="${SubNetSsh%/*}" \
         -p 2099:22 \

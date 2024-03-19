@@ -78,7 +78,7 @@ for ((k = 0; k < group_numbers; k++)); do
                 -v "${location}"/restart_ospfd.sh:/root/restart_ospfd.sh \
                 -v /etc/timezone:/etc/timezone:ro \
                 -v /etc/localtime:/etc/localtime:ro \
-                -v "${DIRECTORY}"/config/welcoming_message.txt:/etc/motd:ro \
+                -v "${DIRECTORY}"/config/ssh_welcome_message.txt:/etc/motd:ro \
                 --log-opt max-size=1m --log-opt max-file=3 \
                 --network="${ssh_to_grp_bname}" --ip="${subnet_ssh_to_grp%/*}" \
                 -p "$((group_number + 2000)):22" "${DOCKERHUB_USER}/d_ssh" > /dev/null # suppress container id output
