@@ -28,6 +28,11 @@ subnet_host_router() {
 
     echo "${n_grp}"".""$(($n_router + 101))"".0.0/24"
 
+  else
+
+    echo "subnet_host_router: unknown device $device" 1>&2
+    exit 1
+
   fi
 }
 
@@ -82,6 +87,11 @@ subnet_router_router_intern() {
 
     echo "${n_grp}"".0."$((${n_net} + 1))".0/24"
 
+  else
+
+    echo "subnet_router_router_intern: unknown device $device" 1>&2
+    exit 1
+
   fi
 }
 
@@ -103,6 +113,11 @@ subnet_router_router_extern() {
 
     echo "179."${div}"."${mod}".0/24"
 
+  else
+
+      echo "subnet_router_router_extern: unknown device: $device" 1>&2
+      exit 1
+
   fi
 }
 
@@ -120,6 +135,11 @@ subnet_router_IXP() {
   elif [ "${device}" = "bridge" ]; then
 
     echo "180."${n_ixp}".0.0/24"
+
+  else
+
+    echo "subnet_router_IXP: unknown device $device" 1>&2
+    exit 1
 
   fi
 }
@@ -139,6 +159,11 @@ subnet_router_MEASUREMENT() {
 
     echo "${n_grp}"".0.199.0/24"
 
+  else
+
+    echo "subnet_router_MEASUREMENT: unknown device $device" 1>&2
+    exit 1
+
   fi
 }
 
@@ -156,6 +181,11 @@ subnet_router_MATRIX() {
   elif [ "${device}" = "bridge" ]; then
 
     echo "${n_grp}"".0.198.0/24"
+
+  else
+
+    echo "subnet_router_MATRIX: unknown device $device" 1>&2
+    exit 1
 
   fi
 }
@@ -190,6 +220,11 @@ subnet_router_DNS() {
 
     echo "198.0.0.0/24"
 
+  else
+
+    echo "subnet_router_DNS: unknown device $device" 1>&2
+    exit 1
+
   fi
 }
 
@@ -212,6 +247,11 @@ subnet_krill_webserver() {
 
     echo "197.200.0.1/24"
 
+  else
+
+    echo "subnet_krill_webserver: unknown device $device" 1>&2
+    exit 1
+
   fi
 }
 
@@ -233,6 +273,11 @@ subnet_ext_sshContainer() {
   elif [ "${device}" = "docker" ]; then
 
     echo "157.0.0.0/24"
+
+  else
+
+    echo "subnet_ext_sshContainer: unknown device $device" 1>&2
+    exit 1
 
   fi
 }
@@ -272,6 +317,11 @@ subnet_sshContainer_groupContainer() {
   elif [ "${device}" = "docker" ]; then
 
     echo "158."$n_grp".0.0/16"
+
+  else
+
+    echo "subnet_sshContainer_groupContainer: unknown device $device" 1>&2
+    exit 1
 
   fi
 }

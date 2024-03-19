@@ -1,8 +1,6 @@
-FIFA_1   miniinterneteth/d_host DCN   S1    10000   10ms    50ms    10
-UEFA_1   miniinterneteth/d_host DCN   S1    10000   10ms    50ms    20
-FIFA_2   miniinterneteth/d_host DCN   S2    10000   10ms    50ms    10
-UEFA_2   miniinterneteth/d_host DCN   S2    10000   10ms    50ms    20
-FIFA_3   miniinterneteth/d_host	DCN   S3    10000   10ms    50ms    10
-UEFA_3   miniinterneteth/d_host DCN   S3    10000   10ms    50ms    20
-FIFA_4   miniinterneteth/d_host DCS   S4    10000   10ms    50ms    10
-UEFA_4   miniinterneteth/d_host DCS   S4    10000   10ms    50ms    20
+A_AU   miniinterneteth/d_host L2N   S1    100kbit   1ms    50ms    10
+S_AU   miniinterneteth/d_host L2N   S1    100kbit   1ms    50ms    20
+A_UCT  miniinterneteth/d_host L2S   S2    100kbit   1ms    50ms    10
+S_UCT  miniinterneteth/d_host L2S   S2    100kbit   1ms    50ms    20
+A_SU   miniinterneteth/d_host L2S   S3    100kbit   1ms    50ms    10
+S_SU   miniinterneteth/d_host L2S   S3    100kbit   1ms    50ms    20

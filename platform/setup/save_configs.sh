@@ -89,7 +89,7 @@ for ((k=0;k<n_groups;k++)); do
         rcmd="${router_i[3]}"
         l2_name=$(echo $property2 | cut -d ':' -f 1 | cut -f 2 -d '-')
         subnet_router=$(subnet_sshContainer_groupContainer "${group_number}" "${i}" -1  "router")
-        subnet_host=$(subnet_sshContainer_groupContainer "${group_number}" "${i}" -1  "host")
+        subnet_host=$(subnet_sshContainer_groupContainer "${group_number}" "${i}" -1  "L3-host")
         savedir="\${dirname}/$rname"
 
         if [[ ${l2_id[$l2_name]} == 1000000 ]]; then
@@ -144,7 +144,7 @@ for ((k=0;k<n_groups;k++)); do
         switch_l=(${l2_switches[$l]})
         l2_name="${switch_l[0]}"
         sname="${switch_l[1]}"
-        subnet=$(subnet_sshContainer_groupContainer "${group_number}" "${l2_id[$l2_name]}" "${l2_cur[$l2_name]}" "L2")
+        subnet=$(subnet_sshContainer_groupContainer "${group_number}" "${l2_id[$l2_name]}" "${l2_cur[$l2_name]}" "L2-host")
         savedir="\${dirname}/$sname"
 
         echo "echo ${sname}" >> $file_loc
@@ -160,7 +160,7 @@ for ((k=0;k<n_groups;k++)); do
         hname="${host_l[0]}"
         if [[ "$hname" != *VPN* ]];then
             l2_name="${host_l[2]}"
-            subnet=$(subnet_sshContainer_groupContainer "${group_number}" "${l2_id[$l2_name]}" "${l2_cur[$l2_name]}" "L2")
+            subnet=$(subnet_sshContainer_groupContainer "${group_number}" "${l2_id[$l2_name]}" "${l2_cur[$l2_name]}" "L2-host")
             savedir="\${dirname}/${hname}"
 
             echo "echo ${hname}" >> $file_loc

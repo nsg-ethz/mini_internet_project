@@ -1,3 +1,1 @@
-DCN   S1   DCN   S2   10000   10ms    50ms
-DCN   S1   DCN   S3   10000   10ms    50ms
-DCN   S2   DCN   S3   10000   10ms    50ms
+L2S   S2   L2S   S3   100kbit   1ms    50ms

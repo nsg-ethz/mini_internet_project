@@ -88,33 +88,33 @@ transit_as_topo = {
     # connection of AS to X: (AS city, AS role)
     # Example: The connection to the first provider is at Basel, and the AS
     # takes the role of a customer.
-    'provider1': ('MUNI', customer),
-    'provider2': ('BASE', customer),
-    'customer1': ('LYON', provider),
-    'customer2': ('MILA', provider),
+    'provider1': ('CAIR', customer),
+    'provider2': ('ADDI', customer),
+    'customer1': ('LUAN', provider),
+    'customer2': ('CAPE', provider),
     # Peer and IXP.
-    'peer': ('LUGA', peer),
-    'ixp': ('VIEN', peer),
+    'peer': ('NAIR', peer),
+    'ixp': ('ACCR', peer),
 }
 
 tier1_topo = {
     # Tier 1 Ases have no providers, but more peers and two IXPs.
-    'ixp_central': ('ZURI', peer),
-    'ixp': ('ZURI', peer),
+    'ixp_central': ('CAIR', peer),
+    'ixp': ('CAIR', peer),
     # Other Tier 1.
-    'peer1': ('ZURI', peer),
-    'peer2': ('ZURI', peer),
+    'peer1': ('CAIR', peer),
+    'peer2': ('CAIR', peer),
     # Connections to customers.
-    'customer1': ('ZURI', provider),
-    'customer2': ('ZURI', provider),
+    'customer1': ('CAIR', provider),
+    'customer2': ('CAIR', provider),
 }
 
 stub_topo = {
     # Same providers, but IXP and peer. are somewhere else.
-    'provider1': ('ZURI', customer),
-    'provider2': ('ZURI', customer),
-    'peer': ('ZURI', peer),
-    'ixp': ('ZURI', peer),
+    'provider1': ('CAIR', customer),
+    'provider2': ('CAIR', customer),
+    'peer': ('CAIR', peer),
+    'ixp': ('CAIR', peer),
 }
 
 # Same topo, but could be adapted.
