@@ -8,6 +8,7 @@
 |                                                      |
 |       ./goto.sh cair router                          |
 |       ./goto.sh cair host                            |
+|       ./goto.sh l2n  s1                              |
 |       ./goto.sh l2n  a_au                            |
 |                                                      |
 |   Or you can access the public measurement service:  |
