@@ -5,7 +5,7 @@ import time
 from datetime import datetime as dt
 from datetime import timedelta
 from random import shuffle
-from subprocess import Popen
+from subprocess import Popen, DEVNULL
 import traceback
 
 update_frequency_envvar = "UPDATE_FREQUENCY"
@@ -66,7 +66,8 @@ while True:
                 if to_g >= from_g:
                     dst_ip = as_list[to_g]
                     cmd = f"ping -I group_{from_g} {ping_flags} {dst_ip}"
-                    proc_dic[from_g][to_g] = Popen(shlex.split(cmd))
+                    proc_dic[from_g][to_g] = Popen(
+                        shlex.split(cmd), stdout=DEVNULL)
                     # Sleep one millisecond to limit spawn rate of processes.
                     time.sleep(0.001)
 

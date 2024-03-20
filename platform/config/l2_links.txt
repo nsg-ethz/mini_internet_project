@@ -1,1 +1,1 @@
-L2S   S2   L2S   S3   100kbit   1ms    50ms
+L2S   S2   L2S   S3   10mbit   1ms    50ms

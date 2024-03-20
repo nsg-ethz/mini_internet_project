@@ -16,6 +16,8 @@ The documentation is available in the [**wiki**](https://github.com/nsg-ethz/min
 -[ ] Adjust and test the configuration for the new topology using the same tasks as last year.
 
 -[ ] Adjust the matrix based on Laurent's feedback.
+     Allow to disable validity checking.
+     Alex: Need to update webserver, not matrix.
 
 -[ ] Adjust the wiki based on Romain and Laurent's feedback
 
@@ -23,7 +25,7 @@ The documentation is available in the [**wiki**](https://github.com/nsg-ethz/min
     - [ ] more on community list semantics
     - [ ] adjust command examples ,e.g., `neighbor 11.11.11.11`
 
--[ ] Contact sysadmin to open ports.
+-[x] Contact sysadmin to open ports.
 
 -[ ] Launch a medium-sized topology and contact student TAs to solve it.
 
@@ -33,7 +35,7 @@ The documentation is available in the [**wiki**](https://github.com/nsg-ethz/min
 
 -[x] Test launch traceroute and the matrix. I'm not sure I understand the matrix updates.
 
--[ ] Test goto commands, also in stub and tier1.
+-[x] Test goto commands, also in stub and tier1.
 
 -[ ] Is the examples folder of any use nowadays? Maybe just remove it.
 
@@ -46,7 +48,7 @@ The documentation is available in the [**wiki**](https://github.com/nsg-ethz/min
 
 -[ ] Plenty of scripts in /groups are not used anymore. Are they still created? check that.
 
--[ ] Uncomment hijack.
+-[x] Uncomment hijack.
 
 -[ ] VPN?
 

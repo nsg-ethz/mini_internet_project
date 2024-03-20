@@ -151,7 +151,7 @@ for ((j = 0; j < n_groups; j++)); do
                     subnet="$(subnet_host_router "${group_number}" "$i" "host")"
 
                     krill_subject="/C=CH/L=Zurich/O=ETH Zurich/CN=rpki-server.group${group_number}"
-                    krill_san="DNS:rpki-server.group${group_number}, DNS:rpki-server.group${group_number}:3000, DNS:rpki-server.group${group_number}:3080, DNS:host-${rname}.group${group_number}, DNS:localhost, IP:${subnet%/*}, IP:127.0.0.1"
+                    krill_san="DNS:rpki-server.group${group_number}, DNS:rpki-server.group${group_number}:3000, DNS:rpki-server.group${group_number}:3080, DNS:host.${rname,,}.group${group_number}, DNS:localhost, IP:${subnet%/*}, IP:127.0.0.1"
                     krill_group_location="${DIRECTORY}/groups/g${group_number}/krill"
 
                     mkdir -p "${krill_group_location}/data"

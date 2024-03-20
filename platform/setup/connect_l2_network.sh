@@ -110,7 +110,7 @@ for ((k = 0; k < GroupNumber; k++)); do
             DCName="${L2SwitchI[0]}"      # DC name
             SWName="${L2SwitchI[1]}"      # switch name
             RouterName="${L2SwitchI[2]}"  # gateway router name
-            Throughput=10kbit
+            Throughput=10mbit
             Delay=10ms # manually set a default value
             Buffer=50ms # manually set a default value
 

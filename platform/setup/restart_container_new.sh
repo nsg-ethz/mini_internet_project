@@ -411,7 +411,7 @@ _reconnect_one_router() {
         SWName="${L2SwitchI[1]}"      # switch name
         RouterName="${L2SwitchI[2]}"  # gateway router name
         # TODO: specify these values in a config file
-        Throughput=10kbit
+        Throughput=10mbit
         Delay=10ms # manually set a default value
         Buffer=50ms # manually set a default value
 

@@ -102,37 +102,65 @@ get_container_pid() {
     echo "$DOCKER_PID"
 }
 
-# Get a burst size of 10% of throughput over a second.
-compute_burstsize() {  # throughput
+# Get a burst size of 10% of throughput over a second,
+# but at least 10 default MTUs (10 * 1500 bytes)
+compute_burstsize() {  # throughput, mtu (optional, in bytes)
     local input="$1"
-    local numeral=""
-    local string=""
+    local mtu=${2:-1500}  # default MTU in bytes
+    local min_burst=$((80 * mtu))  # 10 times MTU in bits
 
     # Extract the numeral part (digits only)
-    numeral=$(echo "$input" | grep -oE '[0-9]+')
-
-    # Scale the numerical part to 10%.
-    scaled=$((numeral / 10))
+    local bits=$(echo "$input" | grep -oE '[0-9\.]+')
+    local unit=1
 
     # Extract the string part (non-digits)
-    string=$(echo "$input" | grep -oE '[^0-9]+')
+    local suffix=$(echo "$input" | grep -oE '[^0-9\.]+')
 
-    # If necessary, convert the suffix to a suffic allowed by "burst".
-    # tc only allows a few suffixes (nothing, *bit, *bps)
+    # Convert to bits as bash can only to integer arithmetic.
+    # tc only allows a few suffixes (nothing, *bit, *bps) and
+    # only a few prefixes (k, m, g, t, ki, mi, gi, ti).
     # https://man7.org/linux/man-pages/man8/tc.8.html#PARAMETERS
-    # In the first two cases we can keep the suffic, in the last case we need
-    # to convert.
-    case "$string" in
+    case $suffix in
         *bps)
             # convert bytes per second to bits (the allowed suffix).
-            scaled=$((scaled * 8));
-            # replace the suffix bps with bit
-            string="${string%bps}bit";
+            bits=$((8 * bits))
+            ;;&  # fall through
+        # Scale if needed.
+        *kb*)
+            unit=1000
+            ;;
+        *mb*)
+            unit=1000000
+            ;;
+        *gb*)
+            unit=1000000000
+            ;;
+        *tb*)
+            unit=1000000000000
+            ;;
+        *kib*)
+            unit=1024
+            ;;
+        *mib*)
+            unit=1048576
+            ;;
+        *gib*)
+            unit=1073741824
+            ;;
+        *tib*)
+            unit=1099511627776
             ;;
     esac
 
-    # return the result
-    echo "$scaled$string"
+    # Compute 10% of scaled value.
+    burst=$(echo "0.1 * $bits * $unit" | bc)
+
+    # If the scaled value is less than the minimum burst, use the minimum burst.
+    if [ $(echo "$burst < $min_burst" | bc) == "1" ]; then
+        burst=$min_burst
+    fi
+
+    echo $burst
 }
 
 # create a veth pair and connect two interfaces of two containers
@@ -157,7 +185,7 @@ connect_two_interfaces() {
     local delay=$6
     local buffer=$7
 
-    local burst=$(compute_burstsize "$throughput")
+    local burst=$(compute_burstsize $throughput)
 
     # generate unique veth interface names
     local identifier="${container1}_${interface1}_${container2}_${interface2}"
