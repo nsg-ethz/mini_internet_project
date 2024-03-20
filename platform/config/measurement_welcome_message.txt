@@ -1,7 +1,7 @@
 +------------------------------------------------------+
 |                                                      |
 |   Communication Networks 2024  - Routing Project     |
-|                Measurement Service                   |
+|             Public Measurement Service               |
 |                                                      |
 |   From here, you can launch traceroutes via any      |
 |   group AS in the Mini-Internet. Each group is       |
