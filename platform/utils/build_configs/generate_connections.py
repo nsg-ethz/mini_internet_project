@@ -51,7 +51,7 @@ import math
 # If true, stub ASes in the same area try to hijack each others prefixes. Also,
 # add two TA-configured ASes between the stubs and student ASes so that no
 # student AS is directly connected to a malicious AS.
-ENABLE_STUB_HIJACKS = False
+ENABLE_STUB_HIJACKS = True
 
 # Set true to test the topology.
 AUTOCONF_EVERYTHING = True
@@ -117,8 +117,15 @@ stub_topo = {
     'ixp': ('CAIR', peer),
 }
 
-# Same topo, but could be adapted.
-buffer_topo = transit_as_topo
+buffer_topo = {
+    # Looks like transit AS, but we only have a single router.
+    'provider1': ('CAIR', customer),
+    'provider2': ('CAIR', customer),
+    'customer1': ('CAIR', provider),
+    'customer2': ('CAIR', provider),
+    'peer': ('CAIR', peer),
+    'ixp': ('CAIR', peer),
+}
 
 ixp_topo = {
     "as": ("None", peer),
@@ -356,7 +363,7 @@ for as_block in areas:
         # Customers (not for stub ASes).
         # ----------
 
-        if not asn in stub:
+        if asn not in stub:
             customer1 = as_block[first_idx + 2]
             customer2 = as_block[first_idx + 3]
             label = f"provider{asn_pos}"  # 1 or 2.
@@ -365,7 +372,7 @@ for as_block in areas:
 
         # Peers. (Tier 1 peers differently)
         # ------
-        if not asn in tier1:
+        if asn not in tier1:
             # Only for the "left" AS.
             if (idx % 2) == 0:
                 config.append(get_config(asn, "peer", asn_partner, "peer"))
@@ -456,6 +463,6 @@ if ENABLE_STUB_HIJACKS:
             node_towards_victim, node_towards_ixp
         ))
 
-with open('hijacks.txt', 'w') as file:
+with open('./config/hijacks.txt', 'w') as file:
     for hijack in hijacks:
         file.write("\t".join(map(str, hijack)) + "\n")
