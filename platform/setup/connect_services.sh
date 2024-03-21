@@ -207,7 +207,7 @@ for ((k = 0; k < GroupNumber; k++)); do
             # record the destination IP
             if [[ "$RouterService" == "MATRIX_TARGET" ]]; then
                 TargetSubnet="$(subnet_host_router ${GroupAS} ${i} "host")"
-                # echo $GroupAS" "${TargetSubnet%/*} >> "${MatrixConfigDir}"/destination_ips.txt
+                echo $GroupAS" "${TargetSubnet%/*} >> "${MatrixConfigDir}"/destination_ips.txt
             fi
 
             # connect the matrix container to each group
