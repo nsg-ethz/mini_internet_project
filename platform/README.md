@@ -55,3 +55,9 @@ The documentation is available in the [**wiki**](https://github.com/nsg-ethz/min
 -[x] Add ./go-to MEASUREMENT?
 
 -[x] Create a MEASUREMENT Welcome message.
+
+-[ ] Collect all variables in one file for easier config.
+
+-[ ] Add new matrix flags.
+
+-[ ] Ask student TAs to check: downloading configs, L2 stuff, 6in4 tunnel, goto scripts, dns output.
