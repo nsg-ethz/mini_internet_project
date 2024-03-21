@@ -110,7 +110,8 @@ fi
 # start matrix container
 if [[ "$MatrixRequired" == "True" ]]; then
     MatrixFrequency=300 # seconds
-    ConcurrentPings=1000
+    ConcurrentPings=500
+    PIDLIMIT=1500  # Needs to be quite a bit higher than ConcurrentPings
     MatrixConfigDir="${DIRECTORY}"/groups/matrix/
     mkdir -p ${MatrixConfigDir}
 
@@ -119,7 +120,7 @@ if [[ "$MatrixRequired" == "True" ]]; then
     touch "$MatrixConfigDir"/stats.txt
 
     docker run -itd --net='none' --name="MATRIX" --hostname="MATRIX" \
-        --privileged --pids-limit $((ConcurrentPings + 100)) \
+        --privileged --pids-limit $PIDLIMIT \
         --sysctl net.ipv4.icmp_ratelimit=0 \
         --sysctl net.ipv4.ip_forward=0 \
         -v /etc/timezone:/etc/timezone:ro \
@@ -137,11 +138,6 @@ if [[ "$MatrixRequired" == "True" ]]; then
     # cache the container PID
     DOCKER_TO_PID['MATRIX']=$(docker inspect -f '{{.State.Pid}}' MATRIX)
     declare -p DOCKER_TO_PID > ${DIRECTORY}/groups/docker_pid.map
-
-    # TODO: Let's try it without; we should be able to just restart the matrix
-    # If we can't get restarting the matrix to work, use this as a fallback.
-    ## start a tmux session to run ping.py
-    #docker exec MATRIX tmux new -d -s matrix "python3 ping.py"
 else
     echo "MATRIX service is not required"
 fi

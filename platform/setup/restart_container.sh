@@ -718,14 +718,15 @@ _restart_matrix() {
     local GroupNumber=$3
     local MatrixConfigDir="${DIRECTORY}"/groups/matrix/
     local MatrixFrequency=300 # seconds
-    local ConcurrentPings=1000
+    local ConcurrentPings=500
+    local PIDLIMIT=1500  # Needs to be quite a bit higher than ConcurrentPings
 
     # Delete the MATRIX container if it is there.
     docker rm -f "MATRIX"
 
     # Recreate it.
     docker run -itd --net='none' --name="MATRIX" --hostname="MATRIX" \
-        --privileged --pids-limit $((ConcurrentPings + 100)) \
+        --privileged --pids-limit $PIDLIMIT \
         --sysctl net.ipv4.icmp_ratelimit=0 \
         --sysctl net.ipv4.ip_forward=0 \
         -v /etc/timezone:/etc/timezone:ro \
