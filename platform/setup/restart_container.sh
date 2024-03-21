@@ -19,8 +19,9 @@ if (($UID != 0)); then
 fi
 
 # print the usage if not enough arguments are provided
-if [ "$#" -ne 5 ]; then
+if [[ "$#" -ne 5 ]] && [[ "$#" -ne 3 ]]; then
     echo "Usage: $0 <directory> <AS> <Region> <Device> <HasConfig>"
+    echo "       $0 <directory> <docker_user> <service>"
     exit 1
 fi
 
@@ -711,32 +712,98 @@ _restart_one_l2_host() {
 
 }
 
-DIRECTORY=$1
-RestartAS=$2
-RestartRegion=$3     # ZURI/L2
-RestartDevice=$4     # host0/host/router/S1/Matrix/IXP/FIFA_1
-RestartWithConfig=$5 # True or False, used to configure hosts as their network config is reset after restarting
+_restart_matrix() {
+    local Directory=$1
+    local DOCKERHUB_USER=$2
+    local GroupNumber=$3
+    local MatrixConfigDir="${DIRECTORY}"/groups/matrix/
+    local MatrixFrequency=300 # seconds
+    local ConcurrentPings=1000
+
+    # Delete the MATRIX container if it is there.
+    docker rm -f "MATRIX"
+
+    # Recreate it.
+    docker run -itd --net='none' --name="MATRIX" --hostname="MATRIX" \
+        --privileged --pids-limit $((ConcurrentPings + 100)) \
+        --sysctl net.ipv4.icmp_ratelimit=0 \
+        --sysctl net.ipv4.ip_forward=0 \
+        -v /etc/timezone:/etc/timezone:ro \
+        -v /etc/localtime:/etc/localtime:ro \
+        -v "${MatrixConfigDir}"/destination_ips.txt:/home/destination_ips.txt \
+        -v "${MatrixConfigDir}"/connectivity.txt:/home/connectivity.txt \
+        -v "${MatrixConfigDir}"/stats.txt:/home/stats.txt \
+        -e "UPDATE_FREQUENCY=${MatrixFrequency}" \
+        -e "CONCURRENT_PINGS=${ConcurrentPings}" \
+        "${DOCKERHUB_USER}/d_matrix" > /dev/null
+
+    docker pause MATRIX  # wait until connected
+
+    # Re-link the MATRIX to the routers
+    for ((k = 0; k < GroupNumber; k++)); do
+        GroupK=(${ASConfig[$k]})         # group config file array
+        GroupAS="${GroupK[0]}"           # AS number
+        GroupType="${GroupK[1]}"         # IXP/AS
+        GroupRouterConfig="${GroupK[3]}" # L3 router config file
+
+        if [ "${GroupType}" != "IXP" ]; then
+            readarray Routers < "${DIRECTORY}"/config/$GroupRouterConfig
+            RouterNumber=${#Routers[@]}
+            for ((i = 0; i < RouterNumber; i++)); do
+                RouterI=(${Routers[$i]})      # router config file array
+                RouterRegion="${RouterI[0]}"  # region name
+                RouterService="${RouterI[1]}" # measurement/matrix/dns
+                if [[ "$RouterService" == "MATRIX" ]]; then
+                    connect_one_matrix "${GroupAS}" "${RouterRegion}"
+                    echo "Reconnected MATRIX to ${RouterRegion} in ${GroupAS}"
+                fi
+            done
+
+        fi
+    done
+
+    docker unpause MATRIX
+}
+
+
+DIRECTORY=$(readlink -f $1)  # Resolve the full path of the directory
 
 source "${DIRECTORY}"/config/subnet_config.sh
 source "${DIRECTORY}"/setup/_parallel_helper.sh
 source "${DIRECTORY}"/groups/docker_pid.map
 source "${DIRECTORY}"/setup/_connect_utils.sh
-
 readarray ASConfig < "${DIRECTORY}"/config/AS_config.txt
 GroupNumber=${#ASConfig[@]}
 
-# restart a L3 host
-if [[ "${RestartDevice}" == host* ]]; then
-    # is a krill if the container is 1_ZURIhost0
-    _restart_one_l3_host "${RestartAS}" "${RestartRegion}" "${RestartDevice}" "${RestartWithConfig}"
-fi
 
-# restart a router
-if [[ "${RestartDevice}" == router ]]; then
-    _reconnect_one_router "${RestartAS}" "${RestartRegion}" "${RestartWithConfig}"
-fi
+if [[ "$#" -eq 5 ]]; then
+    RestartAS=$2
+    RestartRegion=$3     # ZURI/L2
+    RestartDevice=$4     # host0/host/router/S1/Matrix/IXP/FIFA_1
+    RestartWithConfig=$5 # True or False, used to configure hosts as their network config is reset after restarting
 
-# restart a L2 host
-if [[ "${RestartRegion}" == L2 ]]; then
-    _restart_one_l2_host "${RestartAS}" "${RestartRegion}" "${RestartDevice}" "${RestartWithConfig}"
+    # restart a L3 host
+    if [[ "${RestartDevice}" == host* ]]; then
+        # is a krill if the container is 1_ZURIhost0
+        _restart_one_l3_host "${RestartAS}" "${RestartRegion}" "${RestartDevice}" "${RestartWithConfig}"
+    fi
+
+    # restart a router
+    if [[ "${RestartDevice}" == router ]]; then
+        _reconnect_one_router "${RestartAS}" "${RestartRegion}" "${RestartWithConfig}"
+    fi
+
+    # restart a L2 host
+    if [[ "${RestartRegion}" == L2 ]]; then
+        _restart_one_l2_host "${RestartAS}" "${RestartRegion}" "${RestartDevice}" "${RestartWithConfig}"
+    fi
+else
+    DOCKERHUB_USER=$2
+    RestartService=$3
+
+    if [[ "${RestartService,,}" == "matrix" ]]; then
+        # Shut down the MATRIX (if it is there)
+        _restart_matrix "${DIRECTORY}" "${DOCKERHUB_USER}" "${GroupNumber}"
+    fi
+
 fi

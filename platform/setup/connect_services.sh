@@ -110,6 +110,7 @@ fi
 # start matrix container
 if [[ "$MatrixRequired" == "True" ]]; then
     MatrixFrequency=300 # seconds
+    ConcurrentPings=1000
     MatrixConfigDir="${DIRECTORY}"/groups/matrix/
     mkdir -p ${MatrixConfigDir}
 
@@ -118,7 +119,7 @@ if [[ "$MatrixRequired" == "True" ]]; then
     touch "$MatrixConfigDir"/stats.txt
 
     docker run -itd --net='none' --name="MATRIX" --hostname="MATRIX" \
-        --privileged --pids-limit 500 \
+        --privileged --pids-limit $((ConcurrentPings + 100)) \
         --sysctl net.ipv4.icmp_ratelimit=0 \
         --sysctl net.ipv4.ip_forward=0 \
         -v /etc/timezone:/etc/timezone:ro \
@@ -127,6 +128,7 @@ if [[ "$MatrixRequired" == "True" ]]; then
         -v "${MatrixConfigDir}"/connectivity.txt:/home/connectivity.txt \
         -v "${MatrixConfigDir}"/stats.txt:/home/stats.txt \
         -e "UPDATE_FREQUENCY=${MatrixFrequency}" \
+        -e "CONCURRENT_PINGS=${ConcurrentPings}" \
         "${DOCKERHUB_USER}/d_matrix" > /dev/null
 
     # Pause container to reduce load

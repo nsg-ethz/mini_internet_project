@@ -5,7 +5,8 @@ import time
 from datetime import datetime as dt
 from datetime import timedelta
 from random import shuffle
-from subprocess import Popen, DEVNULL
+from subprocess import Popen, DEVNULL, PIPE
+from concurrent.futures import ProcessPoolExecutor
 import traceback
 
 update_frequency_envvar = "UPDATE_FREQUENCY"
@@ -14,6 +15,23 @@ restart_delay_seconds = 60
 
 ping_flags_envvar = "PING_FLAGS"
 default_ping_flags = "-c 3 -i 0.01"  # Three pings, 10ms interval.
+
+concurrent_pings_envvar = "CONCURRENT_PINGS"
+default_concurrent_pings = 100
+
+def run_ping(cmd):
+    """Runs ping, returns True if success, False if not; or error string."""
+    process = Popen(shlex.split(cmd), stdout=DEVNULL, stderr=PIPE)
+    _, stderr = process.communicate()
+    # Ping returns 0 if it worked, 1 if no packets arrived,
+    # and 2 if there was another error.
+    # https://linux.die.net/man/8/ping
+    if process.returncode == 0:
+        return True
+    elif process.returncode == 1:
+        return False
+    else:
+        return f"Error: {stderr.decode('utf-8')}"
 
 while True:
     try:
@@ -34,55 +52,50 @@ while True:
                 os.getenv(update_frequency_envvar, default_update_frequency_seconds)
             )
         )
+        concurrent_pings = int(
+            os.getenv(concurrent_pings_envvar, default_concurrent_pings))
 
-        # Connectivity dictionnary
+        # Initialize connectivity dictionary
         co_dic = {}
-        # Ping processes dic
-        proc_dic = {}
-
-        # Connectivity dictionnary initializatin
         for from_g in as_list:
             co_dic[from_g] = {}
             for to_g in as_list:
                 co_dic[from_g][to_g] = False
 
-        for asn in as_list:
-            mod = int(asn % 100)
-            div = int(asn / 100)
-            if mod < 10:
-                mod = "0" + str(mod)
-            if div < 10:
-                div = "0" + str(div)
-
         print("Starting the ping measurements.")
         start_ts = dt.utcnow()
 
         # Perform the ping measurements
+        pairs = []
+        jobs = []
+
         for from_g in sorted(as_list.keys()):
-            proc_dic[from_g] = {}
             tmp_to_g = list(as_list.keys())
             shuffle(tmp_to_g)
             for to_g in tmp_to_g:
                 if to_g >= from_g:
                     dst_ip = as_list[to_g]
                     cmd = f"ping -I group_{from_g} {ping_flags} {dst_ip}"
-                    proc_dic[from_g][to_g] = Popen(
-                        shlex.split(cmd), stdout=DEVNULL)
-                    # Sleep one millisecond to limit spawn rate of processes.
-                    time.sleep(0.001)
+                    pairs.append((from_g, to_g))
+                    jobs.append(cmd)
 
-        for from_g in proc_dic:
-            for to_g in proc_dic[from_g]:
-                # Wait for the process to finish
-                proc_dic[from_g][to_g].communicate()
-                # Ping returns 0 if it worked, 1 if no packets arrived,
-                # and 2 if there was another error.
-                # https://linux.die.net/man/8/ping
-                returncode = proc_dic[from_g][to_g].returncode
-                assert returncode < 2, "Ping encountered an error!"
-                ping_worked = returncode == 0
-                co_dic[from_g][to_g] = ping_worked
-                co_dic[to_g][from_g] = ping_worked
+        with ProcessPoolExecutor(max_workers=concurrent_pings) as executor:
+            results = executor.map(run_ping, jobs)
+
+        errors = []
+        for (from_g, to_g), result in zip(pairs, results):
+            if isinstance(result, bool):
+                success = result
+            else:
+                success = False
+                errors.append(result)
+            co_dic[from_g][to_g] = success
+            co_dic[to_g][from_g] = success
+
+        if errors:
+            print("Some ping commands failed:")
+            for error in errors:
+                print(error)
 
         print("Writing stats to file.")
         current_time = dt.utcnow()
