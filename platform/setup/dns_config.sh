@@ -201,16 +201,16 @@ for ((j=0;j<n_groups;j++)); do
             # If we have a container, i.e. host attached, add entry for it.
             if [[ ! -z "${dname}" ]];then
                 subnet1="$(subnet_host_router "${group_number}" "$i" "host")"
-                #subnet2="$(subnet_host_router "${group_number}" "$i" "router")"
+                subnet2="$(subnet_host_router "${group_number}" "$i" "router")"
 
                 if [[ "${property2}" == *"krill"* ]]; then
                     forward_entry "rpki-server.$domain" $subnet1 >> $forward_records
                 fi
                 forward_entry "host.${rname}.$domain" $subnet1 >> $forward_records
-                #forward_entry "${rname}-host.$domain" $subnet2 >> $forward_records
+                forward_entry "${rname}.$domain" $subnet2 >> $forward_records
 
                 reverse_entry "host.${rname}.$domain" $subnet1 >> $reverse_records
-                #reverse_entry "${rname}-host.$domain" $subnet2 >> $reverse_records
+                reverse_entry "${rname}.$domain" $subnet2 >> $reverse_records
             fi
             # If the measurement service is attached here, also add entries.
             if [[ "${property1}" == "MEASUREMENT" ]]; then
