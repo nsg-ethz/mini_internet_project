@@ -18,7 +18,7 @@ MATRIX_FREQUENCY=300  # seconds
 readarray groups < "${DIRECTORY}"/config/AS_config.txt
 group_numbers=${#groups[@]}
 
-# Check if there is a DNS server
+# Check if there is a MATRIX server
 is_matrix=0
 for ((k=0;k<group_numbers;k++)); do
     group_k=(${groups[$k]})
@@ -32,7 +32,7 @@ for ((k=0;k<group_numbers;k++)); do
     fi
 done
 
-# Stop the script if there is no DNS server
+# Stop the script if there is no MATRIX server
 if [[ "$is_matrix" -eq 0 ]]; then
     echo "There is no matrix container, skipping matrix_setup.sh"
 else
