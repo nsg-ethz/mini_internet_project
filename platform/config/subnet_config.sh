@@ -228,33 +228,6 @@ subnet_router_DNS() {
   fi
 }
 
-subnet_krill_webserver() {
-  local n_grp="$1" device="$2"
-
-  if [ "${device}" = "krill" ]; then
-
-    echo "197."${n_grp}".0.1/24"
-
-  elif [ "${device}" = "bridge" ]; then
-
-    echo "197.0.0.0/8"
-
-  elif [ "${device}" = "web" ]; then
-
-    echo "197.100.0.1/24"
-
-  elif  [ "${device}" = "proxy" ]; then
-
-    echo "197.200.0.1/24"
-
-  else
-
-    echo "subnet_krill_webserver: unknown device $device" 1>&2
-    exit 1
-
-  fi
-}
-
 subnet_ext_sshContainer() {
   local n_grp=$1 device="$2"
 

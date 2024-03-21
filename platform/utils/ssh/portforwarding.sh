@@ -1,5 +1,7 @@
 #!/bin/bash
 #
+# DEPRECATED: with the updated docker setup, this should not be needed anymore.
+#
 # enable portforwarding
 # before executing this script make sure to set
 # the following options in  /etc/ssh/sshd_config:
@@ -7,6 +9,8 @@
 #   PasswordAuthentication yes
 #   AllowTcpForwarding yes
 # then restart ssh: service ssh restart
+
+echo "DEPRECATED: this script is no longer needed."
 
 DIRECTORY=$(pwd)
 echo $DIRECTORY

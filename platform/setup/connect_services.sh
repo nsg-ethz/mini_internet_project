@@ -69,7 +69,7 @@ MatrixRequired=$(_check_service_is_required "MATRIX")
 if [[ "$MeasureRequired" == "True" ]]; then
     SubnetDNS="$(subnet_router_DNS -1 "dns-measurement")"
     SubNetSsh="$(subnet_ext_sshContainer -1 "MEASUREMENT")"
-    SshBridge="ssh_to_group"
+    SshBridge="ssh_bridge"
     docker run -itd --dns="${SubnetDNS%/*}" \
         --sysctl net.ipv4.icmp_ratelimit=0 \
         --sysctl net.ipv4.ip_forward=0 \
@@ -80,14 +80,14 @@ if [[ "$MeasureRequired" == "True" ]]; then
         -v \
         "${DIRECTORY}"/config/measurement_welcome_message.txt:/etc/motd:rw \
         --cap-add=NET_ADMIN \
-        --net="${SshBridge}" --ip="${SubNetSsh%/*}" \
-        -p 2099:22 \
+        --network="bridge" -p 2099:22 \
         "${DOCKERHUB_USER}/d_measurement" > /dev/null
 
-    # rename eth0 interface to ssh_in in the ssh container
-    docker exec MEASUREMENT ip link set dev eth0 down
-    docker exec MEASUREMENT ip link set dev eth0 name ssh_in
-    docker exec MEASUREMENT ip link set dev ssh_in up
+    # connect to ssh network and rename interface to ssh in the ssh container
+    docker network connect --ip="${SubNetSsh%/*}" $SshBridge "MEASUREMENT"
+    docker exec MEASUREMENT ip link set dev eth1 down
+    docker exec MEASUREMENT ip link set dev eth1 name ssh
+    docker exec MEASUREMENT ip link set dev ssh up
 
     # cache the container PID
     DOCKER_TO_PID['MEASUREMENT']=$(docker inspect -f '{{.State.Pid}}' MEASUREMENT)
@@ -190,7 +190,7 @@ for ((k = 0; k < GroupNumber; k++)); do
         if [[ "$MeasureRequired" == "True" ]]; then
             PubKey=$(cat "${DIRECTORY}"/groups/g${GroupAS}/id_rsa.pub)
             connect_one_ssh_measurement "${GroupAS}" "${PubKey}"
-            echo "${GroupAS}: connected MEASUREMENT to SSH"
+            # echo "${GroupAS}: connected MEASUREMENT to SSH"
         fi
 
         for ((i = 0; i < RouterNumber; i++)); do
@@ -201,27 +201,29 @@ for ((k = 0; k < GroupNumber; k++)); do
             # connect the measurement container to each group
             if [[ "$RouterService" == "MEASUREMENT" ]]; then
                 connect_one_measurement "${GroupAS}" "${RouterRegion}"
-                echo "${GroupAS}: connected MEASUREMENT to network"
+                # echo "${GroupAS}: connected MEASUREMENT to network"
             fi
 
             # record the destination IP
             if [[ "$RouterService" == "MATRIX_TARGET" ]]; then
                 TargetSubnet="$(subnet_host_router ${GroupAS} ${i} "host")"
-                echo $GroupAS" "${TargetSubnet%/*} >> "${MatrixConfigDir}"/destination_ips.txt
+                # echo $GroupAS" "${TargetSubnet%/*} >> "${MatrixConfigDir}"/destination_ips.txt
             fi
 
             # connect the matrix container to each group
             if [[ "$RouterService" == "MATRIX" ]]; then
                 connect_one_matrix "${GroupAS}" "${RouterRegion}"
-                echo "${GroupAS}: connected MATRIX"
+                # echo "${GroupAS}: connected MATRIX"
             fi
 
             # # connect the dns container to each group
             if [[ "$RouterService" == "DNS" ]]; then
                 connect_one_dns "${GroupAS}" "${RouterRegion}"
-                echo "${GroupAS}: connected DNS"
+                # echo "${GroupAS}: connected DNS"
             fi
         done
+
+        echo "Group ${GroupAS} connected to services."
     fi
 done
 

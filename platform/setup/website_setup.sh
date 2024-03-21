@@ -26,7 +26,7 @@ DOCKERHUB_USER="${2:-miniinterneteth}"
 # You need to specify the hostname of the server and an email for
 # LetsEncrypt to be enabled.
 # UPDATE THOSE VARIABLES. HOSTNAME -> hostname of the server and EMAIL -> empty string (for http)
-HOSTNAME="localhost"
+HOSTNAME="duvel.ethz.ch"
 ACME_MAIL=""
 
 # Hostname and ports for the webserver and krill on the host.
@@ -61,12 +61,6 @@ CONFIGDIR_SERVER='/server/configs'
 
 source "${DIRECTORY}"/config/subnet_config.sh
 source "${DIRECTORY}"/setup/_parallel_helper.sh
-
-# Docker bridge connecting all web containers (PROXY, WEB, KRILL)
-# and subnets for each container in the bridge network.
-WEB_BRIDGE="web_bridge"
-SUBNET_WEB=$(subnet_krill_webserver -1 "web")
-SUBNET_PROXY=$(subnet_krill_webserver -1 "proxy")
 
 # TLS and LetsEncrypt
 if [ ! -z "$ACME_MAIL" ] && [ ! -z "$HOSTNAME" ] && [ "$HOSTNAME" != "localhost" ] ; then
@@ -107,10 +101,8 @@ EOM
 # First start the web container, adding labels for the traefik proxy.
 # We only have one webserver; traffic for any hostname will go to it.
 # NOTE: Can we define all dynamic labels for krill here?
-
 docker run -itd --name="WEB" --cpus=2 \
-    --network="${WEB_BRIDGE}" --ip="${SUBNET_WEB%/*}" \
-    -p 8000:8000 \
+    --network="bridge" -p 8000:8000 \
     --pids-limit 100 \
     -v ${DATADIR}:${DATADIR_SERVER} \
     -v ${CONFIGDIR}:${CONFIGDIR_SERVER} \
@@ -124,11 +116,6 @@ docker run -itd --name="WEB" --cpus=2 \
     --privileged \
     "${DOCKERHUB_USER}/d_webserver" > /dev/null
 
-# rename eth0 to web
-docker exec -it WEB ip link set eth0 down
-docker exec -it WEB ip link set eth0 name web
-docker exec -it WEB ip link set web up
-
 # Next start the proxy
 # Setup based on the following tutorials:
 # https://doc.traefik.io/traefik/user-guides/docker-compose/basic-example/
@@ -138,8 +125,7 @@ docker exec -it WEB ip link set web up
 # The dashboard is then available at http://localhost:8080/dashboard/
 # If anything goes wrong, add "--log.level=DEBUG" to enable logging,
 # and then use "sudo docker logs PROXY" to see the logs.
-docker run -d --name='PROXY' \
-    --network="${WEB_BRIDGE}" --ip="${SUBNET_PROXY%/*}" \
+docker run -d --name='PROXY' --network="bridge" \
     -p ${SERVER_PORT_HTTP}:${SERVER_PORT_HTTP} \
     -p ${SERVER_PORT_HTTPS}:${SERVER_PORT_HTTPS} \
     -p ${PORT_KRILL}:${PORT_KRILL} \
@@ -148,14 +134,9 @@ docker run -d --name='PROXY' \
     --privileged \
     traefik:v2.6 \
     "--providers.docker=True" \
-    "--providers.docker.network=${WEB_BRIDGE}" \
+    "--providers.docker.network=bridge" \
     "--providers.docker.exposedbydefault=false" ${TLSCONF[@]} \
     "--providers.docker.defaultRule=Host(\"${HOSTNAME}\")" \
     "--entrypoints.web.address=:${SERVER_PORT_HTTP}" \
     "--entrypoints.websecure.address=:${SERVER_PORT_HTTPS}" \
     "--entrypoints.krill.address=:${PORT_KRILL}" > /dev/null
-
-# rename eth0 to proxy
-docker exec -it PROXY ip link set eth0 down
-docker exec -it PROXY ip link set eth0 name proxy
-docker exec -it PROXY ip link set proxy up

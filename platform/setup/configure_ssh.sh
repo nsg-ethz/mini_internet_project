@@ -29,6 +29,8 @@ source "${DIRECTORY}"/setup/_connect_utils.sh
 
 # Generate TA key pair
 ssh-keygen -t rsa -b 4096 -C "ta key" -P "" -f "groups/id_rsa" -q
+# We need to distribute the key to the TAs, so we make it readable.
+chmod +r groups/id_rsa
 cp groups/id_rsa.pub groups/authorized_keys
 
 readarray ASConfig < "${DIRECTORY}"/config/AS_config.txt

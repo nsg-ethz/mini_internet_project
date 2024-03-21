@@ -28,9 +28,9 @@ container_list_file="${DIRECTORY}/groups/docker_containers.txt"
 >$container_list_file
 
 # create a docker network to connect all ssh proxy containers
-ssh_to_grp_bname="ssh_to_group"
+ssh_to_grp_bname="ssh_bridge"
 subnet_ssh_to_grp="$(subnet_ext_sshContainer -1 "docker")"
-docker network create --driver bridge --subnet="${subnet_ssh_to_grp}" "${ssh_to_grp_bname}" > /dev/null
+docker network create --driver bridge --internal --subnet="${subnet_ssh_to_grp}" "${ssh_to_grp_bname}" > /dev/null
 
 #create all container
 for ((k = 0; k < group_numbers; k++)); do
@@ -46,10 +46,11 @@ for ((k = 0; k < group_numbers; k++)); do
         declare -a KRILL_CONTAINERS
         declare -a ROUTINATOR_CONTAINERS
 
-        # create a docker network to connect all containers in one group
+        # create a docker network to connect all ssh containers in one group
+        # which later connects them to the measurement container.
         ssh_to_ctn_bname="${group_number}_ssh"
         subnet_ssh_to_ctn="$(subnet_sshContainer_groupContainer "${group_number}" -1 -1 "docker")"
-        docker network create --driver bridge --subnet="${subnet_ssh_to_ctn}" "${ssh_to_ctn_bname}" > /dev/null
+        docker network create --driver bridge --internal --subnet="${subnet_ssh_to_ctn}" "${ssh_to_ctn_bname}" > /dev/null
 
         # echo "Group ${group_number}: creating containers..."
 
@@ -70,7 +71,7 @@ for ((k = 0; k < group_numbers; k++)); do
             subnet_ssh_to_grp="$(subnet_ext_sshContainer "${group_number}" sshContainer)"
             # the interface connecting to the bridge ssh_to_ctn
             subnet_ssh_to_ctn="$(subnet_sshContainer_groupContainer "${group_number}" -1 -1 "sshContainer")"
-            docker run -itd --name="${group_number}""_ssh" \
+            docker run -itd --name="${group_number}_ssh" \
                 --cpus=2 --pids-limit 100 --hostname="g${group_number}-proxy" --cap-add=NET_ADMIN \
                 -v "${location}"/goto.sh:/root/goto.sh \
                 -v "${location}"/save_configs.sh:/root/save_configs.sh \
@@ -80,21 +81,20 @@ for ((k = 0; k < group_numbers; k++)); do
                 -v /etc/localtime:/etc/localtime:ro \
                 -v "${DIRECTORY}"/config/ssh_welcome_message.txt:/etc/motd:ro \
                 --log-opt max-size=1m --log-opt max-file=3 \
-                --network="${ssh_to_grp_bname}" --ip="${subnet_ssh_to_grp%/*}" \
-                -p "$((group_number + 2000)):22" "${DOCKERHUB_USER}/d_ssh" > /dev/null # suppress container id output
+                --network="bridge" -p "$((group_number + 2000)):22" \
+                "${DOCKERHUB_USER}/d_ssh" > /dev/null # suppress container id output
 
-            # rename eth0 interface to ssh_in in the ssh container
-            docker exec "${group_number}"_ssh ip link set dev eth0 down
-            docker exec "${group_number}"_ssh ip link set dev eth0 name ssh_in
-            docker exec "${group_number}"_ssh ip link set dev ssh_in up
-
-            # connect the ssh container to the second bridge
-            docker network connect --ip="${subnet_ssh_to_ctn%/*}" "${ssh_to_ctn_bname}" "${group_number}_ssh" > /dev/null
-
-            # rename eth1 interface to ssh_out in the ssh container
+            # connect to the ssh container network and rename interface
+            docker network connect --ip="${subnet_ssh_to_grp%/*}" "$ssh_to_grp_bname" "${group_number}_ssh"
             docker exec "${group_number}"_ssh ip link set dev eth1 down
-            docker exec "${group_number}"_ssh ip link set dev eth1 name ssh_out
-            docker exec "${group_number}"_ssh ip link set dev ssh_out up
+            docker exec "${group_number}"_ssh ip link set dev eth1 name ssh
+            docker exec "${group_number}"_ssh ip link set dev ssh up
+
+            # connect to the group container network and rename interface
+            docker network connect --ip="${subnet_ssh_to_ctn%/*}" "$ssh_to_ctn_bname" "${group_number}_ssh"
+            docker exec "${group_number}"_ssh ip link set dev eth2 down
+            docker exec "${group_number}"_ssh ip link set dev eth2 name ssh_to_as
+            docker exec "${group_number}"_ssh ip link set dev ssh_to_as up
 
             CONTAINERS+=("${group_number}_ssh")
 
@@ -297,22 +297,9 @@ for ((k = 0; k < group_numbers; k++)); do
                     docker exec "${container_name}" ip link set dev ssh up
 
                     if [[ "${htype}" == *"krill"* ]]; then
-                        # create a docker network to connect krill server, website and proxy
-                        web_bname="web_bridge"
-                        subnet_web_bridge="$(subnet_krill_webserver -1 "bridge")"
-                        docker network create --driver bridge --subnet="${subnet_web_bridge}" "${web_bname}" > /dev/null
-
-                        # connect the krill host to the krill bridge
-                        subnet_krill_host="$(subnet_krill_webserver "${group_number}" "krill")"
-                        docker network connect --ip="${subnet_krill_host%/*}" "${web_bname}" "${container_name}" > /dev/null
-
-                        # rename eth1 interface to krill in the host container
-                        docker exec "${container_name}" ip link set dev eth1 down
-                        docker exec "${container_name}" ip link set dev eth1 name krill
-                        docker exec "${container_name}" ip link set dev krill up
+                        # Connect to the bridge for access via the web proxy.
+                        docker network connect "bridge" "${container_name}"
                     fi
-
-
                     CONTAINERS+=("${container_name}")
                 fi
             done
