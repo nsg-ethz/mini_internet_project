@@ -7,11 +7,9 @@ The documentation is available in the [**wiki**](https://github.com/nsg-ethz/min
 -[x] Fix the website/krill unreachable issue.
 
 -[ ] Finish and test the new restart script for each containers.
+     Alex: I added the MATRIX because I needed to restart it :D
 
--[ ] Check and test the automatic matrix snapshot and config backup.
-     Alex: make it a container/service instead so its easier to use!
-
--[ ] Design this year's topology (Africa).
+-[x] Design this year's topology (Africa).
 
 -[ ] Adjust and test the configuration for the new topology using the same tasks as last year.
 
@@ -27,7 +25,7 @@ The documentation is available in the [**wiki**](https://github.com/nsg-ethz/min
 
 -[x] Contact sysadmin to open ports.
 
--[ ] Launch a medium-sized topology and contact student TAs to solve it.
+-[x] Launch a medium-sized topology and contact student TAs to solve it.
 
 -[ ] Generate student Gitlab repositories.
 
@@ -44,8 +42,6 @@ The documentation is available in the [**wiki**](https://github.com/nsg-ethz/min
 
 -[ ] Test restarting any container.
 
--[ ] Document the ALL option in l3 configs.
-
 -[ ] Plenty of scripts in /groups are not used anymore. Are they still created? check that.
 
 -[x] Uncomment hijack.
@@ -56,8 +52,36 @@ The documentation is available in the [**wiki**](https://github.com/nsg-ethz/min
 
 -[x] Create a MEASUREMENT Welcome message.
 
--[ ] Collect all variables in one file for easier config.
 
--[ ] Add new matrix flags.
+-[x] Ask student TAs to check: downloading configs, L2 stuff, 6in4 tunnel, goto scripts, dns output.
 
--[ ] Ask student TAs to check: downloading configs, L2 stuff, 6in4 tunnel, goto scripts, dns output.
+-[x] Collect all variables in one file for easier config.
+
+-[x] Add new matrix flags.
+
+-[x] Fix saving (some issue with the script?)
+
+### Checklist for the final reboot.
+
+I've done a couple of fixes that won't show up until the final reboot.
+Here's a checklist of things to verify.
+
+-[x] Do router-host interfaces show up in DNS, e.g. run a traceroute from CAIR host in group 10 to host.cape.group10, and see whether the first hop 10.101.0.2 is resolved.
+
+-[x] Is one of the provider/customer links delayed? 25ms vs 2.5ms.
+
+-[x] Check the ./goto script for TA ASes e.g. AS 11; there should not be multiple router entries.
+
+-[x] Check that saving does not throw an error anymore.
+
+### Critical tasks remaining
+
+-[ ] Set up automated snapshots. I think putting it in a container would be best.
+
+-[ ] Fix the hijack (static route might do it).
+
+-[ ] Go over TODOs and FIXMEs and see if anything really important is left.
+
+### Things to do when merging back into the main branch
+
+-[ ] Document the ALL option in l3 configs in the GitHub wiki.

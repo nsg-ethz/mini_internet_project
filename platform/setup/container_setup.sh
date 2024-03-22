@@ -5,8 +5,8 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
-DIRECTORY="$1"
-DOCKERHUB_USER="${2:-thomahol}"
+DIRECTORY=$(readlink -f $1)
+source "${DIRECTORY}"/config/variables.sh
 source "${DIRECTORY}"/config/subnet_config.sh
 source "${DIRECTORY}"/setup/_parallel_helper.sh
 
@@ -82,7 +82,7 @@ for ((k = 0; k < group_numbers; k++)); do
                 -v "${DIRECTORY}"/config/ssh_welcome_message.txt:/etc/motd:ro \
                 --log-opt max-size=1m --log-opt max-file=3 \
                 --network="bridge" -p "$((group_number + 2000)):22" \
-                "${DOCKERHUB_USER}/d_ssh" > /dev/null # suppress container id output
+                "${DOCKERHUB_PREFIX}d_ssh" > /dev/null # suppress container id output
 
             # connect to the ssh container network and rename interface
             docker network connect --ip="${subnet_ssh_to_grp%/*}" "$ssh_to_grp_bname" "${group_number}_ssh"
@@ -126,7 +126,7 @@ for ((k = 0; k < group_numbers; k++)); do
                     -v /etc/localtime:/etc/localtime:ro \
                     --log-opt max-size=1m --log-opt max-file=3 \
                     --network="${ssh_to_ctn_bname}" --ip="${subnet_ssh_switch%/*}" \
-                    "${DOCKERHUB_USER}/d_switch" > /dev/null
+                    "${DOCKERHUB_PREFIX}d_switch" > /dev/null
                 # echo ${group_number}_L2_${l2name}_${sname}
 
                 # rename eth0 interface to ssh in the switch container
@@ -222,7 +222,7 @@ for ((k = 0; k < group_numbers; k++)); do
                         -v /etc/timezone:/etc/timezone:ro \
                         --log-opt max-size=1m --log-opt max-file=3 \
                         --network="${ssh_to_ctn_bname}" --ip="${subnet_ssh_router%/*}" \
-                        "${DOCKERHUB_USER}/d_router" > /dev/null
+                        "${DOCKERHUB_PREFIX}d_router" > /dev/null
 
                     # rename eth0 interface to ssh in the router container
                     docker exec "${group_number}""_""${rname}""router" ip link set dev eth0 down
@@ -325,7 +325,7 @@ for ((k = 0; k < group_numbers; k++)); do
                 -v /etc/localtime:/etc/localtime:ro \
                 -v "${location}"/looking_glass.txt:/home/looking_glass.txt \
                 --log-opt max-size=1m --log-opt max-file=3 \
-                "${DOCKERHUB_USER}/d_ixp" > /dev/null
+                "${DOCKERHUB_PREFIX}d_ixp" > /dev/null
 
             CONTAINERS+=("${group_number}""_IXP")
         fi

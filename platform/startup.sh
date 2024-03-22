@@ -34,7 +34,6 @@ fi
 
 # # TODO: check the directory is platform/
 DIRECTORY=$(cd `dirname $0` && pwd)
-DOCKERHUB_USER="miniinterneteth"
 
 echo "$(date +%Y-%m-%d_%H-%M-%S)"
 
@@ -105,7 +104,7 @@ echo ""
 
 echo "container_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
 echo "container_setup.sh: "
-time ./setup/container_setup.sh "${DIRECTORY}" "${DOCKERHUB_USER}"
+time ./setup/container_setup.sh "${DIRECTORY}"
 
 echo ""
 echo ""
@@ -147,7 +146,7 @@ echo ""
 
 echo "connect_services.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
 echo "connect_services.sh: "
-time ./setup/connect_services.sh "${DIRECTORY}" "${DOCKERHUB_USER}"
+time ./setup/connect_services.sh "${DIRECTORY}"
 
 echo ""
 echo ""
@@ -185,7 +184,7 @@ echo ""
 
 echo "website_setup.sh: "
 echo "website_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
-time ./setup/website_setup.sh "${DIRECTORY}" "${DOCKERHUB_USER}"
+time ./setup/website_setup.sh "${DIRECTORY}"
 
 echo ""
 echo ""

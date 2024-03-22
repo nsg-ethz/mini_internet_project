@@ -142,7 +142,7 @@ for ((k=0;k<n_groups;k++)); do
         switch_l=(${l2_switches[$l]})
         l2_name="${switch_l[0]}"
         sname="${switch_l[1]}"
-        subnet=$(subnet_sshContainer_groupContainer "${group_number}" "${l2_id[$l2_name]}" "${l2_cur[$l2_name]}" "L2-host")
+        subnet=$(subnet_sshContainer_groupContainer "${group_number}" "${l2_id[$l2_name]}" "${l2_cur[$l2_name]}" "switch")
         savedir="\${dirname}/$sname"
 
         echo "echo ${sname}" >> $file_loc

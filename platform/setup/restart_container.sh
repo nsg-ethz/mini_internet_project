@@ -19,11 +19,20 @@ if (($UID != 0)); then
 fi
 
 # print the usage if not enough arguments are provided
-if [[ "$#" -ne 5 ]] && [[ "$#" -ne 3 ]]; then
+if [[ "$#" -ne 5 ]] && [[ "$#" -ne 2 ]]; then
     echo "Usage: $0 <directory> <AS> <Region> <Device> <HasConfig>"
-    echo "       $0 <directory> <docker_user> <service>"
+    echo "       $0 <directory> <service>"
     exit 1
 fi
+
+DIRECTORY=$(readlink -f $1)
+source "${DIRECTORY}"/config/variables.sh
+source "${DIRECTORY}"/config/subnet_config.sh
+source "${DIRECTORY}"/setup/_parallel_helper.sh
+source "${DIRECTORY}"/groups/docker_pid.map
+source "${DIRECTORY}"/setup/_connect_utils.sh
+readarray ASConfig < "${DIRECTORY}"/config/AS_config.txt
+GroupNumber=${#ASConfig[@]}
 
 # return the map from a DC name to a DC id
 _get_dc_name_to_id() {
@@ -713,20 +722,14 @@ _restart_one_l2_host() {
 }
 
 _restart_matrix() {
-    local Directory=$1
-    local DOCKERHUB_USER=$2
-    local GroupNumber=$3
     local MatrixConfigDir="${DIRECTORY}"/groups/matrix/
-    local MatrixFrequency=300 # seconds
-    local ConcurrentPings=500
-    local PIDLIMIT=1500  # Needs to be quite a bit higher than ConcurrentPings
 
     # Delete the MATRIX container if it is there.
     docker rm -f "MATRIX"
 
     # Recreate it.
     docker run -itd --net='none' --name="MATRIX" --hostname="MATRIX" \
-        --privileged --pids-limit $PIDLIMIT \
+        --privileged \
         --sysctl net.ipv4.icmp_ratelimit=0 \
         --sysctl net.ipv4.ip_forward=0 \
         -v /etc/timezone:/etc/timezone:ro \
@@ -734,9 +737,10 @@ _restart_matrix() {
         -v "${MatrixConfigDir}"/destination_ips.txt:/home/destination_ips.txt \
         -v "${MatrixConfigDir}"/connectivity.txt:/home/connectivity.txt \
         -v "${MatrixConfigDir}"/stats.txt:/home/stats.txt \
-        -e "UPDATE_FREQUENCY=${MatrixFrequency}" \
-        -e "CONCURRENT_PINGS=${ConcurrentPings}" \
-        "${DOCKERHUB_USER}/d_matrix" > /dev/null
+        -e "UPDATE_FREQUENCY=${MATRIX_FREQUENCY}" \
+        -e "CONCURRENT_PINGS=${MATRIX_CONCURRENT_PINGS}" \
+        -e "PING_FLAGS=${MATRIX_PING_FLAGS}" \
+        "${DOCKERHUB_PREFIX}d_matrix" > /dev/null
 
     docker pause MATRIX  # wait until connected
 
@@ -767,15 +771,6 @@ _restart_matrix() {
 }
 
 
-DIRECTORY=$(readlink -f $1)  # Resolve the full path of the directory
-
-source "${DIRECTORY}"/config/subnet_config.sh
-source "${DIRECTORY}"/setup/_parallel_helper.sh
-source "${DIRECTORY}"/groups/docker_pid.map
-source "${DIRECTORY}"/setup/_connect_utils.sh
-readarray ASConfig < "${DIRECTORY}"/config/AS_config.txt
-GroupNumber=${#ASConfig[@]}
-
 
 if [[ "$#" -eq 5 ]]; then
     RestartAS=$2
@@ -799,12 +794,11 @@ if [[ "$#" -eq 5 ]]; then
         _restart_one_l2_host "${RestartAS}" "${RestartRegion}" "${RestartDevice}" "${RestartWithConfig}"
     fi
 else
-    DOCKERHUB_USER=$2
-    RestartService=$3
+    RestartService=$2
 
     if [[ "${RestartService,,}" == "matrix" ]]; then
         # Shut down the MATRIX (if it is there)
-        _restart_matrix "${DIRECTORY}" "${DOCKERHUB_USER}" "${GroupNumber}"
+        _restart_matrix
     fi
 
 fi

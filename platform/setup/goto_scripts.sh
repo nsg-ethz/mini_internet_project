@@ -93,7 +93,7 @@ for ((k=0;k<n_groups;k++)); do
 
             # If all_in_one, only add router entry the first time.
             if [[ "$all_in_one" == "true" ]] && [[ $i -gt 0 ]] ; then
-                # Do nothing.
+                : # Do nothing.
             elif [ "${rcmd}" == "vtysh" ]; then
                 #ssh to router vtysh only
                 echo "if [ \"\${location}\" == \"$rname\" ] && [ \"\${device}\" == \""router"\" ]; then" >> "${file_loc}"

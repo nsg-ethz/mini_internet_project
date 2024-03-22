@@ -16,8 +16,8 @@ if (($UID != 0)); then
 fi
 
 # print the usage if not enough arguments are provided
-if [ "$#" -ne 2 ]; then
-    echo "Usage: $0 <directory> <dockerhub_user>"
+if [ "$#" -ne 1 ]; then
+    echo "Usage: $0 <directory>"
     exit 1
 fi
 
@@ -49,9 +49,8 @@ _check_service_is_required() {
     echo $ServiceRequired
 }
 
-DIRECTORY=$1
-DOCKERHUB_USER="${2:-thomahol}"
-
+DIRECTORY=$(readlink -f $1)
+source "${DIRECTORY}"/config/variables.sh
 source "${DIRECTORY}"/config/subnet_config.sh
 source "${DIRECTORY}"/setup/_parallel_helper.sh
 source "${DIRECTORY}"/groups/docker_pid.map
@@ -81,7 +80,7 @@ if [[ "$MeasureRequired" == "True" ]]; then
         "${DIRECTORY}"/config/measurement_welcome_message.txt:/etc/motd:rw \
         --cap-add=NET_ADMIN \
         --network="bridge" -p 2099:22 \
-        "${DOCKERHUB_USER}/d_measurement" > /dev/null
+        "${DOCKERHUB_PREFIX}d_measurement" > /dev/null
 
     # connect to ssh network and rename interface to ssh in the ssh container
     docker network connect --ip="${SubNetSsh%/*}" $SshBridge "MEASUREMENT"
@@ -109,9 +108,6 @@ fi
 
 # start matrix container
 if [[ "$MatrixRequired" == "True" ]]; then
-    MatrixFrequency=300 # seconds
-    ConcurrentPings=500
-    PIDLIMIT=1500  # Needs to be quite a bit higher than ConcurrentPings
     MatrixConfigDir="${DIRECTORY}"/groups/matrix/
     mkdir -p ${MatrixConfigDir}
 
@@ -120,7 +116,7 @@ if [[ "$MatrixRequired" == "True" ]]; then
     touch "$MatrixConfigDir"/stats.txt
 
     docker run -itd --net='none' --name="MATRIX" --hostname="MATRIX" \
-        --privileged --pids-limit $PIDLIMIT \
+        --privileged \
         --sysctl net.ipv4.icmp_ratelimit=0 \
         --sysctl net.ipv4.ip_forward=0 \
         -v /etc/timezone:/etc/timezone:ro \
@@ -128,12 +124,14 @@ if [[ "$MatrixRequired" == "True" ]]; then
         -v "${MatrixConfigDir}"/destination_ips.txt:/home/destination_ips.txt \
         -v "${MatrixConfigDir}"/connectivity.txt:/home/connectivity.txt \
         -v "${MatrixConfigDir}"/stats.txt:/home/stats.txt \
-        -e "UPDATE_FREQUENCY=${MatrixFrequency}" \
-        -e "CONCURRENT_PINGS=${ConcurrentPings}" \
-        "${DOCKERHUB_USER}/d_matrix" > /dev/null
+        -e "UPDATE_FREQUENCY=${MATRIX_FREQUENCY}" \
+        -e "CONCURRENT_PINGS=${MATRIX_CONCURRENT_PINGS}" \
+        -e "PING_FLAGS=${MATRIX_PING_FLAGS}" \
+        "${DOCKERHUB_PREFIX}d_matrix" > /dev/null
 
-    # Pause container to reduce load
-    docker pause MATRIX
+    if $MATRIX_PAUSE_AFTER_START; then
+        docker pause MATRIX
+    fi
 
     # cache the container PID
     DOCKER_TO_PID['MATRIX']=$(docker inspect -f '{{.State.Pid}}' MATRIX)
@@ -150,7 +148,7 @@ if [[ "$DNSRequired" == "True" ]]; then
         --sysctl net.ipv4.ip_forward=0 \
         -v /etc/timezone:/etc/timezone:ro \
         -v /etc/localtime:/etc/localtime:ro \
-        "${DOCKERHUB_USER}/d_dns"
+        "${DOCKERHUB_PREFIX}d_dns"
 
     docker cp "${DIRECTORY}"/groups/dns/group_config DNS:/etc/bind/group_config > /dev/null
     docker cp "${DIRECTORY}"/groups/dns/zones DNS:/etc/bind/zones > /dev/null

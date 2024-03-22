@@ -16,35 +16,8 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
-DIRECTORY="$1"
-DOCKERHUB_USER="${2:-miniinterneteth}"
-
-######################################
-### UPDATE THE FOLLOWING VARIABLES ###
-######################################
-# Hostname and ACME mail for letsencrypt.
-# You need to specify the hostname of the server and an email for
-# LetsEncrypt to be enabled.
-# UPDATE THOSE VARIABLES. HOSTNAME -> hostname of the server and EMAIL -> empty string (for http)
-HOSTNAME="duvel.ethz.ch"
-ACME_MAIL=""
-
-# Hostname and ports for the webserver and krill on the host.
-# (must be publicly available)
-# you can change http and https ports, but letsencrypt won't work, so its not recommended.
-SERVER_PORT_HTTP="80"
-SERVER_PORT_HTTPS="443"
-
-# Use the one you want, make sure to make it reachable from outside.
-PORT_KRILL="3000"
-
-# Put your timezone here.
-TZ="Europe/Zurich"
-######################################
-
-
-# Directories on host.
-DIRECTORY="$1"
+DIRECTORY=$(readlink -f $1)
+source "${DIRECTORY}"/config/variables.sh
 
 # Source directories.
 DATADIR="$(pwd ${DIRECTORY})/groups"
@@ -63,13 +36,13 @@ source "${DIRECTORY}"/config/subnet_config.sh
 source "${DIRECTORY}"/setup/_parallel_helper.sh
 
 # TLS and LetsEncrypt
-if [ ! -z "$ACME_MAIL" ] && [ ! -z "$HOSTNAME" ] && [ "$HOSTNAME" != "localhost" ] ; then
+if [ ! -z "$WEBSERVER_ACME_MAIL" ] && [ ! -z "$WEBSERVER_HOSTNAME" ] && [ "$WEBSERVER_HOSTNAME" != "localhost" ] ; then
     IFS=" " read -ra TLSCONF <<< "\
     --entrypoints.web.http.redirections.entrypoint.to=websecure \
     --entrypoints.web.http.redirections.entrypoint.scheme=https \
     --entrypoints.web.http.redirections.entrypoint.permanent=true \
     --certificatesresolvers.project_resolver.acme.tlschallenge=true \
-    --certificatesresolvers.project_resolver.acme.email=${ACME_MAIL} \
+    --certificatesresolvers.project_resolver.acme.email=${WEBSERVER_ACME_MAIL} \
     --certificatesresolvers.project_resolver.acme.storage=/letsencrypt/acme.json \
     --entrypoints.websecure.http.tls.certresolver=project_resolver \
     --entrypoints.krill.http.tls.certresolver=project_resolver"
@@ -90,7 +63,7 @@ LOCATIONS = {
     "matrix": "${DATADIR_SERVER}/matrix/connectivity.txt",
     "matrix_stats": "${DATADIR_SERVER}/matrix/stats.txt",
 }
-KRILL_URL="${KRILL_SCHEME}://{hostname}:${PORT_KRILL}/index.html"
+KRILL_URL="${KRILL_SCHEME}://{hostname}:${WEBSERVER_PORT_KRILL}/index.html"
 BASIC_AUTH_USERNAME = 'admin'
 BASIC_AUTH_PASSWORD = 'admin'
 BACKGROUND_WORKERS = True
@@ -108,13 +81,13 @@ docker run -itd --name="WEB" --cpus=2 \
     -v ${CONFIGDIR}:${CONFIGDIR_SERVER} \
     -v ${CONFIGFILE}:/server/config.py \
     -e SERVER_CONFIG=/server/config.py \
-    -e TZ=${TZ} \
+    -e TZ=${WEBSERVER_TZ} \
     -l traefik.enable=true \
     -l traefik.http.routers.web.entrypoints=web \
     -l traefik.http.routers.websecure.entrypoints=websecure \
     --hostname="web" \
     --privileged \
-    "${DOCKERHUB_USER}/d_webserver" > /dev/null
+    "${DOCKERHUB_PREFIX}d_webserver" > /dev/null
 
 # Next start the proxy
 # Setup based on the following tutorials:
@@ -126,9 +99,9 @@ docker run -itd --name="WEB" --cpus=2 \
 # If anything goes wrong, add "--log.level=DEBUG" to enable logging,
 # and then use "sudo docker logs PROXY" to see the logs.
 docker run -d --name='PROXY' --network="bridge" \
-    -p ${SERVER_PORT_HTTP}:${SERVER_PORT_HTTP} \
-    -p ${SERVER_PORT_HTTPS}:${SERVER_PORT_HTTPS} \
-    -p ${PORT_KRILL}:${PORT_KRILL} \
+    -p ${WEBSERVER_PORT_HTTP}:${WEBSERVER_PORT_HTTP} \
+    -p ${WEBSERVER_PORT_HTTPS}:${WEBSERVER_PORT_HTTPS} \
+    -p ${WEBSERVER_PORT_KRILL}:${WEBSERVER_PORT_KRILL} \
     -v "/var/run/docker.sock:/var/run/docker.sock:ro" \
     -v ${LETSENCRYPT}:/letsencrypt \
     --privileged \
@@ -136,7 +109,7 @@ docker run -d --name='PROXY' --network="bridge" \
     "--providers.docker=True" \
     "--providers.docker.network=bridge" \
     "--providers.docker.exposedbydefault=false" ${TLSCONF[@]} \
-    "--providers.docker.defaultRule=Host(\"${HOSTNAME}\")" \
-    "--entrypoints.web.address=:${SERVER_PORT_HTTP}" \
-    "--entrypoints.websecure.address=:${SERVER_PORT_HTTPS}" \
-    "--entrypoints.krill.address=:${PORT_KRILL}" > /dev/null
+    "--providers.docker.defaultRule=Host(\"${WEBSERVER_HOSTNAME}\")" \
+    "--entrypoints.web.address=:${WEBSERVER_PORT_HTTP}" \
+    "--entrypoints.websecure.address=:${WEBSERVER_PORT_HTTPS}" \
+    "--entrypoints.krill.address=:${WEBSERVER_PORT_KRILL}" > /dev/null
