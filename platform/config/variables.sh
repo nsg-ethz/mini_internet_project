@@ -54,5 +54,28 @@ MATRIX_PING_FLAGS="-c 3 -i 0.01"  # Three pings, 10ms interval.
 MATRIX_PAUSE_AFTER_START=false
 
 # =============================================================================
-# Snapshots: TODO
+# History collector.
 # =============================================================================
+
+#output_dir="output"
+#matrix_dir="/home/alex/mini_internet_project/platform/groups/matrix"
+
+HISTORY_UPDATE_FREQUENCY=120  # In seconds
+
+# Timeout for ./save_configs.sh
+HISTORY_TIMEOUT="300s"
+
+# Username and email that will show up on the commit.
+HISTORY_GIT_USER="Mini-Internet History"
+HISTORY_GIT_EMAIL="nsg@ethz.ch"
+
+# URL of the git repository to push the snapshots to; should be accessible.
+# For example, create a gitlab access token and use it in the URL.
+# The token needs to have write access to the repository.
+# HISTORY_GIT_URL="https://gitlab-ci-token:<TOKEN HERE>@gitlab.ethz.ch/nsg/lectures/lec_commnet/projects/2024/routing_project/test_history.git"
+HISTORY_GIT_URL="https://gitlab-ci-token:MH-jPMMjS_az8FqyiSBV@gitlab.ethz.ch/nsg/lectures/lec_commnet/projects/2024/routing_project/test_history.git"
+HISTORY_GIT_BRANCH="main"
+
+# Whether to pause the matrix container after starting it.
+# Can reduce disk usage when the mini internet is not used immediately.
+HISTORY_PAUSE_AFTER_START=false

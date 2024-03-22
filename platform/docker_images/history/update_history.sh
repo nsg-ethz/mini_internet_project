@@ -1,0 +1,128 @@
+#!/bin/bash
+
+if [ "$#" -lt 5 ]; then
+    echo "Usage: $0 <output_directory> <matrix_directory> <timeout> <git_user> <git_mail> <git_url> <git_branch>"
+    exit 1
+fi
+
+output_dir=$(readlink -f $1)
+matrix_dir=$(readlink -f $2)
+timeout=$3
+git_user=$4
+git_mail=$5
+git_url=$6
+git_branch=$7
+
+
+
+
+# =============================================================================
+# Fetch all configs from all *_ssh containers.
+# =============================================================================
+
+fetch_all_configs() {  # Output directory, [timeout]
+    if [ "$#" -lt 1 ]; then
+        echo "Usage: $0 <output_directory> [timeout=300s]"
+        exit 1
+    fi
+    local output_dir=$(readlink -f $1)
+    local timeout=${2:-"300s"}
+
+    # Fetch all *_ssh containers.
+    readarray -t ssh_containers < <(docker ps --format '{{.Names}}' | grep '_ssh$')
+
+    echo "Fetching configs from ${#ssh_containers[@]} ssh containers."
+    for container in "${ssh_containers[@]}"; do
+        group=${container%_ssh}
+        group_output_dir="${output_dir}/g${group}"
+        fetch_config $group_output_dir $container $timeout &
+    done
+    wait
+}
+
+fetch_config() {  # Group output directory, container name, timeout
+    local output_dir=$1
+    local container=$2
+    local timeout=$3
+    # Get a fixed suffix to identify the correct config dump.
+    local suffix=$(uuidgen)
+
+    mkdir -p $output_dir
+
+    # Dump config.
+    timeout $timeout docker exec -t $container ./root/save_configs.sh $suffix > /dev/null
+
+    # Copy files
+    docker cp "${container}:/configs_${suffix}/." $output_dir > /dev/null
+
+    # Clean up files in container.
+    docker exec $container rm -rf /configs_${suffix} /configs_${suffix}.tar.gz > /dev/null
+}
+
+
+# =============================================================================
+# Prepare output directory, fetch history, commit; push if remote exists.
+# =============================================================================
+
+update_history() {
+    local output_dir=$(readlink -f $1)
+    local matrix_dir=$(readlink -f $2)
+    local timeout=$3
+    local git_user=$4
+    local git_mail=$5
+    local git_url=${6:-""}
+    local git_branch=${7:-"main"}
+
+    # Get git directory ready and cd into it.
+    {
+        if [ -d $output_dir/.git ]; then
+            cd $output_dir
+            git checkout -b $git_branch
+            if [ -n "$git_url" ]; then
+                # Update remote url (or set up new remote).
+                git remote set-url origin $git_url || git remote add origin $git_url
+                # Set upstream.
+                git fetch origin $git_branch
+                git branch -u origin/$git_branch
+            fi
+
+            # Try to pull latest changes; ignore errors.
+            git pull --rebase -X theirs
+            git push
+        elif [ -n "$git_url" ]; then
+            git clone $git_url $output_dir
+            cd $output_dir
+            git checkout -b $git_branch
+        else
+            # Initialize empty git repository.
+            mkdir -p $output_dir
+            cd $output_dir
+            git init
+            git checkout -b $git_branch
+        fi
+    }  > /dev/null 2>&1
+
+    mkdir -p configs
+    mkdir -p matrix
+
+    # Copy the matrix status.
+    cp -r "${matrix_dir}/." matrix
+
+    # Fetch all configs.
+    fetch_all_configs configs $timeout
+
+    # Commit and push; ignore erros if there is nothing to do.
+    {
+        git config user.name "$git_user"
+        git config user.email "$git_mail"
+        git add configs matrix
+        git commit -m "Update configs and matrix state."
+        # Try to push.
+        git push
+    } > /dev/null 2>&1
+}
+
+
+update_history \
+$output_dir $matrix_dir $timeout \
+$git_user $git_mail $git_remote $git_branch

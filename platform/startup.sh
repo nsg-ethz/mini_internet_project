@@ -196,6 +196,13 @@ time ./groups/rpki/webserver_links.sh
 echo ""
 echo ""
 
+echo "history_setup.sh: "
+echo "history_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
+time ./setup/history_setup.sh "${DIRECTORY}"
+
+echo ""
+echo ""
+
 # reload dns server config
 if [ -n "$(docker ps | grep "DNS")" ]; then
     # docker exec -d DNS service bind9 restart
