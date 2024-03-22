@@ -60,8 +60,6 @@ for ((k = 0; k < GroupNumber; k++)); do
         GroupSSHContainer="${GroupAS}_ssh"
         ssh-keygen -t rsa -b 4096 -C "internal key group ${GroupAS}" -P "" -f "groups/g${GroupAS}/id_rsa" -q
 
-        # only allow vtysh command in router container
-        echo 'command="vtysh" '$(cat "${GroupDirectory}"/id_rsa.pub) > "${GroupDirectory}"/id_rsa_command.pub
         docker cp "${GroupDirectory}"/id_rsa "${GroupAS}"_ssh:/root/.ssh/id_rsa > /dev/null
         docker cp "${GroupDirectory}"/id_rsa.pub "${GroupAS}"_ssh:/root/.ssh/id_rsa.pub > /dev/null
 
@@ -86,11 +84,7 @@ for ((k = 0; k < GroupNumber; k++)); do
             RouterContainer="${GroupAS}_${RouterRegion}router"
             # for all-in-one AS, this could copy the same router multiple times
             # but in general the overhead should be small
-            if [ "${RouterCommand}" == "vtysh" ]; then
-                docker cp "${GroupDirectory}"/id_rsa_command.pub "${RouterContainer}:/root/.ssh/authorized_keys" > /dev/null
-            else
-                docker cp "${GroupDirectory}"/id_rsa.pub "${RouterContainer}:/root/.ssh/authorized_keys" > /dev/null
-            fi
+            docker cp "${GroupDirectory}"/id_rsa.pub "${RouterContainer}:/root/.ssh/authorized_keys" > /dev/null
 
             # copy the public key to the L3 host container
             HostSuffix=""

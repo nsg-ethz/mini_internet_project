@@ -95,10 +95,10 @@ for ((k=0;k<n_groups;k++)); do
             if [[ "$all_in_one" == "true" ]] && [[ $i -gt 0 ]] ; then
                 # Do nothing.
             elif [ "${rcmd}" == "vtysh" ]; then
-                #ssh to router vtysh
+                #ssh to router vtysh only
                 echo "if [ \"\${location}\" == \"$rname\" ] && [ \"\${device}\" == \""router"\" ]; then" >> "${file_loc}"
                 echo "  subnet=""$(subnet_sshContainer_groupContainer "${group_number}" "${i}" -1  "router")" >> "${file_loc}"
-                echo "  exec ssh -t -o StrictHostKeyChecking=no root@\"\${subnet%???}\"" >> "${file_loc}"
+                echo "  exec ssh -t -o StrictHostKeyChecking=no root@\"\${subnet%???}\" vtysh" >> "${file_loc}"
                 echo "fi" >> "${file_loc}"
             else
                 #ssh to router vtysh
