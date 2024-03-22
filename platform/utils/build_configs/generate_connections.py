@@ -139,20 +139,20 @@ ixp_topo = {
 
 def get_link(role1, role2):
     """Here, you can define the link properties between neighbors."""
-    return default_link
+    #return default_link
     # Alternative:
     # In this version, we slow down the link to the provider in the other
     # column, e.g. between 1 and 3, and between 2 and 4; but not the links in
     # the same, e.g. 1 and 4, and 2 and 3.
     #
-    # nodes = set([role1, role2])
-    # delayed = [
-    #     # "left" ASes
-    #     {'provider1', 'customer2'},
-    #     # "right" ASes
-    #     {'provider2', 'customer1'},
-    # ]
-    # return delay_link if nodes in delayed else default_link
+    nodes = set([role1, role2])
+    delayed = [
+        # "left" ASes
+        {'provider1', 'customer2'},
+        # "right" ASes
+        {'provider2', 'customer1'},
+    ]
+    return delay_link if nodes in delayed else default_link
 
 
 # DONE. You should not need to change anything below this line.
