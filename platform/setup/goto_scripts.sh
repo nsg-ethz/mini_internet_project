@@ -91,7 +91,10 @@ for ((k=0;k<n_groups;k++)); do
                 echo "fi" >> "${file_loc}"
             fi
 
-            if [ "${rcmd}" == "vtysh" ]; then
+            # If all_in_one, only add router entry the first time.
+            if [[ "$all_in_one" == "true" ]] && [[ $i -gt 0 ]] ; then
+                # Do nothing.
+            elif [ "${rcmd}" == "vtysh" ]; then
                 #ssh to router vtysh
                 echo "if [ \"\${location}\" == \"$rname\" ] && [ \"\${device}\" == \""router"\" ]; then" >> "${file_loc}"
                 echo "  subnet=""$(subnet_sshContainer_groupContainer "${group_number}" "${i}" -1  "router")" >> "${file_loc}"
