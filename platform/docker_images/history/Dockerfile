@@ -6,6 +6,7 @@ RUN apk add --no-cache python3 bash uuidgen git
 
 # Autoconfirm new git hosts
 RUN git config --global core.sshCommand "ssh -o StrictHostKeyChecking=no"
+RUN git config --global init.defaultBranch main
 
 # Copy files
 COPY update_history.py /home/update_history.py

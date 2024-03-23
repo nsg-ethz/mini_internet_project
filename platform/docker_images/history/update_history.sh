@@ -1,20 +1,5 @@
 #!/bin/bash
 
-if [ "$#" -lt 5 ]; then
-    echo "Usage: $0 <output_directory> <matrix_directory> <timeout> <git_user> <git_mail> <git_url> <git_branch>"
-    exit 1
-fi
-
-output_dir=$(readlink -f $1)
-matrix_dir=$(readlink -f $2)
-timeout=$3
-git_user=$4
-git_mail=$5
-git_url=$6
-git_branch=$7
-
-
-
 
 # =============================================================================
 # Fetch all configs from all *_ssh containers.
@@ -70,37 +55,61 @@ update_history() {
     local timeout=$3
     local git_user=$4
     local git_mail=$5
-    local git_url=${6:-""}
-    local git_branch=${7:-"main"}
+    local git_url=$6
+    local git_branch=$7
+    local forget_binaries=$8
 
     # Get git directory ready and cd into it.
-    {
-        if [ -d $output_dir/.git ]; then
-            cd $output_dir
-            git checkout -b $git_branch
-            if [ -n "$git_url" ]; then
-                # Update remote url (or set up new remote).
-                git remote set-url origin $git_url || git remote add origin $git_url
-                # Set upstream.
-                git fetch origin $git_branch
+    if [ -d $output_dir/.git ]; then
+        echo "Directory $output_dir is already a git repository."
+        cd $output_dir
+        git switch -c $git_branch > /dev/null 2>&1 || git switch $git_branch
+        if [ -n "$git_url" ]; then
+            # Update remote url (or set up new remote).
+            git remote set-url origin $git_url || git remote add origin $git_url
+            # Set upstream.
+            if git fetch origin $git_branch > /dev/null 2>&1 ; then
+                # Branch exists.
                 git branch -u origin/$git_branch
+            else
+                # Branch does not exist.
+                git push --set-upstream origin $git_branch
             fi
-
-            # Try to pull latest changes; ignore errors.
-            git pull --rebase -X theirs
-            git push
-        elif [ -n "$git_url" ]; then
+        fi
+        # Ensure we are up-to-date.
+        git pull --rebase -X theirs
+        git push
+    elif [ -n "$git_url" ]; then
+        if git clone -b $git_branch $git_url $output_dir ; then
+            # Remote branch exists, we are ready.
+            cd $output_dir
+        else
+            # Clone and set up new branch.
             git clone $git_url $output_dir
             cd $output_dir
-            git checkout -b $git_branch
-        else
-            # Initialize empty git repository.
-            mkdir -p $output_dir
-            cd $output_dir
-            git init
-            git checkout -b $git_branch
+            git switch -c $git_branch
+            git push --set-upstream origin $git_branch
         fi
-    }  > /dev/null 2>&1
+    else
+        echo "Initializing new git repository in $output_dir."
+        # Initialize empty git repository.
+        mkdir -p $output_dir
+        cd $output_dir
+        git init
+        git branch -m $git_branch
+    fi
+    # If the update was interrupted, there may be some changes left.
+    # Clean up the working directory.
+    git reset --hard HEAD
+
+    # Git repository is ready!
+
+    # Before we add new files, remove old versions of switch.db and rpki.cache.
+    if [ "$forget_binaries" = "true" ]; then
+        echo "Remove old versions of switch.db and *.rpki_cache"
+        FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch --index-filter \
+        'git rm --cached --ignore-unmatch **/switch.db **/*.rpki_cache >/dev/null' HEAD
+    fi
 
     mkdir -p configs
     mkdir -p matrix
@@ -111,18 +120,40 @@ update_history() {
     # Fetch all configs.
     fetch_all_configs configs $timeout
 
-    # Commit and push; ignore erros if there is nothing to do.
-    {
-        git config user.name "$git_user"
-        git config user.email "$git_mail"
-        git add configs matrix
-        git commit -m "Update configs and matrix state."
-        # Try to push.
-        git push
-    } > /dev/null 2>&1
+    # Add changes.
+    git add configs matrix
+
+    # Commit.
+    git config user.name "$git_user"
+    git config user.email "$git_mail"
+    git commit -m "Update configs and matrix state."
+
+    # Try to push. First check if we _can_ push (have remote etc.)
+    if  git push --force-with-lease --dry-run > /dev/null 2>&1; then
+        git push --force-with-lease
+    else
+        echo "No remote set up, not pushing."
+    fi
 }
 
+# =============================================================================
+# Run the script.
+# =============================================================================
+
+if [ "$#" -lt 5 ]; then
+    echo "Usage: $0 <output_directory> <matrix_directory> <timeout> <git_user> <git_mail> <git_url> <git_branch>"
+    exit 1
+fi
+
+output_dir=$(readlink -f $1)
+matrix_dir=$(readlink -f $2)
+timeout=$3
+git_user=$4
+git_mail=$5
+git_url=$6
+git_branch=$7
+forget_binaries=$8
 
 update_history \
 "$output_dir" "$matrix_dir" "$timeout" \
-"$git_user" "$git_mail" "$git_remote" "$git_branch"
+"$git_user" "$git_mail" "$git_url" "$git_branch" "$forget_binaries"

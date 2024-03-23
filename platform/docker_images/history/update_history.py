@@ -27,6 +27,7 @@ argument_defaults = {
     "GIT_EMAIL": "mini@internet.com",
     "GIT_URL": "",
     "GIT_BRANCH": "main",
+    "FORGET_BINARIES": "true",
 }
 
 while True:
@@ -47,6 +48,7 @@ while True:
 
     Path(args["OUTPUT_DIR"]).mkdir(parents=True, exist_ok=True)
     assert Path(args["MATRIX_DIR"]).is_dir()
+    assert args["FORGET_BINARIES"] in ["true", "false"]
 
     if (next_update is None) or (dt.now() > next_update):
         last_update = last_check = dt.now()
