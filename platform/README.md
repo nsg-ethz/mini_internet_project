@@ -11,17 +11,18 @@ The documentation is available in the [**wiki**](https://github.com/nsg-ethz/min
 
 -[x] Design this year's topology (Africa).
 
--[ ] Adjust and test the configuration for the new topology using the same tasks as last year.
+-[x] Adjust and test the configuration for the new topology using the same tasks as last year.
 
 -[ ] Adjust the matrix based on Laurent's feedback.
      Allow to disable validity checking.
      Alex: Need to update webserver, not matrix.
+     Not sure if reallt needed.
 
--[ ] Adjust the wiki based on Romain and Laurent's feedback
+-[x] Adjust the wiki based on Romain and Laurent's feedback
 
-    - [ ] mention `advertised-route` in the wiki
-    - [ ] more on community list semantics
-    - [ ] adjust command examples ,e.g., `neighbor 11.11.11.11`
+    - [x] mention `advertised-route` in the wiki
+    - [x] more on community list semantics
+    - [x] adjust command examples ,e.g., `neighbor 11.11.11.11`
 
 -[x] Contact sysadmin to open ports.
 
@@ -76,12 +77,15 @@ Here's a checklist of things to verify.
 
 ### Critical tasks remaining
 
--[ ] Set up automated snapshots. I think putting it in a container would be best.
+-[x] Set up automated snapshots. I think putting it in a container would be best.
 
--[ ] Fix the hijack (static route might do it).
+-[x] Fix the hijack (other topology was needed).
 
--[ ] Go over TODOs and FIXMEs and see if anything really important is left.
+-[x] Go over TODOs and FIXMEs and see if anything really important is left.
+     Yu checked, they can wait until we merge the branch back.
 
 ### Things to do when merging back into the main branch
 
 -[ ] Document the ALL option in l3 configs in the GitHub wiki.
+
+-[ ] Address all remaining TODOs and FIXMEs.

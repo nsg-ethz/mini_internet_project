@@ -17,7 +17,7 @@ DOCKERHUB_PREFIX="miniinterneteth/"
 # LetsEncrypt to be enabled.
 # UPDATE THOSE VARIABLES. WEBSERVER_HOSTNAME -> hostname of the server and EMAIL -> empty string (for http)
 WEBSERVER_HOSTNAME="duvel.ethz.ch"
-WEBSERVER_ACME_MAIL=""
+WEBSERVER_ACME_MAIL="nsg@ethz.ch"
 # Hostname and ports for the webserver and krill on the host.
 # (must be publicly available)
 # you can change http and https ports, but letsencrypt won't work, so its not recommended.

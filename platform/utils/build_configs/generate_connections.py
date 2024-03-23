@@ -34,6 +34,12 @@ You can disable the stub hijacks by setting ENABLE_STUB_HIJACKS to False.
 If you disable the hijacks, there will also be no buffer ASes, and each area
 only has an overhead of 4 ASes (2 Tier 1, 2 stub).
 
+!IMPORTANT!
+For the stub hijack to work properly, there are some conditions on the network
+topology: conrerely, the routers connected to the IXP and peer **must not** be
+on the path between MEASURMENT and any provider or the measurement target.
+Otherwise, unintended traffic will get blackholed.
+
 Important to consider: the config file configures _both_ ends of the connection,
 so we need to ensure that we only have one config line for each two endpoints.
 Concretely, we define config only for providers, not for customers, and only
@@ -69,7 +75,7 @@ BUFFER_ADVERTISES_ALL_VIA_IXP = True
 # Size of the topology.
 # ---------------------
 
-AREAS = 7
+AREAS = 6
 CONFIGURABLE_PER_AREA = 8  # Number of ASes that can be configured by students.
 FIRST_IXP = 140
 
@@ -81,7 +87,7 @@ skip_groups = [
 ]  # 127 is a reserved IP range, cannot use as AS prefix.
 do_not_hijack = [
     1,
-]  # Hosts krill, so we need it reachable.
+]  # AS 1 hosts krill, so we need it reachable.
 
 default_link = ("1mbit", "2.5ms", "50ms")  # throughput, delay, buffer,
 delay_link = ("1mbit", "25ms ", "50ms")  # as above; not used by default
@@ -94,11 +100,11 @@ transit_as_topo = {
     # Example: The connection to the first provider is at Basel, and the AS
     # takes the role of a customer.
     "provider1": ("CAIR", customer),
-    "provider2": ("ADDI", customer),
+    "provider2": ("KHAR", customer),
     "customer1": ("LUAN", provider),
     "customer2": ("CAPE", provider),
     # Peer and IXP.
-    "peer": ("NAIR", peer),
+    "peer": ("ADDI", peer),
     "ixp": ("ACCR", peer),
 }
 
@@ -114,7 +120,8 @@ tier1_topo = {
     "customer2": ("CAIR", provider),
 }
 
-stub_topo = {
+# We use a minimal stub topo without hijacks, and the transit one with hijacks.
+stub_topo = transit_as_topo if ENABLE_STUB_HIJACKS else {
     # Same providers, but IXP and peer. are somewhere else.
     "provider1": ("CAIR", customer),
     "provider2": ("CAIR", customer),
@@ -135,7 +142,6 @@ buffer_topo = {
 ixp_topo = {
     "as": ("None", peer),
 }
-
 
 def get_link(role1, role2):
     """Here, you can define the link properties between neighbors."""
@@ -164,6 +170,7 @@ def get_link(role1, role2):
 
 # Compute the different areas and IXPs.
 # Ensure areas start at "nice" numbers, i.e. 1, 11, 21, etc.
+assert AREAS >= 2, "Need at least two areas."
 assert CONFIGURABLE_PER_AREA % 2 == 0, "Must be even."
 ASES_PER_AREA = CONFIGURABLE_PER_AREA + 4  # 2 stub, 2 provider
 if ENABLE_STUB_HIJACKS:
@@ -425,6 +432,12 @@ with open(aslevel_link_students_file, "w") as file:
 
 as_config_file = "./config/AS_config.txt"
 with open(as_config_file, "w") as fd:
+    if ENABLE_STUB_HIJACKS:
+        # Need the full topology in the stub for the hijack
+        small_config = (tier1 + buffer)
+    else:
+        small_config = (tier1 + stub + buffer)
+
     for area in areas:
         for asn in area:
             if asn == 1:  # By default we set krill in AS1
@@ -433,7 +446,7 @@ with open(as_config_file, "w") as fd:
                     "l3_links_krill.txt\tempty.txt\tempty.txt\t"
                     "empty.txt\n"
                 )
-            elif asn in (tier1 + stub + buffer):
+            elif asn in small_config:
                 fd.write(
                     f"{asn}\tAS\tConfig  \tl3_routers_tier1_and_stub.txt\t"
                     "l3_links_tier1_and_stub.txt\tempty.txt\tempty.txt\t"

@@ -19,7 +19,11 @@ def router_ip(asn, router_id):
 
 def measurement_subnets(asn, router_id):
     """Measurement source and destination IP within group network."""
-    return (f"{asn}.0.198.0/24", f"{asn}.{100 + router_id}.0.0/24")
+    return (
+        f"{asn}.0.198.0/24",  # Matrix server.
+        f"{asn}.0.199.0/24",  # Measurement server.
+        f"{asn}.{100 + router_id}.0.0/24"
+    )
 
 
 parser = argparse.ArgumentParser()

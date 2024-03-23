@@ -213,14 +213,14 @@ echo ""
 echo ""
 
 
-# echo "Applying hijacks: "
-# echo "hijacks $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
-# time ./setup/hijack_config.py "${DIRECTORY}"
+echo "Applying hijacks: "
+echo "hijacks $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
+time ./setup/hijack_config.py "${DIRECTORY}"
 
-# echo "$(date +%Y-%m-%d_%H-%M-%S)"
+echo "$(date +%Y-%m-%d_%H-%M-%S)"
 
-# echo ""
-# echo ""
+echo ""
+echo ""
 
 echo "Waiting 60sec for BGP messages to propagate..."
 sleep 60
