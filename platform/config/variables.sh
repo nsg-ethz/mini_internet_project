@@ -18,16 +18,13 @@ DOCKERHUB_PREFIX="miniinterneteth/"
 # UPDATE THOSE VARIABLES. WEBSERVER_HOSTNAME -> hostname of the server and EMAIL -> empty string (for http)
 WEBSERVER_HOSTNAME="duvel.ethz.ch"
 WEBSERVER_ACME_MAIL=""
-
 # Hostname and ports for the webserver and krill on the host.
 # (must be publicly available)
 # you can change http and https ports, but letsencrypt won't work, so its not recommended.
 WEBSERVER_PORT_HTTP="80"
 WEBSERVER_PORT_HTTPS="443"
-
 # Use the one you want, make sure to make it reachable from outside.
 WEBSERVER_PORT_KRILL="3000"
-
 # Put your timezone here.
 WEBSERVER_TZ="Europe/Zurich"
 
@@ -42,13 +39,10 @@ WEBSERVER_TZ="Europe/Zurich"
 
 # Interval for pings in seconds.
 MATRIX_FREQUENCY=300
-
 # Number of ping processes to run concurrently.
 MATRIX_CONCURRENT_PINGS=500
-
 # Flags to pass to the ping command.
 MATRIX_PING_FLAGS="-c 3 -i 0.01"  # Three pings, 10ms interval.
-
 # Whether to pause the matrix container after starting it.
 # Can reduce load when the mini internet is not used immediately.
 MATRIX_PAUSE_AFTER_START=false
@@ -57,22 +51,26 @@ MATRIX_PAUSE_AFTER_START=false
 # History collector.
 # =============================================================================
 
-HISTORY_UPDATE_FREQUENCY=3600  # In seconds
-
+# Whether to enable the history collector.
+HISTORY_ENABLED=true
+# Whether to pause the matrix container after starting it.
+# Can reduce disk usage when the mini internet is not used immediately.
+HISTORY_PAUSE_AFTER_START=false
+# How often to fetch update configs and matrix state.
+HISTORY_UPDATE_FREQUENCY=$(( 60*60 ))  # every hour
 # Timeout for ./save_configs.sh
 HISTORY_TIMEOUT="300s"
-
 # Username and email that will show up on the commit.
 HISTORY_GIT_USER="Mini-Internet History"
 HISTORY_GIT_EMAIL="nsg@ethz.ch"
-
 # URL of the git repository to push the snapshots to; should be accessible.
 # For example, create a gitlab access token and use it in the URL.
 # The token needs to have write access to the repository.
 # HISTORY_GIT_URL="https://gitlab-ci-token:<TOKEN HERE>@gitlab.ethz.ch/nsg/lectures/lec_commnet/projects/2024/routing_project/test_history.git"
 HISTORY_GIT_URL="https://gitlab-ci-token:MH-jPMMjS_az8FqyiSBV@gitlab.ethz.ch/nsg/lectures/lec_commnet/projects/2024/routing_project/test_history.git"
 HISTORY_GIT_BRANCH="main"
-
-# Whether to pause the matrix container after starting it.
-# Can reduce disk usage when the mini internet is not used immediately.
-HISTORY_PAUSE_AFTER_START=false
+# switch.db and rpki.cache are binaries that cannot be stored easily in git.
+# If this option is "true" (recommend), we re-write the git history at every
+# update to remove old versions of these files; we always keep the most
+# recent update.
+HISTORY_FORGET_BINARIES="true"
