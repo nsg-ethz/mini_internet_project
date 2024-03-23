@@ -16,7 +16,7 @@ mkdir -p "${HISTORYDIR}"
 MATRIXDIR="${DATADIR}/matrix"
 
 
-docker run -itd --net='none' --name="HISTORY" \
+docker run -itd --net='bridge' --name="HISTORY" --hostname="HISTORY" \
     -v "/var/run/docker.sock":/var/run/docker.sock \
     -v "${HISTORYDIR}":/home/history \
     -v "${MATRIXDIR}":/home/matrix \

@@ -57,10 +57,7 @@ MATRIX_PAUSE_AFTER_START=false
 # History collector.
 # =============================================================================
 
-#output_dir="output"
-#matrix_dir="/home/alex/mini_internet_project/platform/groups/matrix"
-
-HISTORY_UPDATE_FREQUENCY=120  # In seconds
+HISTORY_UPDATE_FREQUENCY=3600  # In seconds
 
 # Timeout for ./save_configs.sh
 HISTORY_TIMEOUT="300s"

@@ -124,5 +124,5 @@ update_history() {
 
 
 update_history \
-$output_dir $matrix_dir $timeout \
-$git_user $git_mail $git_remote $git_branch
+"$output_dir" "$matrix_dir" "$timeout" \
+"$git_user" "$git_mail" "$git_remote" "$git_branch"
