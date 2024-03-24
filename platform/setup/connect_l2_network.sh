@@ -117,7 +117,7 @@ for ((k = 0; k < GroupNumber; k++)); do
             # only connect if the router is not N/A
             if [ "${RouterName}" != "N/A" ]; then
                 connect_one_l2_gateway "${GroupAS}" "${DCName}" "${SWName}" \
-                    "${RouterName}" "${Throughput}" "${Delay}" "${Buffer}"
+                    "${RouterName}" "${Throughput}" "${Delay}" "${Buffer}" > /dev/null
             fi
         done
         echo "Connected L2 network in group ${GroupAS}"
