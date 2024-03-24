@@ -6,7 +6,6 @@
 #
 
 # sanity check
-# set -x
 trap 'exit 1' ERR
 set -o errexit
 set -o pipefail
@@ -19,8 +18,8 @@ if (($UID != 0)); then
 fi
 
 # print the usage if not enough arguments are provided
-if [[ "$#" -ne 5 ]] && [[ "$#" -ne 2 ]]; then
-    echo "Usage: $0 <directory> <AS> <Region> <Device> <HasConfig>"
+if [[ "$#" -ne 6 ]] && [[ "$#" -ne 2 ]]; then
+    echo "Usage: $0 <directory> <AS> <Region> <Device> <DeviceType> <HasConfig>"
     echo "       $0 <directory> <service>"
     exit 1
 fi
@@ -31,10 +30,11 @@ source "${DIRECTORY}"/config/subnet_config.sh
 source "${DIRECTORY}"/setup/_parallel_helper.sh
 source "${DIRECTORY}"/groups/docker_pid.map
 source "${DIRECTORY}"/setup/_connect_utils.sh
-readarray ASConfig < "${DIRECTORY}"/config/AS_config.txt
+readarray ASConfig <"${DIRECTORY}"/config/AS_config.txt
 GroupNumber=${#ASConfig[@]}
 
 # return the map from a DC name to a DC id
+# it is based on the order of the DC name in the L3 router config file
 _get_dc_name_to_id() {
 
     local CurrentAS=$1
@@ -42,19 +42,23 @@ _get_dc_name_to_id() {
     local NextDCId=0
 
     for ((k = 0; k < GroupNumber; k++)); do
-        GroupK=(${ASConfig[$k]})           # group config file array
-        GroupAS="${GroupK[0]}"             # ASN
-        GroupL2SwitchConfig="${GroupK[5]}" # l2 switch config file
+        GroupK=(${ASConfig[$k]})         # group config file array
+        GroupAS="${GroupK[0]}"           # ASN
+        GroupRouterConfig="${GroupK[3]}" # L3 router config file
 
         if [[ "${GroupAS}" == "${CurrentAS}" ]]; then
-            readarray L2Switches < "${DIRECTORY}/config/$GroupL2SwitchConfig"
-            L2SwitchNumber=${#L2Switches[@]}
-            for ((i = 0; i < L2SwitchNumber; i++)); do
-                L2SwitchI=(${L2Switches[$i]}) # L2 switch row
-                DCName="${L2SwitchI[0]}"      # DC name
-                if [[ -z "${DCNameToId[$DCName]+_}" ]]; then
-                    DCNameToId[$DCName]=$NextDCId
-                    NextDCId=$(($NextDCId + 1))
+            readarray Routers <"${DIRECTORY}/config/$GroupRouterConfig"
+            RouterNumber=${#Routers[@]}
+            for ((i = 0; i < RouterNumber; i++)); do
+                RouterI=(${Routers[$i]})
+                HostType="${RouterI[2]%%:*}"
+                # if the host type starts with L2-, get the DC name after L2-
+                if [[ "${HostType}" == L2-* ]]; then
+                    DCName="${HostType#L2-}"
+                    if [[ -z "${DCNameToId[$DCName]+_}" ]]; then
+                        DCNameToId[$DCName]=${NextDCId}
+                        NextDCId=$((${NextDCId} + 1))
+                    fi
                 fi
             done
             break
@@ -79,11 +83,11 @@ _get_unique_vlan_set() {
         GroupL2HostConfig="${GroupK[6]}" # l2 host config file
 
         if [[ "${GroupAS}" == "${CurrentAS}" ]]; then
-            readarray L2Hosts < "${DIRECTORY}/config/$GroupL2HostConfig"
+            readarray L2Hosts <"${DIRECTORY}/config/$GroupL2HostConfig"
             L2HostNumber=${#L2Hosts[@]}
             for ((i = 0; i < L2HostNumber; i++)); do
                 L2HostI=(${L2Hosts[$i]})
-                VlanTag="${L2HostI[6]}"
+                VlanTag="${L2HostI[7]}"
                 # add to the set if not exists
                 for ((j = 0; j < ${#VlanSet[@]}; j++)); do
                     if [[ "${VlanSet[$j]}" == "${VlanTag}" ]]; then
@@ -100,6 +104,98 @@ _get_unique_vlan_set() {
     echo "${VlanSet[@]}"
 }
 
+# return the number of gateway routers for each DC
+_get_dc_name_to_gateway_number() {
+
+    local CurrentAS=$1
+    declare -A DCNameToGatewayNumber
+
+    for ((k = 0; k < GroupNumber; k++)); do
+        GroupK=(${ASConfig[$k]})         # group config file array
+        GroupAS="${GroupK[0]}"           # ASN
+        GroupRouterConfig="${GroupK[3]}" # L3 router config file
+
+        if [[ "${GroupAS}" == "${CurrentAS}" ]]; then
+
+            readarray Routers <"${DIRECTORY}/config/$GroupRouterConfig"
+            RouterNumber=${#Routers[@]}
+            for ((i = 0; i < RouterNumber; i++)); do
+                RouterI=(${Routers[$i]})
+                HostType="${RouterI[2]%%:*}"
+                # if the host type starts with L2-, get the DC name after L2-
+                if [[ "${HostType}" == L2-* ]]; then
+                    DCName="${HostType#L2-}"
+                    if [[ -z "${DCNameToGatewayNumber[$DCName]+_}" ]]; then
+                        DCNameToGatewayNumber[$DCName]=1
+                    else
+                        DCNameToGatewayNumber[$DCName]=$((${DCNameToGatewayNumber[$DCName]} + 1))
+                    fi
+                fi
+            done
+            break
+        fi
+    done
+
+    for key in "${!DCNameToGatewayNumber[@]}"; do
+        echo "$key ${DCNameToGatewayNumber[$key]}"
+    done
+
+}
+
+# return the vlan id of a L2 host, i.e., the last argument in the subnet_l2
+_get_l2_host_to_vlan_id() {
+
+    local CurrentAS=$1
+
+    declare -A DCNameToGatewayNumber
+    while read -r DCName GatewayNumber; do
+        DCNameToGatewayNumber[$DCName]=$GatewayNumber
+    done < <(_get_dc_name_to_gateway_number "${CurrentAS}")
+
+    # get all unique VLAN tags used in the L2
+    local VlanSet
+    IFS=' ' read -r -a VlanSet <<<"$(_get_unique_vlan_set "${CurrentAS}")"
+
+    declare -A DCVlanToHostId
+    # for each dc stored in DCNameToGatewayNumber
+    # and for each vlan stored in VlanSet
+    # initialize the host id
+    for DCName in "${!DCNameToGatewayNumber[@]}"; do
+        for ((j = 0; j < ${#VlanSet[@]}; j++)); do
+            VlanTag="${VlanSet[$j]}"
+            DCVlanToHostId[$DCName - $VlanTag]=$((${DCNameToGatewayNumber[$DCName]} + 1))
+        done
+    done
+
+    # the return dictionary
+    declare -A HostToVlanId
+
+    for ((k = 0; k < GroupNumber; k++)); do
+        GroupK=(${ASConfig[$k]})         # group config file array
+        GroupAS="${GroupK[0]}"           # ASN
+        GroupL2HostConfig="${GroupK[6]}" # l2 host config file
+
+        if [[ "${GroupAS}" == "${CurrentAS}" ]]; then
+            readarray L2Hosts <"${DIRECTORY}/config/$GroupL2HostConfig"
+            L2HostNumber=${#L2Hosts[@]}
+            for ((i = 0; i < L2HostNumber; i++)); do
+                L2HostI=(${L2Hosts[$i]})
+                HostName="${L2HostI[0]}"
+                DCName="${L2HostI[2]}"
+                VlanTag="${L2HostI[7]}"
+
+                HostToVlanId[$HostName]=${DCVlanToHostId[$DCName - $VlanTag]}
+                DCVlanToHostId[$DCName - $VlanTag]=$((${DCVlanToHostId[$DCName - $VlanTag]} + 1))
+            done
+            break
+        fi
+    done
+
+    for key in "${!HostToVlanId[@]}"; do
+        echo "$key ${HostToVlanId[$key]}"
+    done
+}
+
 # whether the current group is an all-in-one group
 _is_all_in_one() {
 
@@ -111,7 +207,7 @@ _is_all_in_one() {
         GroupRouterConfig="${GroupK[3]}" # L3 router config file
 
         if [[ "${GroupAS}" == "${CurrentAS}" ]]; then
-            readarray Routers < "${DIRECTORY}/config/$GroupRouterConfig"
+            readarray Routers <"${DIRECTORY}/config/$GroupRouterConfig"
             RouterNumber=${#Routers[@]}
             for ((i = 0; i < RouterNumber; i++)); do
                 RouterI=(${Routers[$i]})
@@ -142,7 +238,7 @@ _get_region_id() {
 
         if [[ "${GroupAS}" == "${CurrentAS}" ]]; then
 
-            readarray Routers < "${DIRECTORY}/config/$GroupRouterConfig"
+            readarray Routers <"${DIRECTORY}/config/$GroupRouterConfig"
             RouterNumber=${#Routers[@]}
             for ((i = 0; i < RouterNumber; i++)); do
                 RouterI=(${Routers[$i]})
@@ -177,7 +273,7 @@ _is_krill_or_routinator() {
         local IsAllInOne=$(_is_all_in_one "${CurrentAS}")
 
         if [[ "${GroupAS}" == "${CurrentAS}" ]]; then
-            readarray Routers < "${DIRECTORY}/config/$GroupRouterConfig"
+            readarray Routers <"${DIRECTORY}/config/$GroupRouterConfig"
             RouterNumber=${#Routers[@]}
             for ((i = 0; i < RouterNumber; i++)); do
                 RouterI=(${Routers[$i]})
@@ -346,10 +442,10 @@ _reconnect_one_router() {
 
         if [[ "${GroupAS}" == "${CurrentAS}" ]]; then
 
-            readarray Routers < "${DIRECTORY}/config/$GroupRouterConfig"
-            readarray InternalLinks < "${DIRECTORY}/config/$GroupInternalLinkConfig"
-            readarray L2Switches < "${DIRECTORY}/config/$GroupL2SwitchConfig"
-            readarray L2Hosts < "${DIRECTORY}/config/$GroupL2HostConfig"
+            readarray Routers <"${DIRECTORY}/config/$GroupRouterConfig"
+            readarray InternalLinks <"${DIRECTORY}/config/$GroupInternalLinkConfig"
+            readarray L2Switches <"${DIRECTORY}/config/$GroupL2SwitchConfig"
+            readarray L2Hosts <"${DIRECTORY}/config/$GroupL2HostConfig"
 
             RouterNumber=${#Routers[@]}
             InternalLinkNumber=${#InternalLinks[@]}
@@ -422,12 +518,12 @@ _reconnect_one_router() {
         RouterName="${L2SwitchI[2]}"  # gateway router name
         # TODO: specify these values in a config file
         Throughput=10mbit
-        Delay=10ms # manually set a default value
+        Delay=10ms  # manually set a default value
         Buffer=50ms # manually set a default value
 
         if [[ "${RouterName}" == "${CurrentRegion}" ]]; then
             connect_one_l2_gateway "${CurrentAS}" "${DCName}" "${SWName}" \
-                "${RouterName}" "${Throughput}" "${Delay}" "${Buffer}"
+                "${RouterName}" "${Throughput}" "${Delay}" "${Buffer}" > /dev/null
             echo "Reconnected l2 switch ${SWName} to router ${RouterName} in ${CurrentAS}"
         fi
 
@@ -439,7 +535,7 @@ _reconnect_one_router() {
 
     # configure the tunnel and vlan
     local RouterPID=$(get_container_pid "${RouterCtnName}" "False")
-    read TunnelEndA TunnelEndB < "${DIRECTORY}/config/l2_tunnel.txt"
+    read TunnelEndA TunnelEndB <"${DIRECTORY}/config/l2_tunnel.txt"
     for RouterName in "${!RouterToDCId[@]}"; do
         DCId="${RouterToDCId[$RouterName]}"
         # if the current router is the gateway router
@@ -451,12 +547,12 @@ _reconnect_one_router() {
                 RouterInterface="${CurrentRegion}-L2.$VlanTag"
                 ip netns exec "${RouterPID}" ip link add link "${RouterInterface%.*}" name "${RouterInterface}" type vlan id "${VlanTag}"
             done
-            echo "Configured VLAN interfaces on router ${RouterCtnName}"
+            echo "Set up VLAN interfaces on router ${RouterCtnName}"
 
             # if the current router is one end of the tunnel
-            # TODO: if the tunnel was set before, the tunnel is gone after restarting the container, but the sit0 interface is kept
+            # if the tunnel was set before, the tunnel is gone after restarting the container, but the sit0 interface is kept
             # once a tunnel is set, the sit0 will be displayed on the server and all container!
-            # check the original topo to confirm it is expeted
+            # TODO: check the original topo to confirm it is expeted
             if [[ "${HasConfig}" == "True" ]]; then
                 if [[ "${RouterName}" == "${TunnelEndA}" ]] || [[ "${RouterName}" == "${TunnelEndB}" ]]; then
                     # configure the 6in4 tunnel
@@ -507,7 +603,7 @@ _reconnect_one_router() {
     done
 
     # add the external link
-    readarray ExternalLinks < "${DIRECTORY}/config/aslevel_links.txt"
+    readarray ExternalLinks <"${DIRECTORY}/config/aslevel_links.txt"
     ExternalLinkNumber=${#ExternalLinks[@]}
 
     for ((i = 0; i < ExternalLinkNumber; i++)); do
@@ -575,7 +671,7 @@ _reconnect_one_router() {
     echo "Renamed eth0 to ssh on router ${RouterCtnName}"
 
     # reset rpki and clear ip bgp
-    # FIXME: maybe still need to clear and reset manually, as the bgp takes time to converge
+    # maybe still need to clear and reset manually, as the bgp takes time to converge
     sleep 60
     docker exec "${RouterCtnName}" vtysh -c 'clear ip bgp *' -c 'exit'
     docker exec "${RouterCtnName}" vtysh -c 'conf t' -c 'rpki' -c 'rpki reset' -c 'exit' -c 'exit'
@@ -606,46 +702,19 @@ _restart_one_l2_host() {
 
         if [[ "${GroupAS}" == "${CurrentAS}" ]]; then
 
-            # get the number of gateway routers in each DC
-            declare -A DCNameToGatewayNumber
-            readarray Routers < "${DIRECTORY}/config/$GroupRouterConfig"
-            RouterNumber=${#Routers[@]}
-            for ((i = 0; i < RouterNumber; i++)); do
-                RouterI=(${Routers[$i]})
-                HostType="${RouterI[2]%%:*}"
-                # if the host type starts with L2-, get the DC name after L2-
-                if [[ "${HostType}" == L2-* ]]; then
-                    DCName="${HostType#L2-}"
-                    if [[ -z "${DCNameToGatewayNumber[$DCName]+_}" ]]; then
-                        DCNameToGatewayNumber[$DCName]=1
-                    else
-                        DCNameToGatewayNumber[$DCName]=$((${DCNameToGatewayNumber[$DCName]} + 1))
-                    fi
-                fi
-            done
-            # get all unique VLAN tags used in the L2
-            local VlanSet
-            IFS=' ' read -r -a VlanSet <<<"$(_get_unique_vlan_set "${CurrentAS}")"
             # map from the DCName to the DCId
             declare -A DCNameToId
             while read -r DCName DCId; do
                 DCNameToId["$DCName"]="$DCId"
             done < <(_get_dc_name_to_id "${CurrentAS}")
 
-            readarray L2Hosts < "${DIRECTORY}/config/$GroupL2HostConfig"
+            declare -A HostToVlanId
+            while read -r HostName VlanId; do
+                HostToVlanId[$HostName]=$VlanId
+            done < <(_get_l2_host_to_vlan_id "${CurrentAS}")
+
+            readarray L2Hosts <"${DIRECTORY}/config/$GroupL2HostConfig"
             L2HostNumber=${#L2Hosts[@]}
-
-            declare -A DCVlanToHostId
-            # for each dc stored in DCNameToGatewayNumber
-            # and for each vlan stored in VlanSet
-            # initialize the host id
-            for DCName in "${!DCNameToGatewayNumber[@]}"; do
-                for ((j = 0; j < ${#VlanSet[@]}; j++)); do
-                    VlanTag="${VlanSet[$j]}"
-                    DCVlanToHostId[$DCName - $VlanTag]=$((${DCNameToGatewayNumber[$DCName]} + 1))
-                done
-            done
-
             for ((i = 0; i < L2HostNumber; i++)); do
                 L2HostI=(${L2Hosts[$i]})
                 HostName="${L2HostI[0]}"
@@ -656,20 +725,27 @@ _restart_one_l2_host() {
                 Buffer="${L2HostI[6]}"
                 VlanTag="${L2HostI[7]}"
 
+                # assume the host only appear in one line
                 if [[ "${HostName}" == "${CurrentHostName}" ]]; then
                     # TODO: don't hardcode the container name
+                    # cannot move the following out of the loop, because need to find the DCName
                     HostCtnName="${CurrentAS}_L2_${DCName}_${HostName}"
 
                     docker kill "${HostCtnName}" || true
+
                     # clean up the old netns of the container
                     local OldHostPID=$(get_container_pid "${HostCtnName}" "True")
                     if [[ -n "${OldHostPID}" ]]; then
                         ip netns del "${OldHostPID}" || true
                         rm -f /var/run/netns/"${OldHostPID}" || true
                     fi
+
                     echo "Cleaned up the old netns of host ${HostCtnName}"
+
                     docker restart "${HostCtnName}"
+
                     echo "Restarted host ${HostCtnName}"
+
                     read -r HostInterface HostPID SwitchInterface SwitchPID \
                         < <(connect_one_l2_host "${GroupAS}" "${DCName}" "${SWName}" "${HostName}" "${Throughput}" "${Delay}" "${Buffer}")
                     echo "Reconnected host ${HostName} to switch ${SWName} in ${DCName} in ${GroupAS}"
@@ -693,9 +769,9 @@ _restart_one_l2_host() {
 
                     # has config
                     if [[ "${HasConfig}" == "True" ]]; then
-                        # get the subnet of host the
-                        local HostSubnet=$(subnet_l2 "${GroupAS}" "${DCNameToId[$DCName]}" "${VlanTag}" "${DCVlanToHostId[$DCName - $VlanTag]}")
-                        local HostSubnetV6=$(subnet_l2_ipv6 "${GroupAS}" "${DCNameToId[$DCName]}" "${VlanTag}" "${DCVlanToHostId[$DCName - $VlanTag]}")
+                        # get the subnet of the host
+                        local HostSubnet=$(subnet_l2 "${GroupAS}" "${DCNameToId[$DCName]}" "${VlanTag}" "${HostToVlanId[$HostName]}")
+                        local HostSubnetV6=$(subnet_l2_ipv6 "${GroupAS}" "${DCNameToId[$DCName]}" "${VlanTag}" "${HostToVlanId[$HostName]}")
                         # add the interface address and the default gateway on the host
                         ip netns exec $HostPID ip addr add $HostSubnet dev $HostInterface
                         ip netns exec $HostPID ip -6 addr add $HostSubnetV6 dev $HostInterface
@@ -712,13 +788,178 @@ _restart_one_l2_host() {
                     break
                 fi
 
-                # increment the host id
-                DCVlanToHostId[$DCName - $VlanTag]=$((${DCVlanToHostId[$DCName - $VlanTag]} + 1))
             done
             break
         fi
     done
 
+}
+
+# restart an l2 switch
+_restart_one_l2_switch() {
+    # check enough arguments are provided
+    if [ "$#" -ne 4 ]; then
+        echo "Usage: _restart_one_l2_switch <AS> <DCRegion> <Switch> <HasConfig>"
+        exit 1
+    fi
+
+    local CurrentAS=$1
+    local CurrentRegion=$2
+    local CurrentSwitch=$3
+    local HasConfig=$4
+
+    # get the L2 config file
+    for ((k = 0; k < GroupNumber; k++)); do
+        GroupK=(${ASConfig[$k]})           # group config file array
+        GroupAS="${GroupK[0]}"             # ASN
+        GroupL2SwitchConfig="${GroupK[5]}" # l2 switch config file
+        GroupL2HostConfig="${GroupK[6]}"   # l2 host config file
+        GroupL2LinkConfig="${GroupK[7]}"   # l2 link config file
+
+        if [[ "${GroupAS}" == "${CurrentAS}" ]]; then
+
+            readarray L2Switches <"${DIRECTORY}/config/$GroupL2SwitchConfig"
+            readarray L2Hosts <"${DIRECTORY}/config/$GroupL2HostConfig"
+            readarray L2Links <"${DIRECTORY}/config/$GroupL2LinkConfig"
+            L2SwitchNumber=${#L2Switches[@]}
+            L2HostNumber=${#L2Hosts[@]}
+            L2LinkNumber=${#L2Links[@]}
+
+            # all ovs-vsctl config is still there, but its connected hosts also need to be reconfigured
+
+            # used to configure connected l2 hosts
+            declare -A DCNameToId
+            while read -r DCName DCId; do
+                DCNameToId["$DCName"]="$DCId"
+            done < <(_get_dc_name_to_id "${CurrentAS}")
+
+            local VlanSet
+            IFS=' ' read -r -a VlanSet <<<"$(_get_unique_vlan_set "${CurrentAS}")"
+
+            declare -A HostToVlanId
+            while read -r HostName VlanId; do
+                HostToVlanId[$HostName]=$VlanId
+            done < <(_get_l2_host_to_vlan_id "${CurrentAS}")
+
+            # reconnect the switch to the router
+            for ((i = 0; i < L2SwitchNumber; i++)); do
+                L2SwitchI=(${L2Switches[$i]}) # L2 switch row
+                DCName="${L2SwitchI[0]}"      # DC name
+                SWName="${L2SwitchI[1]}"      # switch name
+                RouterName="${L2SwitchI[2]}"  # gateway router name
+                Throughput=10mbit
+                Delay=10ms  # manually set a default value
+                Buffer=50ms # manually set a default value
+
+                if [[ "${SWName}" == "${CurrentSwitch}" ]]; then
+                    local SwitchCtnName="${CurrentAS}_L2_${DCName}_${CurrentSwitch}"
+
+                    docker kill "${SwitchCtnName}" || true
+
+                    # clean up the old netns of the container
+                    local OldSwitchPID=$(get_container_pid "${SwitchCtnName}" "True")
+                    if [[ -n "${OldSwitchPID}" ]]; then
+                        ip netns del "${OldSwitchPID}" || true
+                        rm -f /var/run/netns/"${OldSwitchPID}" || true
+                    fi
+
+                    echo "Cleaned up the old netns of switch ${SwitchCtnName}"
+
+                    docker restart "${SwitchCtnName}"
+
+                    echo "Restarted switch ${SwitchCtnName}"
+
+                    read -r SwitchInterface SwitchPID GatewayInterface GatewayPID \
+                        < <(connect_one_l2_gateway "${GroupAS}" "${DCName}" "${SWName}" "${RouterName}" "${Throughput}" "${Delay}" "${Buffer}")
+                    echo "Reconnected l2 switch ${SWName} to router ${RouterName} in ${DCName} in ${GroupAS}"
+
+                    # set up the VLAN link on the gateway router
+                    GatewayCtnName="${CurrentAS}_${RouterName}router"
+
+                    # TODO: check why the symlink is not deleted so early
+                    create_netns_symlink "${GatewayPID}"
+                    for ((j = 0; j < ${#VlanSet[@]}; j++)); do
+                        VlanTag="${VlanSet[$j]}"
+                        RouterVlanInterface="${RouterName}-L2.$VlanTag"
+                        ip netns exec "${GatewayPID}" ip link add link "${RouterVlanInterface%.*}" name \
+                            "${RouterVlanInterface}" type vlan id "${VlanTag}"
+                    done
+                    echo "Set up VLAN interfaces on ${GatewayCtnName}"
+
+                    # rename eth0 to ssh
+                    ip netns exec "${SwitchPID}" ip link set dev eth0 down
+                    ip netns exec "${SwitchPID}" ip link set dev eth0 name ssh
+                    ip netns exec "${SwitchPID}" ip link set dev ssh up
+
+                    echo "Renamed eth0 to ssh on switch ${SwitchCtnName}"
+
+
+                    # assume there is at most gateway router for the switch
+                    break
+                fi
+            done
+
+            # reconnect the switch to other switches
+            # could also have multiple links or no link
+            for ((i = 0; i < L2LinkNumber; i++)); do
+                L2LinkI=(${L2Links[$i]})   # L2 link row
+                SWNameA="${L2LinkI[0]}"    # switch A name
+                SWNameB="${L2LinkI[1]}"    # switch B name
+                Throughput="${L2LinkI[2]}" # throughput
+                Delay="${L2LinkI[3]}"      # delay
+                Buffer="${L2LinkI[4]}"     # buffer latency (in ms)
+
+                if [[ "${SWNameA}" == "${CurrentSwitch}" ]] || [[ "${SWNameB}" == "${CurrentSwitch}" ]]; then
+                    connect_one_l2_switches "${GroupAS}" "${DCName}" "${SWNameA}" "${SWNameB}" "${Throughput}" "${Delay}" "${Buffer}"
+                    echo "Reconnected switch ${SWNameA} and switch ${SWNameB} in ${DCName} in ${GroupAS}"
+                fi
+            done
+
+            # reconnect the switch to the L2 hosts
+            # not break because a switch can connect to multiple hosts
+            for ((i = 0; i < L2HostNumber; i++)); do
+                L2HostI=(${L2Hosts[$i]})   # L2 host row
+                HostName="${L2HostI[0]}"   # host name
+                DCName="${L2HostI[2]}"     # DC name
+                SWName="${L2HostI[3]}"     # switch name
+                Throughput="${L2HostI[4]}" # throughput
+                Delay="${L2HostI[5]}"      # delay
+                Buffer="${L2HostI[6]}"     # buffer latency (in ms)
+                VlanTag="${L2HostI[7]}"    # vlan tag
+
+                # assuming the switch at least connects to one host
+                # so the SwitchPID is not empty when we exit the loop
+                if [[ "${SWName}" == "${CurrentSwitch}" ]]; then
+
+                    read -r HostInterface HostPID SwitchInterface SwitchPID \
+                        < <(connect_one_l2_host "${GroupAS}" "${DCName}" "${SWName}" "${HostName}" "${Throughput}" "${Delay}" "${Buffer}")
+                    echo "Reconnected host ${HostName} to switch ${SWName} in ${DCName} in ${GroupAS}"
+
+                    if [[ "${HasConfig}" == "True" ]]; then
+                        HostCtnName="${CurrentAS}_L2_${DCName}_${HostName}"
+
+                        # get the subnet of the host
+                        local HostSubnet=$(subnet_l2 "${GroupAS}" "${DCNameToId[$DCName]}" "${VlanTag}" "${HostToVlanId[$HostName]}")
+                        local HostSubnetV6=$(subnet_l2_ipv6 "${GroupAS}" "${DCNameToId[$DCName]}" "${VlanTag}" "${HostToVlanId[$HostName]}")
+                        # add the interface address and the default gateway on the host
+                        ip netns exec $HostPID ip addr add $HostSubnet dev $HostInterface
+                        ip netns exec $HostPID ip -6 addr add $HostSubnetV6 dev $HostInterface
+
+                        # add ipv4 and ipv6 default route
+                        local HostGateway=$(subnet_l2 "${GroupAS}" "${DCNameToId[$DCName]}" "${VlanTag}" 1)
+                        local HostGatewayV6=$(subnet_l2_ipv6 "${GroupAS}" "${DCNameToId[$DCName]}" "${VlanTag}" 1)
+                        ip netns exec $HostPID ip route add default via ${HostGateway%/*}
+                        ip netns exec $HostPID ip -6 route add default via ${HostGatewayV6%/*}
+
+                        echo "Configured L2 host ${HostCtnName}"
+                    fi
+
+                fi
+            done
+
+            break
+        fi
+    done
 }
 
 _restart_matrix() {
@@ -740,9 +981,9 @@ _restart_matrix() {
         -e "UPDATE_FREQUENCY=${MATRIX_FREQUENCY}" \
         -e "CONCURRENT_PINGS=${MATRIX_CONCURRENT_PINGS}" \
         -e "PING_FLAGS=${MATRIX_PING_FLAGS}" \
-        "${DOCKERHUB_PREFIX}d_matrix" > /dev/null
+        "${DOCKERHUB_PREFIX}d_matrix" >/dev/null
 
-    docker pause MATRIX  # wait until connected
+    docker pause MATRIX # wait until connected
 
     # Re-link the MATRIX to the routers
     for ((k = 0; k < GroupNumber; k++)); do
@@ -752,7 +993,7 @@ _restart_matrix() {
         GroupRouterConfig="${GroupK[3]}" # L3 router config file
 
         if [ "${GroupType}" != "IXP" ]; then
-            readarray Routers < "${DIRECTORY}"/config/$GroupRouterConfig
+            readarray Routers <"${DIRECTORY}"/config/$GroupRouterConfig
             RouterNumber=${#Routers[@]}
             for ((i = 0; i < RouterNumber; i++)); do
                 RouterI=(${Routers[$i]})      # router config file array
@@ -770,30 +1011,36 @@ _restart_matrix() {
     docker unpause MATRIX
 }
 
-
-
-if [[ "$#" -eq 5 ]]; then
+if [[ "$#" -eq 6 ]]; then
     RestartAS=$2
     RestartRegion=$3     # ZURI/L2
-    RestartDevice=$4     # host0/host/router/S1/Matrix/IXP/FIFA_1
-    RestartWithConfig=$5 # True or False, used to configure hosts as their network config is reset after restarting
+    RestartDevice=$4     # host0/host/router/S1/IXP/FIFA_1
+    RestartDeviceType=$5 # router/l3-host/switch/l2-host/ixp
+    RestartWithConfig=$6 # True or False, used to configure hosts as their network config is reset after restarting
 
     # restart a L3 host
-    if [[ "${RestartDevice}" == host* ]]; then
-        # is a krill if the container is 1_ZURIhost0
+    if [[ "${RestartDeviceType}" == l3-host ]]; then
         _restart_one_l3_host "${RestartAS}" "${RestartRegion}" "${RestartDevice}" "${RestartWithConfig}"
     fi
 
     # restart a router
-    if [[ "${RestartDevice}" == router ]]; then
+    if [[ "${RestartDeviceType}" == router ]]; then
         _reconnect_one_router "${RestartAS}" "${RestartRegion}" "${RestartWithConfig}"
     fi
 
     # restart a L2 host
-    if [[ "${RestartRegion}" == L2 ]]; then
+    if [[ "${RestartDeviceType}" == l2-host ]]; then
         _restart_one_l2_host "${RestartAS}" "${RestartRegion}" "${RestartDevice}" "${RestartWithConfig}"
     fi
+
+    # restart a L2 switch
+    if [[ "${RestartDeviceType}" == switch ]]; then
+        _restart_one_l2_switch "${RestartAS}" "${RestartRegion}" "${RestartDevice}" "${RestartWithConfig}"
+    fi
+
+    # restart an IXP
 else
+    # restart a service
     RestartService=$2
 
     if [[ "${RestartService,,}" == "matrix" ]]; then

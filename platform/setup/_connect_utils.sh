@@ -409,6 +409,7 @@ connect_one_l2_switch() {
     # configure ports on the switch containers
     docker exec -d "${SwCtnName1}" ovs-vsctl add-port br0 "${SwInterface1}" -- set Port "${SwInterface1}" trunks=0
     docker exec -d "${SwCtnName2}" ovs-vsctl add-port br0 "${SwInterface2}" -- set Port "${SwInterface2}" trunks=0
+
 }
 
 # connect a L2 host to the switch and configure the throughput and delay
@@ -478,7 +479,7 @@ connect_one_l2_host() {
                 $CurrentDelay $CurrentBuffer)
 
         # configure port on the switch container
-        # if the link is reconnected, the port is still there, so add a duplicate port will fail
+        # if the link is reconnected, the port is still there, so add a duplicate port will not take effect
         docker exec -d "${SwitchCtnName}" ovs-vsctl add-port br0 "${SwitchInterface}"
     fi
 
@@ -515,12 +516,13 @@ connect_one_l2_gateway() {
     local RouterInterface="${CurrentRouter}-L2"
 
     # connect two interfaces
-    connect_two_interfaces $SwitchCtnName $SwitchInterface $RouterCtnName \
-        $RouterInterface $CurrentThroughput $CurrentDelay $CurrentBuffer \
-        > /dev/null
+    read -r SwitchPID RouterPID < <(connect_two_interfaces $SwitchCtnName $SwitchInterface $RouterCtnName \
+            $RouterInterface $CurrentThroughput $CurrentDelay $CurrentBuffer)
 
     # configure port on the switch container
     docker exec -d "${SwitchCtnName}" ovs-vsctl add-port br0 "${SwitchInterface}"
+
+    echo "$SwitchInterface $SwitchPID $RouterInterface $RouterPID"
 
 }
 
