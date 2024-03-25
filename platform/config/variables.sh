@@ -28,6 +28,16 @@ WEBSERVER_PORT_KRILL="3000"
 # Put your timezone here.
 WEBSERVER_TZ="Europe/Zurich"
 
+# =============================================================================
+# Connections
+# =============================================================================
+
+# default parameters for the links
+DEFAULT_THROUGHPUT=10mbit
+DEFAULT_DELAY=10ms
+DEFAULT_BUFFER=50ms
+
+
 
 # =============================================================================
 # MATRIX

@@ -89,3 +89,11 @@ Here's a checklist of things to verify.
 -[ ] Document the ALL option in l3 configs in the GitHub wiki.
 
 -[ ] Address all remaining TODOs and FIXMEs.
+
+-[ ] Clean up obsolete scripts anywhere
+
+-[ ] Add a config file for each container name and config files and remove any hardcoded variable in any script.
+
+-[ ] Clean up VPN scripts (as they are not tested)
+
+-[ ] (Optional) Separate the config load part into separate scripts that can be merged with `layer2_config.sh` and `router_config.sh` later.

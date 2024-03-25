@@ -15,7 +15,8 @@ mkdir -p /root/.ssh
 
 /usr/share/openvswitch/scripts/ovs-ctl start
 
-ovs-vsctl add-br IXP
+# only add if the bridge does not exist
+ovs-vsctl add-br IXP || true
 ovs-ofctl add-flow IXP action=NORMAL
 
 chmod 0755 /home/.looking_glass.sh
