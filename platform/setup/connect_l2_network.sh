@@ -4,7 +4,6 @@
 #
 
 # sanity check
-# set -x
 trap 'exit 1' ERR # catch more error
 set -o errexit
 set -o pipefail
@@ -27,6 +26,7 @@ source "${DIRECTORY}"/config/subnet_config.sh
 source "${DIRECTORY}"/setup/_parallel_helper.sh
 source "${DIRECTORY}"/groups/docker_pid.map
 source "${DIRECTORY}"/setup/_connect_utils.sh
+source "${DIRECTORY}"/config/variables.sh
 
 # Needed to create the VLAN on the router interface
 modprobe 8021q
@@ -110,9 +110,9 @@ for ((k = 0; k < GroupNumber; k++)); do
             DCName="${L2SwitchI[0]}"      # DC name
             SWName="${L2SwitchI[1]}"      # switch name
             RouterName="${L2SwitchI[2]}"  # gateway router name
-            Throughput=10mbit
-            Delay=10ms # manually set a default value
-            Buffer=50ms # manually set a default value
+            Throughput=$DEFAULT_THROUGHPUT 
+            Delay=$DEFAULT_DELAY
+            Buffer=$DEFAULT_BUFFER
 
             # only connect if the router is not N/A
             if [ "${RouterName}" != "N/A" ]; then

@@ -7,7 +7,6 @@ set -o pipefail
 set -o nounset
 
 DIRECTORY="$1"
-# FIXME: seems not used in the rest of the script
 source "${DIRECTORY}"/config/subnet_config.sh
 
 # read configs

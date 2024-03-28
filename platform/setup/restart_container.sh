@@ -516,10 +516,9 @@ _reconnect_one_router() {
         DCName="${L2SwitchI[0]}"      # DC name
         SWName="${L2SwitchI[1]}"      # switch name
         RouterName="${L2SwitchI[2]}"  # gateway router name
-        # TODO: specify these values in a config file
-        Throughput=10mbit
-        Delay=10ms  # manually set a default value
-        Buffer=50ms # manually set a default value
+        Throughput=$DEFAULT_THROUGHPUT
+        Delay=$DEFAULT_DELAY
+        Buffer=$DEFAULT_BUFFER
 
         if [[ "${RouterName}" == "${CurrentRegion}" ]]; then
             connect_one_l2_gateway "${CurrentAS}" "${DCName}" "${SWName}" \
@@ -847,9 +846,9 @@ _restart_one_l2_switch() {
                 DCName="${L2SwitchI[0]}"      # DC name
                 SWName="${L2SwitchI[1]}"      # switch name
                 RouterName="${L2SwitchI[2]}"  # gateway router name
-                Throughput=10mbit
-                Delay=10ms  # manually set a default value
-                Buffer=50ms # manually set a default value
+                Throughput=$DEFAULT_THROUGHPUT 
+                Delay=$DEFAULT_DELAY
+                Buffer=$DEFAULT_BUFFER
 
                 if [[ "${SWName}" == "${CurrentSwitch}" ]]; then
                     local SwitchCtnName="${CurrentAS}_L2_${DCName}_${CurrentSwitch}"
@@ -876,7 +875,7 @@ _restart_one_l2_switch() {
                     # set up the VLAN link on the gateway router
                     GatewayCtnName="${CurrentAS}_${RouterName}router"
 
-                    # TODO: check why the symlink is not deleted so early
+                    # TODO: check why the symlink is deleted so early in this case
                     create_netns_symlink "${GatewayPID}"
                     for ((j = 0; j < ${#VlanSet[@]}; j++)); do
                         VlanTag="${VlanSet[$j]}"
@@ -962,6 +961,87 @@ _restart_one_l2_switch() {
     done
 }
 
+# restart an ixp
+_restart_one_ixp() {
+    # check enough arguments are provided
+    if [ "$#" -ne 3 ]; then
+        echo "Usage: _reconnect_one_ixp <AS> <Region> <HasConfig>"
+        exit 1
+    fi
+
+    local CurrentAS=$1
+    local CurrentRegion=$2
+    local HasConfig=$3
+
+    local IXPCtnName="${CurrentAS}_IXP"
+
+    docker kill "${IXPCtnName}" || true
+    # TODO: sometimes the interface on the other router container is not cleaned up when the IXP is killed
+    # This will lead to `File exixts` error when setting up the veth interface on the router container,
+    # In this case, we need to first manually cleaned up dangling interfaces that show in `ip link | grep _b`
+    # then kill the IXP container again, wait for some time to confirm the IXP interface on the route container is gonoe
+    # then we can continue
+    # Sometimes we can also get tc error, in this case just kill and return the restarting function
+    # FIRST CHECK THE ROUTER INTERFACE TO MAKE SURE THE INTERFACE IS CLEANED UP!
+    sleep 60
+    echo "Waited for 60 seconds to clean up the IXP interface on the router container"
+
+    set -x # used to see which router container still has the IXP interface
+
+    # clean up the old netns of the container
+    local OldIXPPID=$(get_container_pid "${IXPCtnName}" "True")
+    if [[ -n "${OldIXPPID}" ]]; then
+        ip netns del "${OldIXPPID}" || true
+        rm -f /var/run/netns/"${OldIXPPID}" || true
+    fi
+    echo "Cleaned up the old netns of IXP ${IXPCtnName}"
+
+    docker restart "${IXPCtnName}"
+
+    echo "Restarted IXP ${IXPCtnName}"
+
+    # connect all external links
+    readarray ExternalLinks <"${DIRECTORY}/config/aslevel_links.txt"
+    ExternalLinkNumber=${#ExternalLinks[@]}
+    for ((i = 0; i < ExternalLinkNumber; i++)); do
+        LinkI=(${ExternalLinks[$i]}) # external link row
+        AS1="${LinkI[0]}"            # AS1
+        Region1="${LinkI[1]}"        # region 1 in AS1
+        AS2="${LinkI[3]}"            # AS2
+        Region2="${LinkI[4]}"        # region 2 in AS2
+        Throughput="${LinkI[6]}"     # throughput
+        Delay="${LinkI[7]}"          # delay
+        Buffer="${LinkI[8]}"         # buffer latency (in ms)
+
+        # rename region None with IXP
+        if [[ "${Region1}" == "None" ]]; then
+            Region1="IXP"
+        fi
+        if [[ "${Region2}" == "None" ]]; then
+            Region2="IXP"
+        fi
+
+        # if one AS is the current AS, connect the other AS
+        if [[ "${AS1}" == "${CurrentAS}" || "${AS2}" == "${CurrentAS}" ]]; then
+            connect_one_external_routers "${AS1}" "${Region1}" "${AS2}" "${Region2}" "${Throughput}" "${Delay}" "${Buffer}"
+            echo "Reconnected external link between ${Region1} in ${AS1} and ${Region2} in ${AS2}"
+        fi
+
+        # no config is needed for the IXP
+
+    done
+
+    # IXP does not have ssh interface
+
+    # manually load the config as it won't be auto-loaded
+    docker exec -d "${IXPCtnName}" bash -c 'vtysh -c "conf t" -c "$(tail -n +2 conf_full.sh)" -c "exit"' &
+    docker exec -d "${IXPCtnName}" bash -c "ip addr add $(subnet_router_IXP -1 ${CurrentAS} IXP) dev IXP"
+    docker exec -d "${IXPCtnName}" bash -c "ip link set dev IXP up"
+
+    # clear bgp
+    docker exec "${IXPCtnName}" vtysh -c 'clear ip bgp *' -c 'exit'
+}
+
 _restart_matrix() {
     local MatrixConfigDir="${DIRECTORY}"/groups/matrix/
 
@@ -1039,6 +1119,9 @@ if [[ "$#" -eq 6 ]]; then
     fi
 
     # restart an IXP
+    if [[ "${RestartDeviceType}" == ixp ]]; then
+        _restart_one_ixp "${RestartAS}" "${RestartRegion}" "${RestartWithConfig}"
+    fi
 else
     # restart a service
     RestartService=$2
