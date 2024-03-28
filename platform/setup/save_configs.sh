@@ -7,6 +7,7 @@ set -o pipefail
 set -o nounset
 
 DIRECTORY=$(readlink -f $1)
+source "${DIRECTORY}"/config/variables.sh
 source "${DIRECTORY}"/config/subnet_config.sh
 
 
@@ -184,20 +185,21 @@ for ((k=0;k<n_groups;k++)); do
         echo "echo 'Saving complete!'"
         echo "echo ''"
         echo "echo \"Download the archive file (run these commands from your own computer):\""
-        echo "echo \"    scp -P $((2000 + ${group_number})) root@duvel.ethz.ch:\${dirname}.tar.gz .\""
+        echo "echo \"    scp -O -P $((2000 + ${group_number})) root@${SSH_URL}:\${dirname}.tar.gz .\""
         echo "echo 'Extract the archive:'"
         echo "echo \"    tar -xzf \${dirname}.tar.gz\""
-        echo "echo \"Overwrite the config folder in the current directory:\""
-        echo "echo \"    scp -r -P $((2000 + ${group_number})) root@duvel.ethz.ch:\${dirname} config\""
+        echo "echo \"Alternatively, to directly update the \"config\" folder in the current local directory:\""
+        echo "echo \"    scp -O -r -P $((2000 + ${group_number})) root@${SSH_URL}:\${dirname} config\""
         echo "echo ''"
         echo "echo 'If the scp commands do not work for you, use ssh (also from your own computer):'"
         echo "echo '(Reliable only on UNIX systems. On Windows, you may use WinSCP instead)'"
         echo "echo \"Download the archive:\""
-        echo "echo \"    ssh -q -p $((2000 + ${group_number})) root@duvel.ethz.ch cat \${dirname}.tar.gz > \${dirname}.tar.gz\""
+        echo "echo \"    ssh -q -p $((2000 + ${group_number})) root@${SSH_URL} cat \${dirname}.tar.gz > \${dirname}.tar.gz\""
         echo "echo \"Download and unpack the archive:\""
-        echo "echo \"    ssh -q -p $((2000 + ${group_number})) root@duvel.ethz.ch cat \${dirname}.tar.gz | tar -xz\""
+        echo "echo \"    ssh -q -p $((2000 + ${group_number})) root@${SSH_URL} cat \${dirname}.tar.gz | tar -xz\""
         echo "echo ''"
-        echo "echo 'If you are using an ssh config file, you may need to update the ssh commands above to match your configuration.'"
+        echo "echo 'If you are using an ssh config file, you may need to update the scp and ssh commands above to match your configuration.'"
+        echo "echo 'For example, you may need to replace \"root@${SSH_URL}\" with the hostname you have defined in your ssh config file.'"
         echo "echo 'Contact the TAs if you are unable to download your files!'"
     } >> $file_loc
 done
