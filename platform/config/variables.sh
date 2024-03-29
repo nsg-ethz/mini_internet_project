@@ -88,4 +88,5 @@ HISTORY_GIT_BRANCH="main"
 # If this option is "true" (recommend), we re-write the git history at every
 # update to remove old versions of these files; we always keep the most
 # recent update.
+# You must allow force pushing on the remove branch for this to work.
 HISTORY_FORGET_BINARIES="true"

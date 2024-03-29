@@ -107,7 +107,8 @@ update_history() {
     # Before we add new files, remove old versions of switch.db and rpki.cache.
     if [ "$forget_binaries" = "true" ]; then
         echo "Remove old versions of switch.db and *.rpki_cache"
-        FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch --index-filter \
+        FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch \
+        -f --index-filter \
         'git rm --cached --ignore-unmatch **/switch.db **/*.rpki_cache >/dev/null' HEAD
     fi
 
