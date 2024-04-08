@@ -237,7 +237,9 @@ connect_two_interfaces() {
 # Otherwise, assume that both containers are services.
 # We need a metric value for the default route and use ClientGroup for that,
 # so each group must have a unique ClientGroup value (which it should).
-# for this interface. We add
+# for this interface.
+# We also need a static route that routes the group subnet via each group interface,
+# otherwise all traffic will be routed to the default route with the lowest metric.
 connect_service_interfaces() {
 
     if (($UID != 0)); then
@@ -299,6 +301,8 @@ connect_service_interfaces() {
     # Different metrics are needed to add multiple default groups.
     if [ "$client_group" != "-1" ]; then
         ip netns exec $pid_service ip route add default via ${client_subnet%/*} metric $client_group
+        # All containers need a group route to be directly reachable.
+        ip netns exec $pid_service ip route add $(subnet_group $client_group) via ${client_subnet%/*}
     fi
 }
 
