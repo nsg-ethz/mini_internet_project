@@ -300,7 +300,12 @@ connect_service_interfaces() {
     # configure static route to each group if group_subnet is not -1
     # Different metrics are needed to add multiple default groups.
     if [ "$client_group" != "-1" ]; then
-        ip netns exec $pid_service ip route add default via ${client_subnet%/*} metric $client_group
+        # Matrix and Measurement need a default route to send arbitrary
+        # traffic via any group interface.
+        # DNS container does not need this default route.
+        if [ "$service_container" != "DNS" ]; then
+            ip netns exec $pid_service ip route add default via ${client_subnet%/*} metric $client_group
+        fi
         # All containers need a group route to be directly reachable.
         ip netns exec $pid_service ip route add $(subnet_group $client_group) via ${client_subnet%/*}
     fi
