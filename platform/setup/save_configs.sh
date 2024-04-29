@@ -71,7 +71,6 @@ for ((k=0;k<n_groups;k++)); do
     # Now fill them with content.
     # ===========================
     declare -A l2_id
-    declare -A l2_cur
 
     for ((i=0;i<n_routers;i++)); do
         router_i=(${routers[$i]})
@@ -80,7 +79,6 @@ for ((k=0;k<n_groups;k++)); do
         property2="${router_i[2]}"
         l2_name=$(echo $property2 | cut -d ':' -f 1 | cut -f 2 -d '-')
         l2_id[$l2_name]=1000000
-        l2_cur[$l2_name]=0
     done
 
     # Routers and hosts.
@@ -147,16 +145,14 @@ for ((k=0;k<n_groups;k++)); do
         for ((l=0;l<n_l2_switches;l++)); do
             switch_l=(${l2_switches[$l]})
             l2_name="${switch_l[0]}"
-            sname="${switch_l[1]}"
-            subnet=$(subnet_sshContainer_groupContainer "${group_number}" "${l2_id[$l2_name]}" "${l2_cur[$l2_name]}" "switch")
-            savedir="\${dirname}/$sname"
+            s_name="${switch_l[1]}"
+            subnet=$(subnet_sshContainer_groupContainer "${group_number}" "${l2_id[$l2_name]}" "$l" "switch")
+            savedir="\${dirname}/$s_name"
 
-            echo "echo ${sname}"
+            echo "echo ${s_name}"
             echo "mkdir -p $savedir"
             echo "save $savedir/switch.db      $subnet \"ovsdb-client backup\""
             echo "save $savedir/switch.summary $subnet \"ovs-vsctl show\""
-
-            l2_cur[$l2_name]=$((${l2_cur[$l2_name]}+1))
         done
 
         for ((l=0;l<n_l2_hosts;l++)); do
@@ -164,7 +160,7 @@ for ((k=0;k<n_groups;k++)); do
             hname="${host_l[0]}"
             if [[ "$hname" != *VPN* ]];then
                 l2_name="${host_l[2]}"
-                subnet=$(subnet_sshContainer_groupContainer "${group_number}" "${l2_id[$l2_name]}" "${l2_cur[$l2_name]}" "L2-host")
+                subnet=$(subnet_sshContainer_groupContainer "${group_number}" "${l2_id[$l2_name]}" "$l" "L2-host")
                 savedir="\${dirname}/${hname}"
 
                 echo "echo ${hname}"
@@ -172,8 +168,6 @@ for ((k=0;k<n_groups;k++)); do
                 echo "save $savedir/host.ip     $subnet \"ip addr\""
                 echo "save $savedir/host.route  $subnet \"ip route\""
                 echo "save $savedir/host.route6 $subnet \"ip -6 route\""
-
-                l2_cur[$l2_name]=$((${l2_cur[$l2_name]}+1))
             fi
         done
     } >> $file_loc
