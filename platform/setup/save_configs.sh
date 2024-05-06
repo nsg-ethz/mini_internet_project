@@ -98,25 +98,30 @@ for ((k=0;k<n_groups;k++)); do
         fi
 
         {
-            echo "echo ${rname} router"
-            echo "mkdir -p $savedir"
+            if [[ $i == 0 || ${#router_i[@]} -le 4 || "${router_i[4]}" != "ALL" ]]; then
+                # Router (only once if "ALL" is specified)
+                echo "echo ${rname} router"
+                echo "mkdir -p $savedir"
+                echo "save $savedir/router.conf      $subnet_router \\\"vtysh -c \\'sh run\\'\\\""
+                echo "save $savedir/router.rib.json  $subnet_router \\\"vtysh -c \\'sh ip route json\\'\\\" \\| grep -v uptime"
+                if [ "${rcmd}" == "linux" ]; then
+                    # If we have linux access, we may also configure tunnels, so store that output.
 
-            # Router
-            echo "save $savedir/router.conf      $subnet_router \\\"vtysh -c \\'sh run\\'\\\""
-            echo "save $savedir/router.rib.json  $subnet_router \\\"vtysh -c \\'sh ip route json\\'\\\" \\| grep -v uptime"
-            if [ "${rcmd}" == "linux" ]; then
-                # If we have linux access, we may also configure tunnels, so store that output.
-
-                # Add tunnels and ipv6 routes.
-                echo "save $savedir/router.rib6.json $subnet_router \\\"vtysh -c \\'sh ipv6 route json\\'\\\" \\| grep -v uptime"
-                echo "save $savedir/router.tunnels   $subnet_router ip tunnel show"
+                    # Add tunnels and ipv6 routes.
+                    echo "save $savedir/router.rib6.json $subnet_router \\\"vtysh -c \\'sh ipv6 route json\\'\\\" \\| grep -v uptime"
+                    echo "save $savedir/router.tunnels   $subnet_router ip tunnel show"
+                fi
             fi
 
             # Host
-            echo "echo ${rname} host"
-            echo "save $savedir/host.ip         $subnet_host ip addr"
-            echo "save $savedir/host.route      $subnet_host ip route"
-            echo "save $savedir/host.route6     $subnet_host ip -6 route"
+            host="host"
+            if [[ ${#router_i[@]} -gt 4 && "${router_i[4]}" == "ALL" ]]; then
+                host="host$i"  # Add index to host name if "ALL" is specified.
+            fi
+            echo "echo ${rname} $host"
+            echo "save $savedir/$host.ip         $subnet_host ip addr"
+            echo "save $savedir/$host.route      $subnet_host ip route"
+            echo "save $savedir/$host.route6     $subnet_host ip -6 route"
 
             # If the host runs routinator, save routinator cache.
             htype=$(echo $property2 | cut -d ':' -f 1)
@@ -125,7 +130,7 @@ for ((k=0;k<n_groups;k++)); do
                 if [[ "${htype}" == *"routinator"* ]]; then
                     # echo "save $savedir/host.rpki_cache $subnet_host \"/usr/local/bin/routinator -qq update \; tar -czC /root/.rpki-cache repository\""
                     # Without update to speed up things.
-                    echo "save $savedir/host.rpki_cache $subnet_host \"tar -czC /root/.rpki-cache repository\""
+                    echo "save $savedir/$host.rpki_cache $subnet_host \"tar -czC /root/.rpki-cache repository\""
                 fi
             fi
         } >> $file_loc
