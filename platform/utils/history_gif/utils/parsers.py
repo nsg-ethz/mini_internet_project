@@ -15,16 +15,15 @@ from typing import Dict, List, Optional, Tuple
 from datetime import datetime as dt
 
 
-def find_looking_glass_textfiles(directory: os.PathLike) \
-        -> Dict[int, Dict[str, Path]]:
+def find_looking_glass_textfiles(directory: os.PathLike) -> Dict[int, Dict[str, Path]]:
     """Find all available looking glass files."""
     results = {}
     for groupdir in Path(directory).iterdir():
-        if not groupdir.is_dir() or not groupdir.name.startswith('g'):
+        if not groupdir.is_dir() or not groupdir.name.startswith("g"):
             # Groups have directories gX with X being the group number.
             # Ignore other dirs.
             continue
-        group = int(groupdir.name.replace('g', ''))
+        group = int(groupdir.name.replace("g", ""))
         groupresults = {}
         for routerdir in groupdir.iterdir():
             if not routerdir.is_dir():
@@ -39,8 +38,7 @@ def find_looking_glass_textfiles(directory: os.PathLike) \
     return results
 
 
-def parse_looking_glass_json(directory: os.PathLike) -> \
-        Dict[int, Dict[str, Dict]]:
+def parse_looking_glass_json(directory: os.PathLike) -> Dict[int, Dict[str, Dict]]:
     """Load looking glass json data.
 
     Dict structure: AS -> Router -> looking-glass data.
@@ -48,11 +46,11 @@ def parse_looking_glass_json(directory: os.PathLike) -> \
     # Note: group 1 = AS 1; group/as is used interchangeable.
     results = {}
     for groupdir in Path(directory).iterdir():
-        if not groupdir.is_dir() or not groupdir.name.startswith('g'):
+        if not groupdir.is_dir() or not groupdir.name.startswith("g"):
             # Groups have directories gX with X being the group number.
             # Ignore other dirs.
             continue
-        group = int(groupdir.name.replace('g', ''))
+        group = int(groupdir.name.replace("g", ""))
         groupresults = {}
         for routerdir in groupdir.iterdir():
             if not routerdir.is_dir():
@@ -61,7 +59,7 @@ def parse_looking_glass_json(directory: os.PathLike) -> \
             looking_glass_file = routerdir / "router.rib.json"
             if looking_glass_file.is_file():
                 try:
-                    with open(looking_glass_file, 'r') as file:
+                    with open(looking_glass_file, "r") as file:
                         groupresults[routerdir.name] = json.load(file)
                 except json.decoder.JSONDecodeError:
                     # No route data
@@ -71,18 +69,18 @@ def parse_looking_glass_json(directory: os.PathLike) -> \
     return results
 
 
-def parse_as_config(filename: os.PathLike,
-                    router_config_dir: Optional[os.PathLike] = None) \
-        -> Dict[int, Dict]:
+def parse_as_config(
+    filename: os.PathLike, router_config_dir: Optional[os.PathLike] = None
+) -> Dict[int, Dict]:
     """Return dict of ASes with their type and optionally connected routers.
 
     The available routers are only loaded if `router_config_dir` is provided.
     """
-    reader = csv.reader(_read_clean(filename), delimiter='\t')
+    reader = csv.reader(_read_clean(filename), delimiter="\t")
     results = {}
     for row in reader:
         asn = int(row[0])
-        results[asn] = {'type': row[1]}
+        results[asn] = {"type": row[1]}
 
         if router_config_dir is not None:
             router_config_file = Path(router_config_dir) / Path(row[3])
@@ -90,15 +88,13 @@ def parse_as_config(filename: os.PathLike,
             if not router_config_file.is_file():
                 continue
 
-            r_reader = csv.reader(_read_clean(
-                router_config_file), delimiter='\t')
-            results[asn]['routers'] = [row[0] for row in r_reader]
+            r_reader = csv.reader(_read_clean(router_config_file), delimiter="\t")
+            results[asn]["routers"] = [row[0] for row in r_reader]
 
     return results
 
 
-def parse_public_as_connections(filename: os.PathLike) \
-        -> List[Tuple[Dict, Dict]]:
+def parse_public_as_connections(filename: os.PathLike) -> List[Tuple[Dict, Dict]]:
     """Parse the (public) file with inter-as config.
 
     This parses the "public" file which contains assigned IP addresses;
@@ -109,12 +105,15 @@ def parse_public_as_connections(filename: os.PathLike) \
     for the interface.
     """
     header = [
-        'a_asn', 'a_router', 'a_role',
-        'b_asn', 'b_router', 'b_role',
-        'a_ip',
+        "a_asn",
+        "a_router",
+        "a_role",
+        "b_asn",
+        "b_router",
+        "b_role",
+        "a_ip",
     ]
-    reader = csv.DictReader(
-        _read_clean(filename), fieldnames=header, delimiter='\t')
+    reader = csv.DictReader(_read_clean(filename), fieldnames=header, delimiter="\t")
 
     data = {}
     for row in reader:
@@ -129,25 +128,22 @@ def parse_public_as_connections(filename: os.PathLike) \
         elif (b, a) in data:
             # Connection is already in database, just add
             # IP Address for the other side.
-            data[(b, a)][1]['ip'] = row['a_ip']
+            data[(b, a)][1]["ip"] = row["a_ip"]
         else:
             # Add new connection
             data[(a, b)] = tuple(
-                {key: row[f"{side}_{key}"]
-                    for key in ["asn", "router", "role"]}
+                {key: row[f"{side}_{key}"] for key in ["asn", "router", "role"]}
                 for side in ("a", "b")
             )
-            data[(a, b)][0]['ip'] = row['a_ip']
-            data[(a, b)][1]['ip'] = None
+            data[(a, b)][0]["ip"] = row["a_ip"]
+            data[(a, b)][1]["ip"] = None
 
     # Sort by AS.
-    connections = sorted(data.values(),
-                         key=lambda x: (x[0]['asn'], x[1]['asn']))
+    connections = sorted(data.values(), key=lambda x: (x[0]["asn"], x[1]["asn"]))
     return connections
 
 
-def parse_as_connections(filename: os.PathLike) \
-        -> List[Tuple[Dict, Dict]]:
+def parse_as_connections(filename: os.PathLike) -> List[Tuple[Dict, Dict]]:
     """Parse the full config file with inter-as configs.
 
     Each tuple contains one dict per entity in the connection with AS number,
@@ -155,44 +151,48 @@ def parse_as_connections(filename: os.PathLike) \
     (bandwidth, delay, and subnet).
     """
     header = [
-        'a_asn', 'a_router', 'a_role',
-        'b_asn', 'b_router', 'b_role',
-        'bw', 'delay', 'subnet',
+        "a_asn",
+        "a_router",
+        "a_role",
+        "b_asn",
+        "b_router",
+        "b_role",
+        "bw",
+        "delay",
+        "subnet",
     ]
-    reader = csv.DictReader(
-        _read_clean(filename), fieldnames=header, delimiter='\t')
+    reader = csv.DictReader(_read_clean(filename), fieldnames=header, delimiter="\t")
 
     connections = []
     for row in reader:
         row["a_asn"] = int(row["a_asn"])
         row["b_asn"] = int(row["b_asn"])
         link = {
-            'bandwith': row['bw'],
-            'delay': row['delay'],
-            'subnet': row['subnet'],
+            "bandwith": row["bw"],
+            "delay": row["delay"],
+            "subnet": row["subnet"],
         }
 
         connection = tuple(
             {key: row[f"{side}_{key}"] for key in ["asn", "router", "role"]}
-            for side in ('a', 'b')
+            for side in ("a", "b")
         )
         # Now replace N/As with None and add link data to both sides.
         for sidedata in connection:
-            if sidedata['router'] == 'N/A':
-                sidedata['router'] = None
+            if sidedata["router"] == "N/A":
+                sidedata["router"] = None
             sidedata.update(link)
         connections.append(connection)
 
-    return sorted(connections, key=lambda x: (x[0]['asn'], x[1]['asn']))
+    return sorted(connections, key=lambda x: (x[0]["asn"], x[1]["asn"]))
 
 
 def parse_matrix_connectivity(filename: os.PathLike):
     """Parse the connectivity file provided by the matrix container."""
     results = []
-    reader = csv.reader(_read_clean(filename), delimiter='\t')
+    reader = csv.reader(_read_clean(filename), delimiter="\t")
     for row in reader:
-        results.append((int(row[0]), int(row[1]),
-                       True if row[2] == 'True' else False))
+        results.append((int(row[0]), int(row[1]), True if row[2] == "True" else False))
     return results
 
 
@@ -205,15 +205,15 @@ def parse_matrix_stats(filename: os.PathLike):
         return None, None
 
     return (
-        dt.fromisoformat(stats['current_time']),
-        stats['update_frequency'],
+        dt.fromisoformat(stats["current_time"]),
+        stats["update_frequency"],
     )
 
 
 def _read_json_safe(filename: os.PathLike, sleep_time=0.01, max_attempts=1):
     """Read a json file, waiting if the file is currently modified."""
     path = Path(filename)
-    for current_attempt in range(1, max_attempts+1):
+    for current_attempt in range(1, max_attempts + 1):
         try:
             with open(path) as file:
                 return json.load(file)
@@ -224,7 +224,7 @@ def _read_json_safe(filename: os.PathLike, sleep_time=0.01, max_attempts=1):
                 # print('We assume empty BGP configuration for this router')
 
                 # return the same json as if BGP was not running in the router.
-                return {'warning': 'Default BGP instance not found'}
+                return {"warning": "Default BGP instance not found"}
 
             # The file may have changed, wait a bit.
             # time.sleep(sleep_time)
@@ -233,4 +233,4 @@ def _read_json_safe(filename: os.PathLike, sleep_time=0.01, max_attempts=1):
 def _read_clean(filename: os.PathLike) -> List[str]:
     """Read a file and make sure that all delimiters are single tabs."""
     with open(Path(filename)) as file:
-        return [re.sub('\s+', '\t', line) for line in file]
+        return [re.sub("\s+", "\t", line) for line in file]

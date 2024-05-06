@@ -5,17 +5,19 @@ import argparse
 import json
 import math
 import os
+import shutil
 import subprocess
 from datetime import datetime as dt
+from functools import partial
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import List
 
 import imageio as iio
 import jinja2
-from pqdm.processes import pqdm
 from pygifsicle import optimize
 from tqdm import tqdm
+from tqdm.contrib.concurrent import process_map
 
 # Local imports.
 from utils import matrix, parsers
@@ -31,12 +33,13 @@ default_config_dir = scriptdir.parent.parent / "config"
 default_history_dir = scriptdir.parent.parent / "groups/history"
 
 
-def main(config_dir, history_dir, approx_runtime, approx_holdtime):
+def main(config_dir, history_dir, approx_runtime, approx_holdtime, filter=False):
     """Parse all data and create the gif."""
     status_dicts = load_commits(history_dir, config_dir)
+    assert len(status_dicts) > 0, "No status dicts found :("
 
-    # Little hack: stop while we were best :D also reduce noise.
-    status_dicts = filter_status(status_dicts)
+    if filter and len(status_dicts) > 1:
+        status_dicts = filter_status(status_dicts, stop_at_best=False)
 
     html_filenames = create_html(status_dicts)
     png_filenames = create_pngs(html_filenames)
@@ -57,7 +60,6 @@ def load_commits(history_dir, config_dir):
     config_dir = Path(config_dir)
     # First, get all commits with updates to ./matrix/connectivity.txt
     # Get pairs of hashes and timestamps.
-    # TODO!
     revisions = run_git(
         history_dir,
         [
@@ -69,6 +71,9 @@ def load_commits(history_dir, config_dir):
             "matrix/",
         ],
     ).split("\n")
+
+    # TODO
+    # revisions = revisions[:20]
 
     print(f"Found {len(revisions)} commits with config or matrix updates.")
 
@@ -82,14 +87,18 @@ def load_commits(history_dir, config_dir):
     )
 
     data = []
-    for _hash in tqdm(revisions):
-        rev_data = load_revision(
-            history_dir=history_dir,
-            revision=_hash,
-            as_data=as_data,
-            connection_data=connection_data,
-        )
-        data.append(rev_data)
+    _loader = partial(
+        load_revision_wrapper,
+        history_dir=history_dir,
+        as_data=as_data,
+        connection_data=connection_data,
+    )
+    # data = list(map(_loader, revisions[:10]))
+    data = process_map(
+        _loader, revisions, desc="loading revisions", max_workers=32, chunksize=1
+    )
+    data = [item for item in data if item is not None]
+    print(f"{len(data)}/{len(revisions)} revisions are valid.")
 
     # Check for changes to validity and connectivity.
     data = sorted(data, key=lambda item: item["last_updated"])
@@ -100,10 +109,30 @@ def load_commits(history_dir, config_dir):
         ):
             unique.append(item)
 
+    print(f"Loaded {len(unique)} status dicts.")
     return unique
 
 
-def load_revision(*, history_dir, revision, as_data, connection_data):
+def load_revision_wrapper(revision, *args, **kwargs):
+    """We experiences an (yet unexplained error) with weird commits.
+
+    These contain data about the wrong topology. We are not sure why they are
+    there, and why they exists only for certain days, but it will cause the
+    code to crash. We exclude them.
+    """
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    invalid_file = cache_dir / f"{revision}_invalid.json"
+    if invalid_file.is_file():
+        return None
+    try:
+        return load_revision(revision, *args, **kwargs)
+    except AssertionError as error:
+        with open(invalid_file, "w") as file:
+            file.write(str(error))
+        return None
+
+
+def load_revision(revision, *, history_dir, as_data, connection_data):
     """Load connectivity and validity from a specific git revision."""
     history_dir = Path(history_dir)
     cache_dir.mkdir(parents=True, exist_ok=True)
@@ -117,20 +146,30 @@ def load_revision(*, history_dir, revision, as_data, connection_data):
     except FileNotFoundError:
         pass
 
+    all_ases = set(k for k, v in as_data.items() if v["type"] == "AS")
+
     # use git worktree to get files in a temporary directory.
     with TemporaryDirectory() as tmpdirname:
         tmpdir = Path(tmpdirname)
         run_git(history_dir, ["worktree", "add", tmpdir, revision])
-        timestamp = run_git(
-            tmpdir, ["log", "-1", "--format=%ad", "--date=iso-strict"]
-        ).strip()
 
         # Load data
-        looking_glass_data = parsers.parse_looking_glass_json(tmpdir / "configs")
-
         connectivity_data = parsers.parse_matrix_connectivity(
             tmpdir / "matrix" / "connectivity.txt"
         )
+        found_ases = set(
+            asn for (src, dst, _) in connectivity_data for asn in (src, dst)
+        )
+        assert found_ases == all_ases
+
+        looking_glass_data = parsers.parse_looking_glass_json(tmpdir / "configs")
+        # Bug in 2024: TA ASes are not saved correctly, can't check this.
+        # assert all_ases.issubset(set(looking_glass_data))
+
+        # Commit timestamp
+        timestamp = run_git(
+            tmpdir, ["log", "-1", "--format=%ad", "--date=iso-strict"]
+        ).strip()
 
     results = {
         "connectivity": matrix.check_connectivity(as_data, connectivity_data),
@@ -148,7 +187,10 @@ def load_revision(*, history_dir, revision, as_data, connection_data):
 
 
 def run_git(config_dir, command):
-    """Run a git command."""
+    """Run a git command.
+
+    We use sudo as this i needed for the default history dir. Maybe adjust?
+    """
     base_command = ["git", "-C", str(config_dir)]
     # Show command.
     # print(" ".join(base_command + command))
@@ -165,15 +207,16 @@ def run_git(config_dir, command):
 # =============================================================================
 
 
-def filter_status(status_dicts):
+def filter_status(status_dicts, stop_at_best=True):
     """Clean up which statuses to use."""
     print("Ending with best state and filtering changes below 1 percent.")
     valid, invalid, failure = zip(
         *[analyze(status_dict) for status_dict in status_dicts]
     )
-    # Use lowest failure as last index.
-    last_index = len(failure) - failure[::-1].index(min(failure)) - 1
-    status_dicts = status_dicts[:last_index]
+    if stop_at_best:
+        # Use lowest failure as last index.
+        last_index = len(failure) - failure[::-1].index(min(failure)) - 1
+        status_dicts = status_dicts[:last_index]
 
     # Also filter out items with very little change
     min_change = 1
@@ -230,7 +273,7 @@ def sort_numeric(list_of_strings):
 
 def create_html(status_dicts: List[dict]):
     """Render html files."""
-    jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(scriptdir))
+    jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(str(scriptdir)))
     jinja_env.filters["sortnum"] = sort_numeric
     matrix_template = jinja_env.get_template("matrix.html")
     html_dir.mkdir(parents=True, exist_ok=True)
@@ -279,37 +322,43 @@ def create_pngs(filenames, size=(2048, 2048), n_jobs=16):
         if not png_file.is_file():
             funcargs.append((filename, png_file, size))
 
-    # # Parallelize with status bar :)
-    if funcargs:
-        pqdm(
-            funcargs,
-            take_screenshot,
-            n_jobs=n_jobs,
-            argument_type="args",
-            desc="generate pngs",
-        )
-
+    # Parallelize with status bar :)
+    process_map(
+        take_screenshot,
+        funcargs,
+        desc="take screenshots",
+        max_workers=n_jobs,
+        chunksize=1,
+    )
     return sorted(all_pngs)
 
 
-def take_screenshot(input_path, output_path, size):
-    userdir = Path(cache_dir) / Path(input_path).name
-    userdir.mkdir(parents=True, exist_ok=True)
+def take_screenshot(args):
+    """Take screenshot. Create a user-data-dir to enable multiprocessing."""
+    input_path, output_path, size = args
+    userdir = Path(cache_dir) / Path(input_path).stem
+    userdir.mkdir(parents=True, exist_ok=False)
     command = [
         chrome_cmd,
         "--headless=new",  # better results?
         "--disable-gpu",
         "--log-level=3",
         "--hide-scrollbars",
+        # "--no-sandbox",  # so we can run as root as well.
         f"--user-data-dir={userdir}",
         f"--screenshot={output_path}",
         f"--window-size={size[0]},{size[1]}",
         f"{input_path}",
     ]
-
-    subprocess.run(
-        command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True
-    )
+    try:
+        subprocess.run(
+            command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True
+        )
+    except subprocess.CalledProcessError as error:
+        print(" ".join(command))
+        raise error
+    finally:
+        shutil.rmtree(userdir)
 
 
 # =============================================================================
@@ -363,11 +412,19 @@ def create_gif(
     # Now actually load files.
 
     frames = [
-        iio.imread(file) for file, duration in zip(filenames, durations) if duration
+        iio.v3.imread(file) for file, duration in zip(filenames, durations) if duration
     ]
 
     print("create gif.")
-    iio.mimsave(gif_path, frames, "GIF", duration=durations)
+    iio.plugins.freeimage.download()  # Not sure if still needed.
+    iio.v3.imwrite(
+        gif_path,
+        frames,
+        plugin="GIF-FI",
+        duration=durations,
+        palettesize=32,
+        quantizer="nq",  # "wu" is much faster but messes up text color.
+    )
     print("optimize gif.")
     optimize(
         gif_path,
@@ -398,14 +455,19 @@ if __name__ == "__main__":
         default=default_history_dir,
     )
     parser.add_argument(
-        "--run", type=int, help="Approximate runtime of the gif in seconds.", default=9
+        "--run", type=int, help="Approximate runtime of the gif in seconds.", default=12
     )
     parser.add_argument(
         "--hold",
         type=int,
         help="Approximate hold time of final frame in seconds " "after gif runtime.",
-        default=1,
+        default=3,
+    )
+    parser.add_argument(
+        "--filter",
+        action="store_true",
+        help="Filter status dicts to only show larger changes.",
     )
     args = parser.parse_args()
 
-    main(args.config, args.history, args.run, args.hold)
+    main(args.config, args.history, args.run, args.hold, args.filter)

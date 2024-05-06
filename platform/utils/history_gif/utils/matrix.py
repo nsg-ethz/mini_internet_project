@@ -34,6 +34,7 @@ def check_validity(as_data, connection_data, looking_glass_data):
     """Check if the paths between ASes are valid."""
     # Prepare AS objects.
     dic_as = {asn: AS(asn, data["type"]) for asn, data in as_data.items()}
+    all_ases = set(dic_as.keys())
 
     # Add connections between them.
     for c1, c2 in connection_data:
@@ -64,26 +65,25 @@ def check_validity(as_data, connection_data, looking_glass_data):
         _as.compute_providers_rec()
         _as.compute_peers_rec()
 
-    # check if another ooutput format is better!
+    # check if another output format is better!
     results = defaultdict(dict)
     all_paths = get_all_paths_opt(looking_glass_data)
     for asn in dic_as:
         if dic_as[asn].type == "AS":
-            # path_to_as = get_path_to_as(asn, as_data, looking_glass_data)
-            paths = all_paths[asn]
-            for asdest, asdestpaths in paths.items():
-                # paths_str = ''
-                valid = True
-                # TODO replace with list output.
-                # for path in path_to_as[asdest]:
-                for path in asdestpaths:
-                    if path_checker(dic_as, path):
-                        valid = False
+            if asn not in all_paths:
+                # Bug in 2024: TA-AS looking glass data is not saved correctly.
+                # Assume it's valid.
+                for asdest in all_ases:
+                    results[asn][asdest] = True
+            else:
+                paths = all_paths[asn]
+                for asdest, asdestpaths in paths.items():
+                    valid = True
+                    for path in asdestpaths:
+                        if path_checker(dic_as, path):
+                            valid = False
 
-                    # paths_str += '-'.join(map(lambda x: str(x), path))+','
-
-                results[asn][asdest] = valid
-                # results.append((asn, asdest, status, paths_str[:-1]))
+                    results[asn][asdest] = valid
 
     return results
 

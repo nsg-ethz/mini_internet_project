@@ -12,6 +12,9 @@ In addition, the following programs are required:
 - google-chrome
 - gifsicle (for optimized gifs)
 
+Also, you need to make sure that the history directory can be read without
+root permissions.
+
 ### Problems with Chromium in 2023
 
 In 2023, I was not able to take proper fullscreen screenshots with Chromium
@@ -30,17 +33,19 @@ You need:
 - The location of the mini internet config (to get relationships etc.)
 - The location of the config and matrix history repo.
   (This code goes through all commits to fetch changes)
-- And approximate time how long you want the gif to run, e.g. `9`.
-- And how many seconds you want to hold the final frame, e.g. `1`.
+- And approximate time how long you want the gif to run, e.g. `12`.
+- And how many additional seconds you want to hold the final frame, e.g. `3`.
 
 Then run:
 
 ```
-python make_gif.py --run=9 --hold=1
+python make_gif.py --run=12 --hold=3
 ```
 
 You can use the `--config` and `--history` flags if the config dir and history
 repo are not in their default locations.
+
+You can use `--filter` to remove changes below 1%.
 
 Parsing the history for the first time can easily take 15-30 minutes,
 but afterwards all results are chached and changes to the gif can be made quickly.
