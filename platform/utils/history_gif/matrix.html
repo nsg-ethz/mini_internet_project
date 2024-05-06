@@ -1,0 +1,95 @@
+{# Note: sortnum (used below) is a custom filter to sort by numeric value. #}
+{# Use a repeating-linear-gradient to put a strping pattern over the #}
+{# progress bar if any element is at 0% #}
+{% macro stripes(condition) -%}
+{% if condition -%}
+style="background-image: repeating-linear-gradient(45deg, transparent, transparent 4px, white 4px, white 6px);"
+{%- endif %}
+{%- endmacro %}
+{% macro stacknumber(asn) -%}
+{% if asn|int >= 100 -%}<span style="margin-bottom:-0.25rem">{{ asn|int // 100}}</span>{% endif %}
+{% if asn|int >= 10 -%}<span style="margin-bottom:-0.25rem">{{ (asn|int % 100) // 10}}</span>{% endif %}
+<span>{{ asn|int % 10}}</span>
+{%- endmacro %}
+
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" charset="UTF-8">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body style="background-color:white;">
+    <!-- Matrix is allowed to spread out more. -->
+    <!-- We use a trick: padding-bottom is relative to cell _width_, -->
+    <!-- Thus setting it to 85% gives us (almost) square cells. -->
+    {% if connectivity %}
+    {% set n = connectivity|length %}
+    <div class="max-w-full m-4 max-h-full">
+        <div class="mb-4 grid border border-white/50 border-collapse mono {% if n>= 50 %}text-xs{% endif %}"
+            style="grid-template-columns: fit-content(100px) repeat({{ n }}, minmax(20px, 1fr));">
+            <!-- header row. -->
+            <div class="border border-white/50 text-center self-end">AS</div>
+            {% for asn in (connectivity|sortnum) %}
+            <div class="border border-white/50 text-center even:bg-neutral-200 flex flex-col justify-end">
+                {{ stacknumber(asn) }}
+            </div>
+            {% endfor %}
+            <!-- content rows -->
+            <!-- Add a little padding to ASN to make it look nicer. -->
+            {% for asn in connectivity|sortnum %}
+            <div class="border border-white/50 even:bg-neutral-200 text-right pr-1">{{asn}}</div>
+            {% for asn_dst in connectivity[asn]|sortnum %}
+            {% if not connectivity[asn][asn_dst] %}
+            <div class="border border-white/50 bg-[#d5605e]" title="AS{{asn}} <-> AS{{asn_dst}}: Not Reachable"
+                style="padding-bottom: 80%;">
+            </div>
+            {% else %}
+            {% if validity and (asn in validity) and (asn_dst in validity[asn]) %}
+            {% if validity[asn][asn_dst] %}
+            <div class="border border-white/50 bg-[#56c157]"
+                title="AS{{asn}} <-> AS{{asn_dst}}: Reachable with valid path" style="padding-bottom: 80%;">
+            </div>
+            {% else %}
+            <div class="border border-white/50 bg-[#f0ad4e]"
+                title="AS{{asn}} <-> AS{{asn_dst}}: Reachable with invalid path" style="padding-bottom: 80%;">
+            </div>
+            {% endif %}
+            {% else %}
+            <div class="border border-white/50 bg-[#56c157]"
+                title="AS{{asn}} <-> AS{{asn_dst}}: Reachable, but validity of path could not be verified."
+                style="padding-bottom: 80%;">
+            </div>
+            {% endif %}
+            {% endif %}
+            {% endfor %}
+            {% endfor %}
+        </div>
+
+        <!-- Progress bar -->
+        <div class="mb-4 w-full rounded-lg border border-neutral-300 bg-neutral-300 flex">
+            <div class="basis-[{{valid}}%] rounded-l-lg px-2 p-1 bg-[#56c157]"
+                title="Reachable with valid path: {{valid}}%" {{stripes(not valid)}}>
+                {{valid}}%
+            </div>
+            <div class="basis-[{{invalid}}%] px-2 p-1 bg-[#f0ad4e] border-x-2 border-white/50"
+                title="Reachable with invalid path: {{invalid}}%" {{stripes(not invalid)}}>
+                {{invalid}}%
+            </div>
+            <div class="basis-[{{failure}}%] px-2 p-1 rounded-r-lg bg-[#d5605e]" title="Not reachable: {{failure}}%"
+                {{stripes(not failure)}}>
+                {{failure}}%
+            </div>
+        </div>
+        <p class="mb-4">
+            This connectivity matrix indicates the networks that each group can read with a valid path (<span
+                class="bg-[#56c157]">&nbsp;&nbsp;&nbsp;</span>), can reach
+            with invalid path (<span class="bg-[#f0ad4e]">&nbsp;&nbsp;&nbsp;</span>), or cannot reach (<span
+                class="bg-[#d5605e]">&nbsp;&nbsp;&nbsp;</span>).
+        </p>
+    </div>
+    {% endif %}
+
+</body>
+
+</html>
