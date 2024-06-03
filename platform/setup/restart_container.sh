@@ -402,7 +402,7 @@ _restart_one_l3_host() {
 }
 
 # restart one router
-_reconnect_one_router() {
+_restart_one_router() {
 
     # check enough arguments are provided
     if [ "$#" -ne 3 ]; then
@@ -534,6 +534,7 @@ _reconnect_one_router() {
 
     # configure the tunnel and vlan
     local RouterPID=$(get_container_pid "${RouterCtnName}" "False")
+    create_netns_symlink "${RouterPID}"
     read TunnelEndA TunnelEndB <"${DIRECTORY}/config/l2_tunnel.txt"
     for RouterName in "${!RouterToDCId[@]}"; do
         DCId="${RouterToDCId[$RouterName]}"
@@ -1092,8 +1093,9 @@ _restart_matrix() {
 }
 
 if [[ "$#" -eq 6 ]]; then
+    # $1: platform directory
     RestartAS=$2
-    RestartRegion=$3     # ZURI/L2
+    RestartRegion=$3     # ZURI/L2/IXP
     RestartDevice=$4     # host0/host/router/S1/IXP/FIFA_1
     RestartDeviceType=$5 # router/l3-host/switch/l2-host/ixp
     RestartWithConfig=$6 # True or False, used to configure hosts as their network config is reset after restarting
@@ -1105,7 +1107,7 @@ if [[ "$#" -eq 6 ]]; then
 
     # restart a router
     if [[ "${RestartDeviceType}" == router ]]; then
-        _reconnect_one_router "${RestartAS}" "${RestartRegion}" "${RestartWithConfig}"
+        _restart_one_router "${RestartAS}" "${RestartRegion}" "${RestartWithConfig}"
     fi
 
     # restart a L2 host
@@ -1120,6 +1122,7 @@ if [[ "$#" -eq 6 ]]; then
 
     # restart an IXP
     if [[ "${RestartDeviceType}" == ixp ]]; then
+        # put a random region
         _restart_one_ixp "${RestartAS}" "${RestartRegion}" "${RestartWithConfig}"
     fi
 else
