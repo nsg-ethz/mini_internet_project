@@ -216,6 +216,9 @@ connect_two_interfaces() {
 
     # configure the thoughput on both interfaces with tc
 
+    # sleep some time to avoid "Failed to find specified qdisc" error
+    sleep 1
+
     # 1
     ip netns exec $pid1 tc qdisc add dev $interface1 root handle 1:0 netem delay $delay
     ip netns exec $pid1 tc qdisc add dev $interface1 parent 1:1 handle 10: tbf rate \

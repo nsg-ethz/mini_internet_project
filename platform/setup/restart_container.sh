@@ -17,14 +17,13 @@ if (($UID != 0)); then
     exit 1
 fi
 
-# print the usage if not enough arguments are provided
-if [[ "$#" -ne 6 ]] && [[ "$#" -ne 2 ]]; then
-    echo "Usage: $0 <directory> <AS> <Region> <Device> <DeviceType> <HasConfig>"
-    echo "       $0 <directory> <service>"
+# make sure the script is only executed in the platform/ directory
+if [[ ! $(basename "$PWD") == "platform" ]]; then
+    echo "Please execute the script in the platform/ directory"
     exit 1
 fi
 
-DIRECTORY=$(readlink -f $1)
+DIRECTORY=$(pwd)
 source "${DIRECTORY}"/config/variables.sh
 source "${DIRECTORY}"/config/subnet_config.sh
 source "${DIRECTORY}"/setup/_parallel_helper.sh
@@ -32,6 +31,39 @@ source "${DIRECTORY}"/groups/docker_pid.map
 source "${DIRECTORY}"/setup/_connect_utils.sh
 readarray ASConfig <"${DIRECTORY}"/config/AS_config.txt
 GroupNumber=${#ASConfig[@]}
+
+
+print_usage() {
+    echo "Usage: $0 router <AS> <Region>"
+    echo "       $0 l3-host <AS> <Region> [host|host[0-9]]"
+    echo "       $0 l2-host <AS> <Host>"
+    echo "       $0 switch <AS> <Region>"
+    echo "       $0 ssh <AS>"
+    echo "       $0 ixp <AS>"
+    echo "       $0 matrix"
+}
+
+
+# whether the given AS should be configured
+_has_config() {
+    local CurrentAS=$1
+
+    for ((k = 0; k < GroupNumber; k++)); do
+        GroupK=(${ASConfig[$k]}) # group config file array
+        GroupAS="${GroupK[0]}"   # ASN
+        GroupHasConfig="${GroupK[2]}"
+
+        if [[ "${GroupAS}" == "${CurrentAS}" ]]; then
+            if [[ "${GroupHasConfig}" == "Config" ]]; then
+                echo "True"
+            else
+                echo "False"
+            fi
+            break
+        fi
+    done
+}
+
 
 # return the map from a DC name to a DC id
 # it is based on the order of the DC name in the L3 router config file
@@ -316,15 +348,15 @@ _is_krill_or_routinator() {
 _restart_one_l3_host() {
 
     # check enough arguments are provided
-    if [ "$#" -ne 4 ]; then
-        echo "Usage: _restart_one_l3_host <AS> <Region> <Device> <HasConfig>"
+    if [ "$#" -ne 3 ]; then
+        echo "Usage: _restart_one_l3_host <AS> <Region> [host|host[0-9]]"
         exit 1
     fi
 
     local CurrentAS=$1
     local CurrentRegion=$2
     local CurrentHostName=$3
-    local HasConfig=$4
+    local HasConfig=$(_has_config "${CurrentAS}")
 
     local IsKrill=$(_is_krill_or_routinator "${CurrentAS}" "${CurrentHostName}" "{CurrentRegion}" "krill")
     local IsRoutinator=$(_is_krill_or_routinator "${CurrentAS}" "${CurrentRegion}" "{CurrentHostName}" "routinator")
@@ -405,14 +437,14 @@ _restart_one_l3_host() {
 _restart_one_router() {
 
     # check enough arguments are provided
-    if [ "$#" -ne 3 ]; then
-        echo "Usage: _reconnect_one_router <AS> <Region> <HasConfig>"
+    if [ "$#" -ne 2 ]; then
+        echo "Usage: _restart_one_router <AS> <Region>"
         exit 1
     fi
 
     local CurrentAS=$1
     local CurrentRegion=$2
-    local HasConfig=$3
+    local HasConfig=$(_has_config "${CurrentAS}")
 
     local RouterCtnName="${CurrentAS}_${CurrentRegion}router"
 
@@ -422,6 +454,8 @@ _restart_one_router() {
     local OldRouterPID=$(get_container_pid "${RouterCtnName}" "True")
     if [[ -n "${OldRouterPID}" ]]; then
         ip netns del "${OldRouterPID}" || true
+        # the rm only works if it is the first time to restart the container
+        # otherwise the pid is not found, but is fine
         rm -f /var/run/netns/"${OldRouterPID}" || true
     fi
 
@@ -473,27 +507,6 @@ _restart_one_router() {
 
                 read -r HostPID RouterPID HostInterface RouterInterface \
                     < <(connect_one_l3_host_router "${CurrentAS}" "${RouterRegion}" "${HostSuffix}")
-
-                if [[ "${HasConfig}" == "True" ]]; then
-
-                    local IsAllInOne=$(_is_all_in_one "${CurrentAS}")
-                    # configure the connected host
-                    if [[ "${IsAllInOne}" == "False" ]]; then
-                        local RegionID=$(_get_region_id "${CurrentAS}" "${CurrentRegion}")
-                        RouterSubnet="$(subnet_host_router "${CurrentAS}" "${RegionID}" "router")"
-                        HostSubnet="$(subnet_host_router "${CurrentAS}" "${RegionID}" "host")"
-                    else
-                        RouterSubnet="$(subnet_host_router "${CurrentAS}" "${HostSuffix}" "router")"
-                        HostSubnet="$(subnet_host_router "${CurrentAS}" "${HostSuffix}" "host")"
-                    fi
-
-                    # add the interface address and the default gateway on the host
-                    ip netns exec $HostPID ip addr add $HostSubnet dev $HostInterface
-                    ip netns exec $HostPID ip route add default via ${RouterSubnet%/*}
-
-                    echo "Configured host ${HostCtnName}"
-                fi
-
             fi
 
             echo "Reconnected router ${RouterCtnName} to host ${HostCtnName}"
@@ -552,7 +565,6 @@ _restart_one_router() {
             # if the current router is one end of the tunnel
             # if the tunnel was set before, the tunnel is gone after restarting the container, but the sit0 interface is kept
             # once a tunnel is set, the sit0 will be displayed on the server and all container!
-            # TODO: check the original topo to confirm it is expeted
             if [[ "${HasConfig}" == "True" ]]; then
                 if [[ "${RouterName}" == "${TunnelEndA}" ]] || [[ "${RouterName}" == "${TunnelEndB}" ]]; then
                     # configure the 6in4 tunnel
@@ -683,15 +695,14 @@ _restart_one_router() {
 _restart_one_l2_host() {
 
     # check enough arguments are provided
-    if [ "$#" -ne 4 ]; then
-        echo "Usage: _restart_one_l2_host <AS> <DCRegion> <Host> <HasConfig>"
+    if [ "$#" -ne 2 ]; then
+        echo "Usage: _restart_one_l2_host <AS> <HostName>"
         exit 1
     fi
 
     local CurrentAS=$1
-    local CurrentRegion=$2
-    local CurrentHostName=$3
-    local HasConfig=$4
+    local CurrentHostName=$2
+    local HasConfig=$(_has_config "${CurrentAS}")
 
     # get the connected switch and the host container name
     for ((k = 0; k < GroupNumber; k++)); do
@@ -798,15 +809,13 @@ _restart_one_l2_host() {
 # restart an l2 switch
 _restart_one_l2_switch() {
     # check enough arguments are provided
-    if [ "$#" -ne 4 ]; then
-        echo "Usage: _restart_one_l2_switch <AS> <DCRegion> <Switch> <HasConfig>"
+    if [ "$#" -ne 2 ]; then
+        echo "Usage: _restart_one_l2_switch <AS> <SwitchName>"
         exit 1
     fi
 
     local CurrentAS=$1
-    local CurrentRegion=$2
-    local CurrentSwitch=$3
-    local HasConfig=$4
+    local CurrentSwitch=$2
 
     # get the L2 config file
     for ((k = 0; k < GroupNumber; k++)); do
@@ -903,14 +912,14 @@ _restart_one_l2_switch() {
             # could also have multiple links or no link
             for ((i = 0; i < L2LinkNumber; i++)); do
                 L2LinkI=(${L2Links[$i]})   # L2 link row
-                SWNameA="${L2LinkI[0]}"    # switch A name
-                SWNameB="${L2LinkI[1]}"    # switch B name
-                Throughput="${L2LinkI[2]}" # throughput
-                Delay="${L2LinkI[3]}"      # delay
-                Buffer="${L2LinkI[4]}"     # buffer latency (in ms)
+                SWNameA="${L2LinkI[1]}"    # switch A name
+                SWNameB="${L2LinkI[3]}"    # switch B name
+                Throughput="${L2LinkI[4]}" # throughput
+                Delay="${L2LinkI[5]}"      # delay
+                Buffer="${L2LinkI[6]}"     # buffer latency (in ms)
 
                 if [[ "${SWNameA}" == "${CurrentSwitch}" ]] || [[ "${SWNameB}" == "${CurrentSwitch}" ]]; then
-                    connect_one_l2_switches "${GroupAS}" "${DCName}" "${SWNameA}" "${SWNameB}" "${Throughput}" "${Delay}" "${Buffer}"
+                    connect_one_l2_switch "${GroupAS}" "${DCName}" "${SWNameA}" "${DCName}" "${SWNameB}" "${Throughput}" "${Delay}" "${Buffer}"
                     echo "Reconnected switch ${SWNameA} and switch ${SWNameB} in ${DCName} in ${GroupAS}"
                 fi
             done
@@ -935,25 +944,6 @@ _restart_one_l2_switch() {
                         < <(connect_one_l2_host "${GroupAS}" "${DCName}" "${SWName}" "${HostName}" "${Throughput}" "${Delay}" "${Buffer}")
                     echo "Reconnected host ${HostName} to switch ${SWName} in ${DCName} in ${GroupAS}"
 
-                    if [[ "${HasConfig}" == "True" ]]; then
-                        HostCtnName="${CurrentAS}_L2_${DCName}_${HostName}"
-
-                        # get the subnet of the host
-                        local HostSubnet=$(subnet_l2 "${GroupAS}" "${DCNameToId[$DCName]}" "${VlanTag}" "${HostToVlanId[$HostName]}")
-                        local HostSubnetV6=$(subnet_l2_ipv6 "${GroupAS}" "${DCNameToId[$DCName]}" "${VlanTag}" "${HostToVlanId[$HostName]}")
-                        # add the interface address and the default gateway on the host
-                        ip netns exec $HostPID ip addr add $HostSubnet dev $HostInterface
-                        ip netns exec $HostPID ip -6 addr add $HostSubnetV6 dev $HostInterface
-
-                        # add ipv4 and ipv6 default route
-                        local HostGateway=$(subnet_l2 "${GroupAS}" "${DCNameToId[$DCName]}" "${VlanTag}" 1)
-                        local HostGatewayV6=$(subnet_l2_ipv6 "${GroupAS}" "${DCNameToId[$DCName]}" "${VlanTag}" 1)
-                        ip netns exec $HostPID ip route add default via ${HostGateway%/*}
-                        ip netns exec $HostPID ip -6 route add default via ${HostGatewayV6%/*}
-
-                        echo "Configured L2 host ${HostCtnName}"
-                    fi
-
                 fi
             done
 
@@ -965,29 +955,25 @@ _restart_one_l2_switch() {
 # restart an ixp
 _restart_one_ixp() {
     # check enough arguments are provided
-    if [ "$#" -ne 3 ]; then
-        echo "Usage: _reconnect_one_ixp <AS> <Region> <HasConfig>"
+    if [ "$#" -ne 1 ]; then
+        echo "Usage: _reconnect_one_ixp <AS>"
         exit 1
     fi
 
     local CurrentAS=$1
-    local CurrentRegion=$2
-    local HasConfig=$3
 
     local IXPCtnName="${CurrentAS}_IXP"
 
     docker kill "${IXPCtnName}" || true
-    # TODO: sometimes the interface on the other router container is not cleaned up when the IXP is killed
+    # set -x # used to see which router container still has the IXP interface
+
+    # sometimes the interface on the other router container is not cleaned up when the IXP is killed
     # This will lead to `File exixts` error when setting up the veth interface on the router container,
     # In this case, we need to first manually cleaned up dangling interfaces that show in `ip link | grep _b`
-    # then kill the IXP container again, wait for some time to confirm the IXP interface on the route container is gonoe
-    # then we can continue
-    # Sometimes we can also get tc error, in this case just kill and return the restarting function
-    # FIRST CHECK THE ROUTER INTERFACE TO MAKE SURE THE INTERFACE IS CLEANED UP!
-    sleep 60
-    echo "Waited for 60 seconds to clean up the IXP interface on the router container"
-
-    set -x # used to see which router container still has the IXP interface
+    # TODO: but this may not always work
+    for intf in $(ip link | grep _b | awk -F: '{print $2}' | cut -d@ -f1); do
+        ip link delete $intf
+    done
 
     # clean up the old netns of the container
     local OldIXPPID=$(get_container_pid "${IXPCtnName}" "True")
@@ -1043,6 +1029,21 @@ _restart_one_ixp() {
     docker exec "${IXPCtnName}" vtysh -c 'clear ip bgp *' -c 'exit'
 }
 
+_restart_one_ssh() {
+    # check enough arguments are provided
+    if [ "$#" -ne 1 ]; then
+        echo "Usage: _restart_one_ssh <AS>"
+        exit 1
+    fi
+
+    local CurrentAS=$1
+    local SshCtnName="${CurrentAS}_ssh"
+    docker kill "${SshCtnName}" || true
+
+    # enough to just restart the container
+    docker restart "${SshCtnName}"
+}
+
 _restart_matrix() {
     local MatrixConfigDir="${DIRECTORY}"/groups/matrix/
 
@@ -1092,46 +1093,67 @@ _restart_matrix() {
     docker unpause MATRIX
 }
 
-if [[ "$#" -eq 6 ]]; then
-    # $1: platform directory
-    RestartAS=$2
-    RestartRegion=$3     # ZURI/L2/IXP
-    RestartDevice=$4     # host0/host/router/S1/IXP/FIFA_1
-    RestartDeviceType=$5 # router/l3-host/switch/l2-host/ixp
-    RestartWithConfig=$6 # True or False, used to configure hosts as their network config is reset after restarting
 
-    # restart a L3 host
-    if [[ "${RestartDeviceType}" == l3-host ]]; then
-        _restart_one_l3_host "${RestartAS}" "${RestartRegion}" "${RestartDevice}" "${RestartWithConfig}"
-    fi
-
-    # restart a router
-    if [[ "${RestartDeviceType}" == router ]]; then
-        _restart_one_router "${RestartAS}" "${RestartRegion}" "${RestartWithConfig}"
-    fi
-
-    # restart a L2 host
-    if [[ "${RestartDeviceType}" == l2-host ]]; then
-        _restart_one_l2_host "${RestartAS}" "${RestartRegion}" "${RestartDevice}" "${RestartWithConfig}"
-    fi
-
-    # restart a L2 switch
-    if [[ "${RestartDeviceType}" == switch ]]; then
-        _restart_one_l2_switch "${RestartAS}" "${RestartRegion}" "${RestartDevice}" "${RestartWithConfig}"
-    fi
-
-    # restart an IXP
-    if [[ "${RestartDeviceType}" == ixp ]]; then
-        # put a random region
-        _restart_one_ixp "${RestartAS}" "${RestartRegion}" "${RestartWithConfig}"
-    fi
-else
-    # restart a service
-    RestartService=$2
-
-    if [[ "${RestartService,,}" == "matrix" ]]; then
-        # Shut down the MATRIX (if it is there)
+# try to parse arguments and throw errors on wrong usage
+case $1 in
+    router)
+        if [ "$#" -ne 3 ]; then
+            print_usage
+            exit 1
+        fi
+        CurrentAS=$2
+        CurrentRegion=$3
+        _restart_one_router "${CurrentAS}" "${CurrentRegion}"
+        ;;
+    l3-host)
+        if [ "$#" -ne 4 ]; then
+        print_usage
+        exit 1
+           fi
+        CurrentAS=$2
+        CurrentRegion=$3
+        CurrentHostName=$4
+        _restart_one_l3_host "${CurrentAS}" "${CurrentRegion}" "${CurrentHostName}"
+        ;;
+    l2-host)
+        if [ "$#" -ne 3 ]; then
+        print_usage
+        exit 1
+           fi
+        CurrentAS=$2
+        CurrentHostName=$3
+        _restart_one_l2_host "${CurrentAS}" "${CurrentHostName}"
+        ;;
+    switch)
+        if [ "$#" -ne 3 ]; then
+        print_usage
+        exit 1
+           fi
+        CurrentAS=$2
+        CurrentSwitchName=$3
+        _restart_one_l2_switch "${CurrentAS}" "${CurrentSwitchName}"
+        ;;
+    ixp)
+        if [ "$#" -ne 2 ]; then
+        print_usage
+        exit 1
+           fi
+        CurrentAS=$2
+        _restart_one_ixp "${CurrentAS}"
+        ;;
+    ssh)
+        if [ "$#" -ne 2 ]; then
+        print_usage
+        exit 1
+           fi
+        CurrentAS=$2
+        _restart_one_ssh "${CurrentAS}"
+        ;;
+    matrix)
+        if [ "$#" -ne 1 ]; then
+        print_usage
+        exit 1
+           fi
         _restart_matrix
-    fi
-
-fi
+        ;;
+esac
