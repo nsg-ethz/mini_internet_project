@@ -195,6 +195,12 @@ connect_two_interfaces() {
     local veth_interface2="${portname}_b"
 
     # get the PID of two containers
+    if [ "$(docker inspect -f '{{.State.Running}}' "$container1")" == "false" ]; then
+        docker start "$container1" > /dev/null
+    fi
+    if [ "$(docker inspect -f '{{.State.Running}}' "$container2")" == "false" ]; then
+        docker start "$container2" > /dev/null
+    fi
     local pid1=$(get_container_pid $container1 "False")
     local pid2=$(get_container_pid $container2 "False")
 
@@ -272,6 +278,12 @@ connect_service_interfaces() {
     local veth_client="${portname}_b"
 
     # get the PID of two containers
+    if [ "$(docker inspect -f '{{.State.Running}}' "$service_container")" == "false" ]; then
+        docker start "$service_container" > /dev/null
+    fi
+    if [ "$(docker inspect -f '{{.State.Running}}' "$client_container")" == "false" ]; then
+        docker start "$client_container" > /dev/null
+    fi
     local pid_service=$(get_container_pid $service_container "False")
     local pid_client=$(get_container_pid $client_container "False")
 
@@ -347,8 +359,16 @@ connect_one_l3_host_router() {
 
     # get the PID of the host and the router container
     local HostPID
+    # check whether the host container is running
+    # if docker inspect -f '{{.State.Running}}' "$HostCtnName" eq "false"; then
+    if [ "$(docker inspect -f '{{.State.Running}}' "$HostCtnName")" == "false" ]; then
+        docker start "$HostCtnName" > /dev/null  # redirection is necessary!
+    fi
     HostPID=$(get_container_pid "$HostCtnName" "False")
     local RouterPID
+    if [ "$(docker inspect -f '{{.State.Running}}' "$RouterCtnName")" == "false" ]; then
+        docker start "$RouterCtnName" > /dev/null
+    fi
     RouterPID=$(get_container_pid "$RouterCtnName" "False")
 
     # create a symlink to use ip netns

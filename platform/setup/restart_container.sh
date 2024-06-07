@@ -1,9 +1,6 @@
 #!/bin/bash
 #
 # Restart the container and reconnect the link
-# TODO: may not work when multiple connected containers are stopped simultaneously
-# in which case should first restart the other container as well
-#
 
 # sanity check
 trap 'exit 1' ERR
