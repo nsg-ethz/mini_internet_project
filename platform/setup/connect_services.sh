@@ -21,33 +21,6 @@ if [ "$#" -ne 1 ]; then
     exit 1
 fi
 
-# check if a service is required
-_check_service_is_required() {
-
-    # check enough arguments are provided
-    if [ "$#" -ne 1 ]; then
-        echo "Usage: check_service_is_required <ServiceName>"
-        exit 1
-    fi
-
-    local ServiceName=$1
-    local ServiceRequired=False
-
-    for ((k = 0; k < GroupNumber; k++)); do
-        GroupK=(${ASConfig[$k]})         # group config file array
-        GroupType="${GroupK[1]}"         # IXP/AS
-        GroupRouterConfig="${GroupK[3]}" # L3 router config file
-
-        if [ "${GroupType}" != "IXP" ]; then
-            if grep -Fq "${ServiceName}" "${DIRECTORY}"/config/$GroupRouterConfig; then
-                ServiceRequired=True
-                break
-            fi
-        fi
-    done
-
-    echo $ServiceRequired
-}
 
 DIRECTORY=$(readlink -f $1)
 source "${DIRECTORY}"/config/variables.sh
@@ -59,9 +32,9 @@ readarray ASConfig < "${DIRECTORY}"/config/AS_config.txt
 GroupNumber=${#ASConfig[@]}
 
 # check if each service is required
-MeasureRequired=$(_check_service_is_required "MEASUREMENT")
-DNSRequired=$(_check_service_is_required "DNS")
-MatrixRequired=$(_check_service_is_required "MATRIX")
+MeasureRequired=$(check_service_is_required "MEASUREMENT")
+DNSRequired=$(check_service_is_required "DNS")
+MatrixRequired=$(check_service_is_required "MATRIX")
 
 # start measurement container
 # ssh is configured for remote access, and we add direct access below.

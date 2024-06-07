@@ -9,6 +9,333 @@ set -o nounset
 
 UTIL=${0##*/} # the name of this script
 
+# whether the given AS should be configured
+has_config() {
+    local CurrentAS=$1
+
+    for ((k = 0; k < GroupNumber; k++)); do
+        GroupK=(${ASConfig[$k]}) # group config file array
+        GroupAS="${GroupK[0]}"   # ASN
+        GroupHasConfig="${GroupK[2]}"
+
+        if [[ "${GroupAS}" == "${CurrentAS}" ]]; then
+            if [[ "${GroupHasConfig}" == "Config" ]]; then
+                echo "True"
+            else
+                echo "False"
+            fi
+            break
+        fi
+    done
+}
+
+# return the map from a DC name to a DC id
+# it is based on the order of the DC name in the L3 router config file
+get_dc_name_to_id() {
+
+    local CurrentAS=$1
+    declare -A DCNameToId
+    local NextDCId=0
+
+    for ((k = 0; k < GroupNumber; k++)); do
+        GroupK=(${ASConfig[$k]})         # group config file array
+        GroupAS="${GroupK[0]}"           # ASN
+        GroupRouterConfig="${GroupK[3]}" # L3 router config file
+
+        if [[ "${GroupAS}" == "${CurrentAS}" ]]; then
+            readarray Routers <"${DIRECTORY}/config/$GroupRouterConfig"
+            RouterNumber=${#Routers[@]}
+            for ((i = 0; i < RouterNumber; i++)); do
+                RouterI=(${Routers[$i]})
+                HostType="${RouterI[2]%%:*}"
+                # if the host type starts with L2-, get the DC name after L2-
+                if [[ "${HostType}" == L2-* ]]; then
+                    DCName="${HostType#L2-}"
+                    if [[ -z "${DCNameToId[$DCName]+_}" ]]; then
+                        DCNameToId[$DCName]=${NextDCId}
+                        NextDCId=$((${NextDCId} + 1))
+                    fi
+                fi
+            done
+            break
+        fi
+    done
+
+    for key in "${!DCNameToId[@]}"; do
+        echo "$key ${DCNameToId[$key]}"
+    done
+}
+
+# return the unique VLAN tags used in the L2
+get_unique_vlan_set() {
+
+    local CurrentAS=$1
+    local VlanSet=()
+
+    # get the router config file name from ASConfig,
+    for ((k = 0; k < GroupNumber; k++)); do
+        GroupK=(${ASConfig[$k]})         # group config file array
+        GroupAS="${GroupK[0]}"           # ASN
+        GroupL2HostConfig="${GroupK[6]}" # l2 host config file
+
+        if [[ "${GroupAS}" == "${CurrentAS}" ]]; then
+            readarray L2Hosts <"${DIRECTORY}/config/$GroupL2HostConfig"
+            L2HostNumber=${#L2Hosts[@]}
+            for ((i = 0; i < L2HostNumber; i++)); do
+                L2HostI=(${L2Hosts[$i]})
+                VlanTag="${L2HostI[7]}"
+                # add to the set if not exists
+                for ((j = 0; j < ${#VlanSet[@]}; j++)); do
+                    if [[ "${VlanSet[$j]}" == "${VlanTag}" ]]; then
+                        break
+                    fi
+                done
+                if [[ $j -eq ${#VlanSet[@]} ]]; then
+                    VlanSet+=("${VlanTag}")
+                fi
+            done
+            break
+        fi
+    done
+    echo "${VlanSet[@]}"
+}
+
+# return the number of gateway routers for each DC
+get_dc_name_to_gateway_number() {
+
+    local CurrentAS=$1
+    declare -A DCNameToGatewayNumber
+
+    for ((k = 0; k < GroupNumber; k++)); do
+        GroupK=(${ASConfig[$k]})         # group config file array
+        GroupAS="${GroupK[0]}"           # ASN
+        GroupRouterConfig="${GroupK[3]}" # L3 router config file
+
+        if [[ "${GroupAS}" == "${CurrentAS}" ]]; then
+
+            readarray Routers <"${DIRECTORY}/config/$GroupRouterConfig"
+            RouterNumber=${#Routers[@]}
+            for ((i = 0; i < RouterNumber; i++)); do
+                RouterI=(${Routers[$i]})
+                HostType="${RouterI[2]%%:*}"
+                # if the host type starts with L2-, get the DC name after L2-
+                if [[ "${HostType}" == L2-* ]]; then
+                    DCName="${HostType#L2-}"
+                    if [[ -z "${DCNameToGatewayNumber[$DCName]+_}" ]]; then
+                        DCNameToGatewayNumber[$DCName]=1
+                    else
+                        DCNameToGatewayNumber[$DCName]=$((${DCNameToGatewayNumber[$DCName]} + 1))
+                    fi
+                fi
+            done
+            break
+        fi
+    done
+
+    for key in "${!DCNameToGatewayNumber[@]}"; do
+        echo "$key ${DCNameToGatewayNumber[$key]}"
+    done
+
+}
+
+# return the vlan id of a L2 host, i.e., the last argument in the subnet_l2
+get_l2_host_to_vlan_id() {
+
+    local CurrentAS=$1
+
+    declare -A DCNameToGatewayNumber
+    while read -r DCName GatewayNumber; do
+        DCNameToGatewayNumber[$DCName]=$GatewayNumber
+    done < <(_get_dc_name_to_gateway_number "${CurrentAS}")
+
+    # get all unique VLAN tags used in the L2
+    local VlanSet
+    IFS=' ' read -r -a VlanSet <<<"$(_get_unique_vlan_set "${CurrentAS}")"
+
+    declare -A DCVlanToHostId
+    # for each dc stored in DCNameToGatewayNumber
+    # and for each vlan stored in VlanSet
+    # initialize the host id
+    for DCName in "${!DCNameToGatewayNumber[@]}"; do
+        for ((j = 0; j < ${#VlanSet[@]}; j++)); do
+            VlanTag="${VlanSet[$j]}"
+            DCVlanToHostId[$DCName - $VlanTag]=$((${DCNameToGatewayNumber[$DCName]} + 1))
+        done
+    done
+
+    # the return dictionary
+    declare -A HostToVlanId
+
+    for ((k = 0; k < GroupNumber; k++)); do
+        GroupK=(${ASConfig[$k]})         # group config file array
+        GroupAS="${GroupK[0]}"           # ASN
+        GroupL2HostConfig="${GroupK[6]}" # l2 host config file
+
+        if [[ "${GroupAS}" == "${CurrentAS}" ]]; then
+            readarray L2Hosts <"${DIRECTORY}/config/$GroupL2HostConfig"
+            L2HostNumber=${#L2Hosts[@]}
+            for ((i = 0; i < L2HostNumber; i++)); do
+                L2HostI=(${L2Hosts[$i]})
+                HostName="${L2HostI[0]}"
+                DCName="${L2HostI[2]}"
+                VlanTag="${L2HostI[7]}"
+
+                HostToVlanId[$HostName]=${DCVlanToHostId[$DCName - $VlanTag]}
+                DCVlanToHostId[$DCName - $VlanTag]=$((${DCVlanToHostId[$DCName - $VlanTag]} + 1))
+            done
+            break
+        fi
+    done
+
+    for key in "${!HostToVlanId[@]}"; do
+        echo "$key ${HostToVlanId[$key]}"
+    done
+}
+
+# whether the current group is an all-in-one group
+is_all_in_one() {
+
+    local CurrentAS=$1
+
+    for ((k = 0; k < GroupNumber; k++)); do
+        GroupK=(${ASConfig[$k]})         # group config file array
+        GroupAS="${GroupK[0]}"           # ASN
+        GroupRouterConfig="${GroupK[3]}" # L3 router config file
+
+        if [[ "${GroupAS}" == "${CurrentAS}" ]]; then
+            readarray Routers <"${DIRECTORY}/config/$GroupRouterConfig"
+            RouterNumber=${#Routers[@]}
+            for ((i = 0; i < RouterNumber; i++)); do
+                RouterI=(${Routers[$i]})
+                if [[ ${#RouterI[@]} -gt 4 && "${RouterI[4]}" == "ALL" ]]; then
+                    echo "True"
+                else
+                    echo "False"
+                fi
+                break
+            done
+            break
+        fi
+    done
+
+}
+
+# return the region Id of a region
+get_region_id() {
+
+    local CurrentAS=$1
+    local CurrentRegion=$2
+
+    # get the router config file name from ASConfig,
+    for ((k = 0; k < GroupNumber; k++)); do
+        GroupK=(${ASConfig[$k]})         # group config file array
+        GroupAS="${GroupK[0]}"           # ASN
+        GroupRouterConfig="${GroupK[3]}" # L3 router config file
+
+        if [[ "${GroupAS}" == "${CurrentAS}" ]]; then
+
+            readarray Routers <"${DIRECTORY}/config/$GroupRouterConfig"
+            RouterNumber=${#Routers[@]}
+            for ((i = 0; i < RouterNumber; i++)); do
+                RouterI=(${Routers[$i]})
+                RouterRegion="${RouterI[0]}"
+                if [[ "${RouterRegion}" == "${CurrentRegion}" ]]; then
+                    echo "${i}"
+                    break
+                fi
+            done
+            break
+        fi
+    done
+}
+
+# whether the host is a krill or a routinator
+is_krill_or_routinator() {
+    local CurrentAS=$1
+    local CurrentRegion=$2
+    local HostName=$3
+    local Device=$4 # krill/routinator
+
+    # use suffix to distinguish different hosts in all-in-one router config
+    local HostSuffix=$(echo "${HostName}" | sed 's/host//')
+
+    # get the router config file name from ASConfig.
+    for ((k = 0; k < GroupNumber; k++)); do
+        GroupK=(${ASConfig[$k]})         # group config file array
+        GroupAS="${GroupK[0]}"           # ASN
+        GroupRouterConfig="${GroupK[3]}" # L3 router config file
+
+        # check if it is an all-in-one AS
+        local IsAllInOne=$(_is_all_in_one "${CurrentAS}")
+
+        if [[ "${GroupAS}" == "${CurrentAS}" ]]; then
+            readarray Routers <"${DIRECTORY}/config/$GroupRouterConfig"
+            RouterNumber=${#Routers[@]}
+            for ((i = 0; i < RouterNumber; i++)); do
+                RouterI=(${Routers[$i]})
+                RouterRegion="${RouterI[0]}"
+                HostImage="${RouterI[2]}"
+                if [[ "${RouterRegion}" == "${CurrentRegion}" ]]; then
+                    # if not all-in-one, not care about the suffix
+                    if [[ "${IsAllInOne}" == "False" ]]; then
+                        if [[ "${HostImage}" == krill* ]] && [[ "${Device}" == "krill" ]]; then
+                            echo "True"
+                            break
+                        elif [[ "${HostImage}" == routinator* ]] && [[ "${Device}" == "routinator" ]]; then
+                            echo "True"
+                            break
+                        else
+                            echo "False"
+                            break
+                        fi
+                    else
+                        # also match the suffix
+                        if [[ "${HostImage}" == krill* ]] && [[ "${Device}" == "krill" ]] && [[ "${HostSuffix}" == "${i}" ]]; then
+                            echo "True"
+                            break
+                        elif [[ "${HostImage}" == routinator* ]] && [[ "${Device}" == "routinator" ]] && [[ "${HostSuffix}" == "${i}" ]]; then
+                            echo "True"
+                            break
+                        else
+                            echo "False"
+                            break
+                        fi
+                    fi
+                fi
+            done
+            break
+        fi
+    done
+}
+
+# check if a service is required
+check_service_is_required() {
+
+    # check enough arguments are provided
+    if [ "$#" -ne 1 ]; then
+        echo "Usage: check_service_is_required <ServiceName>"
+        exit 1
+    fi
+
+    local ServiceName=$1
+    local ServiceRequired=False
+
+    for ((k = 0; k < GroupNumber; k++)); do
+        GroupK=(${ASConfig[$k]})         # group config file array
+        GroupType="${GroupK[1]}"         # IXP/AS
+        GroupRouterConfig="${GroupK[3]}" # L3 router config file
+
+        if [ "${GroupType}" != "IXP" ]; then
+            if grep -Fq "${ServiceName}" "${DIRECTORY}"/config/$GroupRouterConfig; then
+                ServiceRequired=True
+                break
+            fi
+        fi
+    done
+
+    echo $ServiceRequired
+}
+
 # clean the container namespace
 # this only works if the container is restarted for the very first time
 clean_ctn_netns() {

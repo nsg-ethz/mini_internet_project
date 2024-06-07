@@ -29,10 +29,6 @@ source "${DIRECTORY}"/setup/_connect_utils.sh
 readarray ASConfig <"${DIRECTORY}"/config/AS_config.txt
 GroupNumber=${#ASConfig[@]}
 
-clean_ip_link
-echo "Cleaned up legacy veth interfaces"
-
-
 print_usage() {
     echo "Usage: $0 router <AS> <Region>"
     echo "       $0 l3-host <AS> <Region> [host|host[0-9]]"
@@ -41,325 +37,29 @@ print_usage() {
     echo "       $0 ssh <AS>"
     echo "       $0 ixp <AS>"
     echo "       $0 matrix"
+    echo "       $0 dns"
+    echo "       $0 measurement"
+    echo "       $0 web"
 }
 
 
-# whether the given AS should be configured
-_has_config() {
-    local CurrentAS=$1
-
-    for ((k = 0; k < GroupNumber; k++)); do
-        GroupK=(${ASConfig[$k]}) # group config file array
-        GroupAS="${GroupK[0]}"   # ASN
-        GroupHasConfig="${GroupK[2]}"
-
-        if [[ "${GroupAS}" == "${CurrentAS}" ]]; then
-            if [[ "${GroupHasConfig}" == "Config" ]]; then
-                echo "True"
-            else
-                echo "False"
-            fi
-            break
-        fi
-    done
-}
-
-
-# return the map from a DC name to a DC id
-# it is based on the order of the DC name in the L3 router config file
-_get_dc_name_to_id() {
-
-    local CurrentAS=$1
-    declare -A DCNameToId
-    local NextDCId=0
-
-    for ((k = 0; k < GroupNumber; k++)); do
-        GroupK=(${ASConfig[$k]})         # group config file array
-        GroupAS="${GroupK[0]}"           # ASN
-        GroupRouterConfig="${GroupK[3]}" # L3 router config file
-
-        if [[ "${GroupAS}" == "${CurrentAS}" ]]; then
-            readarray Routers <"${DIRECTORY}/config/$GroupRouterConfig"
-            RouterNumber=${#Routers[@]}
-            for ((i = 0; i < RouterNumber; i++)); do
-                RouterI=(${Routers[$i]})
-                HostType="${RouterI[2]%%:*}"
-                # if the host type starts with L2-, get the DC name after L2-
-                if [[ "${HostType}" == L2-* ]]; then
-                    DCName="${HostType#L2-}"
-                    if [[ -z "${DCNameToId[$DCName]+_}" ]]; then
-                        DCNameToId[$DCName]=${NextDCId}
-                        NextDCId=$((${NextDCId} + 1))
-                    fi
-                fi
-            done
-            break
-        fi
-    done
-
-    for key in "${!DCNameToId[@]}"; do
-        echo "$key ${DCNameToId[$key]}"
-    done
-}
-
-# return the unique VLAN tags used in the L2
-_get_unique_vlan_set() {
-
-    local CurrentAS=$1
-    local VlanSet=()
-
-    # get the router config file name from ASConfig,
-    for ((k = 0; k < GroupNumber; k++)); do
-        GroupK=(${ASConfig[$k]})         # group config file array
-        GroupAS="${GroupK[0]}"           # ASN
-        GroupL2HostConfig="${GroupK[6]}" # l2 host config file
-
-        if [[ "${GroupAS}" == "${CurrentAS}" ]]; then
-            readarray L2Hosts <"${DIRECTORY}/config/$GroupL2HostConfig"
-            L2HostNumber=${#L2Hosts[@]}
-            for ((i = 0; i < L2HostNumber; i++)); do
-                L2HostI=(${L2Hosts[$i]})
-                VlanTag="${L2HostI[7]}"
-                # add to the set if not exists
-                for ((j = 0; j < ${#VlanSet[@]}; j++)); do
-                    if [[ "${VlanSet[$j]}" == "${VlanTag}" ]]; then
-                        break
-                    fi
-                done
-                if [[ $j -eq ${#VlanSet[@]} ]]; then
-                    VlanSet+=("${VlanTag}")
-                fi
-            done
-            break
-        fi
-    done
-    echo "${VlanSet[@]}"
-}
-
-# return the number of gateway routers for each DC
-_get_dc_name_to_gateway_number() {
-
-    local CurrentAS=$1
-    declare -A DCNameToGatewayNumber
-
-    for ((k = 0; k < GroupNumber; k++)); do
-        GroupK=(${ASConfig[$k]})         # group config file array
-        GroupAS="${GroupK[0]}"           # ASN
-        GroupRouterConfig="${GroupK[3]}" # L3 router config file
-
-        if [[ "${GroupAS}" == "${CurrentAS}" ]]; then
-
-            readarray Routers <"${DIRECTORY}/config/$GroupRouterConfig"
-            RouterNumber=${#Routers[@]}
-            for ((i = 0; i < RouterNumber; i++)); do
-                RouterI=(${Routers[$i]})
-                HostType="${RouterI[2]%%:*}"
-                # if the host type starts with L2-, get the DC name after L2-
-                if [[ "${HostType}" == L2-* ]]; then
-                    DCName="${HostType#L2-}"
-                    if [[ -z "${DCNameToGatewayNumber[$DCName]+_}" ]]; then
-                        DCNameToGatewayNumber[$DCName]=1
-                    else
-                        DCNameToGatewayNumber[$DCName]=$((${DCNameToGatewayNumber[$DCName]} + 1))
-                    fi
-                fi
-            done
-            break
-        fi
-    done
-
-    for key in "${!DCNameToGatewayNumber[@]}"; do
-        echo "$key ${DCNameToGatewayNumber[$key]}"
-    done
-
-}
-
-# return the vlan id of a L2 host, i.e., the last argument in the subnet_l2
-_get_l2_host_to_vlan_id() {
-
-    local CurrentAS=$1
-
-    declare -A DCNameToGatewayNumber
-    while read -r DCName GatewayNumber; do
-        DCNameToGatewayNumber[$DCName]=$GatewayNumber
-    done < <(_get_dc_name_to_gateway_number "${CurrentAS}")
-
-    # get all unique VLAN tags used in the L2
-    local VlanSet
-    IFS=' ' read -r -a VlanSet <<<"$(_get_unique_vlan_set "${CurrentAS}")"
-
-    declare -A DCVlanToHostId
-    # for each dc stored in DCNameToGatewayNumber
-    # and for each vlan stored in VlanSet
-    # initialize the host id
-    for DCName in "${!DCNameToGatewayNumber[@]}"; do
-        for ((j = 0; j < ${#VlanSet[@]}; j++)); do
-            VlanTag="${VlanSet[$j]}"
-            DCVlanToHostId[$DCName - $VlanTag]=$((${DCNameToGatewayNumber[$DCName]} + 1))
-        done
-    done
-
-    # the return dictionary
-    declare -A HostToVlanId
-
-    for ((k = 0; k < GroupNumber; k++)); do
-        GroupK=(${ASConfig[$k]})         # group config file array
-        GroupAS="${GroupK[0]}"           # ASN
-        GroupL2HostConfig="${GroupK[6]}" # l2 host config file
-
-        if [[ "${GroupAS}" == "${CurrentAS}" ]]; then
-            readarray L2Hosts <"${DIRECTORY}/config/$GroupL2HostConfig"
-            L2HostNumber=${#L2Hosts[@]}
-            for ((i = 0; i < L2HostNumber; i++)); do
-                L2HostI=(${L2Hosts[$i]})
-                HostName="${L2HostI[0]}"
-                DCName="${L2HostI[2]}"
-                VlanTag="${L2HostI[7]}"
-
-                HostToVlanId[$HostName]=${DCVlanToHostId[$DCName - $VlanTag]}
-                DCVlanToHostId[$DCName - $VlanTag]=$((${DCVlanToHostId[$DCName - $VlanTag]} + 1))
-            done
-            break
-        fi
-    done
-
-    for key in "${!HostToVlanId[@]}"; do
-        echo "$key ${HostToVlanId[$key]}"
-    done
-}
-
-# whether the current group is an all-in-one group
-_is_all_in_one() {
-
-    local CurrentAS=$1
-
-    for ((k = 0; k < GroupNumber; k++)); do
-        GroupK=(${ASConfig[$k]})         # group config file array
-        GroupAS="${GroupK[0]}"           # ASN
-        GroupRouterConfig="${GroupK[3]}" # L3 router config file
-
-        if [[ "${GroupAS}" == "${CurrentAS}" ]]; then
-            readarray Routers <"${DIRECTORY}/config/$GroupRouterConfig"
-            RouterNumber=${#Routers[@]}
-            for ((i = 0; i < RouterNumber; i++)); do
-                RouterI=(${Routers[$i]})
-                if [[ ${#RouterI[@]} -gt 4 && "${RouterI[4]}" == "ALL" ]]; then
-                    echo "True"
-                else
-                    echo "False"
-                fi
-                break
-            done
-            break
-        fi
-    done
-
-}
-
-# return the region Id of a region
-_get_region_id() {
-
-    local CurrentAS=$1
-    local CurrentRegion=$2
-
-    # get the router config file name from ASConfig,
-    for ((k = 0; k < GroupNumber; k++)); do
-        GroupK=(${ASConfig[$k]})         # group config file array
-        GroupAS="${GroupK[0]}"           # ASN
-        GroupRouterConfig="${GroupK[3]}" # L3 router config file
-
-        if [[ "${GroupAS}" == "${CurrentAS}" ]]; then
-
-            readarray Routers <"${DIRECTORY}/config/$GroupRouterConfig"
-            RouterNumber=${#Routers[@]}
-            for ((i = 0; i < RouterNumber; i++)); do
-                RouterI=(${Routers[$i]})
-                RouterRegion="${RouterI[0]}"
-                if [[ "${RouterRegion}" == "${CurrentRegion}" ]]; then
-                    echo "${i}"
-                    break
-                fi
-            done
-            break
-        fi
-    done
-}
-
-# whether the host is a krill or a routinator
-_is_krill_or_routinator() {
-    local CurrentAS=$1
-    local CurrentRegion=$2
-    local HostName=$3
-    local Device=$4 # krill/routinator
-
-    # use suffix to distinguish different hosts in all-in-one router config
-    local HostSuffix=$(echo "${HostName}" | sed 's/host//')
-
-    # get the router config file name from ASConfig.
-    for ((k = 0; k < GroupNumber; k++)); do
-        GroupK=(${ASConfig[$k]})         # group config file array
-        GroupAS="${GroupK[0]}"           # ASN
-        GroupRouterConfig="${GroupK[3]}" # L3 router config file
-
-        # check if it is an all-in-one AS
-        local IsAllInOne=$(_is_all_in_one "${CurrentAS}")
-
-        if [[ "${GroupAS}" == "${CurrentAS}" ]]; then
-            readarray Routers <"${DIRECTORY}/config/$GroupRouterConfig"
-            RouterNumber=${#Routers[@]}
-            for ((i = 0; i < RouterNumber; i++)); do
-                RouterI=(${Routers[$i]})
-                RouterRegion="${RouterI[0]}"
-                HostImage="${RouterI[2]}"
-                if [[ "${RouterRegion}" == "${CurrentRegion}" ]]; then
-                    # if not all-in-one, not care about the suffix
-                    if [[ "${IsAllInOne}" == "False" ]]; then
-                        if [[ "${HostImage}" == krill* ]] && [[ "${Device}" == "krill" ]]; then
-                            echo "True"
-                            break
-                        elif [[ "${HostImage}" == routinator* ]] && [[ "${Device}" == "routinator" ]]; then
-                            echo "True"
-                            break
-                        else
-                            echo "False"
-                            break
-                        fi
-                    else
-                        # also match the suffix
-                        if [[ "${HostImage}" == krill* ]] && [[ "${Device}" == "krill" ]] && [[ "${HostSuffix}" == "${i}" ]]; then
-                            echo "True"
-                            break
-                        elif [[ "${HostImage}" == routinator* ]] && [[ "${Device}" == "routinator" ]] && [[ "${HostSuffix}" == "${i}" ]]; then
-                            echo "True"
-                            break
-                        else
-                            echo "False"
-                            break
-                        fi
-                    fi
-                fi
-            done
-            break
-        fi
-    done
-}
 
 # restart an L3 host
-_restart_one_l3_host() {
+restart_one_l3_host() {
 
     # check enough arguments are provided
     if [ "$#" -ne 3 ]; then
-        echo "Usage: _restart_one_l3_host <AS> <Region> [host|host[0-9]]"
+        echo "Usage: restart_one_l3_host <AS> <Region> [host|host[0-9]]"
         exit 1
     fi
 
     local CurrentAS=$1
     local CurrentRegion=$2
     local CurrentHostName=$3
-    local HasConfig=$(_has_config "${CurrentAS}")
+    local HasConfig=$(has_config "${CurrentAS}")
 
-    local IsKrill=$(_is_krill_or_routinator "${CurrentAS}" "${CurrentHostName}" "{CurrentRegion}" "krill")
-    local IsRoutinator=$(_is_krill_or_routinator "${CurrentAS}" "${CurrentRegion}" "{CurrentHostName}" "routinator")
+    local IsKrill=$(is_krill_or_routinator "${CurrentAS}" "${CurrentHostName}" "{CurrentRegion}" "krill")
+    local IsRoutinator=$(is_krill_or_routinator "${CurrentAS}" "${CurrentRegion}" "{CurrentHostName}" "routinator")
 
     local HostSuffix=$(echo "${CurrentHostName}" | sed 's/host//')
     local HostCtnName="${CurrentAS}_${CurrentRegion}host${HostSuffix}"
@@ -370,7 +70,7 @@ _restart_one_l3_host() {
 
     # clean up the old netns of the container
     clean_ctn_netns "${HostCtnName}"
-    echo "Cleaned up the old netns of host ${HostCtnName}"
+    clean_ip_link
 
     docker restart "${HostCtnName}" 1>/dev/null
 
@@ -405,11 +105,11 @@ _restart_one_l3_host() {
         echo "Updated routinator on host ${HostCtnName}"
     fi
 
-    local IsAllInOne=$(_is_all_in_one "${CurrentAS}")
+    local IsAllInOne=$(is_all_in_one "${CurrentAS}")
 
     if [[ "${HasConfig}" == "True" ]]; then
         if [[ "${IsAllInOne}" == "False" ]]; then
-            local RegionID=$(_get_region_id "${CurrentAS}" "${CurrentRegion}")
+            local RegionID=$(get_region_id "${CurrentAS}" "${CurrentRegion}")
             RouterSubnet="$(subnet_host_router "${CurrentAS}" "${RegionID}" "router")"
             HostSubnet="$(subnet_host_router "${CurrentAS}" "${RegionID}" "host")"
         else
@@ -427,17 +127,17 @@ _restart_one_l3_host() {
 }
 
 # restart one router
-_restart_one_router() {
+restart_one_router() {
 
     # check enough arguments are provided
     if [ "$#" -ne 2 ]; then
-        echo "Usage: _restart_one_router <AS> <Region>"
+        echo "Usage: restart_one_router <AS> <Region>"
         exit 1
     fi
 
     local CurrentAS=$1
     local CurrentRegion=$2
-    local HasConfig=$(_has_config "${CurrentAS}")
+    local HasConfig=$(has_config "${CurrentAS}")
 
     local RouterCtnName="${CurrentAS}_${CurrentRegion}router"
 
@@ -445,7 +145,7 @@ _restart_one_router() {
 
     # clean up the old netns of the container
     clean_ctn_netns "${RouterCtnName}"
-    echo "Cleaned up the old netns of router ${RouterCtnName}"
+    clean_ip_link
 
     docker restart "${RouterCtnName}" 1>/dev/null
 
@@ -501,12 +201,12 @@ _restart_one_router() {
 
     # get the unique VLAN set used in the L2
     local VlanSet
-    IFS=' ' read -r -a VlanSet <<<"$(_get_unique_vlan_set "${CurrentAS}")"
+    IFS=' ' read -r -a VlanSet <<<"$(get_unique_vlan_set "${CurrentAS}")"
     # map from the DCName to the DCId
     declare -A DCNameToId
     while read -r DCName DCId; do
         DCNameToId["$DCName"]="$DCId"
-    done < <(_get_dc_name_to_id "${CurrentAS}")
+    done < <(get_dc_name_to_id "${CurrentAS}")
 
     # map from the L2 gateway router to the DC Id
     declare -A RouterToDCId
@@ -540,7 +240,7 @@ _restart_one_router() {
         # if the current router is the gateway router
         if [[ "${RouterName}" == "${CurrentRegion}" ]]; then
             # configure VLAN interfaces
-            RegionId=$(_get_region_id "${CurrentAS}" "${CurrentRegion}")
+            RegionId=$(get_region_id "${CurrentAS}" "${CurrentRegion}")
             for ((j = 0; j < ${#VlanSet[@]}; j++)); do
                 VlanTag="${VlanSet[$j]}"
                 RouterInterface="${CurrentRegion}-L2.$VlanTag"
@@ -554,8 +254,8 @@ _restart_one_router() {
             if [[ "${HasConfig}" == "True" ]]; then
                 if [[ "${RouterName}" == "${TunnelEndA}" ]] || [[ "${RouterName}" == "${TunnelEndB}" ]]; then
                     # configure the 6in4 tunnel
-                    EndAId=$(_get_region_id "${CurrentAS}" "${TunnelEndA}")
-                    EndBId=$(_get_region_id "${CurrentAS}" "${TunnelEndB}")
+                    EndAId=$(get_region_id "${CurrentAS}" "${TunnelEndA}")
+                    EndBId=$(get_region_id "${CurrentAS}" "${TunnelEndB}")
                     if [[ "${RouterName}" == "${TunnelEndA}" ]]; then
                         RemoteSubnet=$(subnet_router "${CurrentAS}" "${EndBId}")
                         LocalSubnet=$(subnet_router "${CurrentAS}" "${EndAId}")
@@ -678,17 +378,17 @@ _restart_one_router() {
 }
 
 # restart an L2 host
-_restart_one_l2_host() {
+restart_one_l2_host() {
 
     # check enough arguments are provided
     if [ "$#" -ne 2 ]; then
-        echo "Usage: _restart_one_l2_host <AS> <HostName>"
+        echo "Usage: restart_one_l2_host <AS> <HostName>"
         exit 1
     fi
 
     local CurrentAS=$1
     local CurrentHostName=$2
-    local HasConfig=$(_has_config "${CurrentAS}")
+    local HasConfig=$(has_config "${CurrentAS}")
 
     # get the connected switch and the host container name
     for ((k = 0; k < GroupNumber; k++)); do
@@ -703,12 +403,12 @@ _restart_one_l2_host() {
             declare -A DCNameToId
             while read -r DCName DCId; do
                 DCNameToId["$DCName"]="$DCId"
-            done < <(_get_dc_name_to_id "${CurrentAS}")
+            done < <(get_dc_name_to_id "${CurrentAS}")
 
             declare -A HostToVlanId
             while read -r HostName VlanId; do
                 HostToVlanId[$HostName]=$VlanId
-            done < <(_get_l2_host_to_vlan_id "${CurrentAS}")
+            done < <(get_l2_host_to_vlan_id "${CurrentAS}")
 
             readarray L2Hosts <"${DIRECTORY}/config/$GroupL2HostConfig"
             L2HostNumber=${#L2Hosts[@]}
@@ -732,7 +432,7 @@ _restart_one_l2_host() {
 
                     # clean up the old netns of the container
                     clean_ctn_netns "${HostCtnName}"
-                    echo "Cleaned up the old netns of host ${HostCtnName}"
+                    clean_ip_link
 
                     docker restart "${HostCtnName}" 1>/dev/null
 
@@ -788,10 +488,10 @@ _restart_one_l2_host() {
 }
 
 # restart an l2 switch
-_restart_one_l2_switch() {
+restart_one_l2_switch() {
     # check enough arguments are provided
     if [ "$#" -ne 2 ]; then
-        echo "Usage: _restart_one_l2_switch <AS> <SwitchName>"
+        echo "Usage: restart_one_l2_switch <AS> <SwitchName>"
         exit 1
     fi
 
@@ -821,15 +521,15 @@ _restart_one_l2_switch() {
             declare -A DCNameToId
             while read -r DCName DCId; do
                 DCNameToId["$DCName"]="$DCId"
-            done < <(_get_dc_name_to_id "${CurrentAS}")
+            done < <(get_dc_name_to_id "${CurrentAS}")
 
             local VlanSet
-            IFS=' ' read -r -a VlanSet <<<"$(_get_unique_vlan_set "${CurrentAS}")"
+            IFS=' ' read -r -a VlanSet <<<"$(get_unique_vlan_set "${CurrentAS}")"
 
             declare -A HostToVlanId
             while read -r HostName VlanId; do
                 HostToVlanId[$HostName]=$VlanId
-            done < <(_get_l2_host_to_vlan_id "${CurrentAS}")
+            done < <(get_l2_host_to_vlan_id "${CurrentAS}")
 
             # reconnect the switch to the router
             for ((i = 0; i < L2SwitchNumber; i++)); do
@@ -848,7 +548,7 @@ _restart_one_l2_switch() {
 
                     # clean up the old netns of the container
                     clean_ctn_netns "${SwitchCtnName}"
-                    echo "Cleaned up the old netns of switch ${SwitchCtnName}"
+                    clean_ip_link
 
                     docker restart "${SwitchCtnName}" 1>/dev/null
 
@@ -929,10 +629,10 @@ _restart_one_l2_switch() {
 }
 
 # restart an ixp
-_restart_one_ixp() {
+restart_one_ixp() {
     # check enough arguments are provided
     if [ "$#" -ne 1 ]; then
-        echo "Usage: _reconnect_one_ixp <AS>"
+        echo "Usage: reconnect_one_ixp <AS>"
         exit 1
     fi
 
@@ -945,11 +645,14 @@ _restart_one_ixp() {
 
     # clean up the old netns of the container
     clean_ctn_netns "${IXPCtnName}"
-    echo "Cleaned up the old netns of IXP ${IXPCtnName}"
+    clean_ip_link
 
     docker restart "${IXPCtnName}" 1>/dev/null
 
     echo "Restarted IXP ${IXPCtnName}"
+
+    # need enough time for each router to clean up the old IXP interface
+    sleep 300
 
     # connect all external links
     readarray ExternalLinks <"${DIRECTORY}/config/aslevel_links.txt"
@@ -993,41 +696,159 @@ _restart_one_ixp() {
     docker exec "${IXPCtnName}" vtysh -c 'clear ip bgp *' -c 'exit'
 }
 
-_restart_one_ssh() {
+# restart an ssh proxy container
+restart_one_ssh() {
     # check enough arguments are provided
     if [ "$#" -ne 1 ]; then
-        echo "Usage: _restart_one_ssh <AS>"
+        echo "Usage: restart_one_ssh <AS>"
         exit 1
     fi
 
     local CurrentAS=$1
     local SshCtnName="${CurrentAS}_ssh"
-    docker kill "${SshCtnName}" || true
+    docker kill "${SshCtnName}" 2>/dev/null || true
 
     # enough to just restart the container
-    docker restart "${SshCtnName}"
+    docker restart "${SshCtnName}" 1>/dev/null
 }
 
-_restart_matrix() {
-    local MatrixConfigDir="${DIRECTORY}"/groups/matrix/
+# restart the web and the web proxy container
+restart_web_proxy() {
+    local WebCtnName="WEB"
+    local WebProxyCtnName="PROXY"
 
-    # Delete the MATRIX container if it is there.
-    docker rm -f "MATRIX"
+    docker kill "${WebCtnName}" 2>/dev/null || true
+    docker kill "${WebProxyCtnName}" 2>/dev/null || true
 
-    # Recreate it.
-    docker run -itd --net='none' --name="MATRIX" --hostname="MATRIX" \
-        --privileged \
-        --sysctl net.ipv4.icmp_ratelimit=0 \
-        --sysctl net.ipv4.ip_forward=0 \
-        -v /etc/timezone:/etc/timezone:ro \
-        -v /etc/localtime:/etc/localtime:ro \
-        -v "${MatrixConfigDir}"/destination_ips.txt:/home/destination_ips.txt \
-        -v "${MatrixConfigDir}"/connectivity.txt:/home/connectivity.txt \
-        -v "${MatrixConfigDir}"/stats.txt:/home/stats.txt \
-        -e "UPDATE_FREQUENCY=${MATRIX_FREQUENCY}" \
-        -e "CONCURRENT_PINGS=${MATRIX_CONCURRENT_PINGS}" \
-        -e "PING_FLAGS=${MATRIX_PING_FLAGS}" \
-        "${DOCKERHUB_PREFIX}d_matrix" >/dev/null
+    docker restart "${WebCtnName}" 1>/dev/null
+    docker restart "${WebProxyCtnName}" 1>/dev/null
+
+    echo "Restarted WEB and PROXY"
+
+}
+
+# restart the measurement
+restart_mesaurement() {
+    local MeasureCtnName="MEASUREMENT"
+
+    docker kill "${MeasureCtnName}" 2>/dev/null || true
+
+    # clean up the old netns of the container
+    clean_ctn_netns "${MeasureCtnName}"
+    clean_ip_link
+
+    docker restart "${MeasureCtnName}" 1>/dev/null
+    echo "Restarted MEASUREMENT"
+
+    # re-link the MEASUREMENT to the routers
+    for ((k = 0; k < GroupNumber; k++)); do
+        GroupK=(${ASConfig[$k]})         # group config file array
+        GroupAS="${GroupK[0]}"           # AS number
+        GroupType="${GroupK[1]}"         # IXP/AS
+        GroupRouterConfig="${GroupK[3]}" # L3 router config file
+
+        if [ "${GroupType}" != "IXP" ]; then
+            readarray Routers <"${DIRECTORY}"/config/$GroupRouterConfig
+            RouterNumber=${#Routers[@]}
+            for ((i = 0; i < RouterNumber; i++)); do
+                RouterI=(${Routers[$i]})      # router config file array
+                RouterRegion="${RouterI[0]}"  # region name
+                RouterService="${RouterI[1]}" # measurement/matrix/dns
+                if [[ "$RouterService" == "MEASUREMENT" ]]; then
+                    connect_one_measurement "${GroupAS}" "${RouterRegion}"
+                    echo "Reconnected MEASUREMENT to ${RouterRegion} in ${GroupAS}"
+                fi
+            done
+        fi
+    done
+
+    if [ "$(check_service_is_required "DNS")" == "True" ]; then
+        connect_service_interfaces \
+            "MEASUREMENT" "dns" "$(subnet_router_DNS -1 "measurement")" \
+            "DNS" "measurement" "$(subnet_router_DNS -1 "dns-measurement")" \
+            -1  # -1 to set up IPs in both containers but no default routes.
+        echo "Reconnected DNS to MEASUREMENT"
+    fi
+
+}
+
+# restart the DNS
+restart_dns() {
+    local DnsCtnName="DNS"
+
+    docker kill "${DnsCtnName}" 2>/dev/null || true
+
+    # clean up the old netns of the container
+    clean_ctn_netns "${DnsCtnName}"
+    clean_ip_link
+
+    docker restart "${DnsCtnName}" 1>/dev/null
+    echo "Restarted DNS"
+
+    # re-link the DNS to the routers
+    for ((k = 0; k < GroupNumber; k++)); do
+        GroupK=(${ASConfig[$k]})         # group config file array
+        GroupAS="${GroupK[0]}"           # AS number
+        GroupType="${GroupK[1]}"         # IXP/AS
+        GroupRouterConfig="${GroupK[3]}" # L3 router config file
+
+        if [ "${GroupType}" != "IXP" ]; then
+            readarray Routers <"${DIRECTORY}"/config/$GroupRouterConfig
+            RouterNumber=${#Routers[@]}
+            for ((i = 0; i < RouterNumber; i++)); do
+                RouterI=(${Routers[$i]})      # router config file array
+                RouterRegion="${RouterI[0]}"  # region name
+                RouterService="${RouterI[1]}" # measurement/matrix/dns
+                if [[ "$RouterService" == "DNS" ]]; then
+                    connect_one_dns "${GroupAS}" "${RouterRegion}"
+                    echo "Reconnected DNS to ${RouterRegion} in ${GroupAS}"
+                fi
+            done
+        fi
+    done
+
+    if [ "$(check_service_is_required "MEASUREMENT")" == "True" ]; then
+        connect_service_interfaces \
+            "DNS" "measurement" "$(subnet_router_DNS -1 "dns-measurement")" \
+            "MEASUREMENT" "dns" "$(subnet_router_DNS -1 "measurement")" \
+            -1  # -1 to set up IPs in both containers but no default routes.
+        echo "Reconnected DNS to MEASUREMENT"
+    fi
+}
+
+# restart the matrix
+restart_matrix() {
+
+    local MatrixCtnName="MATRIX"
+
+    docker kill "${MatrixCtnName}" 2>/dev/null || true
+
+    # clean up the old netns of the container
+    clean_ctn_netns "${MatrixCtnName}"
+    clean_ip_link
+
+    docker restart "${MatrixCtnName}" 1>/dev/null
+    echo "Restarted MATRIX"
+
+    # local MatrixConfigDir="${DIRECTORY}"/groups/matrix/
+
+    # # Delete the MATRIX container if it is there.
+    # docker rm -f "MATRIX"
+
+    # # Recreate it.
+    # docker run -itd --net='none' --name="MATRIX" --hostname="MATRIX" \
+    #     --privileged \
+    #     --sysctl net.ipv4.icmp_ratelimit=0 \
+    #     --sysctl net.ipv4.ip_forward=0 \
+    #     -v /etc/timezone:/etc/timezone:ro \
+    #     -v /etc/localtime:/etc/localtime:ro \
+    #     -v "${MatrixConfigDir}"/destination_ips.txt:/home/destination_ips.txt \
+    #     -v "${MatrixConfigDir}"/connectivity.txt:/home/connectivity.txt \
+    #     -v "${MatrixConfigDir}"/stats.txt:/home/stats.txt \
+    #     -e "UPDATE_FREQUENCY=${MATRIX_FREQUENCY}" \
+    #     -e "CONCURRENT_PINGS=${MATRIX_CONCURRENT_PINGS}" \
+    #     -e "PING_FLAGS=${MATRIX_PING_FLAGS}" \
+    #     "${DOCKERHUB_PREFIX}d_matrix" >/dev/null
 
     docker pause MATRIX # wait until connected
 
@@ -1067,7 +888,7 @@ case $1 in
         fi
         CurrentAS=$2
         CurrentRegion=$3
-        _restart_one_router "${CurrentAS}" "${CurrentRegion}"
+        restart_one_router "${CurrentAS}" "${CurrentRegion}"
         ;;
     l3-host)
         if [ "$#" -ne 4 ]; then
@@ -1077,7 +898,7 @@ case $1 in
         CurrentAS=$2
         CurrentRegion=$3
         CurrentHostName=$4
-        _restart_one_l3_host "${CurrentAS}" "${CurrentRegion}" "${CurrentHostName}"
+        restart_one_l3_host "${CurrentAS}" "${CurrentRegion}" "${CurrentHostName}"
         ;;
     l2-host)
         if [ "$#" -ne 3 ]; then
@@ -1086,7 +907,7 @@ case $1 in
            fi
         CurrentAS=$2
         CurrentHostName=$3
-        _restart_one_l2_host "${CurrentAS}" "${CurrentHostName}"
+        restart_one_l2_host "${CurrentAS}" "${CurrentHostName}"
         ;;
     switch)
         if [ "$#" -ne 3 ]; then
@@ -1095,7 +916,7 @@ case $1 in
            fi
         CurrentAS=$2
         CurrentSwitchName=$3
-        _restart_one_l2_switch "${CurrentAS}" "${CurrentSwitchName}"
+        restart_one_l2_switch "${CurrentAS}" "${CurrentSwitchName}"
         ;;
     ixp)
         if [ "$#" -ne 2 ]; then
@@ -1103,7 +924,7 @@ case $1 in
         exit 1
            fi
         CurrentAS=$2
-        _restart_one_ixp "${CurrentAS}"
+        restart_one_ixp "${CurrentAS}"
         ;;
     ssh)
         if [ "$#" -ne 2 ]; then
@@ -1111,13 +932,38 @@ case $1 in
         exit 1
            fi
         CurrentAS=$2
-        _restart_one_ssh "${CurrentAS}"
+        restart_one_ssh "${CurrentAS}"
         ;;
     matrix)
         if [ "$#" -ne 1 ]; then
         print_usage
         exit 1
            fi
-        _restart_matrix
+        restart_matrix
+        ;;
+    dns)
+        if [ "$#" -ne 1 ]; then
+        print_usage
+        exit 1
+           fi
+        restart_dns
+        ;;
+    measurement)
+        if [ "$#" -ne 1 ]; then
+        print_usage
+        exit 1
+           fi
+        restart_mesaurement
+        ;;
+    web)
+        if [ "$#" -ne 1 ]; then
+        print_usage
+        exit 1
+           fi
+        restart_web_proxy
+        ;;
+    *)
+        print_usage
+        exit 1
         ;;
 esac
