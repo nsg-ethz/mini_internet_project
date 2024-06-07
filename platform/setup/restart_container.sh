@@ -29,6 +29,9 @@ source "${DIRECTORY}"/setup/_connect_utils.sh
 readarray ASConfig <"${DIRECTORY}"/config/AS_config.txt
 GroupNumber=${#ASConfig[@]}
 
+clean_ip_link
+echo "Cleaned up legacy veth interfaces"
+
 
 print_usage() {
     echo "Usage: $0 router <AS> <Region>"
@@ -363,20 +366,13 @@ _restart_one_l3_host() {
     local RouterCtnName="${CurrentAS}_${CurrentRegion}router"
 
     # make sure the container is not running, otherwise will cause error and need to manually clear ip link
-    docker kill "${HostCtnName}" || true
+    docker kill "${HostCtnName}" 2>/dev/null || true
 
     # clean up the old netns of the container
-    # this only works if it is the first time to restart the container
-    # otherwise the pid will be different
-    local OldHostPID=$(get_container_pid "${HostCtnName}" "True")
-    if [[ -n "${OldHostPID}" ]]; then
-        ip netns del "${OldHostPID}" || true
-        rm -f /var/run/netns/"${OldHostPID}" || true
-    fi
-
+    clean_ctn_netns "${HostCtnName}"
     echo "Cleaned up the old netns of host ${HostCtnName}"
 
-    docker restart "${HostCtnName}"
+    docker restart "${HostCtnName}" 1>/dev/null
 
     echo "Restarted host ${HostCtnName}"
 
@@ -445,20 +441,13 @@ _restart_one_router() {
 
     local RouterCtnName="${CurrentAS}_${CurrentRegion}router"
 
-    docker kill "${RouterCtnName}" || true
+    docker kill "${RouterCtnName}" 2>/dev/null || true
 
     # clean up the old netns of the container
-    local OldRouterPID=$(get_container_pid "${RouterCtnName}" "True")
-    if [[ -n "${OldRouterPID}" ]]; then
-        ip netns del "${OldRouterPID}" || true
-        # the rm only works if it is the first time to restart the container
-        # otherwise the pid is not found, but is fine
-        rm -f /var/run/netns/"${OldRouterPID}" || true
-    fi
-
+    clean_ctn_netns "${RouterCtnName}"
     echo "Cleaned up the old netns of router ${RouterCtnName}"
 
-    docker restart "${RouterCtnName}"
+    docker restart "${RouterCtnName}" 1>/dev/null
 
     echo "Restarted router ${RouterCtnName}"
 
@@ -739,18 +728,13 @@ _restart_one_l2_host() {
                     # cannot move the following out of the loop, because need to find the DCName
                     HostCtnName="${CurrentAS}_L2_${DCName}_${HostName}"
 
-                    docker kill "${HostCtnName}" || true
+                    docker kill "${HostCtnName}" 2>/dev/null || true
 
                     # clean up the old netns of the container
-                    local OldHostPID=$(get_container_pid "${HostCtnName}" "True")
-                    if [[ -n "${OldHostPID}" ]]; then
-                        ip netns del "${OldHostPID}" || true
-                        rm -f /var/run/netns/"${OldHostPID}" || true
-                    fi
-
+                    clean_ctn_netns "${HostCtnName}"
                     echo "Cleaned up the old netns of host ${HostCtnName}"
 
-                    docker restart "${HostCtnName}"
+                    docker restart "${HostCtnName}" 1>/dev/null
 
                     echo "Restarted host ${HostCtnName}"
 
@@ -860,18 +844,13 @@ _restart_one_l2_switch() {
                 if [[ "${SWName}" == "${CurrentSwitch}" ]]; then
                     local SwitchCtnName="${CurrentAS}_L2_${DCName}_${CurrentSwitch}"
 
-                    docker kill "${SwitchCtnName}" || true
+                    docker kill "${SwitchCtnName}" 2>/dev/null || true
 
                     # clean up the old netns of the container
-                    local OldSwitchPID=$(get_container_pid "${SwitchCtnName}" "True")
-                    if [[ -n "${OldSwitchPID}" ]]; then
-                        ip netns del "${OldSwitchPID}" || true
-                        rm -f /var/run/netns/"${OldSwitchPID}" || true
-                    fi
-
+                    clean_ctn_netns "${SwitchCtnName}"
                     echo "Cleaned up the old netns of switch ${SwitchCtnName}"
 
-                    docker restart "${SwitchCtnName}"
+                    docker restart "${SwitchCtnName}" 1>/dev/null
 
                     echo "Restarted switch ${SwitchCtnName}"
 
@@ -961,26 +940,14 @@ _restart_one_ixp() {
 
     local IXPCtnName="${CurrentAS}_IXP"
 
-    docker kill "${IXPCtnName}" || true
+    docker kill "${IXPCtnName}" 2>/dev/null || true
     # set -x # used to see which router container still has the IXP interface
 
-    # sometimes the interface on the other router container is not cleaned up when the IXP is killed
-    # This will lead to `File exixts` error when setting up the veth interface on the router container,
-    # In this case, we need to first manually cleaned up dangling interfaces that show in `ip link | grep _b`
-    # TODO: but this may not always work
-    for intf in $(ip link | grep _b | awk -F: '{print $2}' | cut -d@ -f1); do
-        ip link delete $intf
-    done
-
     # clean up the old netns of the container
-    local OldIXPPID=$(get_container_pid "${IXPCtnName}" "True")
-    if [[ -n "${OldIXPPID}" ]]; then
-        ip netns del "${OldIXPPID}" || true
-        rm -f /var/run/netns/"${OldIXPPID}" || true
-    fi
+    clean_ctn_netns "${IXPCtnName}"
     echo "Cleaned up the old netns of IXP ${IXPCtnName}"
 
-    docker restart "${IXPCtnName}"
+    docker restart "${IXPCtnName}" 1>/dev/null
 
     echo "Restarted IXP ${IXPCtnName}"
 

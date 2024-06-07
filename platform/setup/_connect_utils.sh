@@ -9,6 +9,24 @@ set -o nounset
 
 UTIL=${0##*/} # the name of this script
 
+# clean the container namespace
+# this only works if the container is restarted for the very first time
+clean_ctn_netns() {
+    local CtnName=$1
+    local OldPID=$(get_container_pid "${CtnName}" "True")
+    if [[ -n "${OldPID}" ]]; then
+        ip netns del "${OldPID}" 2>/dev/null || true
+        rm -f /var/run/netns/"${OldPID}" 2>/dev/null || true
+    fi
+}
+
+# clear dangling veth interfaces
+clean_ip_link() {
+    for intf in $(ip link | grep -E '_b|_a|_h|_r' | awk -F: '{print $2}' | cut -d@ -f1); do
+        ip link delete $intf || true
+    done
+}
+
 # delete the symlink for the container namespace
 delete_netns_symlink() {
     rm -f /var/run/netns/"$PID"
