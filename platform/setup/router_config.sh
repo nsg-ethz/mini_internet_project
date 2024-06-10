@@ -101,12 +101,15 @@ for ((k = 0; k < group_numbers; k++)); do
                     if [[ ! -z "${dname}" ]]; then
                         if [[ "$all_in_one" == "true" ]]; then
                             for ((j = 0; j < n_routers; j++)); do
-                                echo "interface host${j}"
-                                echo "ip address $(subnet_host_router ${group_number} ${j} router)"
-                                echo "exit"
-                                echo "router ospf"
-                                echo "network $(subnet_host_router ${group_number} ${j} router) area 0"
-                                echo "exit"
+                                router_j=(${routers[$j]})
+                                if [ "${router_j[2]}" != "N/A" ]; then
+                                    echo "interface host${j}"
+                                    echo "ip address $(subnet_host_router ${group_number} ${j} router)"
+                                    echo "exit"
+                                    echo "router ospf"
+                                    echo "network $(subnet_host_router ${group_number} ${j} router) area 0"
+                                    echo "exit"
+                                fi
                             done
                         else
                             echo "interface host"
