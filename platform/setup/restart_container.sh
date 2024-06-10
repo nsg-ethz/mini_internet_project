@@ -184,7 +184,7 @@ restart_one_router() {
         if [[ ${RouterRegion} == "${CurrentRegion}" ]]; then
 
             HostSuffix=""
-            if [[ ${#RouterI[@]} -gt 4 && "${RouterI[4]}" == "ALL" ]]; then
+            if [[ ${#RouterI[@]} -gt 4 && "${RouterI[4]}" == "ALL" && "${HostImage}" != "N/A" ]]; then
                 HostSuffix="${i}"
             fi
             local HostCtnName="${CurrentAS}_${CurrentRegion}host${HostSuffix}"
@@ -193,9 +193,29 @@ restart_one_router() {
 
                 read -r HostPID RouterPID HostInterface RouterInterface \
                     < <(connect_one_l3_host_router "${CurrentAS}" "${RouterRegion}" "${HostSuffix}")
+
+                echo "Reconnected router ${RouterCtnName} to host ${HostCtnName}"
+
+                if [[ "${HasConfig}" == "True" ]]; then
+                    local IsAllInOne=$(is_all_in_one "${CurrentAS}")
+                    # configure the connected host
+                    if [[ "${IsAllInOne}" == "False" ]]; then
+                        local RegionID=$(get_region_id "${CurrentAS}" "${CurrentRegion}")
+                        RouterSubnet="$(subnet_host_router "${CurrentAS}" "${RegionID}" "router")"
+                        HostSubnet="$(subnet_host_router "${CurrentAS}" "${RegionID}" "host")"
+                    else
+                        RouterSubnet="$(subnet_host_router "${CurrentAS}" "${HostSuffix}" "router")"
+                        HostSubnet="$(subnet_host_router "${CurrentAS}" "${HostSuffix}" "host")"
+                    fi
+
+                    # add the interface address and the default gateway on the host
+                    ip netns exec $HostPID ip addr add $HostSubnet dev $HostInterface
+                    ip netns exec $HostPID ip route add default via ${RouterSubnet%/*}
+
+                    echo "Configured host ${HostCtnName}"
+                fi
             fi
 
-            echo "Reconnected router ${RouterCtnName} to host ${HostCtnName}"
         fi
     done
 
@@ -497,6 +517,7 @@ restart_one_l2_switch() {
 
     local CurrentAS=$1
     local CurrentSwitch=$2
+    local HasConfig=$(has_config "${CurrentAS}")
 
     # get the L2 config file
     for ((k = 0; k < GroupNumber; k++)); do
@@ -597,6 +618,7 @@ restart_one_l2_switch() {
                 if [[ "${SWNameA}" == "${CurrentSwitch}" ]] || [[ "${SWNameB}" == "${CurrentSwitch}" ]]; then
                     connect_one_l2_switch "${GroupAS}" "${DCName}" "${SWNameA}" "${DCName}" "${SWNameB}" "${Throughput}" "${Delay}" "${Buffer}"
                     echo "Reconnected switch ${SWNameA} and switch ${SWNameB} in ${DCName} in ${GroupAS}"
+
                 fi
             done
 
@@ -619,6 +641,25 @@ restart_one_l2_switch() {
                     read -r HostInterface HostPID SwitchInterface SwitchPID \
                         < <(connect_one_l2_host "${GroupAS}" "${DCName}" "${SWName}" "${HostName}" "${Throughput}" "${Delay}" "${Buffer}")
                     echo "Reconnected host ${HostName} to switch ${SWName} in ${DCName} in ${GroupAS}"
+
+                    if [[ "${HasConfig}" == "True" ]]; then
+                        HostCtnName="${CurrentAS}_L2_${DCName}_${HostName}"
+
+                        # get the subnet of the host
+                        local HostSubnet=$(subnet_l2 "${GroupAS}" "${DCNameToId[$DCName]}" "${VlanTag}" "${HostToVlanId[$HostName]}")
+                        local HostSubnetV6=$(subnet_l2_ipv6 "${GroupAS}" "${DCNameToId[$DCName]}" "${VlanTag}" "${HostToVlanId[$HostName]}")
+                        # add the interface address and the default gateway on the host
+                        ip netns exec $HostPID ip addr add $HostSubnet dev $HostInterface
+                        ip netns exec $HostPID ip -6 addr add $HostSubnetV6 dev $HostInterface
+
+                        # add ipv4 and ipv6 default route
+                        local HostGateway=$(subnet_l2 "${GroupAS}" "${DCNameToId[$DCName]}" "${VlanTag}" 1)
+                        local HostGatewayV6=$(subnet_l2_ipv6 "${GroupAS}" "${DCNameToId[$DCName]}" "${VlanTag}" 1)
+                        ip netns exec $HostPID ip route add default via ${HostGateway%/*}
+                        ip netns exec $HostPID ip -6 route add default via ${HostGatewayV6%/*}
+
+                        echo "Configured L2 host ${HostCtnName}"
+                    fi
 
                 fi
             done

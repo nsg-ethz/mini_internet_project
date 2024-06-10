@@ -146,11 +146,11 @@ get_l2_host_to_vlan_id() {
     declare -A DCNameToGatewayNumber
     while read -r DCName GatewayNumber; do
         DCNameToGatewayNumber[$DCName]=$GatewayNumber
-    done < <(_get_dc_name_to_gateway_number "${CurrentAS}")
+    done < <(get_dc_name_to_gateway_number "${CurrentAS}")
 
     # get all unique VLAN tags used in the L2
     local VlanSet
-    IFS=' ' read -r -a VlanSet <<<"$(_get_unique_vlan_set "${CurrentAS}")"
+    IFS=' ' read -r -a VlanSet <<<"$(get_unique_vlan_set "${CurrentAS}")"
 
     declare -A DCVlanToHostId
     # for each dc stored in DCNameToGatewayNumber
