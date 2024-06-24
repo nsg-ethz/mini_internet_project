@@ -1,11 +1,13 @@
 #!/bin/bash
 
-USER=ubuntu
-
-WORKDIR=/home/${USER}/mini_internet_project/platform/
+WORKDIR=$(pwd)/../../
 students_as=(3 4 13 14)
 routers=('ZURI' 'BASE' 'GENE' 'LUGA' 'MUNI' 'LYON' 'VIEN' 'MILA')
 dchosts=('FIFA' 'UEFA')
+
+# Variables for this script
+isDoBackup=false
+isDoRestore=false
 
 # save all configs first
 save_configs() {
@@ -184,41 +186,56 @@ show_passwords() {
 show_help() {
   echo "usage: $0 [options]"
   echo "options available:"
-  echo -e "\t1\t save config to students_config directory (CAUTION: THE CONFIGS IN THIS DIRECTORY WILL BE OVERWRITTEN!)"
-  echo -e "\t2\t reset the mini internet and restore configs"
+  echo -e "\t-b\tbackup configs to students_config directory\n\t\t(CAUTION: this will overwrite the configs in the directory, ensure you had copy the configs beforehand)"
+  echo -e "\t-r\treset the mini internet and restore configs"
+  echo -e "\t-p\tshow AS passwords"
+  echo -e "\t-h\tshow help"
 }
 
-main() {
+check_if_root() {
   if [[ $(id -u) -ne 0 ]]; then
     echo "You must run as root, exiting..."
     exit 1
   fi
+}
 
-  case $1 in
-    1)
-      save_configs
-      ;;
-    2)
-      reset_with_startup
-      restore_configs
-      echo "Restart complete, here are all passwords..."
-      show_passwords
-      ;;
-  esac
+run() {
+  if [[ $isDoBackup == true ]]; then
+    check_if_root
+    save_configs
+  fi
+
+  if [[ $isDoRestore == true ]]; then
+    check_if_root
+    reset_with_startup
+    restore_configs
+    echo "Restart complete, here are all passwords..."
+    show_passwords
+  fi
 }
 
 welcome() {
-  cmd=$1
-  if [ $cmd ]; then
-    if [ $cmd -eq 1 ] || [ $cmd -eq 2 ]; then
-      main $cmd
-    else
-      echo -e "invalid options"
-      show_help
-    fi
-  else
+  if [[ $# -eq 0 ]]; then
     show_help
+    exit 1
   fi
+  while getopts "brh" opt; do
+    case $opt in
+      b)
+        isDoBackup=true
+        ;;
+      r)
+        isDoRestore=true
+        ;;
+      h)
+        show_help
+        ;;
+      \?)
+        show_help
+        ;;
+    esac
+  done
+  run
 }
 
 welcome $@
