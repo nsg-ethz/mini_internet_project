@@ -1,6 +1,6 @@
 #!/bin/bash
 
-WORKDIR=$(pwd)/../../
+WORKDIR=$(pwd)
 students_as=(3 4 13 14)
 routers=('ZURI' 'BASE' 'GENE' 'LUGA' 'MUNI' 'LYON' 'VIEN' 'MILA')
 dchosts=('FIFA' 'UEFA')
@@ -59,7 +59,6 @@ restore_configs() {
     echo "Restoring config on AS: ${as}"
     docker cp ./configs-as-${as}.tar.gz ${as}_ssh:/root/configs-as-${as}.tar.gz
 
-    # How to use heredoc works here?
     docker exec -iw /root ${as}_ssh bash -c "./restore_configs.sh configs-as-${as}.tar.gz all" << EOF
 Y
 EOF
