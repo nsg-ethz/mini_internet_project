@@ -1,12 +1,12 @@
 #!/bin/bash
 
-WORKDIR=$(pwd)
-students_as=(3 4 13 14)
+WORKDIR="$(pwd)/"
 routers=('ZURI' 'BASE' 'GENE' 'LUGA' 'MUNI' 'LYON' 'VIEN' 'MILA')
 dchosts=('FIFA' 'UEFA')
 
 # Variables for this script
 isDoBackup=false
+isDoRestart=false
 isDoRestore=false
 
 # save all configs first
@@ -182,13 +182,24 @@ show_passwords() {
   echo "---  END OF MEASUREMENT PASSWORDS  ---"
 }
 
+# create function to show red color echo
+function red_echo() {
+  echo -e "\e[31m$1\e[0m"
+}
+
 show_help() {
-  echo "usage: $0 [options]"
+  echo "usage: $0 [options] [-g <AS groups>]"
   echo "options available:"
-  echo -e "\t-b\tbackup configs to students_config directory\n\t\t(CAUTION: this will overwrite the configs in the directory, ensure you had copy the configs beforehand)"
-  echo -e "\t-r\treset the mini internet and restore configs"
+  echo -ne "\t-b\tbackup configs to students_config directory (-g is required)\n\t\t"
+  red_echo '(CAUTION: this will wipes all existing configs in the directory, ensure you had copy the configs beforehand)'
+  echo -ne "\t-s\treset the mini internet, performs startup.sh\n\t\t"
+  red_echo '(CAUTION: this will wipes all configs in the project, ensure you had the backup of the configs)'
+  echo -ne "\t-r\trestore ASes configs (-g is required)\n\t\t"
+  red_echo '(CAUTION: this will override the running configs)'
+  echo -e "\t-g\tspecify ASes groups to perform backup/restore with, separated by comma without whitespace (ex: 3,4,13,14)"
   echo -e "\t-p\tshow AS passwords"
   echo -e "\t-h\tshow help"
+  echo -e "If you are using all options, the script will do backup configs, reset the mini internet, and restore configs respectively"
 }
 
 check_if_root() {
@@ -199,18 +210,36 @@ check_if_root() {
 }
 
 run() {
+  # Check if the AS groups are specified when doing backup/restore
+  if [[ $isDoBackup == true || $isDoRestore == true ]]; then
+    check_students_as_len
+  fi
+
   if [[ $isDoBackup == true ]]; then
     check_if_root
     save_configs
   fi
 
-  if [[ $isDoRestore == true ]]; then
+  if [[ $isDoRestart == true ]]; then
     check_if_root
     reset_with_startup
+  fi
+
+  if [[ $isDoRestore == true ]]; then
+    check_if_root
     restore_configs
     echo "Restart complete, here are all passwords..."
     show_passwords
   fi
+}
+
+check_students_as_len() {
+    if [[ ${#students_as[@]} -eq 0 ]]; then
+      echo -e "error: students_as is empty\n"
+      show_help
+      exit 1
+    fi
+    echo "Students AS groups: ${students_as[@]}"
 }
 
 welcome() {
@@ -218,13 +247,29 @@ welcome() {
     show_help
     exit 1
   fi
-  while getopts "brh" opt; do
+
+  while getopts ":bsrg:h" opt; do
     case $opt in
       b)
         isDoBackup=true
         ;;
       r)
         isDoRestore=true
+        ;;
+      s)
+        isDoRestart=true
+        ;;
+      g)
+        # Read the AS groups from the argument
+        readarray -t students_as < <(echo $OPTARG | awk -F',' '{ for (x = 1; x <= NF; x++) print $x }')
+        # Check if the AS groups are integers
+        for i in ${students_as[@]}; do
+          if ! [[ $i =~ ^[0-9]+$ ]]; then
+            echo -e "error: an AS group must be an integer\n"
+            show_help
+            exit 1
+          fi
+        done
         ;;
       h)
         show_help
