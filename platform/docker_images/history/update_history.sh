@@ -59,6 +59,15 @@ update_history() {
     local git_branch=$7
     local forget_binaries=$8
 
+    # If a git url is provided, test if it exists, otherwise print error.
+    git ls-remote "$git_url" > /dev/null 2>&1
+    if [ "$?" -ne 0 ]; then
+        echo "Error! Unable to access '$git_url'"
+        # Reset to ignore it in the rest of the script. Makes things easier.
+        git_url=""
+    fi
+
+
     # Get git directory ready and cd into it.
     if [ -d $output_dir/.git ]; then
         echo "Directory $output_dir is already a git repository."
@@ -76,9 +85,9 @@ update_history() {
                 git push --set-upstream origin $git_branch
             fi
         fi
-        # Ensure we are up-to-date.
-        git pull --rebase -X theirs
-        git push
+        # Ensure we are up-to-date. Ignore errors (no repo).
+        git pull --rebase -X theirs 2>/dev/null
+        git push 2>/dev/null
     elif [ -n "$git_url" ]; then
         if git clone -b $git_branch $git_url $output_dir ; then
             # Remote branch exists, we are ready.
@@ -99,8 +108,9 @@ update_history() {
         git branch -m $git_branch
     fi
     # If the update was interrupted, there may be some changes left.
-    # Clean up the working directory.
-    git reset --hard HEAD
+    # Clean up the working directory. Ignore errors (empty repo).
+    git reset --hard HEAD 2>/dev/null
+
 
     # Git repository is ready!
 
