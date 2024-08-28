@@ -115,10 +115,6 @@ add_port () {
                 THROUGHPUT=${1#*=}
                 shift
                 ;;
-            --buffer=*)
-                BUFFER=${1#*=}
-                shift
-                ;;
             *)
                 echo >&2 "$UTIL add-port: unknown option \"$1\""
                 exit 1
@@ -194,24 +190,13 @@ add_port () {
     fi
 
     if [ -n "$DELAY" ]; then
-        echo "tc qdisc add dev "${PORTNAME}"_l root handle 1: netem delay ${DELAY} limit 15000" >> groups/delay_throughput.sh
-	    echo "tc qdisc add dev "${PORTNAME}"_l root handle 1: netem delay ${DELAY} limit 15000" >> groups/restart_container.sh
+        echo "tc qdisc add dev "${PORTNAME}"_l root netem delay "${DELAY}" " >> groups/delay_throughput.sh
+        echo "  tc qdisc add dev "${PORTNAME}"_l root netem delay "${DELAY}" " >> groups/restart_container.sh
     fi
 
     if [ -n "$THROUGHPUT" ]; then
-
-        if [ -n "$BUFFER" ]; then
-            latency="$BUFFER"
-        else
-            latency="1ms"
-        fi
-        if [ -n "$DELAY" ]; then
-            echo "tc qdisc add dev "${PORTNAME}"_l parent 1:1 handle 10: tbf rate ${THROUGHPUT}kbit burst 100kb latency ${latency} " >> groups/delay_throughput.sh
-            echo "tc qdisc add dev "${PORTNAME}"_l parent 1:1 handle 10: tbf rate ${THROUGHPUT}kbit burst 100kb latency ${latency}" >> groups/restart_container.sh
-        else
-            echo "tc qdisc add dev "${PORTNAME}"_l root handle 1: tbf rate ${THROUGHPUT}kbit burst 100kb latency ${latency} " >> groups/delay_throughput.sh
-            echo "tc qdisc add dev "${PORTNAME}"_l root handle 1: tbf rate ${THROUGHPUT}kbit burst 100kb latency ${latency}" >> groups/restart_container.sh
-        fi
+        echo "echo -n \" -- set interface "${PORTNAME}"_l ingress_policing_rate="${THROUGHPUT}" \" >> groups/throughput.sh " >> groups/delay_throughput.sh
+        echo "  ovs-vsctl set interface ${PORTNAME}_l ingress_policing_rate=${THROUGHPUT}" >> groups/restart_container.sh
     fi
 
     echo "fi" >> groups/restart_container.sh

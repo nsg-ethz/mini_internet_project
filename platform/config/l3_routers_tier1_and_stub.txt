@@ -1,3 +1,4 @@
-ZURI    DNS host:miniinterneteth/d_host vtysh
-BASE    MATRIX_TARGET routinator:miniinterneteth/d_routinator  vtysh
-GENE	MATRIX host:miniinterneteth/d_host    vtysh
+ZURI    MATRIX_TARGET routinator:miniinterneteth/d_routinator   vtysh ALL
+ZURI    DNS           N/A                                       vtysh ALL
+ZURI    MATRIX        N/A                                       vtysh ALL
+ZURI    MEASUREMENT   N/A                                       vtysh ALL

@@ -10,13 +10,14 @@ DIRECTORY="$1"
 source "${DIRECTORY}"/config/subnet_config.sh
 
 # read configs
+# read lines into an array
 readarray groups < "${DIRECTORY}"/config/AS_config.txt
 
 group_numbers=${#groups[@]}
 
 
 for ((k=0;k<group_numbers;k++)); do
-    group_k=(${groups[$k]})
+    group_k=(${groups[$k]}) # (${}) to execute the command and take the result
     group_number="${group_k[0]}"
     group_as="${group_k[1]}"
     group_config="${group_k[2]}"
@@ -30,11 +31,13 @@ for ((k=0;k<group_numbers;k++)); do
         readarray routers < "${DIRECTORY}"/config/$group_router_config
         readarray l2_switches < "${DIRECTORY}"/config/$group_layer2_switches
         readarray l2_hosts < "${DIRECTORY}"/config/$group_layer2_hosts
-        n_routers=${#routers[@]}
+        n_routers=${#routers[@]} # get the number of routers
         n_l2_switches=${#l2_switches[@]}
         n_l2_hosts=${#l2_hosts[@]}
 
         # kill ssh container
+        # immediately sends SIGKILL signal to the main process of the container
+        # docker stop: send SIGTERM to let processes clean up
         docker kill "${group_number}""_ssh" &>/dev/null || true
 
         for ((i=0;i<n_routers;i++)); do
@@ -49,7 +52,8 @@ for ((k=0;k<group_numbers;k++)); do
 
             # kill host
             if [[ ! -z "${dname}" ]]; then
-                docker kill "${group_number}""_""${rname}""host" &>/dev/null || true &
+                docker ps -q --filter "name=^${group_number}_${rname}host" | xargs -r docker kill &>/dev/null || true &
+
             fi
 
             # cleanup layer 2
@@ -85,11 +89,14 @@ for ((k=0;k<group_numbers;k++)); do
 
 done
 
+# allow parallel container temination
+# ensure the script continues even if a container is not found
+# &: run the command in the background
 docker kill DNS &>/dev/null || true &
 docker kill MEASUREMENT &>/dev/null || true &
 docker kill MATRIX &>/dev/null || true &
 docker kill WEB &>/dev/null || true &
 docker kill PROXY &>/dev/null || true &
 
-wait
-docker system prune -f --volumes
+wait # wait for all background processes to finish
+docker system prune -f --volumes  # remove all unused volumes

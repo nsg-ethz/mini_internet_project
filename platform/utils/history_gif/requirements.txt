@@ -1,0 +1,6 @@
+jinja2
+tqdm
+pqdm
+imageio
+imageio-freeimage
+pygifsicle

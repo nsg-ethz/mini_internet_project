@@ -13,7 +13,7 @@ if [ "$#" -ne 1 ]; then
 	exit 1
 fi
 
-if ! id "$1" >/dev/null 2>&1; then
+if ! id "$1" > /dev/null 2>&1; then
 	echo "no user called $1" 2>&1
 	exit 1
 fi

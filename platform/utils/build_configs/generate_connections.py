@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """This script generates the connections between the routers in the topology.
 
 Create four files:
@@ -32,11 +34,18 @@ You can disable the stub hijacks by setting ENABLE_STUB_HIJACKS to False.
 If you disable the hijacks, there will also be no buffer ASes, and each area
 only has an overhead of 4 ASes (2 Tier 1, 2 stub).
 
+!IMPORTANT!
+For the stub hijack to work properly, there are some conditions on the network
+topology: conrerely, the routers connected to the IXP and peer **must not** be
+on the path between MEASURMENT and any provider or the measurement target.
+Otherwise, unintended traffic will get blackholed.
+
 Important to consider: the config file configures _both_ ends of the connection,
 so we need to ensure that we only have one config line for each two endpoints.
 Concretely, we define config only for providers, not for customers, and only
 for the peer on the "left" in the topology.
 """
+
 import math
 
 
@@ -73,11 +82,15 @@ FIRST_IXP = 80
 # Define the connections and roles of the ASes in each topology.
 # --------------------------------------------------------------
 
-skip_groups = [127, ]  # 127 is a reserved IP range, cannot use as AS prefix.
-do_not_hijack = [1, ]  # Hosts krill, so we need it reachable.
+skip_groups = [
+    127,
+]  # 127 is a reserved IP range, cannot use as AS prefix.
+do_not_hijack = [
+    1,
+]  # AS 1 hosts krill, so we need it reachable.
 
-default_link = ("100000", "2.5ms ")  # throughput, delay
-delay_link = ("100000",   "25ms")    # throughput, delay (not used by default)
+default_link = ("1mbit", "2.5ms", "50ms")  # throughput, delay, buffer,
+delay_link = ("1mbit", "25ms ", "50ms")  # as above; not used by default
 customer = "Customer"
 provider = "Provider"
 peer = "Peer    "  # Spaces to align with the other roles in config file.
@@ -95,10 +108,12 @@ transit_as_topo = {
     'ixp': ('VIEN', peer),
 }
 
+# All non-transit ASes only have a single router ZURI.
+
 tier1_topo = {
     # Tier 1 Ases have no providers, but more peers and two IXPs.
     'ixp_central': ('ZURI', peer),
-    'ixp': ('BASE', peer),
+    'ixp': ('ZURI', peer),
     # Other Tier 1.
     'peer1': ('ZURI', peer),
     'peer2': ('ZURI', peer),
@@ -107,38 +122,45 @@ tier1_topo = {
     'customer2': ('ZURI', provider),
 }
 
-stub_topo = {
+# We use a minimal stub topo without hijacks, and the transit one with hijacks.
+stub_topo = transit_as_topo if ENABLE_STUB_HIJACKS else {
     # Same providers, but IXP and peer. are somewhere else.
-    'provider1': ('ZURI', customer),
-    'provider2': ('ZURI', customer),
-    'peer': ('ZURI', peer),
-    'ixp': ('BASE', peer),
+    "provider1": ("ZURI", customer),
+    "provider2": ("ZURI", customer),
+    "peer": ("ZURI", peer),
+    "ixp": ("ZURI", peer),
 }
 
-# Same topo, but could be adapted.
-buffer_topo = transit_as_topo
+buffer_topo = {
+    # Looks like transit AS, but we only have a single router.
+    "provider1": ("ZURI", customer),
+    "provider2": ("ZURI", customer),
+    "customer1": ("ZURI", provider),
+    "customer2": ("ZURI", provider),
+    "peer": ("ZURI", peer),
+    "ixp": ("ZURI", peer),
+}
 
 ixp_topo = {
     "as": ("None", peer),
 }
 
-
 def get_link(role1, role2):
     """Here, you can define the link properties between neighbors."""
-    return default_link
+    #return default_link
     # Alternative:
     # In this version, we slow down the link to the provider in the other
     # column, e.g. between 1 and 3, and between 2 and 4; but not the links in
     # the same, e.g. 1 and 4, and 2 and 3.
     #
-    # nodes = set([role1, role2])
-    # delayed = [
-    #     # "left" ASes
-    #     {'provider1', 'customer2'},
-    #     # "right" ASes
-    #     {'provider2', 'customer1'},
-    # ]
-    # return delay_link if nodes in delayed else default_link
+    nodes = set([role1, role2])
+    delayed = [
+        # "left" ASes
+        {'provider1', 'customer2'},
+        # "right" ASes
+        {'provider2', 'customer1'},
+    ]
+    return delay_link if nodes in delayed else default_link
 
 
 # DONE. You should not need to change anything below this line.
@@ -150,6 +172,7 @@ def get_link(role1, role2):
 
 # Compute the different areas and IXPs.
 # Ensure areas start at "nice" numbers, i.e. 1, 11, 21, etc.
+assert AREAS >= 2, "Need at least two areas."
 assert CONFIGURABLE_PER_AREA % 2 == 0, "Must be even."
 ASES_PER_AREA = CONFIGURABLE_PER_AREA + 4  # 2 stub, 2 provider
 if ENABLE_STUB_HIJACKS:
@@ -168,9 +191,7 @@ def _area_ases(start):
     return _ases
 
 
-areas = [
-    _area_ases(_area_max*n + 1) for n in range(AREAS)
-]
+areas = [_area_ases(_area_max * n + 1) for n in range(AREAS)]
 
 # IXPs
 highest_as = max([max(area) for area in areas])
@@ -289,12 +310,16 @@ def get_config(asn1, key1, asn2, key2):
                 advertise_too_much = stub
 
         asn1_area = next(area for area in areas if asn1 in area)
-        last_col = ",".join([
-            str(asn) for asn in ixp_to_ases[asn2] if (
-                (asn not in asn1_area)
-                or ((asn1 in advertise_too_much) and (asn != asn1))
-            )
-        ])
+        last_col = ",".join(
+            [
+                str(asn)
+                for asn in ixp_to_ases[asn2]
+                if (
+                    (asn not in asn1_area)
+                    or ((asn1 in advertise_too_much) and (asn != asn1))
+                )
+            ]
+        )
     else:  # non-IXP
         last_col = subnet
 
@@ -308,22 +333,25 @@ def get_config(asn1, key1, asn2, key2):
         "\t".join(map(str, (*as_info, *link, last_col))),
         # aslevel_links_students line 1/2.
         (
-            "\t".join(map(str, (*as_info, ip1))) + "\n" +
-            "\t".join(map(str, (*as_info_rev, ip2)))
+            "\t".join(map(str, (*as_info, ip1)))
+            + "\n"
+            + "\t".join(map(str, (*as_info_rev, ip2)))
         ),
     )
 
 
 def is_student(asn):
     """Return True if the AS is a (potential) student AS."""
-    return not any((
-        # All the following are TA-managed.
-        asn in tier1,
-        asn in buffer,
-        asn in stub,
-        asn in ixp_out,
-        asn == ixp_central,
-    ))
+    return not any(
+        (
+            # All the following are TA-managed.
+            asn in tier1,
+            asn in buffer,
+            asn in stub,
+            asn in ixp_out,
+            asn == ixp_central,
+        )
+    )
 
 
 config = []
@@ -354,7 +382,7 @@ for as_block in areas:
         # Customers (not for stub ASes).
         # ----------
 
-        if not asn in stub:
+        if asn not in stub:
             customer1 = as_block[first_idx + 2]
             customer2 = as_block[first_idx + 3]
             label = f"provider{asn_pos}"  # 1 or 2.
@@ -363,7 +391,7 @@ for as_block in areas:
 
         # Peers. (Tier 1 peers differently)
         # ------
-        if not asn in tier1:
+        if asn not in tier1:
             # Only for the "left" AS.
             if (idx % 2) == 0:
                 config.append(get_config(asn, "peer", asn_partner, "peer"))
@@ -391,38 +419,53 @@ for as_block in areas:
 
 config, student_config = zip(*config)
 
-with open('aslevel_links.txt', 'w') as file:
+# assume the script is run from the platform directory
+aslevel_link_file = "./config/aslevel_links.txt"
+with open(aslevel_link_file, "w") as file:
     file.write("\n".join([line for line in config if line is not None]))
 
-with open('aslevel_links_students.txt', 'w') as file:
-    file.write(
-        "\n".join([line for line in student_config if line is not None]))
+aslevel_link_students_file = "./config/aslevel_links_students.txt"
+with open(aslevel_link_students_file, "w") as file:
+    file.write("\n".join([line for line in student_config if line is not None]))
 
 
 # STEP 3: Generate the file with contains which configs to use.
 # =============================================================
 
-with open('AS_config.txt', 'w') as fd:
+as_config_file = "./config/AS_config.txt"
+with open(as_config_file, "w") as fd:
+    if ENABLE_STUB_HIJACKS:
+        # Need the full topology in the stub for the hijack
+        small_config = (tier1 + buffer)
+    else:
+        small_config = (tier1 + stub + buffer)
+
     for area in areas:
         for asn in area:
             if asn == 1:  # By default we set krill in AS1
-                fd.write(f'{asn}\tAS\tConfig  \tl3_routers_krill.txt\t'
-                         'l3_links_krill.txt\tempty.txt\tempty.txt\t'
-                         'empty.txt\n')
-            elif asn in (tier1 + stub + buffer):
-                fd.write(f'{asn}\tAS\tConfig  \tl3_routers_tier1_and_stub.txt\t'
-                         'l3_links_tier1_and_stub.txt\tempty.txt\tempty.txt\t'
-                         'empty.txt\n')
+                fd.write(
+                    f"{asn}\tAS\tConfig  \tl3_routers_krill.txt\t"
+                    "l3_links_krill.txt\tempty.txt\tempty.txt\t"
+                    "empty.txt\n"
+                )
+            elif asn in small_config:
+                fd.write(
+                    f"{asn}\tAS\tConfig  \tl3_routers_tier1_and_stub.txt\t"
+                    "l3_links_tier1_and_stub.txt\tempty.txt\tempty.txt\t"
+                    "empty.txt\n"
+                )
             else:  # "Normal" ASes.
-                if AUTOCONF_EVERYTHING or asn in buffer:
+                if AUTOCONF_EVERYTHING or asn in (buffer + stub):
                     conf = "Config  "
                 else:
                     conf = "NoConfig"
-                fd.write(f'{asn}\tAS\t{conf}\tl3_routers.txt\t'
-                         'l3_links.txt\tl2_switches.txt\tl2_hosts.txt\t'
-                         'l2_links.txt\n')
+                fd.write(
+                    f"{asn}\tAS\t{conf}\tl3_routers.txt\t"
+                    "l3_links.txt\tl2_switches.txt\tl2_hosts.txt\t"
+                    "l2_links.txt\n"
+                )
     for asn in [ixp_central, *ixp_out]:
-        fd.write(f'{asn}\tIXP\tConfig  \tN/A\tN/A\tN/A\tN/A\tN/A\n')
+        fd.write(f"{asn}\tIXP\tConfig  \tN/A\tN/A\tN/A\tN/A\tN/A\n")
 
 
 # STEP 4: Specify hijacks.
@@ -437,19 +480,28 @@ if ENABLE_STUB_HIJACKS:
         # we hijack the other stub AS in the same area via the IXP.
         asn_area = next(area for area in areas if asn in area)
         asn_ixp = as_to_ixp[asn]
-        victim = next(asn2 for asn2 in stub
-                      if (asn2 != asn) and (asn2 in asn_area))
-        other_ases = [asn2 for asn2 in asn_area
-                      if (asn2 != asn) and (asn2 in ixp_to_ases[asn_ixp])
-                      and (asn2 not in do_not_hijack)]
+        victim = next(asn2 for asn2 in stub if (asn2 != asn) and (asn2 in asn_area))
+        other_ases = [
+            asn2
+            for asn2 in asn_area
+            if (asn2 != asn)
+            and (asn2 in ixp_to_ases[asn_ixp])
+            and (asn2 not in do_not_hijack)
+        ]
 
-        node_towards_victim, *_ = stub_topo['peer']
-        node_towards_ixp, *_ = stub_topo['ixp']
-        hijacks.append((
-            asn, victim, ",".join(map(str, other_ases)), asn_ixp,
-            node_towards_victim, node_towards_ixp
-        ))
+        node_towards_victim, *_ = stub_topo["peer"]
+        node_towards_ixp, *_ = stub_topo["ixp"]
+        hijacks.append(
+            (
+                asn,
+                victim,
+                ",".join(map(str, other_ases)),
+                asn_ixp,
+                node_towards_victim,
+                node_towards_ixp,
+            )
+        )
 
-with open('hijacks.txt', 'w') as file:
+with open("./config/hijacks.txt", "w") as file:
     for hijack in hijacks:
         file.write("\t".join(map(str, hijack)) + "\n")

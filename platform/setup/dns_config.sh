@@ -1,6 +1,21 @@
 #!/bin/bash
 #
 # generates dns config files for the dns server in groups/dns/
+#
+# BIND: a DNS server on unix
+# named.conf (inclding named.conf.* files): configuration files in BIND
+# zone files: plain text files that contain mapping between domain names and IP addresses
+# A: map a hostname to a 32-bit IPV4 address, e.g., example.com IN A 192.0.2.1
+# AAAA: IPV6
+# NS: delegate a DNS zone to use the given authoritative name server,
+# e.g., example.com IN NS ns1.example.com
+# SOA: basic infoormation about the domain
+# PTR: reverse DNS lookups, maping an IP address to a domain name
+# e.g., 1.2.0.192-in-addr.arpa. IN PTR example.com
+#
+# for each domain, a zone file is created and referenced in named.conf.local
+# e.g., zone "example.com" { type master; file "/etc/bind/zones/db.example.com"; };
+# the master/slave is used for redundancy
 
 set -o errexit
 set -o pipefail
@@ -21,21 +36,31 @@ mkdir "${DIRECTORY}"/groups/dns/group_config
 mkdir "${DIRECTORY}"/groups/dns/zones
 
 location_options="${DIRECTORY}"/groups/dns/named.conf.options
-echo "options {" >> "${location_options}"
-echo "    directory \"/var/cache/bind\";" >> "${location_options}"
-echo "" >> "${location_options}"
-echo "    recursion no;" >> "${location_options}"
-echo -n "    listen-on { " >> "${location_options}"
+{
+    echo "options {"
+    echo "    directory \"/var/cache/bind\";"
+    echo ""
+    echo "    recursion no;"
+    echo -n "    listen-on { "
 
-subnet_router="$(subnet_router_DNS -1 "dns")"
-echo -n "${subnet_router%???}""; " >> "${location_options}"
+    # listen on all group interfaces
+    for ((i=0;i<n_groups;i++)); do
+        group_i=(${groups[$i]})
+        group_number="${group_i[0]}"
+        dns_subnet="$(subnet_router_DNS "${group_number}" "dns-group")"
+        echo -n "${dns_subnet%???}""; "
+    done
+    # also add measurement interface
+    subnet_measurement="$(subnet_router_DNS -1 "dns-measurement")"
+    echo -n "${subnet_measurement%???}""; "
 
-echo "};" >> "${location_options}"
-echo "    allow-transfer { none; };" >> "${location_options}"
-echo "" >> "${location_options}"
-echo "    dnssec-validation auto; " >> "${location_options}"
-echo "    auth-nxdomain no;    # conform to RFC1035" >> "${location_options}"
-echo "};" >> "${location_options}"
+    echo "};"
+    echo "    allow-transfer { none; };"
+    echo ""
+    echo "    dnssec-validation auto; "
+    echo "    auth-nxdomain no;    # conform to RFC1035"
+    echo "};"
+} >> $location_options
 
 for ((i=0;i<n_groups;i++)); do
     (
@@ -47,7 +72,7 @@ for ((i=0;i<n_groups;i++)); do
         group_internal_links="${group_i[4]}"
 
         location_local="${DIRECTORY}"/groups/dns/named.conf.local
-        location_grp="groups/dns/group_config/named.conf.local.group""${group_number}"
+        forward_records="groups/dns/group_config/named.conf.local.group""${group_number}"
         if [ "${group_as}" != "IXP" ];then
 
             readarray routers < "${DIRECTORY}"/config/$group_router_config
@@ -65,14 +90,31 @@ for ((i=0;i<n_groups;i++)); do
                 echo " type master;"
                 echo " file \"/etc/bind/zones/db."${group_number}"\";"
                 echo "};"
-            } >> "${location_grp}"
+            } >> $forward_records
         fi
-    ) &
+    )  # &  # create the dns config for each group in parallel
 
-    wait_if_n_tasks_are_running
+    #wait_if_n_tasks_are_running
 done
 
 wait
+
+
+forward_entry() {
+    local name="$1"
+    local subnet="$2"
+    echo "$name. IN A ${subnet%???}"
+}
+
+reverse_entry() {
+    local name="$1"
+    local subnet="$2"
+    local first_sub="${subnet#*.}"
+    local second_sub="${subnet#*.*.}"
+    local third_sub="${subnet#*.*.*.}"
+    echo "${third_sub%/*}.${second_sub%.*}.${first_sub%.*.*} IN  PTR $name."
+}
+
 
 for ((j=0;j<n_groups;j++)); do
     group_j=(${groups[$j]})
@@ -82,8 +124,12 @@ for ((j=0;j<n_groups;j++)); do
     group_router_config="${group_j[3]}"
     group_internal_links="${group_j[4]}"
 
-    location_db="groups/dns/zones/db.""${group_number}"
-    location_grp="groups/dns/zones/db.group""${group_number}"
+    domain="group${group_number}"
+
+    # create zone definitions for both forward (db.group[number]
+    # and reverse (db.[number) DNS records
+    forward_records="groups/dns/zones/db.$domain"
+    reverse_records="groups/dns/zones/db.${group_number}"
 
     if [ "${group_as}" != "IXP" ];then
 
@@ -92,108 +138,107 @@ for ((j=0;j<n_groups;j++)); do
         n_routers=${#routers[@]}
         n_intern_links=${#intern_links[@]}
 
-        echo ";" >> "${location_db}"
-        echo "; BIND reverse data file for local loopback interface" >> "${location_db}"
-        echo ";" >> "${location_db}"
-        echo "\$TTL    604800" >> "${location_db}"
-        echo "@   IN  SOA ns.group${group_number}. ns.group${group_number}. (" >> "${location_db}"
-        echo "                  ${group_number}     ; Serial" >> "${location_db}"
-        echo "             604800     ; Refresh" >> "${location_db}"
-        echo "              86400     ; Retry" >> "${location_db}"
-        echo "            2419200     ; Expire" >> "${location_db}"
-        echo "             604800 )   ; Negative Cache TTL" >> "${location_db}"
-        echo ";" >> "${location_db}"
-        echo "" >> "${location_db}"
-        echo "    IN  NS  ns.group${group_number}." >> "${location_db}"
-        echo "" >> "${location_db}"
-        echo "" >> "${location_db}"
+        # define SOA, NS, A records for routers and host-router interfaces
+        # and PTR records for reverse DNS mapping
+        {
+            echo ";"
+            echo "; BIND reverse data file for local loopback interface"
+            echo ";"
+            echo "\$TTL    604800"
+            echo "@   IN  SOA ns.$domain. ns.$domain. ("
+            echo "                  ${group_number}     ; Serial"
+            echo "             604800     ; Refresh"
+            echo "              86400     ; Retry"
+            echo "            2419200     ; Expire"
+            echo "             604800 )   ; Negative Cache TTL"
+            echo ";"
+            echo ""
+            echo "    IN  NS  ns.$domain."
+            echo ""
+            echo ""
+        } >> $reverse_records
 
-        echo ";" >> "${location_grp}"
-        echo "; BIND data file for local loopback interface" >> "${location_grp}"
-        echo ";" >> "${location_grp}"
-        echo "\$TTL    604800" >> "${location_grp}"
-        echo "@       IN      SOA     ns.group${group_number}. admin.group${group_number}. (" >> "${location_grp}"
-        echo "                              ${group_number}         ; Serial" >> "${location_grp}"
-        echo "                         604800         ; Refresh" >> "${location_grp}"
-        echo "                          86400         ; Retry" >> "${location_grp}"
-        echo "                        2419200         ; Expire" >> "${location_grp}"
-        echo "                         604800 )       ; Negative Cache TTL" >> "${location_grp}"
-        echo ";" >> "${location_grp}"
-        echo "" >> "${location_grp}"
-        echo "        IN      NS      ns.group${group_number}." >> "${location_grp}"
-        echo "" >> "${location_grp}"
+        {
+            echo ";"
+            echo "; BIND data file for local loopback interface"
+            echo ";"
+            echo "\$TTL    604800"
+            echo "@       IN      SOA     ns.$domain. admin.$domain. ("
+            echo "                              ${group_number}         ; Serial"
+            echo "                         604800         ; Refresh"
+            echo "                          86400         ; Retry"
+            echo "                        2419200         ; Expire"
+            echo "                         604800 )       ; Negative Cache TTL"
+            echo ";"
+            echo ""
+            echo "        IN      NS      ns.$domain."
+            echo ""
+        } >> $forward_records
 
-        subnet="$(subnet_router_DNS "${group_number}" "dns")"
+        # DNS.
+        subnet="$(subnet_router_DNS "${group_number}" "dns-group")"
+        forward_entry "ns.group$group_number" $subnet >> $forward_records
+        echo "" >> $forward_records
 
-        echo "ns.group""$group_number"".      IN      A       ""${subnet%???}" >> "${location_grp}"
-        echo "" >> "${location_grp}"
-
+        # Loopback and (if exists) host.
         for ((i=0;i<n_routers;i++)); do
             router_i=(${routers[$i]})
-            rname="${router_i[0]}"
+            rname="${router_i[0],,}"  # ,, converts to lowercase
             property1="${router_i[1]}"
             property2="${router_i[2]}"
             dname=$(echo $property2 | cut -s -d ':' -f 2)
+            # If there is only a single router, don't add loopback multiple
+            # times; this is the case if the last column contains ALL.
+            single_router=${router_i[4]:-""}
 
+            # Loopback (if single_router is empty or i==0)
+            if [[ -z "${single_router}" ]] || [[ "${i}" == "0" ]]; then
+                subnet="$(subnet_router $group_number $i)"
+                forward_entry "${rname}.$domain" $subnet >> $forward_records
+                reverse_entry "${rname}.$domain" $subnet >> $reverse_records
+            fi
+
+            # If we have a container, i.e. host attached, add entry for it.
             if [[ ! -z "${dname}" ]];then
                 subnet1="$(subnet_host_router "${group_number}" "$i" "host")"
                 subnet2="$(subnet_host_router "${group_number}" "$i" "router")"
 
-                first_sub1="${subnet1#*.}"
-                first_sub2="${subnet2#*.}"
+                if [[ "${property2}" == *"krill"* ]]; then
+                    forward_entry "rpki-server.$domain" $subnet1 >> $forward_records
+                fi
+                forward_entry "host.${rname}.$domain" $subnet1 >> $forward_records
+                forward_entry "${rname}.$domain" $subnet2 >> $forward_records
 
-                second_sub1="${subnet1#*.*.}"
-                second_sub2="${subnet2#*.*.}"
-
-                third_sub1="${subnet1#*.*.*.}"
-                third_sub2="${subnet2#*.*.*.}"
-
-                reverse1="${third_sub1%/*}"".""${second_sub1%.*}"".""${first_sub1%.*.*}"
-                reverse2="${third_sub2%/*}"".""${second_sub2%.*}"".""${first_sub2%.*.*}"
-
-                {
-                    echo "${reverse1}"" IN  PTR ""host""-""${rname}"".group""${group_number}""."
-                    echo "${reverse2}"" IN  PTR ""${rname}""-""host"".group""${group_number}""."
-                } >> "${location_db}"
-
-                {
-                    if [[ "${property2}" == *"krill"* ]]; then
-                        echo "rpki-server.group${group_number}.     IN      A      ${subnet1%/*}"
-                    fi
-                    echo "host""-""${rname}"".group""${group_number}"".       IN      A      " "${subnet1%/*}"
-                    echo "${rname}""-""host"".group""${group_number}"".       IN      A      " "${subnet2%/*}"
-                } >> "${location_grp}"
+                reverse_entry "host.${rname}.$domain" $subnet1 >> $reverse_records
+                reverse_entry "${rname}.$domain" $subnet2 >> $reverse_records
+            fi
+            # If the measurement service is attached here, also add entries.
+            if [[ "${property1}" == "MEASUREMENT" ]]; then
+                m_subnet="$(subnet_router_MEASUREMENT "${group_number}" "group")"
+                forward_entry "measurement.${rname}.$domain" $m_subnet >> $forward_records
+                reverse_entry "measurement.${rname}.$domain" $m_subnet >> $reverse_records
             fi
         done
 
+        # Internal links: add an entry for every interface.
         for ((i=0;i<n_intern_links;i++)); do
             row_i=(${intern_links[$i]})
-            router1="${row_i[0]}"
-            router2="${row_i[1]}"
+            router1="${row_i[0],,}"  # ,, converts to lowercase
+            router2="${row_i[1],,}"  # ,, converts to lowercase
 
             subnet1="$(subnet_router_router_intern "${group_number}" "$i" "1")"
             subnet2="$(subnet_router_router_intern "${group_number}" "$i" "2")"
 
-            first_sub1="${subnet1#*.}"
-            first_sub2="${subnet2#*.}"
+            reverse_entry "${router1}.$domain" $subnet1 >> $reverse_records
+            reverse_entry "${router2}.$domain" $subnet2 >> $reverse_records
 
-            second_sub1="${subnet1#*.*.}"
-            second_sub2="${subnet2#*.*.}"
-
-            third_sub1="${subnet1#*.*.*.}"
-            third_sub2="${subnet2#*.*.*.}"
-
-            reverse1="${third_sub1%/*}"".""${second_sub1%.*}"".""${first_sub1%.*.*}"
-            reverse2="${third_sub2%/*}"".""${second_sub2%.*}"".""${first_sub2%.*.*}"
-
-            {
-                echo "${reverse1}"" IN  PTR ""${router1}""-""${router2}"".group""${group_number}""."
-                echo "${reverse2}"" IN  PTR ""${router2}""-""${router1}"".group""${group_number}""."
-            } >> "${location_db}"
-            {
-                echo "${router1}""-""${router2}"".group""${group_number}"".       IN      A      " "${subnet1%/*}"
-                echo "${router2}""-""${router1}"".group""${group_number}"".       IN      A      " "${subnet2%/*}"
-            } >> "${location_grp}"
+            forward_entry "${router1}.$domain" $subnet1 >> $forward_records
+            forward_entry "${router2}.$domain" $subnet2 >> $forward_records
         done
     fi
+
+    # Also add an entry for the MEASUREMENT interface
+    # subnet="$(subnet_router_MEASUREMENT "${group_number}" "group")"
+    # forward_entry "measurement.$domain" $subnet >> $forward_records
+    # reverse_entry "measurement.$domain" $subnet >> $reverse_records
 done

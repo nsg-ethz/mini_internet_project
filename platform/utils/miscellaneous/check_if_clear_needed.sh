@@ -59,6 +59,7 @@ for ((k=0;k<group_numbers;k++)); do
             fi
             if [ "$needs_clear" = true ]; then
                 echo "sudo ./setup/bgp_clear.sh . ${group_number}"
+                sudo ./setup/bgp_clear.sh . ${group_number}
             fi
         fi
     ) &

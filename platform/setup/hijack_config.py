@@ -19,7 +19,11 @@ def router_ip(asn, router_id):
 
 def measurement_subnets(asn, router_id):
     """Measurement source and destination IP within group network."""
-    return (f"{asn}.0.198.0/24", f"{asn}.{100 + router_id}.0.0/24")
+    return (
+        f"{asn}.0.198.0/24",  # Matrix server.
+        f"{asn}.0.199.0/24",  # Measurement server.
+        f"{asn}.{100 + router_id}.0.0/24"
+    )
 
 
 parser = argparse.ArgumentParser()
@@ -106,9 +110,8 @@ def hijack_via_victim(*, attacker, node, victim, ases,
     ]
 
     existing_map = f"LOCAL_PREF_OUT_{victim}"
-    do_hijack(attacker=attacker, node=node, prefixes=prefixes,
-              existing_map=existing_map,
-              router_ips=router_ips, directory=directory, undo=undo, dry=dry)
+    do_hijack(label="victim", attacker=attacker, node=node, prefixes=prefixes,
+              existing_map=existing_map, router_ips=router_ips, directory=directory, min_seq=100, undo=undo, dry=dry)
 
 
 def hijack_via_ixp(*, attacker, node, victim, ases, ixp,
@@ -122,33 +125,38 @@ def hijack_via_ixp(*, attacker, node, victim, ases, ixp,
     existing_map = f"IXP_OUT_{ixp} "
     communities = " ".join([f"{ixp}:{asn}" for asn in ases])
     community_update = f"set community {communities}"
-    do_hijack(attacker=attacker, node=node, prefixes=prefixes,
+    do_hijack(label="ixp", attacker=attacker, node=node, prefixes=prefixes,
               existing_map=existing_map, existing_map_update=community_update,
-              router_ips=router_ips, directory=directory, undo=undo, dry=dry)
+              router_ips=router_ips, directory=directory,
+              min_seq=200, undo=undo, dry=dry)
 
 
-def do_hijack(*, attacker, node, prefixes, existing_map, existing_map_update="",
+def do_hijack(*, label, attacker, node, prefixes,
+              existing_map, existing_map_update="",
               router_ips, directory, min_seq=100, undo=False, dry=False):
     """Execute the hijack."""
+    label = str(label).upper()
     no = "no " if undo else ""
     # First get all static routes, otherwise we can't advertise the prefixes.
     static_routes = "\n".join([f"{no}ip route {prefix} Null0"
                                for prefix in prefixes])
     # Next prepare prefix lists for matching
+    prefix_list_name = f"HIJACKED_PREFIX_{label}"
     prefix_list = "\n".join([
-        f"{no}ip prefix-list HIJACKED_PREFIX seq {min_seq + n} "
+        f"{no}ip prefix-list {prefix_list_name} seq {min_seq + n} "
         f"permit {prefix}" for n, prefix in enumerate(prefixes)
     ])
     # Finally, we need to advertise the prefixes as well.
     announcements = "\n".join([f"{no}network {prefix}" for prefix in prefixes])
 
     # Do not send the hijacked prefix via iBGP by adding a route-map.
+    no_hijack_name = f"NO_HIJACK_{label}"
     ibgp_neighbors = [
         ip for router, ip in router_ips[attacker].items()
         if node not in router
     ]
     ibgp_routemap_assignment = "\n".join([
-        f"{no}neighbor {neighbor} route-map NO_HIJACK out"
+        f"{no}neighbor {neighbor} route-map {no_hijack_name} out"
         for neighbor in ibgp_neighbors
     ])
 
@@ -162,19 +170,19 @@ def do_hijack(*, attacker, node, prefixes, existing_map, existing_map_update="",
 # Set up up route-maps.
 # First update the existing one.
 route-map {existing_map} permit {min_seq}
-{no}match ip address prefix-list HIJACKED_PREFIX
+{no}match ip address prefix-list {prefix_list_name}
 {no + existing_map_update if existing_map_update else ""}
 exit
 {f"no route-map {existing_map} permit {min_seq}" if undo else ""}
 # Second create the new map to prevent advertisting the hijack over iBGP.
-route-map NO_HIJACK deny {min_seq}
-{no}match ip address prefix-list HIJACKED_PREFIX
+route-map {no_hijack_name} deny {min_seq}
+{no}match ip address prefix-list {prefix_list_name}
 exit
-{f"no route-map NO_HIJACK deny {min_seq}" if undo else ""}
+{f"no route-map {no_hijack_name} deny {min_seq}" if undo else ""}
 # as part of that, let everything not blocked through.
-route-map NO_HIJACK permit {min_seq + 1}
+route-map {no_hijack_name} permit {min_seq + 1}
 exit
-{f"no route-map NO_HIJACK permit {min_seq + 1}" if undo else ""}
+{f"no route-map {no_hijack_name} permit {min_seq + 1}" if undo else ""}
 # Finally, announce hijacks and install route maps.
 router bgp {attacker}
 address-family ipv4 unicast
@@ -184,11 +192,11 @@ exit
 """.strip()
 
     # Run or print command.
-    docker_cp_exec(group=attacker, node=node, commands=commands,
+    docker_cp_exec(label=label, group=attacker, node=node, commands=commands,
                    directory=directory, dry=dry)
 
 
-def docker_cp_exec(*, group, node, commands, directory, dry=False):
+def docker_cp_exec(*, label, group, node, commands, directory, dry=False):
     """Run command in container.
 
     First create the file, copy it to the container, then execute.
@@ -197,7 +205,7 @@ def docker_cp_exec(*, group, node, commands, directory, dry=False):
     container = f"{group}_{node}router"
     if dry:
         print("=====================================================")
-        print(f"Config for {container}:")
+        print(f"Config for {container} ({label.lower()}):")
         print("=====================================================")
         print(commands)
         return
@@ -241,10 +249,12 @@ if __name__ == "__main__":
     )
 
     for current, hijacks_spec in enumerate(_hijacks, 1):
-        print(f"Hijack {current}/{len(_hijacks)}:",
-              f"AS {hijacks_spec['attacker']} hijacks",
-              f"AS {hijacks_spec['victim']}.",
-              end="\r")
+        if not dry:
+            print(f"Hijack {current}/{len(_hijacks)}:",
+                f"AS {hijacks_spec['attacker']} hijacks",
+                f"AS {hijacks_spec['victim']}.",
+                end="\r")
         hijack(**hijacks_spec, **config)
-    # Add enough space to overwrite the last line.
-    print(f"{len(_hijacks)} hijacks complete.                          ")
+    if not dry:
+        # Add enough space to overwrite the last line.
+        print(f"{len(_hijacks)} hijacks complete.                          ")

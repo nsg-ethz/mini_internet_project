@@ -1,5 +1,5 @@
-FROM debian:stretch
-RUN apt-get update && apt-get install -y locales rsyslog iputils-ping openssh-server traceroute nmap dnsutils
+FROM debian:stable
+RUN apt-get update && apt-get install -y locales rsyslog iputils-ping openssh-server traceroute nmap dnsutils iproute2
 
 # Set locale
 RUN sed -i -e 's/# \(en_US\.UTF-8 .*\)/\1/' /etc/locale.gen && \

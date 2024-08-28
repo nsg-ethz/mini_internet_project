@@ -1,0 +1,61 @@
+# Create a gif of the matrix history
+
+Perform the following steps to create a gif out of the recorded matrix history.
+Ensure that the HISTORY container is set up and running, otherwise you can't
+use this.
+
+## Requirements
+
+Python requirements can be installed using `pip install -r requirements.txt`.
+
+In addition, the following programs are required:
+- google-chrome
+- gifsicle (for optimized gifs)
+
+Also, you need to make sure that the history directory can be read without
+root permissions.
+
+### Problems with Chromium in 2023
+
+In 2023, I was not able to take proper fullscreen screenshots with Chromium
+and had to download Google Chrome:
+
+```
+wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+sudo apt install ./google-chrome-stable_current_amd64.deb
+```
+
+To switch back to chromium, either modify the `make_gif` function in `make_gif.py` or set the environment variable `CHROME_CMD` to `chromium`.
+
+## Run
+
+You need:
+- The location of the mini internet config (to get relationships etc.)
+- The location of the config and matrix history repo.
+  (This code goes through all commits to fetch changes)
+- And approximate time how long you want the gif to run, e.g. `12`.
+- And how many additional seconds you want to hold the final frame, e.g. `3`.
+
+Then run:
+
+```
+python make_gif.py --run=12 --hold=3
+```
+
+You can use the `--config` and `--history` flags if the config dir and history
+repo are not in their default locations.
+
+You can use `--filter` to remove changes below 1%.
+
+Parsing the history for the first time can easily take 15-30 minutes,
+but afterwards all results are chached and changes to the gif can be made quickly.
+
+## Development notes
+
+The utility functions in [utils/](utils) are largely copied from the mini
+internet project webserver, but adjusted for the config repository.
+This one saves the output of `show ip route` instead of `show ip bgp`, so we
+need to extract the paths manually.
+
+Ideally, we would have the processed info stores somewhere so we can just fetch
+it here, but for now we re-use the code.

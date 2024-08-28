@@ -1,1 +1,0 @@
-1	ZURI	Peer	2	ZURI	Peer	100000	1000	N/A

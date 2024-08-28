@@ -1,0 +1,17 @@
++------------------------------------------------------+
+|                                                      |
+|   Communication Networks 2024  - Routing Project     |
+|             Public Measurement Service               |
+|                                                      |
+|   From here, you can launch traceroutes via any      |
+|   group AS in the Mini-Internet. Each group is       |
+|   connected with a unique interface. In traceroute,  |
+|   use the `-i` flag to select an interface and       |
+|   thus send probes via the corresponding group.      |
+|                                                      |
+|   Example: from group 1 to group 2 (router or host)  |
+|                                                      |
+|       traceroute -i group1 zuri.group2               |
+|       traceroute -i group1 host.zuri.group2          |
+|                                                      |
++------------------------------------------------------+

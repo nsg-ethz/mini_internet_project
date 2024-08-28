@@ -2,12 +2,14 @@
 #
 # starts whole network
 
-set -o errexit
-set -o pipefail
-set -o nounset
+# set -x
+set -o errexit # exit on error
+set -o pipefail # catch errors in pipelines
+set -o nounset # exit on undeclared variable
 
 # Check for programs we'll need.
 search_path () {
+    # display the path to the command
     type -p "$1" > /dev/null && return 0
     echo >&2 "$0: $1 not found in \$PATH, please install and try again"
     exit 1
@@ -22,36 +24,41 @@ search_path ovs-vsctl
 search_path docker
 search_path uuidgen
 
+
+# # netns: used to create isolated network environments/namespaces
 if (ip netns) > /dev/null 2>&1; then :; else
     echo >&2 "${0##*/}: ip utility not found (or it does not support netns),"\
              "cannot proceed"
     exit 1
 fi
 
+# # TODO: check the directory is platform/
 DIRECTORY=$(cd `dirname $0` && pwd)
-DOCKERHUB_USER="miniinterneteth"
 
 echo "$(date +%Y-%m-%d_%H-%M-%S)"
 
-echo "cleanup.sh: "
-time ./cleanup/cleanup.sh "${DIRECTORY}"
+echo "hard_reset.sh"
+# time ./cleanup/cleanup.sh "${DIRECTORY}"
+time ./cleanup/hard_reset.sh
 
 echo ""
 echo ""
 
 # change size of ARP table necessary for large networks
-sysctl net.ipv4.neigh.default.gc_thresh1=16384
-sysctl net.ipv4.neigh.default.gc_thresh2=32768
-sysctl net.ipv4.neigh.default.gc_thresh3=131072
+# ARP: IP-to-MAC resolution
+sysctl net.ipv4.neigh.default.gc_thresh1=16384  # the kernel begins to purge unused entries periodically
+sysctl net.ipv4.neigh.default.gc_thresh2=32768 # more aggresive purging
+sysctl net.ipv4.neigh.default.gc_thresh3=131072 # no new entries are allowed
+# apply changes ffrom sysctl.conf
 sysctl -p
 
 # Increase the max number of running processes
 sysctl kernel.pid_max=4194304
 
 # Load MPLS kernel modules
-modprobe mpls_router
-modprobe mpls_gso
-modprobe mpls_iptunnel
+modprobe mpls_router # enables the kernel to process MPLS packets, which is necessary for VPN
+modprobe mpls_gso # MPLS Generic Segmentation Offload, enables segmentation for large packets to offload the CPU
+modprobe mpls_iptunnel # enables the kernel to create VPN to tunnel IP packets over MPLS
 
 echo "folder_setup.sh $(($(date +%s%N)/1000000))" > "${DIRECTORY}"/log.txt
 echo "folder_setup.sh: "
@@ -74,12 +81,12 @@ time ./setup/rpki_config.sh "${DIRECTORY}"
 echo ""
 echo ""
 
-echo "vpn_config.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
-echo "vpn_config.sh: "
-time ./setup/vpn_config.sh "${DIRECTORY}"
+# echo "vpn_config.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
+# echo "vpn_config.sh: "
+# time ./setup/vpn_config.sh "${DIRECTORY}"
 
-echo ""
-echo ""
+# echo ""
+# echo ""
 
 echo "goto_scripts.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
 echo "goto_scripts.sh: "
@@ -97,114 +104,49 @@ echo ""
 
 echo "container_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
 echo "container_setup.sh: "
-time ./setup/container_setup.sh "${DIRECTORY}" "${DOCKERHUB_USER}"
+time ./setup/container_setup.sh "${DIRECTORY}"
 
 echo ""
 echo ""
 
-echo "echo \"host links\"" >> "${DIRECTORY}"/groups/ip_setup.sh
-echo "host_links_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
-echo "host_links_setup.sh: "
-time ./setup/host_links_setup.sh "${DIRECTORY}"
+echo "connect_l3_host_router.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
+echo "connect_l3_host_router.sh: "
+time ./setup/connect_l3_host_router.sh "${DIRECTORY}"
 
 echo ""
 echo ""
 
-echo "echo \"layer2 links\"" >> "${DIRECTORY}"/groups/ip_setup.sh
-echo "layer2_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
-echo "layer2_setup.sh: "
-time ./setup/layer2_setup.sh "${DIRECTORY}"
+echo "connect_l2_network.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
+echo "connect_l2_network.sh: "
+time ./setup/connect_l2_network.sh "${DIRECTORY}"
 
 echo ""
 echo ""
 
-echo "echo \"internal links\"" >> "${DIRECTORY}"/groups/ip_setup.sh
-echo "internal_links_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
-echo "internal_links_setup.sh: "
-time ./setup/internal_links_setup.sh "${DIRECTORY}"
+echo "connect_internal_routers.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
+echo "connect_internal_routers.sh: "
+time ./setup/connect_internal_routers.sh "${DIRECTORY}"
 
 echo ""
 echo ""
 
-echo "echo \"external links\"" >> "${DIRECTORY}"/groups/ip_setup.sh
-echo "external_links_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
-echo "external_links_setup.sh: "
-time ./setup/external_links_setup.sh "${DIRECTORY}"
+echo "connect_external_routers.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
+echo "connect_external_routers.sh: "
+time ./setup/connect_external_routers.sh "${DIRECTORY}"
 
 echo ""
 echo ""
 
-echo "echo \"measurement links\"" >> "${DIRECTORY}"/groups/ip_setup.sh
-echo "measurement_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
-echo "measurement_setup.sh: "
-time ./setup/measurement_setup.sh "${DIRECTORY}" "${DOCKERHUB_USER}"
+echo "configure_ssh.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
+echo "configure_ssh.sh: "
+time ./setup/configure_ssh.sh "${DIRECTORY}"
 
 echo ""
 echo ""
 
-echo "echo \"ssh links\"" >> "${DIRECTORY}"/groups/ip_setup.sh
-echo "ssh_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
-echo "ssh_setup.sh: "
-time ./setup/ssh_setup.sh "${DIRECTORY}"
-
-echo ""
-echo ""
-
-echo "echo \"matrix_setup\"" >> "${DIRECTORY}"/groups/ip_setup.sh
-echo "matrix_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
-echo "matrix_setup.sh: "
-time ./setup/matrix_setup.sh "${DIRECTORY}" "${DOCKERHUB_USER}"
-
-echo ""
-echo ""
-
-echo "echo \"dns links\"" >> "${DIRECTORY}"/groups/ip_setup.sh
-echo "dns_setup.sh: "
-echo "dns_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
-time ./setup/dns_setup.sh "${DIRECTORY}" "${DOCKERHUB_USER}"
-
-echo ""
-echo ""
-
-echo "add_bridges.sh: "
-echo "add_bridges.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
-time ./groups/add_bridges.sh
-
-echo ""
-echo ""
-
-echo "add_ports.sh: "
-echo "add_ports.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
-time ./groups/add_ports.sh
-
-echo ""
-echo ""
-
-echo "ip_setup.sh: "
-echo "ip_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
-time ./groups/ip_setup.sh
-sleep 10
-
-echo ""
-echo ""
-
-echo "dns_routes.sh"
-echo "dns_routes $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
-time ./groups/dns_routes.sh
-
-echo ""
-echo ""
-
-echo "l2_init_switch.sh: "
-echo "l2_init_switch.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
-time ./groups/l2_init_switch.sh
-
-echo ""
-echo ""
-
-echo "add_vpns.sh: "
-echo "add_vpns.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
-time ./groups/add_vpns.sh
+echo "connect_services.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
+echo "connect_services.sh: "
+time ./setup/connect_services.sh "${DIRECTORY}"
 
 echo ""
 echo ""
@@ -242,7 +184,7 @@ echo ""
 
 echo "website_setup.sh: "
 echo "website_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
-time ./setup/website_setup.sh "${DIRECTORY}" "${DOCKERHUB_USER}"
+time ./setup/website_setup.sh "${DIRECTORY}"
 
 echo ""
 echo ""
@@ -254,20 +196,9 @@ time ./groups/rpki/webserver_links.sh
 echo ""
 echo ""
 
-echo "wait" >> "${DIRECTORY}"/groups/delay_throughput.sh
-echo "delay_throughput.sh: "
-echo "delay_throughput.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
-time ./groups/delay_throughput.sh
-
-echo ""
-echo ""
-
-echo "throughput.sh: "
-echo "throughput.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
-time ./groups/throughput.sh
-
-echo "Run ./groups/open_vpn_ports.sh to open the ports used by the vpn servers."
-echo "END $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
+echo "history_setup.sh: "
+echo "history_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
+time ./setup/history_setup.sh "${DIRECTORY}"
 
 echo ""
 echo ""
