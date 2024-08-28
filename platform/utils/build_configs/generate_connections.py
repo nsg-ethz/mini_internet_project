@@ -58,7 +58,7 @@ import math
 # If true, stub ASes in the same area try to hijack each others prefixes. Also,
 # add two TA-configured ASes between the stubs and student ASes so that no
 # student AS is directly connected to a malicious AS.
-ENABLE_STUB_HIJACKS = True
+ENABLE_STUB_HIJACKS = False
 
 # Set true to test the topology.
 AUTOCONF_EVERYTHING = False
@@ -77,7 +77,7 @@ BUFFER_ADVERTISES_ALL_VIA_IXP = True
 
 AREAS = 2
 CONFIGURABLE_PER_AREA = 2  # Number of ASes that can be configured by students.
-FIRST_IXP = 140
+FIRST_IXP = 80
 
 # Define the connections and roles of the ASes in each topology.
 # --------------------------------------------------------------
@@ -99,44 +99,46 @@ transit_as_topo = {
     # connection of AS to X: (AS city, AS role)
     # Example: The connection to the first provider is at Basel, and the AS
     # takes the role of a customer.
-    "provider1": ("CAIR", customer),
-    "provider2": ("KHAR", customer),
-    "customer1": ("LUAN", provider),
-    "customer2": ("CAPE", provider),
+    'provider1': ('MUNI', customer),
+    'provider2': ('BASE', customer),
+    'customer1': ('LYON', provider),
+    'customer2': ('MILA', provider),
     # Peer and IXP.
-    "peer": ("ADDI", peer),
-    "ixp": ("ACCR", peer),
+    'peer': ('LUGA', peer),
+    'ixp': ('VIEN', peer),
 }
+
+# All non-transit ASes only have a single router ZURI.
 
 tier1_topo = {
     # Tier 1 Ases have no providers, but more peers and two IXPs.
-    "ixp_central": ("CAIR", peer),
-    "ixp": ("CAIR", peer),
+    'ixp_central': ('ZURI', peer),
+    'ixp': ('ZURI', peer),
     # Other Tier 1.
-    "peer1": ("CAIR", peer),
-    "peer2": ("CAIR", peer),
+    'peer1': ('ZURI', peer),
+    'peer2': ('ZURI', peer),
     # Connections to customers.
-    "customer1": ("CAIR", provider),
-    "customer2": ("CAIR", provider),
+    'customer1': ('ZURI', provider),
+    'customer2': ('ZURI', provider),
 }
 
 # We use a minimal stub topo without hijacks, and the transit one with hijacks.
 stub_topo = transit_as_topo if ENABLE_STUB_HIJACKS else {
     # Same providers, but IXP and peer. are somewhere else.
-    "provider1": ("CAIR", customer),
-    "provider2": ("CAIR", customer),
-    "peer": ("CAIR", peer),
-    "ixp": ("CAIR", peer),
+    "provider1": ("ZURI", customer),
+    "provider2": ("ZURI", customer),
+    "peer": ("ZURI", peer),
+    "ixp": ("ZURI", peer),
 }
 
 buffer_topo = {
     # Looks like transit AS, but we only have a single router.
-    "provider1": ("CAIR", customer),
-    "provider2": ("CAIR", customer),
-    "customer1": ("CAIR", provider),
-    "customer2": ("CAIR", provider),
-    "peer": ("CAIR", peer),
-    "ixp": ("CAIR", peer),
+    "provider1": ("ZURI", customer),
+    "provider2": ("ZURI", customer),
+    "customer1": ("ZURI", provider),
+    "customer2": ("ZURI", provider),
+    "peer": ("ZURI", peer),
+    "ixp": ("ZURI", peer),
 }
 
 ixp_topo = {

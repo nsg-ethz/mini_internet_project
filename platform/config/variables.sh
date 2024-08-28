@@ -60,6 +60,7 @@ MATRIX_CONCURRENT_PINGS=500
 MATRIX_PING_FLAGS="-c 3 -i 0.01"  # Three pings, 10ms interval.
 # Whether to pause the matrix container after starting it.
 # Can reduce load when the mini internet is not used immediately.
+# Unpause container at any time with `docker container unpause MATRIX`
 MATRIX_PAUSE_AFTER_START=false
 
 # =============================================================================
@@ -70,6 +71,7 @@ MATRIX_PAUSE_AFTER_START=false
 HISTORY_ENABLED=true
 # Whether to pause the matrix container after starting it.
 # Can reduce disk usage when the mini internet is not used immediately.
+# Unpause container at any time with `docker container unpause HISTORY`
 HISTORY_PAUSE_AFTER_START=false
 # How often to fetch update configs and matrix state.
 HISTORY_UPDATE_FREQUENCY=$(( 60*60 ))  # every hour (in seconds)

@@ -6,10 +6,10 @@
 |   From here, you can access your virtual devices     |
 |   with the goto.sh script. For instance:             |
 |                                                      |
-|       ./goto.sh cair router                          |
-|       ./goto.sh cair host                            |
-|       ./goto.sh l2n  s1                              |
-|       ./goto.sh l2n  a_au                            |
+|       ./goto.sh zuri router                          |
+|       ./goto.sh zuri host                            |
+|       ./goto.sh dcn  s1                              |
+|       ./goto.sh dcn  fifa_1                          |
 |                                                      |
 |   Or you can access the public measurement service:  |
 |                                                      |

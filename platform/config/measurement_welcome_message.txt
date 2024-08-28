@@ -11,7 +11,7 @@
 |                                                      |
 |   Example: from group 1 to group 2 (router or host)  |
 |                                                      |
-|       traceroute -i group1 cair.group2               |
-|       traceroute -i group1 host.cair.group2          |
+|       traceroute -i group1 zuri.group2               |
+|       traceroute -i group1 host.zuri.group2          |
 |                                                      |
 +------------------------------------------------------+
