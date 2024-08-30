@@ -43,7 +43,7 @@ reset_with_startup() {
 
   # Then startup
   echo "Executing startup.sh ..."
-  ./startup.sh . && ./utils/ssh/portforwarding.sh . && ./utils/iptables/filters.sh .
+  ./startup.sh . && ./utils/iptables/filters.sh .
 
   echo "Waiting for docker container to ready first, sleeping in 3 seconds..."
   sleep 3
