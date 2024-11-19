@@ -219,6 +219,7 @@ for ((k = 0; k < group_numbers; k++)); do
                         -v "${location}"/looking_glass_json.txt:/home/looking_glass_json.txt \
                         -v "${location}"/daemons:/etc/frr/daemons \
                         -v "${location}"/frr.conf:/etc/frr/frr.conf \
+                        -v "${location}"/wireguard/:/etc/wireguard/ \
                         -v /etc/timezone:/etc/timezone:ro \
                         --log-opt max-size=1m --log-opt max-file=3 \
                         --network="${ssh_to_ctn_bname}" --ip="${subnet_ssh_router%/*}" \
