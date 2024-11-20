@@ -24,13 +24,20 @@ from time import sleep
 from typing import Optional
 from urllib.parse import urlparse
 
-from flask import Flask, jsonify, redirect, render_template, request, url_for
+from flask import Flask, jsonify, redirect, render_template, request, url_for, flash, abort
 from flask_basicauth import BasicAuth
 from jinja2 import StrictUndefined
 
 from . import bgp_policy_analyzer, matrix, parsers
 
+from flask_login import LoginManager, UserMixin, login_required, login_user
+from flask_wtf import FlaskForm
+from flask_wtf.csrf import CSRFProtect
+from wtforms import PasswordField, StringField, SubmitField
+from wtforms import validators
+
 config_defaults = {
+    'SECRET_KEY': os.urandom(32),
     'LOCATIONS': {
         'groups': '../../../groups',
         'as_config': "../../../config/AS_config.txt",
@@ -52,7 +59,7 @@ config_defaults = {
     'MATRIX_UPDATE_FREQUENCY': 30,  # seconds
     'ANALYSIS_UPDATE_FREQUENCY': 300,  # seconds
     'MATRIX_CACHE': '/tmp/cache/matrix.pickle',
-    'ANALYSIS_CACHE': '/tmp/cache/analysis.db',
+    'ANALYSIS_CACHE': '/tmp/cache/analysis.db'
 }
 
 
@@ -71,6 +78,9 @@ def create_app(config=None):
         app.config.from_pyfile(config)
 
     basic_auth = BasicAuth(app)
+
+    csrf = CSRFProtect(app)
+    csrf.init_app(app)
 
     @app.template_filter()
     def format_datetime(utcdatetime, format='%Y-%m-%d at %H:%M'):
@@ -230,6 +240,69 @@ def create_app(config=None):
             # Only matching ASes for first one.
             dropdown_others={conn[1]['asn'] for conn in selected_connections},
         )
+
+    @app.route("/vpn")
+    @login_required
+    def vpn():
+        return render_template(                                                                       
+            "vpn.html"
+        )  
+    
+    login_manager = LoginManager()
+    login_manager.init_app(app)
+    login_manager.login_view = "login"
+
+    # Simulated database
+    users = {
+        'user1': {'password': 'p1', 'group': 1},
+        'user2': {'password': 'p2', 'group': 2},
+        'user3': {'password': 'p3', 'group': 2},
+        }
+
+    # User model
+    class User(UserMixin):
+        def __init__(self, id):
+            self.id = id
+
+    @login_manager.user_loader
+    def load_user(user_id):
+        if user_id in users:
+            return User(user_id)
+        return None
+    
+    def check_user_pwd(user_pwd: User, pwd):
+        if user_pwd:
+            if users[user_pwd.get_id()]['password'] == pwd:
+                return True
+        return False
+
+
+    # login form
+    class LoginForm(FlaskForm):
+        username = StringField('Username', validators=[validators.InputRequired()])
+        password = PasswordField('Password', validators=[validators.InputRequired()])
+        submit = SubmitField('Submit')
+
+
+    @app.route("/login", methods=['GET', 'POST'])
+    def login():
+        form = LoginForm()
+
+        if form.validate_on_submit():
+            user = load_user(form.username.data)
+            if(check_user_pwd(user, form.password.data)):
+                login_user(user)
+                # flash('Logged in successfully.', 'success')
+                next = request.args.get('next')
+                return redirect(next or url_for('index'))
+            else:
+                # flash('Wrong username or password', 'danger')
+                pass
+
+        return render_template(                                                                       
+            "login.html", 
+            form=form
+        )  
 
     # Start workers if configured (and clear cache first).
     if app.config["BACKGROUND_WORKERS"] and app.config['AUTO_START_WORKERS']:

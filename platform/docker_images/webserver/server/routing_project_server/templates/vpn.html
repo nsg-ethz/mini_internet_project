@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% from 'macros.html' import h1 %}
+
+{% block body %}
+<!-- Column for text etc with fixed size. -->
+<div class="max-w-4xl mx-auto px-6 pt-6 mb-16">
+	{{ h1("vpn overview") }}
+	{% if current_user.is_authenticated %}
+		Hi {{ current_user.id }}!
+	{% endif %}
+</div>
+
+{% endblock %}

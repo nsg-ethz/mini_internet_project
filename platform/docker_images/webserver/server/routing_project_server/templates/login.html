@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% from 'macros.html' import h1 %}
+
+{% block body %}
+<!-- Column for text etc with fixed size. -->
+<div class="max-w-4xl mx-auto p-6">
+	{{ h1("Please login to continue") }}
+	<form method="post">
+		{{ form.csrf_token }}
+
+		<!-- Flash Messages -->
+		<!-- Categories: success (green), info (blue), warning (yellow), danger (red)-->
+		<!-- {% with messages = get_flashed_messages(with_categories=true) %}
+		{% if messages %}
+		{% for category, message in messages %}
+		<div class="alert alert-{{category}} alert-dismissible fade show" role="alert">
+		{{ message }}
+		<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+		</div>
+		{% endfor %}
+		{% endif %}
+		{% endwith %} -->
+
+		{{ form.username.label }} {{ form.username(size=20) }}
+		<br>
+		{{ form.password.label }} {{ form.password(size=20) }}
+		<br>
+		<input type="submit" value="Go">
+	</form>
+</div>
+
+{% endblock %}
