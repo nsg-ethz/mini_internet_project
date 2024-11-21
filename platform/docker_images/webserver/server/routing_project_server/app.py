@@ -84,7 +84,7 @@ def create_app(config=None):
     basic_auth.init_app(app) 
 
     # Initialize template filters
-    @app.template_filter('format_datetime')
+    @app.template_filter()
     def format_timedelta_int(seconds):
         seconds = int(seconds)
         if seconds == 1:
@@ -95,7 +95,7 @@ def create_app(config=None):
             return f"{seconds // 60} minutes"
         return f"{seconds} seconds"
 
-    @app.template_filter('format_datetime')
+    @app.template_filter()
     def format_datetime(utcdatetime, format='%Y-%m-%d at %H:%M'):
         if utcdatetime.tzinfo is None:  # Attach tzinfo if needed
             utcdatetime = utcdatetime.replace(tzinfo=timezone.utc)

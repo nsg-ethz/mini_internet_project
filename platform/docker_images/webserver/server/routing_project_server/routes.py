@@ -16,8 +16,7 @@ main_bp = Blueprint('main', __name__)
 @main_bp.route("/")
 def index():
     """Redict to matrix as starting page."""
-    return redirect(url_for("connectivity_matrix"))
-
+    return redirect(url_for("main.connectivity_matrix"))
 
 @main_bp.route("/matrix")
 def connectivity_matrix():
@@ -77,8 +76,7 @@ def looking_glass(
             dropdown_groups=[], dropdown_routers=[],
             last_updated=0, update_frequency=0,
         )
-
-
+    
     need_redirect = False
 
     if (group is None) or (group not in looking_glass_files):
@@ -95,7 +93,7 @@ def looking_glass(
 
     if need_redirect:
         return redirect(
-            url_for("looking_glass", group=group, router=router))
+            url_for("main.looking_glass", group=group, router=router))
 
     # Now get data for group. First the actual looking glass.
     with open(groupdata[router]) as file:
@@ -115,8 +113,6 @@ def looking_glass(
         dropdown_groups=dropdown_groups, dropdown_routers=dropdown_routers,
         last_updated=updated, update_frequency=freq,
     )
-
-
 
 @main_bp.route("/as-connections")
 @main_bp.route("/as-connections/<int:group>")
