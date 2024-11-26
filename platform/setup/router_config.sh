@@ -197,7 +197,6 @@ for ((k = 0; k < group_numbers; k++)); do
             location="${configdir}/conf_full.sh"
 
             {
-                echo "bgp multiple-instance"
 
                 for ((i = 0; i < n_extern_links; i++)); do
                     row_i=(${extern_links[$i]})
