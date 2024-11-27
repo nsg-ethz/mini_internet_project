@@ -34,6 +34,10 @@ WEBSERVER_PORT_HTTPS="443"
 WEBSERVER_PORT_KRILL="3000"
 # Put your timezone here.
 WEBSERVER_TZ="Europe/Zurich"
+# If you want to use the files from the docker image, set this variable to "":
+# WEBSERVER_SOURCEFILES=""
+# If you want your own webserver files instead add the filepath here (relative to the platform/config folder)
+WEBSERVER_SOURCEFILES="/webserver"
 
 # =============================================================================
 # Connections
@@ -94,3 +98,20 @@ HISTORY_GIT_BRANCH="main"
 # recent update.
 # You must allow force pushing on the remove branch for this to work.
 HISTORY_FORGET_BINARIES="true"
+
+
+# =============================================================================
+# VPN 
+# =============================================================================
+
+# Enable/Disable VPN
+VPN_ENABLED=false
+
+# Enable/Disable VPN website
+# VPN_WEBSITE_ENABLED=fale
+VPN_WEBSITE_ENABLED=${VPN_ENABLED}
+
+# Restrict the number of clients that can connect to each interface:
+VPN_NO_CLIENTS=1
+
+# Note: The IP subnets for the VPN are declared in config/subnet_config.sh 

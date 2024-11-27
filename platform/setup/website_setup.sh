@@ -62,6 +62,7 @@ LOCATIONS = {
     'groups': '${DATADIR_SERVER}',
     "matrix": "${DATADIR_SERVER}/matrix/connectivity.txt",
     "matrix_stats": "${DATADIR_SERVER}/matrix/stats.txt",
+    "vpn_folder": "/wireguard",
 }
 KRILL_URL="${KRILL_SCHEME}://{hostname}:${WEBSERVER_PORT_KRILL}/index.html"
 BASIC_AUTH_USERNAME = 'admin'
@@ -69,7 +70,16 @@ BASIC_AUTH_PASSWORD = 'admin'
 BACKGROUND_WORKERS = True
 HOST = '0.0.0.0'
 PORT = 8000
+VPN_ENABLED = "${VPN_WEBSITE_ENABLED}"
+VPN_NO_CLIENTS = "${VPN_NO_CLIENTS}"
 EOM
+
+
+# Add external sourcefiles if necessary:
+additional_args=()
+if [ ${WEBSERVER_SOURCEFILES} != "" ]; then
+	additional_args+=("--mount" "type=bind,source="${CONFIGDIR}${WEBSERVER_SOURCEFILES}",target=/server,readonly")
+fi
 
 # First start the web container, adding labels for the traefik proxy.
 # We only have one webserver; traffic for any hostname will go to it.
@@ -84,7 +94,8 @@ docker run -itd --name="WEB" --cpus=2 \
     -e TZ=${WEBSERVER_TZ} \
     -l traefik.enable=true \
     -l traefik.http.routers.web.entrypoints=web \
-    -l traefik.http.routers.websecure.entrypoints=websecure \
+    -l traefik.http.routers.websecure.entrypoints=websecure \                              
+    "${additional_args[@]}" \                      
     --hostname="web" \
     --privileged \
     "${DOCKERHUB_PREFIX}d_webserver" > /dev/null

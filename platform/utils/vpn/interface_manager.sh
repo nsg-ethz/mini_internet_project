@@ -14,7 +14,7 @@ if [ $USER != root ] ; then
 fi
 
 # Absolute path to platform directory
-DIRECTORY=$(cd `dirname $0` && cd ../..  && pwd)
+DIRECTORY=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && cd ../.. && pwd )
 
 # Path to groups folder
 groups_directory="${DIRECTORY}"/groups/
@@ -24,6 +24,7 @@ source "${DIRECTORY}"/groups/docker_pid.map
 
 # read configs
 readarray groups < "${DIRECTORY}"/config/AS_config.txt
+group_numbers=${#groups[@]}
 
 # Gets the container name of a router
 get_container_name() {
@@ -37,15 +38,30 @@ get_container_pid() {
 
 # Returns the port that this container is allowed to use
 get_port() {
-	# Read router configuration file
-	group_k=(${groups[$1-1]})	
-	group_router_config="${group_k[3]}"
-	
-	# Find the line with the corresponding router
-	router_number=$(grep -n "$2" "${DIRECTORY}"/config/$group_router_config | awk -F: '{print $1}')
+	port_number=0
+	# Read AS config file, to find the router config file of group number $1
+	for ((k = 0; k < ${#groups[@]}; k++)); do
+		group_k=(${groups[k]})
+		if [[ ${group_k[0]} == $1 ]]; then
+			# found our group
+        		group_router_config_file="${group_k[3]}"
+			
+			# Find all lines with the corresponding router
+        		router_numbers=$(grep -n "$2" "${DIRECTORY}"/config/$group_router_config_file | awk -F: '{print $1}')
+		        # Only take the first appearance
+			router_number=${router_numbers:0:1}
 
-	# Calculate port number
-	echo "$((10000 + $1 + 1000*$router_number))"
+			# Calculate port number
+        		port_number="$((10000 + $1 + 1000*${router_number}))"
+		fi	
+	done
+	
+	if [[ port_number == 0 ]]; then
+		echo "Error, couldn't find group number $1"
+		exit 1
+	else
+		echo "$port_number"
+	fi
 }
 
 # Check if a wireguard interface exists for $1 = GroupNumber and $2 = RouterName
@@ -75,7 +91,7 @@ check_if_up() {
 create_if() {
 	if [[ $(check_if_exists $1 $2 ) == 1 ]]; then
 		echo "Error: A wireguard interface already exists!"
-		exit 1
+		return 0 
 	fi
 
 	path_to_file="${DIRECTORY}"/groups/g"$1"/"$2"/wireguard
@@ -83,11 +99,11 @@ create_if() {
 	# Generate keys
 	private_key=$(wg genkey)
         public_key=$(echo "${private_key}" | wg pubkey)
+	
 	listen_port=$(get_port $1 $2)
-
+	
 	# TODO: function to get ip address
 	ip_address="3.1.0.1/24"
-	
 
 	# Save configuration and public key
 	printf "[Interface]\nPrivateKey=%s\nListenPort=%s\n\n" ${private_key} ${listen_port} | tee "${path_to_file}"/interface.conf > /dev/null
@@ -134,17 +150,40 @@ delete_if() {
 	ufw delete allow "${listen_port}" > /dev/null
 }
 
-# Create a peer
+delete_all_ifs() {
+	for ((k = 0; k < group_numbers; k++)); do
+		group_k=(${groups[$k]})
+		group_number="${group_k[0]}"
+		group_as="${group_k[1]}"
+		group_router_config="${group_k[3]}"
+
+		if [ "${group_as}" != "IXP" ]; then
+		    readarray routers < "${DIRECTORY}"/config/$group_router_config
+		    
+		    n_routers=${#routers[@]}
+		    
+		    for ((i = 0; i < n_routers; i++)); do
+			router_i=(${routers[$i]})
+			router_name="${router_i[0]}"
+			
+			delete_if "${group_number}" "${router_name}"	
+		    done		
+		fi
+	done
+}
+
+# Create a peer with $1 = GroupNumber, $2 = RouterName,$3 = PeerName, $4 = IPAddress
+# Example: create_wg_peer 3 ZURI leos_device "3.1.0.2/32"
 create_wg_peer() { 
 	path_to_file="${DIRECTORY}"/groups/g"$1"/"$2"/wireguard/	
+                
+        # TODO: Find next free peer number
+        filename="${3}.peer"                                                                        
+	listen_port=$(get_port $1 $2)	
 	
 	# TODO: get free peer ip
 	wg_peer_ip="3.1.0.2/32"
         wg_subnet="0.0.0.0/0"
-                
-        # TODO: Find next free peer number
-        filename="peer1.conf"                                                                        
-	listen_port=$(get_port $1 $2)	
        
 	# Generate Keypair
         private_key=$(wg genkey)                                                                     
@@ -159,4 +198,5 @@ create_wg_peer() {
         # Create peer configuration file                                                             
         printf "[Interface]\nPrivateKey=%s\nAddress=%s\n\n" ${private_key} ${wg_peer_ip} | tee "$path_to_file"/${filename} > /dev/null
         printf "[Peer]\nPublicKey=%s\nAllowedIPs=%s\nEndpoint=%s:%s\nPersistentKeepalive=25\n\n" $(cat "$path_to_file"interface.pubkey) ${wg_subnet} ${SSH_URL} ${listen_port} | tee -a "$path_to_file"/"${filename}" > /dev/null
-}    
+}
+create_wg_peer 3 ZURI leos_device "3.1.0.2/32"
