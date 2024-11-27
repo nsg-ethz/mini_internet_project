@@ -9,7 +9,7 @@ from .services.login import LoginForm, User, check_user_pwd, get_current_users_g
 from .services import parsers
 from .services.bgp_policy_analyzer import prepare_bgp_analysis
 from .services.matrix import prepare_matrix
-from .services.vpn import find_all_ifs
+from .services.vpn import find_all_ifs, get_peers
 from .app import basic_auth
 
 main_bp = Blueprint('main', __name__)
@@ -190,34 +190,15 @@ def vpn(router = None):
     if (router != None) and (router not in ifs.keys()):
         return redirect(url_for("main.vpn",router=None))
 
-    if_property_list=[
-        {
-            'name':'Peer1',
-            'description':'Lorem ipsum dolor',
-            'qr_image':url_for('static', filename='qr_code_missing.jpg')
-        },
-        {
-            'name':'Peer2',
-            'description':'Lorem ipsum dolor',
-            'qr_image':url_for('static', filename='qr_code_missing.jpg')
-        },
-        {
-            'name':'Peer3',
-            'description':'Lorem ipsum dolor',
-            'qr_image':url_for('static', filename='qr_code_missing.jpg')
-        },
-        {
-            'name':'Peer4',
-            'description':'Lorem ipsum dolor',
-            'qr_image':url_for('static', filename='qr_code_missing.jpg')
-        },
-    ]
+    peers = []
+    if router != None:
+        peers = get_peers(ifs[router])
 
     return render_template(                                                                       
         "vpn.html",
         tabs=ifs.keys(),
         router=router,
-        if_property_list=if_property_list
+        if_property_list=peers
     )  
 
 @main_bp.route("/login", methods=['GET', 'POST'])
