@@ -4,11 +4,12 @@ from flask import Blueprint, current_app, jsonify, request
 from flask import redirect, render_template, url_for
 from urllib.parse import urlparse
 
-from flask_login import login_required, login_user
-from .services.login import LoginForm, User, check_user_pwd
+from flask_login import login_required, login_user, current_user
+from .services.login import LoginForm, User, check_user_pwd, get_current_users_group
 from .services import parsers
 from .services.bgp_policy_analyzer import prepare_bgp_analysis
 from .services.matrix import prepare_matrix
+from .services.vpn import find_all_ifs
 from .app import basic_auth
 
 main_bp = Blueprint('main', __name__)
@@ -174,14 +175,47 @@ def bgp_analysis():
         )
 
 @main_bp.route("/vpn")
+@main_bp.route("/vpn/<router>")
 @login_required
-def vpn():
+def vpn(router = None):
+    """Show the vpn page for this user. Redirects to login page if no user is logged in."""
+    ifs = find_all_ifs(group_number=get_current_users_group())
+
+    # print(ifs)
+
+    if_property_list=[
+        {
+            'name':'Peer1',
+            'description':'Lorem ipsum dolor',
+            'qr_image':url_for('static', filename='qr_code_missing.jpg')
+        },
+        {
+            'name':'Peer2',
+            'description':'Lorem ipsum dolor',
+            'qr_image':url_for('static', filename='qr_code_missing.jpg')
+        },
+        {
+            'name':'Peer3',
+            'description':'Lorem ipsum dolor',
+            'qr_image':url_for('static', filename='qr_code_missing.jpg')
+        },
+        {
+            'name':'Peer4',
+            'description':'Lorem ipsum dolor',
+            'qr_image':url_for('static', filename='qr_code_missing.jpg')
+        },
+    ]
+
     return render_template(                                                                       
-        "vpn.html"
+        "vpn.html",
+        tabs=ifs.keys(),
+        router=router,
+        if_property_list=if_property_list
     )  
 
 @main_bp.route("/login", methods=['GET', 'POST'])
 def login():
+    """Form for a user to log in."""
     form = LoginForm()
 
     if form.validate_on_submit():
@@ -189,7 +223,7 @@ def login():
             login_user(User(form.username.data))
             # flash('Logged in successfully.', 'success')
             next = request.args.get('next')
-            return redirect(next or url_for('index'))
+            return redirect(next or url_for('main.index'))
         else:
             # flash('Wrong username or password', 'danger')
             pass

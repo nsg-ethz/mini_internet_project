@@ -3,30 +3,61 @@
 
 {% block body %}
 <!-- Column for text etc with fixed size. -->
-<div class="max-w-4xl mx-auto p-6">
-	{{ h1("Please login to continue") }}
-	<form method="post">
-		{{ form.csrf_token }}
+<div class="max-w-4xl mx-auto px-6 pt-6 mb-16 w-full">
+	{{ h1("log in to continue") }}
+</div>
 
-		<!-- Flash Messages -->
-		<!-- Categories: success (green), info (blue), warning (yellow), danger (red)-->
-		<!-- {% with messages = get_flashed_messages(with_categories=true) %}
-		{% if messages %}
-		{% for category, message in messages %}
-		<div class="alert alert-{{category}} alert-dismissible fade show" role="alert">
-		{{ message }}
-		<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-		</div>
-		{% endfor %}
-		{% endif %}
-		{% endwith %} -->
 
-		{{ form.username.label }} {{ form.username(size=20) }}
-		<br>
-		{{ form.password.label }} {{ form.password(size=20) }}
-		<br>
-		<input type="submit" value="Go">
-	</form>
+	<!-- Flash Messages -->
+	<!-- Categories: success (green), info (blue), warning (yellow), danger (red)-->
+	<!-- {% with messages = get_flashed_messages(with_categories=true) %}
+	{% if messages %}
+	{% for category, message in messages %}
+	<div class="alert alert-{{category}} alert-dismissible fade show" role="alert">
+	{{ message }}
+	<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+	</div>
+	{% endfor %}
+	{% endif %}
+	{% endwith %} -->
+
+
+	<!-- Login Form -->
+	<div class="max-w-md mx-auto px-6 pt-8 pb-10 mb-16 bg-white rounded-lg shadow-lg">
+		<form method="post">
+			{{ form.csrf_token }}
+	
+			<!-- Form Heading -->
+			<h2 class="text-2xl font-semibold text-neutral-900 text-center mb-6">Enter login credentials</h2>
+	
+			<!-- Username Field -->
+			<div class="mb-4">
+				<label for="username" class="block text-sm font-medium text-neutral-700 mb-2">
+					{{ form.username.label.text }}
+				</label>
+				<input type="text" id="username" name="username" 
+					class="w-full px-4 py-3 text-sm text-neutral-800 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff7e79] placeholder-neutral-400 transition" 
+					placeholder="Enter username" size="20">
+			</div>
+	
+			<!-- Password Field -->
+			<div class="mb-6">
+				<label for="password" class="block text-sm font-medium text-neutral-700 mb-2">
+					{{ form.password.label.text }}
+				</label>
+				<input type="password" id="password" name="password" 
+					class="w-full px-4 py-3 text-sm text-neutral-800 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff7e79] placeholder-neutral-400 transition" 
+					placeholder="Enter password" size="20">
+			</div>
+	
+			<!-- Submit Button -->
+			<div class="flex justify-center">
+				<button type="submit" class="w-full py-3 bg-black text-white rounded-lg shadow-md hover:bg-[#e96d68] transition duration-300">
+					Log In
+				</button>
+			</div>
+		</form>
+	</div>	
 </div>
 
 {% endblock %}

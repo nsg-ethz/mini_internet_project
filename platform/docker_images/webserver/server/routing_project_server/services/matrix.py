@@ -69,7 +69,7 @@ def check_connectivity(as_data, connectivity_data):
             if dst_data['type'] != 'AS':
                 continue
             connected[src_asn][dst_asn] = False
-
+            
     # Check which connections we have data for.
     for src_asn, dst_asn, status in connectivity_data:
         connected[src_asn][dst_asn] = status
