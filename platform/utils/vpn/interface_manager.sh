@@ -78,12 +78,8 @@ check_if_exists() {
 # Check if a wireguard interface is up and running ($1 = GroupNumber and $2 = RouterName)
 # Example "check_if_up 3 MUNI"
 check_if_up() {
-	docker_output=$(docker exec "$(get_container_name $1 $2)" ip link show vpn up)
-	if [ -n "$docker_output" ]; then
-		echo 1
-	else
-    		echo 0
-	fi
+	docker_output=$(docker exec "$(get_container_name $1 $2)" sh -c "ip link show vpn up > /dev/null 2>&1 && echo 1 || echo 0")
+	echo "${docker_output}"
 }
 
 
@@ -108,8 +104,6 @@ create_if() {
 	# Save configuration and public key
 	printf "[Interface]\nPrivateKey=%s\nListenPort=%s\n\n" ${private_key} ${listen_port} | tee "${path_to_file}"/interface.conf > /dev/null
 	echo "${public_key}" | tee "${path_to_file}"/interface.pubkey > /dev/null
-
-
 
 	PID=$(get_container_pid $1 $2)
 
@@ -165,7 +159,8 @@ delete_all_ifs() {
 		    for ((i = 0; i < n_routers; i++)); do
 			router_i=(${routers[$i]})
 			router_name="${router_i[0]}"
-			
+	
+			echo "Deleting wg interface ${group_number}-${router_name}"
 			delete_if "${group_number}" "${router_name}"	
 		    done		
 		fi
@@ -175,10 +170,15 @@ delete_all_ifs() {
 # Create a peer with $1 = GroupNumber, $2 = RouterName,$3 = PeerName, $4 = IPAddress
 # Example: create_wg_peer 3 ZURI leos_device "3.1.0.2/32"
 create_wg_peer() { 
-	path_to_file="${DIRECTORY}"/groups/g"$1"/"$2"/wireguard/	
-                
-        # TODO: Find next free peer number
+	path_to_file="${DIRECTORY}"/groups/g"$1"/"$2"/wireguard/        
         filename="${3}.peer"                                                                        
+	
+	if [ -f "${path_to_file}"/"${filename}" ]; then
+		# echo "Peer ${3} already exists! (${1}-${2})"
+		return 0
+	fi	
+
+	
 	listen_port=$(get_port $1 $2)	
 	
 	# TODO: get free peer ip
@@ -199,4 +199,3 @@ create_wg_peer() {
         printf "[Interface]\nPrivateKey=%s\nAddress=%s\n\n" ${private_key} ${wg_peer_ip} | tee "$path_to_file"/${filename} > /dev/null
         printf "[Peer]\nPublicKey=%s\nAllowedIPs=%s\nEndpoint=%s:%s\nPersistentKeepalive=25\n\n" $(cat "$path_to_file"interface.pubkey) ${wg_subnet} ${SSH_URL} ${listen_port} | tee -a "$path_to_file"/"${filename}" > /dev/null
 }
-create_wg_peer 3 ZURI leos_device "3.1.0.2/32"

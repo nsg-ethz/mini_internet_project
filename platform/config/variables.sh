@@ -105,7 +105,7 @@ HISTORY_FORGET_BINARIES="true"
 # =============================================================================
 
 # Enable/Disable VPN
-VPN_ENABLED=false
+VPN_ENABLED=true
 
 # Enable/Disable VPN website
 # VPN_WEBSITE_ENABLED=fale

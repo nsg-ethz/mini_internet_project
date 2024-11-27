@@ -1,10 +1,14 @@
 {% set navigation_bar = {
-'main.connectivity_matrix': 'matrix',
-'main.looking_glass': 'looking glass',
-'main.as_connections': 'connections',
-'main.krill': 'krill',
-'main.vpn':'vpn'
-} -%}
+    'main.connectivity_matrix': 'matrix',
+    'main.looking_glass': 'looking glass',
+    'main.as_connections': 'connections',
+    'main.krill': 'krill'
+} %}
+<!-- Only add VPN to navigation bar, if VPN has been enabled in the config. -->
+{% if config.VPN_ENABLED %}
+    {% set _ = navigation_bar.update({'main.vpn': 'vpn'}) %}
+{% endif %}
+
 <!DOCTYPE html>
 <html lang="en">
 

@@ -174,14 +174,21 @@ def bgp_analysis():
         last_updated=updated, update_frequency=freq,
         )
 
+
 @main_bp.route("/vpn")
 @main_bp.route("/vpn/<router>")
 @login_required
 def vpn(router = None):
     """Show the vpn page for this user. Redirects to login page if no user is logged in."""
+    
+    # If vpn is disabled in the config, we redirect to the mainpage
+    if not current_app.config['VPN_ENABLED']:
+        return "Record not found", status.HTTP_404_BAD_REQUEST
+
     ifs = find_all_ifs(group_number=get_current_users_group())
 
-    # print(ifs)
+    if (router != None) and (router not in ifs.keys()):
+        return redirect(url_for("main.vpn",router=None))
 
     if_property_list=[
         {

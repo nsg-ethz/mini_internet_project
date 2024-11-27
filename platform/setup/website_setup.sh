@@ -78,7 +78,7 @@ EOM
 # Add external sourcefiles if necessary:
 additional_args=()
 if [ ${WEBSERVER_SOURCEFILES} != "" ]; then
-	additional_args+=("--mount" "type=bind,source="${CONFIGDIR}${WEBSERVER_SOURCEFILES}",target=/server,readonly")
+	additional_args+=("--mount" "type=bind,source="${CONFIGDIR}${WEBSERVER_SOURCEFILES}",target=/server")
 fi
 
 # First start the web container, adding labels for the traefik proxy.
@@ -94,8 +94,8 @@ docker run -itd --name="WEB" --cpus=2 \
     -e TZ=${WEBSERVER_TZ} \
     -l traefik.enable=true \
     -l traefik.http.routers.web.entrypoints=web \
-    -l traefik.http.routers.websecure.entrypoints=websecure \                              
-    "${additional_args[@]}" \                      
+    -l traefik.http.routers.websecure.entrypoints=websecure \
+    "${additional_args[@]}" \
     --hostname="web" \
     --privileged \
     "${DOCKERHUB_PREFIX}d_webserver" > /dev/null
