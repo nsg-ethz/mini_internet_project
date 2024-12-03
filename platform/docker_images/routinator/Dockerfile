@@ -3,6 +3,7 @@ FROM d_base:latest AS build
 
 # Specify what version of routinator should be built.
 ARG ROUTINATOR_VERSION=0.14.0
+ARG BUILD_THREADS=2
 
 RUN apk add wget openssl-dev rust cargo
 
@@ -11,6 +12,7 @@ WORKDIR /tmp/routinator
 RUN wget "https://github.com/NLnetLabs/routinator/archive/refs/tags/v${ROUTINATOR_VERSION}.tar.gz" -O - | tar -xz --strip-components=1
 
 RUN CARGO_HTTP_MULTIPLEXING=false cargo install \
+    --jobs ${BUILD_THREADS} \
     --features socks,native-tls \
     --locked \
     --path . \

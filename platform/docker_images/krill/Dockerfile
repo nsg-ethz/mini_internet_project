@@ -3,6 +3,7 @@ FROM d_base:latest AS build
 
 # Specify what version of krill should be built.
 ARG KRILL_VERSION=0.14.5
+ARG BUILD_THREADS=2
 
 RUN apk add wget openssl-dev patch rust cargo
 
@@ -11,6 +12,7 @@ WORKDIR /tmp/krill
 RUN wget "https://github.com/NLnetLabs/krill/archive/refs/tags/v${KRILL_VERSION}.tar.gz" -O - | tar -xz --strip-components=1
 # Build krill based on the krill's docker image build instructions
 RUN CARGO_HTTP_MULTIPLEXING=false cargo install \
+  --jobs ${BUILD_THREADS} \
   --locked \
   --features multi-user \
   --path . \
