@@ -7,6 +7,7 @@ set -o nounset
 DIRECTORY="$1"
 
 source "${DIRECTORY}"/config/variables.sh
+source "${DIRECTORY}"/config/subnet_config.sh
 
 if [ ${VPN_ENABLED} = false ]; then
 	echo "VPN not enabled, skipping VPN setup"
@@ -32,11 +33,12 @@ for ((k = 0; k < group_numbers; k++)); do
 	    n_routers=${#routers[@]}
     	    for ((i = 0; i < n_routers; i++)); do
                 router_i=(${routers[$i]})
+		router_number=($i + 1)
                 router_name="${router_i[0]}"
 		
 		create_if "${group_number}" "${router_name}" > /dev/null
 		for ((client_no = 1; client_no <= "${VPN_NO_CLIENTS}"; client_no++)); do
-			peer_ip="1.1.1.1/32"
+			peer_ip=$(subnet_router_VPN_peer "${group_number}" "${router_number}" "${client_no}")
 			peer_name=Client_"${client_no}"
 			create_wg_peer "${group_number}" "${router_name}" "${peer_name}" "${peer_ip}"
 		done

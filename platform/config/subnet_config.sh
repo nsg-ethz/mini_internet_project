@@ -228,6 +228,18 @@ subnet_router_DNS() {
   fi
 }
 
+subnet_router_VPN_interface() {
+    local n_grp="$1" n_router="$2"
+
+    echo "${n_grp}.$((50+$n_router)).0.1/24"
+}
+
+subnet_router_VPN_peer() {
+    local n_grp="$1" n_router="$2" n_peer="$3"
+
+    echo "${n_grp}.$((50 + $n_router)).0.$((1 + $n_peer))/32"
+}
+
 subnet_ext_sshContainer() {
   local n_grp=$1 device="$2"
 

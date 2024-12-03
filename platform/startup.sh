@@ -81,13 +81,6 @@ time ./setup/rpki_config.sh "${DIRECTORY}"
 echo ""
 echo ""
 
-echo "vpn_config.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
-echo "vpn_config.sh: "
-time ./setup/vpn_config.sh "${DIRECTORY}"
-
-echo ""
-echo ""
-
 echo "goto_scripts.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
 echo "goto_scripts.sh: "
 time ./setup/goto_scripts.sh "${DIRECTORY}"
@@ -105,6 +98,13 @@ echo ""
 echo "container_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
 echo "container_setup.sh: "
 time ./setup/container_setup.sh "${DIRECTORY}"
+
+echo ""
+echo ""
+
+echo "vpn_config.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
+echo "vpn_config.sh: "
+time ./setup/vpn_config.sh "${DIRECTORY}"
 
 echo ""
 echo ""

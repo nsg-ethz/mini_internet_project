@@ -20,6 +20,7 @@ DIRECTORY=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && cd ../.
 groups_directory="${DIRECTORY}"/groups/
 
 source "${DIRECTORY}"/config/variables.sh
+source "${DIRECTORY}"/config/subnet_config.sh
 source "${DIRECTORY}"/groups/docker_pid.map
 
 # read configs
@@ -36,32 +37,39 @@ get_container_pid() {
 	echo "${DOCKER_TO_PID[$(get_container_name $1 $2)]}"
 }
 
+get_router_number() {                                                                                          
+        router_number=-1
+        # Read AS config file, to find the router config file of group number $1                      
+        for ((k = 0; k < ${#groups[@]}; k++)); do                                                     
+                group_k=(${groups[k]})                                                                
+                if [[ ${group_k[0]} == $1 ]]; then                                                    
+                        # found our group                                                             
+                        group_router_config_file="${group_k[3]}"                                      
+                        
+                        # Find all lines with the corresponding router                                
+                        router_numbers=$(grep -n "$2" "${DIRECTORY}"/config/$group_router_config_file | awk -F: '{print $1}')  
+                        # Only take the first appearance                                              
+                        router_number=${router_numbers:0:1}                                           
+                fi      
+        done                                                                                          
+                                                                                                      
+        if [[ router_number == -1 ]]; then                                                               
+                echo "Error, couldn't find router $2 in  group $1"                                           
+                exit 1                                                                                
+        else
+                echo "$router_number"                                                                   
+        fi                                                                                            
+}   
+
+
 # Returns the port that this container is allowed to use
 get_port() {
-	port_number=0
-	# Read AS config file, to find the router config file of group number $1
-	for ((k = 0; k < ${#groups[@]}; k++)); do
-		group_k=(${groups[k]})
-		if [[ ${group_k[0]} == $1 ]]; then
-			# found our group
-        		group_router_config_file="${group_k[3]}"
-			
-			# Find all lines with the corresponding router
-        		router_numbers=$(grep -n "$2" "${DIRECTORY}"/config/$group_router_config_file | awk -F: '{print $1}')
-		        # Only take the first appearance
-			router_number=${router_numbers:0:1}
+	router_number=$(get_router_number "$1" "$2")
 
-			# Calculate port number
-        		port_number="$((10000 + $1 + 1000*${router_number}))"
-		fi	
-	done
+	# Calculate port number
+        port_number="$((10000 + $1 + 1000*${router_number}))"
 	
-	if [[ port_number == 0 ]]; then
-		echo "Error, couldn't find group number $1"
-		exit 1
-	else
-		echo "$port_number"
-	fi
+	echo "$port_number"
 }
 
 # Check if a wireguard interface exists for $1 = GroupNumber and $2 = RouterName
@@ -98,8 +106,8 @@ create_if() {
 	
 	listen_port=$(get_port $1 $2)
 	
-	# TODO: function to get ip address
-	ip_address="3.1.0.1/24"
+	router_number=$(get_router_number "$1" "$2")
+	ip_address=$(subnet_router_VPN_interface "$1" "$router_number")
 
 	# Save configuration and public key
 	printf "[Interface]\nPrivateKey=%s\nListenPort=%s\n\n" ${private_key} ${listen_port} | tee "${path_to_file}"/interface.conf > /dev/null
@@ -178,11 +186,9 @@ create_wg_peer() {
 		return 0
 	fi	
 
-	
 	listen_port=$(get_port $1 $2)	
 	
-	# TODO: get free peer ip
-	wg_peer_ip="3.1.0.2/32"
+	wg_peer_ip="$4"
         wg_subnet="0.0.0.0/0"
        
 	# Generate Keypair
