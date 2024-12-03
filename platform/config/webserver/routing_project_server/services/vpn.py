@@ -72,3 +72,18 @@ def get_peers(if_path: str, get_qrcodes=True, overwrite_qrcodes=False):
         })
 
     return peers
+
+def send_conf_file(group, router, peer):
+    file_path = (
+        Path(current_app.config['LOCATIONS']['groups']) /
+        f"g{group}" /
+        router /
+        "wireguard" /
+        f"{peer}.peer"
+    )
+    download_name = f"Mini-Internet Group {group} {router}.conf"
+    return send_file(
+        file_path,
+        as_attachment=True,
+        download_name=download_name
+    )

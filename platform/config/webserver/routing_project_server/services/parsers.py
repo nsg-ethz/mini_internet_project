@@ -256,7 +256,7 @@ def parse_as_b64(filename: os.PathLike) -> str:
     This can be used to embedd images directly in HTML."""
 
     if filename == None or not filename.is_file():
-        print("Error, file not found: " + file_path.as_posix())
+        print("Error, file not found: " + filename.as_posix())
         return None
 
     with open(filename, 'rb') as byte_stream:

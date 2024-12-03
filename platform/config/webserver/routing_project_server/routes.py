@@ -9,7 +9,7 @@ from .services.login import LoginForm, User, check_user_pwd, get_current_users_g
 from .services import parsers
 from .services.bgp_policy_analyzer import prepare_bgp_analysis
 from .services.matrix import prepare_matrix
-from .services.vpn import find_all_ifs, get_peers
+from .services.vpn import find_all_ifs, get_peers, send_conf_file
 from .app import basic_auth
 
 main_bp = Blueprint('main', __name__)
@@ -174,7 +174,6 @@ def bgp_analysis():
         last_updated=updated, update_frequency=freq,
         )
 
-
 @main_bp.route("/vpn")
 @main_bp.route("/vpn/<router>")
 @login_required
@@ -200,6 +199,16 @@ def vpn(router = None):
         router=router,
         if_property_list=peers
     )  
+
+@main_bp.route("/vpn/<router>/<peer>")
+@login_required
+def vpn_peer_conf(router = None, peer = None):
+    """TODO"""
+    
+    # If vpn is disabled in the config, we redirect to the mainpage
+    if not current_app.config['VPN_ENABLED']:
+        return "Record not found", status.HTTP_404_BAD_REQUEST
+    return send_conf_file(get_current_users_group(), router, peer)
 
 @main_bp.route("/login", methods=['GET', 'POST'])
 def login():

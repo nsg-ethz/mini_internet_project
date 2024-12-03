@@ -56,7 +56,7 @@
 			<div class="flex -mb-px space-x-6">
 				<!-- Loop through tabs to generate the tab bar -->
 				{% for tab_label in tabs %}
-				<a href="{{ url_for('main.vpn', router=tab_label) }}" 
+				<a href="{{ url_for('.vpn', router=tab_label) }}" 
 					class="py-2 px-4 text-sm font-medium rounded-t-md 
 					{% if tab_label == router %}bg-white text-[#ff7e79] border-b-2 border-[#ff7e79]{% else %}text-neutral-600 hover:text-[#ff7e79]{% endif %}">
 					{{ tab_label }}
@@ -68,19 +68,24 @@
 		<!-- Current Tab Content -->
 		{% if router is not none %}
 		<div id="tab-content" class="mt-4">
-			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-				{% for interface in if_property_list %}
-					<div class="bg-white rounded-lg shadow-lg p-4">
-						<h3 class="text-lg font-semibold mb-4">{{ interface.name }}</h3>
-						<p class="mb-2">
-							{{ interface.description }}
-						</p>
-						<img 
-							src="data:image/png;base64,{{ interface.qr_image }}" 
-							alt="No qr-code found." 
-							class="w-full h-32 object-contain rounded-md"
-						/>
-					</div>
+			<div class="flex flex-wrap justify-center gap-8">
+				{% for peer in if_property_list %}
+				<div class="bg-white rounded-lg shadow-lg p-8 flex flex-col justify-center items-center max-w-xs w-full">
+					<h3 class="text-2xl font-semibold mb-4 text-center">{{ peer.name }}</h3>
+					<!-- <p class="mb-2">
+						{{ peer.description }}
+					</p> -->
+					<img 
+						src="data:image/png;base64,{{ peer.qr_image }}" 
+						alt="No qr-code found." 
+						class="w-full max-h-[50vh]  h-180 object-contain rounded-md"
+					/>
+					<!-- Download Button -->
+					<a href=" {{ url_for('.vpn_peer_conf', router=router, peer=peer.name) }}" 
+						class="mt-6 px-6 py-3 bg-black text-white text-lg rounded-sm hover:bg-[#ff7e79] transition duration-300">							
+						Download Config
+					</a>
+				</div>
 				{% endfor %}
 			</div>
 		</div> 

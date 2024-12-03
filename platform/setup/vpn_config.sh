@@ -39,7 +39,11 @@ for ((k = 0; k < group_numbers; k++)); do
 		create_if "${group_number}" "${router_name}" > /dev/null
 		for ((client_no = 1; client_no <= "${VPN_NO_CLIENTS}"; client_no++)); do
 			peer_ip=$(subnet_router_VPN_peer "${group_number}" "${router_number}" "${client_no}")
-			peer_name=Client_"${client_no}"
+			if [[ ${client_no} > 1 ]]; then
+				peer_name="Client${client_no}"
+			else
+				peer_name=Client
+			fi
 			create_wg_peer "${group_number}" "${router_name}" "${peer_name}" "${peer_ip}"
 		done
 	    done		
