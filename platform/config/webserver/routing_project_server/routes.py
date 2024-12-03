@@ -186,13 +186,13 @@ def vpn(router = None):
         return "Record not found", status.HTTP_404_BAD_REQUEST
 
     ifs = find_all_ifs(group_number=get_current_users_group())
-
-    if (router != None) and (router not in ifs.keys()):
-        return redirect(url_for("main.vpn",router=None))
-
     peers = []
-    if router != None:
-        peers = get_peers(ifs[router])
+ 
+    if router:
+        if router not in ifs.keys():
+            return redirect(url_for("main.vpn",router=None))
+        else:
+            peers = get_peers(ifs[router])
 
     return render_template(                                                                       
         "vpn.html",

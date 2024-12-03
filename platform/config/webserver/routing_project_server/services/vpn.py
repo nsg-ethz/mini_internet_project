@@ -1,7 +1,8 @@
 from typing import List, Tuple, Dict
 from pathlib import Path
-from flask import current_app, url_for
-from .parsers import parse_as_config
+from flask import current_app, url_for, send_file
+from .parsers import parse_as_config, parse_as_b64
+from .utils import get_qrcode
 
 # TODO: dont use hardcoded paths for wireguard config folder and interface files, replace current_app.config instead.
 def find_all_ifs(group_number: int) -> Dict:
@@ -43,21 +44,31 @@ def get_if_status(group_numer: int) -> List[Tuple[str, Dict]]:
 
     return None
 
-def get_peers(if_path: str):
+def get_peers(if_path: str, get_qrcodes=True, overwrite_qrcodes=False):
+    """Get a list of all peers for a given wireguard interface
+        Return object structure: List with {'name', 'description', 'qr_image', 'path'}
+    """
     # Check if the path is valid
     path = Path(if_path)
     if not path.is_dir():
-        print("Error, path does not exist: " + if_path)
+        print("Error, path does not exist: " + if_path.as_posix())
         return []
     
     # Loop through each .peer file and add the peer to the list
     peers = []
     for peer in sorted(path.glob('*.peer')):
+        # Get QR Code
+        qr_image = None
+        if get_qrcodes:
+            qr_file = get_qrcode(peer, overwrite=overwrite_qrcodes)
+            qr_image = parse_as_b64(qr_file)
+
         peers.append(
         {
             'name':peer.stem,
             'description':'Lorem ipsum dolor',
-            'qr_image':url_for('static', filename='qr_code_missing.jpg')
+            'qr_image':qr_image,
+            'path':peer.as_posix()
         })
 
     return peers

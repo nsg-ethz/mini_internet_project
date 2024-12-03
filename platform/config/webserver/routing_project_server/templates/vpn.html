@@ -38,7 +38,6 @@
 		</blockquote>
 	-->
 
-
 		<!-- Informational Message (Displayed only when no tab is selected) -->
 		{% if router is none %}
 		<div
@@ -66,27 +65,6 @@
 			</div>
 		</div>
 
-
-		<!-- Tab Selector -->
-		<!-- <div class="mt-6 flex items-center justify-center">
-			<div class="mr-8 mb-4">
-				<span class="font-bold">Select Router:</span>
-				<select class="bg-transparent border-0 border-b-2 border-neutral-400 hover:border-blue-500"
-					onchange="if (this.value) window.location.href=this.value">
-					<option {% if router is none %}selected{% endif %} 
-						value="{{ url_for('main.vpn', router=None) }}">
-						None
-					</option>
-					{% for tab_label in tabs %}
-					<option {% if tab_label==router %}selected{% endif %}
-						value="{{ url_for('main.vpn', router=tab_label) }}">
-						{{ tab_label }}
-					</option>
-					{% endfor %}
-				</select>
-			</div>
-		</div> -->
-
 		<!-- Current Tab Content -->
 		{% if router is not none %}
 		<div id="tab-content" class="mt-4">
@@ -98,9 +76,9 @@
 							{{ interface.description }}
 						</p>
 						<img 
-							src="{{ interface.qr_image }}" 
-							alt="QR-Code image" 
-							class="w-full h-32 object-cover rounded-md"
+							src="data:image/png;base64,{{ interface.qr_image }}" 
+							alt="No qr-code found." 
+							class="w-full h-32 object-contain rounded-md"
 						/>
 					</div>
 				{% endfor %}

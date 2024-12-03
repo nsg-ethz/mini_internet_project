@@ -11,6 +11,7 @@ import time
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 from datetime import datetime as dt
+from base64 import b64encode
 
 
 def find_looking_glass_textfiles(directory: os.PathLike) \
@@ -249,3 +250,16 @@ def _read_clean(filename: os.PathLike) -> List[str]:
     except:
         print("Error accessing " + filename)
         return []
+
+def parse_as_b64(filename: os.PathLike) -> str:
+    """Parse a file as base64 ASCII string.
+    This can be used to embedd images directly in HTML."""
+
+    if filename == None or not filename.is_file():
+        print("Error, file not found: " + file_path.as_posix())
+        return None
+
+    with open(filename, 'rb') as byte_stream:
+        encoded_string = b64encode(byte_stream.read()).decode('utf-8')
+
+    return encoded_string
