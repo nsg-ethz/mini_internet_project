@@ -91,7 +91,7 @@ def vpn_db_populate_interfaces(app_config):
                     vpn_db_add_interface(db_path, interface)
                 else:
                     print("Error: No wireguard config file found for " + interface_config_path.as_posix())
-        except Exception e:
+        except Exception as e:
             # IXPs don't have a VPN interface, so this is defined behaviour.
             if as_data[group_id]['type'] == 'IXP':
                 continue

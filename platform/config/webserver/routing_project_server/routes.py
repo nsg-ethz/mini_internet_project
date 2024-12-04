@@ -193,7 +193,6 @@ def vpn(router = None):
             return redirect(url_for("main.vpn",router=None))
         else:
             peers = vpn_get_peers(current_app.config['LOCATIONS']['vpn_db'], router)
-            peers.append(vpn_get_peers(current_app.config['LOCATIONS']['vpn_db'], router, 0))
     
     return render_template(                                                                       
         "vpn.html",
