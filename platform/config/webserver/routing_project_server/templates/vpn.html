@@ -39,7 +39,7 @@
 	-->
 
 		<!-- Informational Message (Displayed only when no tab is selected) -->
-		{% if router is none %}
+		{% if interface_id is none %}
 		<div
 			class="mb-8 p-4 text-md border-l-4 bg-neutral-100 text-neutral-700 border-neutral-400 flex flex-row">
 			<div
@@ -56,9 +56,9 @@
 			<div class="flex -mb-px space-x-6 flex-wrap justify-between">
 				<!-- Loop through tabs to generate the tab bar -->
 				{% for id, label in labels.items() %}
-				<a href="{{ url_for('.vpn', router=id) }}" 
+				<a href="{{ url_for('.vpn', interface_id=id) }}" 
 					class="py-2 px-4 text-sm font-medium rounded-t-md 
-					{% if id |string == router |string %}bg-white text-[#ff7e79] border-b-2 border-[#ff7e79]{% else %}text-neutral-600 hover:text-[#ff7e79]{% endif %}">
+					{% if id |string == interface_id |string %}bg-white text-[#ff7e79] border-b-2 border-[#ff7e79]{% else %}text-neutral-600 hover:text-[#ff7e79]{% endif %}">
 					{{ label }}
 				</a>
 				{% endfor %}
@@ -66,10 +66,10 @@
 		</div>
 
 		<!-- Current Tab Content -->
-		{% if router is not none %}
+		{% if interface_id is not none %}
 		<div id="tab-content" class="mt-4">
 			<div class="flex flex-wrap justify-center gap-8">
-				{% for peer in if_property_list %}
+				{% for peer in peer_list %}
 				<div class="bg-white rounded-lg shadow-lg p-8 flex flex-col justify-center items-center max-w-xs w-full">
 					<h3 class="text-2xl font-semibold mb-4 text-center">{{ peer.peer_name }}</h3>
 					<p class="mb-2">
@@ -78,7 +78,7 @@
 					<img 
 						src="data:image/png;base64,{{ peer.qr_image }}" 
 						alt="No qr-code found." 
-						class="w-full max-h-[50vh]  h-180 object-contain rounded-md"
+						class="w-full h-180 object-contain rounded-md"
 					/>
 					<!-- Download Button -->
 					<a href=" {{ url_for('.vpn_download_conf', id=peer.id) }}" 
@@ -87,6 +87,13 @@
 					</a>
 				</div>
 				{% endfor %}
+				{% if new_peers_available == True %}
+				<a class="bg-neutral-200 rounded-lg shadow-lg p-8 flex flex-col justify-center items-center max-w-xs w-full group cursor-pointer min-h-[500px] h-[50vh]"
+					 href=" {{ url_for('.vpn_add_peer', interface_id=interface_id) }}">
+					<p class="text-5xl font-bold text-neutral-600 group-hover:text-[#ff7e79] transition duration-300"> + </p>
+					<p class="mt-4 text-neutral-600 group-hover:text-[#ff7e79] transition duration-300">Add Peer</p>
+				</a>
+				{% endif %}
 			</div>
 		</div> 
 		{% endif %}

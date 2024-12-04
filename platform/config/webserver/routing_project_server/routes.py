@@ -9,7 +9,7 @@ from .services.login import LoginForm, User, check_user_pwd, get_current_users_g
 from .services import parsers
 from .services.bgp_policy_analyzer import prepare_bgp_analysis
 from .services.matrix import prepare_matrix
-from .services.vpn import vpn_get_interfaces, vpn_get_peers, vpn_send_conf
+from .services.vpn import vpn_get_interfaces, vpn_get_peers, vpn_update_peer, vpn_send_conf
 from .app import basic_auth
 
 main_bp = Blueprint('main', __name__)
@@ -175,9 +175,9 @@ def bgp_analysis():
         )
 
 @main_bp.route("/vpn")
-@main_bp.route("/vpn/<router>")
+@main_bp.route("/vpn/<interface_id>")
 @login_required
-def vpn(router = None):
+def vpn(interface_id = None):
     """Show the vpn page for this user. Redirects to login page if no user is logged in."""
     
     # If vpn is disabled in the config, we redirect to the mainpage
@@ -186,20 +186,49 @@ def vpn(router = None):
 
     ifs = vpn_get_interfaces(current_app.config['LOCATIONS']['vpn_db'], get_current_users_group())
     peers = []
+    new_peers_available = False
 
-    if router:
+    if interface_id:
         # No interface found in this group
-        if int(router) not in ifs.keys():
-            return redirect(url_for("main.vpn",router=None))
+        if int(interface_id) not in ifs.keys():
+            return redirect(url_for("main.vpn",interface_id=None))
         else:
-            peers = vpn_get_peers(current_app.config['LOCATIONS']['vpn_db'], router)
-    
+            # Get all peers that are in use
+            peers = vpn_get_peers(current_app.config['LOCATIONS']['vpn_db'], interface_id)
+
+            # Check if there are any peers not in use
+            if vpn_get_peers(current_app.config['LOCATIONS']['vpn_db'], interface_id, in_use = 0):
+                new_peers_available = True
+
     return render_template(                                                                       
         "vpn.html",
         labels=ifs,
-        router=router,
-        if_property_list=peers
+        interface_id=interface_id,
+        peer_list=peers,
+        new_peers_available=new_peers_available,
     )  
+
+@main_bp.route("/vpn/<interface_id>/add_peer")
+@login_required
+def vpn_add_peer(interface_id = None):
+    """Register a peer to this interface."""
+
+    # If vpn is disabled in the config, we redirect to the mainpage
+    if not current_app.config['VPN_ENABLED']:
+        return "Not found", 404
+
+    # Interface not valid
+    if not interface_id or ( int(interface_id) not in vpn_get_interfaces(current_app.config['LOCATIONS']['vpn_db'], get_current_users_group()).keys() ):
+        return "Not found", 404
+    # Check if there are free peers available
+    unused_peers = vpn_get_peers(current_app.config['LOCATIONS']['vpn_db'], interface_id, in_use = 0)
+    if unused_peers:
+        # Set interface status to used
+        peer = unused_peers[0]
+        peer['in_use'] = 1
+        vpn_update_peer(current_app.config['LOCATIONS']['vpn_db'], peer)
+
+    return redirect(url_for(".vpn",interface_id=interface_id))
 
 @main_bp.route("/download/<id>")
 @login_required

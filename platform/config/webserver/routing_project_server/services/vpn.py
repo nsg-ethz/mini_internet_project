@@ -181,9 +181,24 @@ def vpn_get_peers(db_path: os.PathLike, interface_id, in_use=1, generate_qrcode=
             'id':peer[0],
             'peer_name':peer[1], 
             'ip_address':peer[2], 
+            'in_use':  in_use,
             'qr_image':  qr_image_b64,
         })
     return peers
+
+def vpn_update_peer(db_path: os.PathLike, peer):
+    """Update 'peer_name' and 'in_use' for a given peer."""
+
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute('''
+        UPDATE Peers
+        SET peer_name = ?, in_use = ?
+        WHERE id = ?
+    ''',
+    (peer['peer_name'], peer['in_use'], peer['id']))
+    conn.commit()
+    conn.close()
 
 
 def vpn_send_conf(db_path: os.PathLike, peer_id: int, group_id: int):
