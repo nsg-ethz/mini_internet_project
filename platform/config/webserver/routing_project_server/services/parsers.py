@@ -8,6 +8,7 @@ import json
 import os
 import re
 import time
+import subprocess
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 from datetime import datetime as dt
@@ -251,6 +252,50 @@ def _read_clean(filename: os.PathLike) -> List[str]:
         print("Error accessing " + filename)
         return []
 
+import os
+from pathlib import Path
+import subprocess
+
+def parse_qrcode(input_file: os.PathLike, output_file: os.PathLike = None, overwrite=True) -> os.PathLike:
+    """Generates or updates the QR code for a given file. Returns None on failure or a Path to the .png file."""
+    
+    if output_file is None:
+        output_file = input_file.with_suffix('.png') 
+
+    if not input_file.is_file():
+        print(f"Error: File not found: {input_file.as_posix()}")
+        return None
+
+    if output_file.is_file() and not overwrite:
+        return output_file
+
+    # Check if qrencode is installed
+    try:
+        check_version = subprocess.run(
+            ["qrencode", "--version"],
+            timeout=2,
+            capture_output=True,
+            text=True,
+            check=True
+        )
+    except subprocess.CalledProcessError as e:
+        print(f"Error: qrencode not installed. Stderr:\t{e.stderr}")
+        return None
+
+    # Generate the QR code
+    try:
+        subprocess.run(
+            ["qrencode", "-r", input_file.as_posix(), "-o", output_file.as_posix()],
+            timeout=2,
+            check=True
+        )
+    except Exception as e:
+        print(f"Error when generating the QR code. Stderr:\t{e.stderr}")
+        return None
+
+    return output_file
+
+
 def parse_as_b64(filename: os.PathLike) -> str:
     """Parse a file as base64 ASCII string.
     This can be used to embedd images directly in HTML."""
@@ -263,3 +308,16 @@ def parse_as_b64(filename: os.PathLike) -> str:
         encoded_string = b64encode(byte_stream.read()).decode('utf-8')
 
     return encoded_string
+
+def parse_wg_conf_ip(filename: os.PathLike) -> str:
+    """Parses a wireguard configuration file and extracts the IP address of the interface."""
+    if filename is None or not filename.is_file():
+        print("Error, file not found: " + filename.as_posix())
+        return "No IP address found!"
+    
+    with open(filename) as file:
+        for line in file:
+            line = line.strip()
+            if line.startswith("Address="):
+                return line.split("=", 1)[1]  # Split at the '=' and return the second part
+    return "No IP address found!"

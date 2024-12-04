@@ -3,13 +3,13 @@ from typing import Optional
 from flask import Blueprint, current_app, jsonify, request
 from flask import redirect, render_template, url_for
 from urllib.parse import urlparse
-
+from pathlib import Path
 from flask_login import login_required, login_user, current_user
 from .services.login import LoginForm, User, check_user_pwd, get_current_users_group
 from .services import parsers
 from .services.bgp_policy_analyzer import prepare_bgp_analysis
 from .services.matrix import prepare_matrix
-from .services.vpn import find_all_ifs, get_peers, send_conf_file
+from .services.vpn import vpn_get_interfaces, vpn_get_peers, vpn_send_conf
 from .app import basic_auth
 
 main_bp = Blueprint('main', __name__)
@@ -182,33 +182,37 @@ def vpn(router = None):
     
     # If vpn is disabled in the config, we redirect to the mainpage
     if not current_app.config['VPN_ENABLED']:
-        return "Record not found", status.HTTP_404_BAD_REQUEST
+        return "Not found", 404
 
-    ifs = find_all_ifs(group_number=get_current_users_group())
+    ifs = vpn_get_interfaces(current_app.config['LOCATIONS']['vpn_db'], get_current_users_group())
     peers = []
- 
+
     if router:
-        if router not in ifs.keys():
+        # No interface found in this group
+        if int(router) not in ifs.keys():
             return redirect(url_for("main.vpn",router=None))
         else:
-            peers = get_peers(ifs[router])
-
+            peers = vpn_get_peers(current_app.config['LOCATIONS']['vpn_db'], router)
+            peers.append(vpn_get_peers(current_app.config['LOCATIONS']['vpn_db'], router, 0))
+    
     return render_template(                                                                       
         "vpn.html",
-        tabs=ifs.keys(),
+        labels=ifs,
         router=router,
         if_property_list=peers
     )  
 
-@main_bp.route("/vpn/<router>/<peer>")
+@main_bp.route("/download/<id>")
 @login_required
-def vpn_peer_conf(router = None, peer = None):
-    """TODO"""
+def vpn_download_conf(id = None):
+    """Allows the iser to download a peer config file. 
+    The user group parameter needs is checked to prevent the user from downloading other group's config files."""
     
     # If vpn is disabled in the config, we redirect to the mainpage
     if not current_app.config['VPN_ENABLED']:
-        return "Record not found", status.HTTP_404_BAD_REQUEST
-    return send_conf_file(get_current_users_group(), router, peer)
+        return "Not found", 404
+        
+    return vpn_send_conf(current_app.config['LOCATIONS']['vpn_db'], id, get_current_users_group())
 
 @main_bp.route("/login", methods=['GET', 'POST'])
 def login():

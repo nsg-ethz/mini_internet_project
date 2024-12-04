@@ -53,13 +53,13 @@
 
 		<!-- Tab Selector -->
 		<div class="mt-6 border-b border-neutral-300">
-			<div class="flex -mb-px space-x-6">
+			<div class="flex -mb-px space-x-6 flex-wrap justify-between">
 				<!-- Loop through tabs to generate the tab bar -->
-				{% for tab_label in tabs %}
-				<a href="{{ url_for('.vpn', router=tab_label) }}" 
+				{% for id, label in labels.items() %}
+				<a href="{{ url_for('.vpn', router=id) }}" 
 					class="py-2 px-4 text-sm font-medium rounded-t-md 
-					{% if tab_label == router %}bg-white text-[#ff7e79] border-b-2 border-[#ff7e79]{% else %}text-neutral-600 hover:text-[#ff7e79]{% endif %}">
-					{{ tab_label }}
+					{% if id |string == router |string %}bg-white text-[#ff7e79] border-b-2 border-[#ff7e79]{% else %}text-neutral-600 hover:text-[#ff7e79]{% endif %}">
+					{{ label }}
 				</a>
 				{% endfor %}
 			</div>
@@ -71,17 +71,17 @@
 			<div class="flex flex-wrap justify-center gap-8">
 				{% for peer in if_property_list %}
 				<div class="bg-white rounded-lg shadow-lg p-8 flex flex-col justify-center items-center max-w-xs w-full">
-					<h3 class="text-2xl font-semibold mb-4 text-center">{{ peer.name }}</h3>
-					<!-- <p class="mb-2">
-						{{ peer.description }}
-					</p> -->
+					<h3 class="text-2xl font-semibold mb-4 text-center">{{ peer.peer_name }}</h3>
+					<p class="mb-2">
+						{{ peer.ip_address }}
+					</p>
 					<img 
 						src="data:image/png;base64,{{ peer.qr_image }}" 
 						alt="No qr-code found." 
 						class="w-full max-h-[50vh]  h-180 object-contain rounded-md"
 					/>
 					<!-- Download Button -->
-					<a href=" {{ url_for('.vpn_peer_conf', router=router, peer=peer.name) }}" 
+					<a href=" {{ url_for('.vpn_download_conf', id=peer.id) }}" 
 						class="mt-6 px-6 py-3 bg-black text-white text-lg rounded-sm hover:bg-[#ff7e79] transition duration-300">							
 						Download Config
 					</a>
