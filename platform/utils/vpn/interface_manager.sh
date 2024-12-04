@@ -187,9 +187,10 @@ create_wg_peer() {
 	fi	
 
 	listen_port=$(get_port $1 $2)	
-	
+	dns="198.${1}.0.2"
 	wg_peer_ip="$4"
         wg_subnet="0.0.0.0/0"
+	
        
 	# Generate Keypair
         private_key=$(wg genkey)                                                                     
@@ -202,6 +203,12 @@ create_wg_peer() {
 	printf "[Peer]\nPublicKey=%s\nAllowedIPs=%s\nPersistentKeepalive=25\n\n" ${public_key} ${wg_peer_ip} | tee -a "$path_to_file"/interface.conf > /dev/null
 		
         # Create peer configuration file                                                             
-        printf "[Interface]\nPrivateKey=%s\nAddress=%s\n\n" ${private_key} ${wg_peer_ip} | tee "$path_to_file"/${filename} > /dev/null
-        printf "[Peer]\nPublicKey=%s\nAllowedIPs=%s\nEndpoint=%s:%s\nPersistentKeepalive=25\n\n" $(cat "$path_to_file"interface.pubkey) ${wg_subnet} ${SSH_URL} ${listen_port} | tee -a "$path_to_file"/"${filename}" > /dev/null
+        # Add interface section
+	printf "[Interface]\nPrivateKey=%s\nAddress=%s\n" ${private_key} ${wg_peer_ip} | tee "$path_to_file"/${filename} > /dev/null
+	if [[ ${VPN_DNS_ENABLED} == true ]]; then
+		printf "DNS=%s\n" ${dns}| tee -a "$path_to_file"/${filename} > /dev/null
+	fi
+	
+	# Add peer section
+	printf "\n[Peer]\nPublicKey=%s\nAllowedIPs=%s\nEndpoint=%s:%s\nPersistentKeepalive=25\n\n" $(cat "$path_to_file"interface.pubkey) ${wg_subnet} ${SSH_URL} ${listen_port} | tee -a "$path_to_file"/"${filename}" > /dev/null
 }
