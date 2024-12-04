@@ -37,6 +37,8 @@ for ((k = 0; k < group_numbers; k++)); do
                 router_name="${router_i[0]}"
 		
 		create_if "${group_number}" "${router_name}" > /dev/null
+		interface_ip=$(subnet_router_VPN_interface "${group_number}" "${router_number}")
+		
 		for ((client_no = 1; client_no <= "${VPN_NO_CLIENTS}"; client_no++)); do
 			peer_ip=$(subnet_router_VPN_peer "${group_number}" "${router_number}" "${client_no}")
 			if [[ ${client_no} > 1 ]]; then
@@ -45,6 +47,9 @@ for ((k = 0; k < group_numbers; k++)); do
 				peer_name=Client
 			fi
 			create_wg_peer "${group_number}" "${router_name}" "${peer_name}" "${peer_ip}"
+			
+			# Configure OSPF
+			docker exec -it "${group_number}_${router_name}router" vtysh -c "conf t" -c "router ospf" -c "network ${interface_ip} area 0"
 		done
 	    done		
         fi
