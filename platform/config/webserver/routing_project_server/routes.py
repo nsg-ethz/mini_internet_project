@@ -1,16 +1,16 @@
 import math
-from typing import Optional
-from flask import Blueprint, current_app, jsonify, request
-from flask import redirect, render_template, url_for
-from urllib.parse import urlparse
 from pathlib import Path
-from flask_login import login_required, login_user, current_user
+from typing import Optional
+from urllib.parse import urlparse
+from flask import Blueprint, current_app, jsonify, request, redirect, render_template, url_for
+from flask_login import login_required, login_user
 from .services.login import LoginForm, User, check_user_pwd, get_current_users_group
 from .services import parsers
 from .services.bgp_policy_analyzer import prepare_bgp_analysis
 from .services.matrix import prepare_matrix
-from .services.vpn import vpn_get_interfaces, vpn_get_peers, vpn_update_peer, vpn_send_conf
+from .services.vpn import vpn_get_interfaces, vpn_get_peers, vpn_update_peer, vpn_send_conf, vpn_check_peer_permission
 from .app import basic_auth
+from .services.forms import PeerForm
 
 main_bp = Blueprint('main', __name__)
 
@@ -174,10 +174,11 @@ def bgp_analysis():
         last_updated=updated, update_frequency=freq,
         )
 
+
 @main_bp.route("/vpn")
 @main_bp.route("/vpn/<interface_id>")
 @login_required
-def vpn(interface_id = None):
+def vpn(interface_id:int = None, methods=['GET', 'POST']):
     """Show the vpn page for this user. Redirects to login page if no user is logged in."""
     
     # If vpn is disabled in the config, we redirect to the mainpage
@@ -186,61 +187,58 @@ def vpn(interface_id = None):
 
     ifs = vpn_get_interfaces(current_app.config['LOCATIONS']['vpn_db'], get_current_users_group())
     peers = []
-    new_peers_available = False
 
     if interface_id:
         # No interface found in this group
         if int(interface_id) not in ifs.keys():
             return redirect(url_for("main.vpn",interface_id=None))
         else:
-            # Get all peers that are in use
+            # Get all peers that are in use and the first unused one
             peers = vpn_get_peers(current_app.config['LOCATIONS']['vpn_db'], interface_id)
+            peers += vpn_get_peers(current_app.config['LOCATIONS']['vpn_db'], interface_id, in_use = 0, max_amount=1)
 
-            # Check if there are any peers not in use
-            if vpn_get_peers(current_app.config['LOCATIONS']['vpn_db'], interface_id, in_use = 0):
-                new_peers_available = True
+    peer_forms = [ PeerForm.from_dict(peer) for peer in peers ]
 
     return render_template(                                                                       
         "vpn.html",
         labels=ifs,
         interface_id=interface_id,
-        peer_list=peers,
-        new_peers_available=new_peers_available,
+        peer_forms=peer_forms
     )  
 
-@main_bp.route("/vpn/<interface_id>/add_peer")
+@main_bp.route("/vpn/peer/<peer_id>", methods = ['GET', 'POST'])
 @login_required
-def vpn_add_peer(interface_id = None):
-    """Register a peer to this interface."""
+def vpn_peer(peer_id):
+    """GET request: Allows the user to download a config if the group permissions allow it.
+    POST request: Updates a peer."""
 
     # If vpn is disabled in the config, we redirect to the mainpage
     if not current_app.config['VPN_ENABLED']:
         return "Not found", 404
-
-    # Interface not valid
-    if not interface_id or ( int(interface_id) not in vpn_get_interfaces(current_app.config['LOCATIONS']['vpn_db'], get_current_users_group()).keys() ):
-        return "Not found", 404
-    # Check if there are free peers available
-    unused_peers = vpn_get_peers(current_app.config['LOCATIONS']['vpn_db'], interface_id, in_use = 0)
-    if unused_peers:
-        # Set interface status to used
-        peer = unused_peers[0]
-        peer['in_use'] = 1
-        vpn_update_peer(current_app.config['LOCATIONS']['vpn_db'], peer)
-
-    return redirect(url_for(".vpn",interface_id=interface_id))
-
-@main_bp.route("/download/<id>")
-@login_required
-def vpn_download_conf(id = None):
-    """Allows the iser to download a peer config file. 
-    The user group parameter needs is checked to prevent the user from downloading other group's config files."""
     
-    # If vpn is disabled in the config, we redirect to the mainpage
-    if not current_app.config['VPN_ENABLED']:
+    # Check if current user is allowed to access this peer's configuration
+    if not vpn_check_peer_permission(current_app.config['LOCATIONS']['vpn_db'], peer_id, get_current_users_group()):
+        print(f"Error: Group {get_current_users_group()} tried to access peer {peer_id}!")
         return "Not found", 404
-        
-    return vpn_send_conf(current_app.config['LOCATIONS']['vpn_db'], id, get_current_users_group())
+    
+    # Send peer config to user
+    if request.method == 'GET':
+        return vpn_send_conf(current_app.config['LOCATIONS']['vpn_db'], peer_id)
+    
+    # Update peer config in the database
+    elif request.method == 'POST':
+        try:
+            peer_id = request.form.get('peer_id')
+            peer_properties = {
+                'peer_name':request.form.get('peer_name'),
+                'in_use':request.form.get('enable_flag'),
+            }
+            vpn_update_peer(current_app.config['LOCATIONS']['vpn_db'], peer_id, peer_properties)
+        except Exception as e:
+            print(f"Error: caught exception: {e}")
+
+    next = request.args.get('next') or url_for('.vpn')
+    return redirect(next) 
 
 @main_bp.route("/login", methods=['GET', 'POST'])
 def login():
@@ -251,8 +249,8 @@ def login():
         if(check_user_pwd(form.username.data, form.password.data)):
             login_user(User(form.username.data))
             # flash('Logged in successfully.', 'success')
-            next = request.args.get('next')
-            return redirect(next or url_for('main.index'))
+            next = request.args.get('next') or url_for('main.index')
+            return redirect(next)
         else:
             # flash('Wrong username or password', 'danger')
             pass

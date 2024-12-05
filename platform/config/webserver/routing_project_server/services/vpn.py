@@ -146,7 +146,6 @@ def vpn_get_interfaces(db_path, group_id):
     conn.close()
     return {elem[0]:elem[1] for elem in results}
 
-
 def vpn_db_add_peer(db_path: os.PathLike, peer: Dict):
     """Add a new peer to the database.
     Peer dict must contain the following fields: 'interface_id', 'peer_name', 'config_file', 'in_use', 'ip_address'."""
@@ -159,15 +158,14 @@ def vpn_db_add_peer(db_path: os.PathLike, peer: Dict):
     conn.commit()
     conn.close()
 
-
-def vpn_get_peers(db_path: os.PathLike, interface_id, in_use=1, generate_qrcode=1):
+def vpn_get_peers(db_path: os.PathLike, interface_id, in_use=1, generate_qrcode=1, max_amount=None):
     """Get a list of all peers for a given wireguard interface
-        Return object structure: List with {'id', 'name', 'description', 'qr_image', 'path'}
+        Return object structure: List with {'id', 'peer_name', 'ip_address', 'qr_image'}
     """
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     cursor.execute("SELECT id, peer_name, ip_address, config_file FROM Peers WHERE interface_id = ? AND in_use = ?", (interface_id,in_use))
-    results = cursor.fetchall()
+    results = cursor.fetchall() if max_amount == None else cursor.fetchmany(max_amount)
     conn.close()
 
     peers = []
@@ -186,28 +184,13 @@ def vpn_get_peers(db_path: os.PathLike, interface_id, in_use=1, generate_qrcode=
         })
     return peers
 
-def vpn_update_peer(db_path: os.PathLike, peer):
-    """Update 'peer_name' and 'in_use' for a given peer."""
+def vpn_check_peer_permission(db_path: os.PathLike, peer_id: int, group_id: int) -> bool:
+    """Check if there exists a peer with the id that is associated to this group."""
 
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     cursor.execute('''
-        UPDATE Peers
-        SET peer_name = ?, in_use = ?
-        WHERE id = ?
-    ''',
-    (peer['peer_name'], peer['in_use'], peer['id']))
-    conn.commit()
-    conn.close()
-
-
-def vpn_send_conf(db_path: os.PathLike, peer_id: int, group_id: int):
-    """Sends a requested peer conf file to the client.
-    We check the group_id to prehibit sql injection. If a user is logged in, she can only access her own peers."""
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-    cursor.execute('''
-        SELECT Peers.config_file, Interfaces.router_name
+        SELECT COUNT(*)
         FROM Peers 
         INNER JOIN Interfaces ON interface_id = Interfaces.id
         WHERE Peers.id = ? AND Interfaces.group_id = ?''', 
@@ -215,12 +198,50 @@ def vpn_send_conf(db_path: os.PathLike, peer_id: int, group_id: int):
     )
     result = cursor.fetchone()
     conn.close()
-    config_file, router_name = result
+    return result[0] > 0
+
+def vpn_update_peer(db_path: os.PathLike, peer_id: int, peer_properties: Dict):
+    """Update a peer entry. Peer must at least have the entry 'id'"""
+
+    # Construct command
+    sql_query = "UPDATE Peers SET "
+    parameters = []
+
+    for key, value in peer_properties.items():
+        sql_query += (f"{key} = ?, ")
+        parameters.append(value)
+
+    sql_query = sql_query.rstrip(", ")
+
+    sql_query += "WHERE id = ?"
+    parameters.append(peer_id)
+
+    # Execute command
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute(sql_query, parameters)
+    conn.commit()
+    conn.close()
+
+def vpn_send_conf(db_path: os.PathLike, peer_id: int):
+    """Sends a requested peer conf file to the client."""
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT Peers.config_file, Interfaces.router_name, Interfaces.group_id, Peers.peer_name
+        FROM Peers 
+        INNER JOIN Interfaces ON interface_id = Interfaces.id
+        WHERE Peers.id = ?''', 
+        (peer_id,)
+    )
+    result = cursor.fetchone()
+    conn.close()
+    config_file, router_name, group_id, peer_name = result
 
     if result is None:
         return "Not found", 404
 
-    download_name = f"Mini-Internet Group {group_id} {router_name}.conf"
+    download_name = f"Mini-Internet {group_id}-{router_name} {peer_name}.conf"
     return send_file(
         config_file,
         as_attachment=True,

@@ -38,6 +38,11 @@
 				<input type="text" id="username" name="username" 
 					class="w-full px-4 py-3 text-sm text-neutral-800 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff7e79] placeholder-neutral-400 transition" 
 					placeholder="Enter username" size="20">
+
+					<!-- Display Errors -->
+					{% for error in form.username.errors %}
+						<p class="text-red-500 text-sm mt-2">{{ error }}</p>
+					{% endfor %}
 			</div>
 	
 			<!-- Password Field -->
@@ -48,6 +53,11 @@
 				<input type="password" id="password" name="password" 
 					class="w-full px-4 py-3 text-sm text-neutral-800 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff7e79] placeholder-neutral-400 transition" 
 					placeholder="Enter password" size="20">
+
+					<!-- Display Errors -->
+					{% for error in form.password.errors %}
+						<p class="text-red-500 text-sm mt-2">{{ error }}</p>
+					{% endfor %}
 			</div>
 	
 			<!-- Submit Button -->

@@ -1,8 +1,6 @@
 from flask_login import LoginManager, UserMixin, current_user
-from flask_wtf import FlaskForm
 from flask_wtf.csrf import CSRFProtect
-from wtforms import PasswordField, StringField, SubmitField
-from wtforms import validators
+from .forms import LoginForm
 
 # Initialize extensions without an app
 csrf = CSRFProtect()
@@ -32,11 +30,6 @@ def check_user_pwd(username: User, pwd):
         if users[user.get_id()]['password'] == pwd:
             return True
     return False
-
-class LoginForm(FlaskForm):
-    username = StringField('Username', validators=[validators.InputRequired()])
-    password = PasswordField('Password', validators=[validators.InputRequired()])
-    submit = SubmitField('Submit')
 
 def get_current_users_group():
     user: User = current_user
