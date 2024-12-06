@@ -1,0 +1,72 @@
+#!/bin/bash
+
+print_json(){
+	    # The following snippet was taken from https://github.com/WireGuard/wireguard-tools/blob/master/contrib/json/wg-json and modified using chatgpt
+	    # SPDX-License-Identifier: GPL-2.0
+	    #
+	    # Copyright (C) 2015-2020 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
+	    
+   	    # Reset all state-tracking variables
+    	    last_device=""
+    	    first_device=true
+    	    first_peer=true
+	    old_ifs=""
+
+	    printf '{\n'
+	    first_device=true
+	    while read -r -d $'\t' device; do
+		if [[ $device != "$last_device" ]]; then
+		    if ! $first_device; then
+			printf '\n\t\t}\n\t},\n'
+		    fi
+		    last_device="$device"
+		    read -r private_key public_key listen_port fwmark
+		    printf '\t"%s": {\n' "$device"
+		    [[ $private_key != "(none)" ]] && printf '\t\t"privateKey": "%s",\n' "$private_key"
+		    [[ $public_key != "(none)" ]] && printf '\t\t"publicKey": "%s",\n' "$public_key"
+		    [[ $listen_port != "0" ]] && printf '\t\t"listenPort": %u,\n' "$listen_port"
+		    printf '\t\t"peers": {\n'
+		    first_device=false
+		    first_peer=true
+		else
+		    read -r public_key preshared_key endpoint allowed_ips latest_handshake transfer_rx transfer_tx persistent_keepalive
+		    if ! $first_peer; then
+			printf ',\n'
+		    fi
+		    printf '\t\t\t"%s": {\n' "$public_key"
+		    [[ $preshared_key != "(none)" ]] && printf '\t\t\t\t"presharedKey": "%s",\n' "$preshared_key"
+		    [[ $endpoint != "(none)" ]] && printf '\t\t\t\t"endpoint": "%s",\n' "$endpoint"
+		    [[ $latest_handshake != "0" ]] && printf '\t\t\t\t"latestHandshake": %u,\n' "$latest_handshake"
+		    [[ $transfer_rx != "0" ]] && printf '\t\t\t\t"transferRx": %u,\n' "$transfer_rx"
+		    [[ $transfer_tx != "0" ]] && printf '\t\t\t\t"transferTx": %u,\n' "$transfer_tx"
+		    [[ $persistent_keepalive != "off" ]] && printf '\t\t\t\t"persistentKeepalive": %u,\n' "$persistent_keepalive"
+		    printf '\t\t\t\t"allowedIps": [\n'
+		    if [[ $allowed_ips != "(none)" ]]; then
+			old_ifs="$IFS"
+			IFS=,
+			first_ip=true
+			for ip in $allowed_ips; do
+			    if ! $first_ip; then
+				printf ',\n'
+			    fi
+			    printf '\t\t\t\t\t"%s"' "$ip"
+			    first_ip=false
+			done
+			IFS="$old_ifs"
+		    fi
+		    printf '\n\t\t\t\t]\n\t\t\t}'
+		    first_peer=false
+		fi
+	    done
+	    printf '\n\t\t}\n\t}\n}\n'
+}
+
+while true
+do
+	rm -f /etc/wireguard/status.json
+    	wg show all dump > /tmp/wg_dump.txt
+    	if [[ -s /tmp/wg_dump.txt ]]; then
+		print_json < /tmp/wg_dump.txt > /etc/wireguard/status.json
+	fi
+	sleep 30
+done

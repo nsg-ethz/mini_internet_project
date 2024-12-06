@@ -29,5 +29,6 @@ EXPOSE 22
 COPY supervisord.conf /etc/supervisor/conf.d/processes.conf
 COPY looking_glass.sh /usr/local/bin/looking_glass
 COPY run_frr.sh /usr/local/bin/run_frr
+COPY wg_observer /usr/local/bin/wg_observer
 
-RUN chmod +x /usr/local/bin/looking_glass /usr/local/bin/run_frr
+RUN chmod +x /usr/local/bin/looking_glass /usr/local/bin/run_frr /usr/local/bin/wg_observer
