@@ -59,6 +59,7 @@ for ((k = 0; k < group_numbers; k++)); do
 		done
 	    done		
         fi
+	echo "Configured VPN of group ${group_number} "
 done
 
 # Remove trailing comma and close the list

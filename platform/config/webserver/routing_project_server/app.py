@@ -27,7 +27,7 @@ from jinja2 import StrictUndefined
 from .services.bgp_policy_analyzer import prepare_bgp_analysis
 from.services.matrix import prepare_matrix
 from .services.login import login_init
-from .services.vpn import vpn_db_init, vpn_db_populate
+from .services.vpn import vpn_init
 
 config_defaults = {
     'SECRET_KEY': os.urandom(32),
@@ -86,8 +86,7 @@ def create_app(config=None):
     # Initialize extensions
     login_init(app)
     basic_auth.init_app(app) 
-    vpn_db_init(app.config)
-    vpn_db_populate(app.config)
+    vpn_init(app)
 
     # Initialize template filters
     @app.template_filter()

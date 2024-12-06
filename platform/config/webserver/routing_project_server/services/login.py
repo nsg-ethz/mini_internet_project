@@ -1,7 +1,6 @@
 import json
 import bcrypt
 import sqlite3
-from .forms import LoginForm
 from flask import current_app
 from flask_login import LoginManager, UserMixin, login_user
 from flask_wtf.csrf import CSRFProtect
@@ -29,14 +28,22 @@ def login_init(app):
         )
     ''')
     conn.commit()
+    cursor.execute("SELECT COUNT(*) FROM Users")
+    user_count = cursor.fetchone()[0]
     conn.close()
 
+    if user_count == 0:
+        print(f"No users found in database. Parsing users from password files...")
+        login_db_populate(app.config['LOCATIONS'])
+
+
+def login_db_populate(locations):
     try:
-        with open(Path(app.config['LOCATIONS']['vpn_passwd']), 'r') as file:
+        with open(Path(locations['vpn_passwd']), 'r') as file:
             user_data = json.load(file)
-        
+            
         for user in user_data:
-            conn = sqlite3.connect(app.config['LOCATIONS']['vpn_db'])
+            conn = sqlite3.connect(locations['vpn_db'])
             cursor = conn.cursor()
             cursor.execute('''
                 INSERT INTO Users

@@ -1,21 +1,13 @@
 import os
 import sqlite3
-from typing import List, Tuple, Dict
+from typing import Dict
 from pathlib import Path
-from flask import current_app, url_for, send_file, redirect
+from flask import send_file
 from .parsers import parse_as_config, parse_as_b64, parse_wg_conf_ip, parse_qrcode
 
-def db_flush_table(db_path, table_name):
-    """Flush a table of the database. Does not reset the primary id increment counter."""
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-    cursor.execute(f"DELETE FROM {table_name}")
-    conn.commit()
-    conn.close()
-
-def vpn_db_init(app_config):
+def vpn_init(app):
     """Initialize the vpn database."""
-    db_path = Path(app_config['LOCATIONS']['vpn_db'])
+    db_path = Path(app.config['LOCATIONS']['vpn_db'])
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
@@ -44,30 +36,27 @@ def vpn_db_init(app_config):
     )''')
 
     conn.commit()
+    cursor.execute("SELECT COUNT(*) FROM Interfaces")
+    interface_count = cursor.fetchone()[0]
     conn.close()
 
-def vpn_db_populate(app_config):
+    if interface_count == 0:
+        print(f"No interfaces found in database. Parsing interfaces from config files...")
+        vpn_db_populate(app.config['LOCATIONS'])
+
+def vpn_db_populate(locations):
     """Clear the database and repopulate it using the appropriate functions."""
-    db_path = Path(app_config['LOCATIONS']['vpn_db'])
+    vpn_db_populate_interfaces(locations)
+    vpn_db_populate_peers(locations)
 
-    # Delete old entries to avoid duplicates
-    # TODO: Update instead of delete
-    # cursor.execute("DROP TABLE IF EXISTS Interfaces")
-    db_flush_table(db_path, "Interfaces")
-    # cursor.execute("DROP TABLE IF EXISTS Peers")
-    db_flush_table(db_path, "Peers")
-
-    vpn_db_populate_interfaces(app_config)
-    vpn_db_populate_peers(app_config)
-
-def vpn_db_populate_interfaces(app_config):
+def vpn_db_populate_interfaces(locations):
     """Populate the database Interfaces table by parsing data from the filesystem."""
-    db_path = Path(app_config['LOCATIONS']['vpn_db'])
+    db_path = Path(locations['vpn_db'])
     
     # Get a list of all routers
     as_data = parse_as_config(
-        app_config['LOCATIONS']['as_config'],
-        router_config_dir=app_config['LOCATIONS']['config_directory'],
+        locations['as_config'],
+        router_config_dir=locations['config_directory'],
     )
     
     # Loop through each router in each group:
@@ -75,10 +64,10 @@ def vpn_db_populate_interfaces(app_config):
         try:
             for router in dict.fromkeys(as_data[group_id]['routers']):  # The dict.fromkeys gets rid of duplicates in the router list.
                 interface_config_path = (
-                    Path(app_config['LOCATIONS']['groups']) /
+                    Path(locations['groups']) /
                     f"g{group_id}" /
                     router /
-                    app_config['LOCATIONS']['vpn_folder'] /
+                    locations['vpn_folder'] /
                     "interface.conf"
                 )
                 if Path.is_file(interface_config_path):
@@ -98,9 +87,9 @@ def vpn_db_populate_interfaces(app_config):
             else:
                 print(f"Exception caught: {e}")
 
-def vpn_db_populate_peers(app_config):
+def vpn_db_populate_peers(locations):
     """Populate the database Peers table by parsing data from the filesystem."""
-    db_path = Path(app_config['LOCATIONS']['vpn_db'])
+    db_path = Path(locations['vpn_db'])
 
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()

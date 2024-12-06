@@ -64,7 +64,7 @@ LOCATIONS = {
     "matrix_stats": "${DATADIR_SERVER}/matrix/stats.txt",
     "vpn_folder": "wireguard",
     "vpn_passwd": "${DATADIR_SERVER}/${VPN_PASSWD_FILE}",
-    "vpn_db":"${DATADIR_SERVER}/${VPN_DB_FILE}"
+    "vpn_db":"${DATADIR_SERVER}/webserver/${VPN_DB_FILE}"
 }
 KRILL_URL="${KRILL_SCHEME}://{hostname}:${WEBSERVER_PORT_KRILL}/index.html"
 BASIC_AUTH_USERNAME = 'admin'
