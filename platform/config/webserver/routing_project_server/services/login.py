@@ -23,8 +23,7 @@ def login_init(app):
         username TEXT NOT NULL,
         passwd_hash TEXT NOT NULL,
         group_id TEXT NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        last_used TIMESTAMP
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
     conn.commit()

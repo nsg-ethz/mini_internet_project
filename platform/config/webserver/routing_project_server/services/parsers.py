@@ -8,6 +8,7 @@ import json
 import os
 import re
 import time
+from datetime import datetime, timedelta
 import subprocess
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
@@ -64,9 +65,7 @@ def parse_looking_glass_json(directory: os.PathLike) -> \
                 # Check if there is a looking_glass file.
                 looking_glass_file = routerdir / "looking_glass_json.txt"
                 if looking_glass_file.is_file():
-                    groupresults[routerdir.name] = _read_json_safe(
-                        looking_glass_file)
-            if groupresults:
+                    groupresults[routerdir.name] =_read_json_safe(looking_glass_file) or {'warning': 'Default BGP instance not found'}
                 results[group] = groupresults
     except:
         print("Error when accessing " + directory)
@@ -233,11 +232,8 @@ def _read_json_safe(filename: os.PathLike, sleep_time=0.01, max_attempts=200):
         except json.decoder.JSONDecodeError as error:
             if current_attempt == max_attempts:
                 # raise error
-                print('WARNING: could not read {} and path validity.'.format(filename))
-                print('We assume empty BGP configuration for this router')
-
-                # return the same json as if BGP was not running in the router.
-                return {'warning': 'Default BGP instance not found'}
+                print(f'WARNING: could not read {format(filename)} and path validity. Error message: {error}')
+                return None
 
             # The file may have changed, wait a bit.
             time.sleep(sleep_time)
@@ -321,3 +317,58 @@ def parse_wg_conf_ip(filename: os.PathLike) -> str:
             if line.startswith("Address="):
                 return line.split("=", 1)[1]  # Split at the '=' and return the second part
     return "No IP address found!"
+
+def format_bytes(bytes):
+    from math import log2, floor
+
+    units = ["B", "KiB", "MiB", "GiB"]
+    factor = 1024  # 1 KiB = 1024 bytes
+    
+    # Determine the unit index (0 for B, 1 for KiB, etc.)
+    index = min(floor(log2(bytes) / log2(factor)) if bytes >= 1 else 0, len(units) - 1)
+    
+    # Convert value to the selected unit
+    value = bytes / (factor ** index)
+    
+    return f"{value:.2f} {units[index]}"
+
+def parse_wg_dump(filename: os.PathLike, interface_name="vpn"):
+    """Parses the json  file that the wg-json script dumps."""
+    wg_dump = _read_json_safe(filename)
+    raw_peers = wg_dump[interface_name]['peers']
+    parsed_peers = []
+
+    # Insert missing defaults
+    for key, raw_peer in raw_peers.items():
+        raw_peer.setdefault('endpoint', None)
+        raw_peer.setdefault('latestHandshake', None)
+        raw_peer.setdefault('transferRx', 0)
+        raw_peer.setdefault('transferTx', 0)
+        raw_peers[key] = raw_peer
+    
+    # Parse data
+    for raw_peer in raw_peers.values():
+        parsed_peer = {}
+        
+        #IP Address
+        parsed_peer['ip_address'] = raw_peer['allowedIps'][0]
+
+        # Endpoint
+        parsed_peer['endpoint'] = raw_peer['endpoint'] or None
+
+        # Last seen string
+        if not raw_peer['latestHandshake']:
+            parsed_peer['lastSeen'] = "Never"
+            parsed_peer['isConnected'] = 0
+        else:
+            lastSeen = datetime.fromtimestamp(raw_peer['latestHandshake'])
+            parsed_peer['lastSeen'] = lastSeen.strftime("%H:%M - %d %B")
+            parsed_peer['isConnected'] = int((datetime.now() - lastSeen) < timedelta(seconds=150))
+
+        # RX/TX values
+        parsed_peer['transferRxUnits'] = format_bytes(raw_peer['transferRx'])
+        parsed_peer['transferTxUnits'] = format_bytes(raw_peer['transferTx'])
+
+        parsed_peers.append(parsed_peer)
+
+    return parsed_peers

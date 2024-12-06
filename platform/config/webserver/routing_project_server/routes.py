@@ -233,7 +233,7 @@ def vpn_peer(peer_id):
                 'peer_name':request.form.get('peer_name'),
                 'in_use':request.form.get('enable_flag'),
             }
-            vpn_update_peer(current_app.config['LOCATIONS']['vpn_db'], peer_id, peer_properties)
+            vpn_update_peer(current_app.config['LOCATIONS']['vpn_db'], peer_properties, peer_id=peer_id)
         except Exception as e:
             print(f"Error: caught exception: {e}")
 

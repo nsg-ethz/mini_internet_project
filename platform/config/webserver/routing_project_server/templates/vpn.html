@@ -87,6 +87,11 @@
 						{% endfor %}
 
 						<p class="mb-2"> {{ peer.ip_address.data }} </p>
+						<p class="mb-2"> {{ peer.lastSeen.data }} </p>
+						<p class="mb-2"> {{ peer.isConnected.data }} </p>
+						<p class="mb-2"> {{ peer.transferRxUnits.data }} </p>
+						<p class="mb-2"> {{ peer.transferTxUnits.data }} </p>
+						<p class="mb-2"> {{ peer.endpoint.data }} </p>
 						<img 
 							src="data:image/png;base64,{{ peer.qr_image.data }}" 
 							alt="No qr-code found." 

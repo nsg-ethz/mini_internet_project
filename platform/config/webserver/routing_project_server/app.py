@@ -27,7 +27,7 @@ from jinja2 import StrictUndefined
 from .services.bgp_policy_analyzer import prepare_bgp_analysis
 from.services.matrix import prepare_matrix
 from .services.login import login_init
-from .services.vpn import vpn_init
+from .services.vpn import vpn_init, vpn_update_status
 
 config_defaults = {
     'SECRET_KEY': os.urandom(32),
@@ -124,22 +124,30 @@ def start_workers(config):
     """Create background processes"""
     processes = []
 
-    pmatrix = Process(
+    matrixd = Process(
         target=loop,
         args=(prepare_matrix, config['MATRIX_UPDATE_FREQUENCY'], config),
         kwargs=dict(worker=True)
     )
-    pmatrix.start()
-    processes.append(pmatrix)
+    matrixd.start()
+    processes.append(matrixd)
 
-    pbgp = Process(
+    bgpd = Process(
         target=loop,
         args=(prepare_bgp_analysis,
               config['ANALYSIS_UPDATE_FREQUENCY'], config),
         kwargs=dict(worker=True)
     )
-    pbgp.start()
-    processes.append(pbgp)
+    bgpd.start()
+    processes.append(bgpd)
+
+    # vpn_statusd = Process(
+    #     target=loop,
+    #     args=(vpn_update_status, 31), 
+    #     kwargs=dict(config=config)
+    # )
+    # vpn_statusd.start()
+    # processes.append(vpn_statusd)
 
     return processes
 

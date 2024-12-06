@@ -2,8 +2,8 @@ import os
 import sqlite3
 from typing import Dict
 from pathlib import Path
-from flask import send_file
-from .parsers import parse_as_config, parse_as_b64, parse_wg_conf_ip, parse_qrcode
+from flask import send_file, current_app
+from .parsers import parse_as_config, parse_as_b64, parse_wg_conf_ip, parse_qrcode, parse_wg_dump
 
 def vpn_init(app):
     """Initialize the vpn database."""
@@ -18,8 +18,7 @@ def vpn_init(app):
         config_file TEXT NOT NULL,
         router_name TEXT NOT NULL,
         ip_address TEXT NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        last_used TIMESTAMP
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )''') 
 
     # Create Peer table
@@ -30,8 +29,12 @@ def vpn_init(app):
         config_file TEXT NOT NULL,
         in_use INTEGER,
         ip_address TEXT NOT NULL,
+        lastSeen TEXT, 
+        isConnected INTEGER,
+        transferRxUnits TEXT,
+        transferTxUnits TEXT,
+        endpoint TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        last_used TIMESTAMP,
         FOREIGN KEY(interface_id) REFERENCES Interfaces(id)
     )''')
 
@@ -148,29 +151,31 @@ def vpn_db_add_peer(db_path: os.PathLike, peer: Dict):
     conn.close()
 
 def vpn_get_peers(db_path: os.PathLike, interface_id, in_use=1, generate_qrcode=1, max_amount=None):
-    """Get a list of all peers for a given wireguard interface
-        Return object structure: List with {'id', 'peer_name', 'ip_address', 'qr_image'}
-    """
+    """Get a list of all peers for a given wireguard interface."""
+    vpn_update_status(current_app.config, interface_id=interface_id)
+
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    cursor.execute("SELECT id, peer_name, ip_address, config_file FROM Peers WHERE interface_id = ? AND in_use = ?", (interface_id,in_use))
+
+    # Get column names
+    cursor.execute(f"PRAGMA table_info(Peers)")
+    columns = [column[1] for column in cursor.fetchall()]
+
+    # Get rows
+    cursor.execute("SELECT * FROM Peers WHERE interface_id = ? AND in_use = ?", (interface_id,in_use))
     results = cursor.fetchall() if max_amount == None else cursor.fetchmany(max_amount)
     conn.close()
 
     peers = []
-    for peer in results:
+    for row in results:
+        # Unzip Peers and create QR Codes
+        peer = dict(zip(columns, row))
         qr_image_b64 = None
         if generate_qrcode: 
-            qr_image_png = parse_qrcode(Path(peer[3]))
+            qr_image_png = parse_qrcode(Path(peer['config_file']))
             qr_image_b64 = parse_as_b64(qr_image_png)
-        
-        peers.append({
-            'id':peer[0],
-            'peer_name':peer[1], 
-            'ip_address':peer[2], 
-            'in_use':  in_use,
-            'qr_image':  qr_image_b64,
-        })
+        peer['qr_image'] = qr_image_b64
+        peers.append(peer)
     return peers
 
 def vpn_check_peer_permission(db_path: os.PathLike, peer_id: int, group_id: int) -> bool:
@@ -189,7 +194,7 @@ def vpn_check_peer_permission(db_path: os.PathLike, peer_id: int, group_id: int)
     conn.close()
     return result[0] > 0
 
-def vpn_update_peer(db_path: os.PathLike, peer_id: int, peer_properties: Dict):
+def vpn_update_peer(db_path, peer_properties: Dict, peer_id: int = None, peer_ip_address: str = None):
     """Update a peer entry. Peer must at least have the entry 'id'"""
 
     # Construct command
@@ -197,13 +202,22 @@ def vpn_update_peer(db_path: os.PathLike, peer_id: int, peer_properties: Dict):
     parameters = []
 
     for key, value in peer_properties.items():
+        # Never update the id. If we select the peer according to the ip address, we don't update the ip address
+        if key == 'id' or (peer_ip_address and key == 'ip_address'):
+            pass
+
         sql_query += (f"{key} = ?, ")
         parameters.append(value)
 
+    # Remove trailing commas
     sql_query = sql_query.rstrip(", ")
 
-    sql_query += "WHERE id = ?"
-    parameters.append(peer_id)
+    if peer_id:
+        sql_query += "WHERE id = ?"
+        parameters.append(peer_id)
+    elif peer_ip_address:
+        sql_query += "WHERE ip_address = ?"
+        parameters.append(peer_ip_address)
 
     # Execute command
     conn = sqlite3.connect(db_path)
@@ -236,3 +250,22 @@ def vpn_send_conf(db_path: os.PathLike, peer_id: int):
         as_attachment=True,
         download_name=download_name
     )
+
+def vpn_update_status(config, interface_id):
+    conn = sqlite3.connect(config['LOCATIONS']['vpn_db'])
+    cursor = conn.cursor()
+    cursor.execute(f"SELECT config_file FROM Interfaces WHERE id = {interface_id}")
+    result = cursor.fetchone()
+    conn.close()
+    
+    if not result:
+        print(f"Error, config file for interface with id {interface_id} not found!")
+        return
+    
+    config_file = result[0]
+    peer_status_list = parse_wg_dump(Path(config_file).with_name("status.json"))
+    
+    for peer_status in peer_status_list:
+        vpn_update_peer(config['LOCATIONS']['vpn_db'], peer_status, peer_ip_address=peer_status['ip_address'])
+
+    return
