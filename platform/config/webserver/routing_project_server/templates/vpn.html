@@ -8,7 +8,7 @@
 			{{ h1("vpn overview") }}
 			<div class="flex-none">
 				{% if current_user.is_authenticated %}
-					{{ current_user.id }}
+					{{ current_user.username }}
 				{% endif %}
 			</div>
 		</div>

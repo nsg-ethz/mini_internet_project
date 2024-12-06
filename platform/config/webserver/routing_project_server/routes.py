@@ -3,14 +3,14 @@ from pathlib import Path
 from typing import Optional
 from urllib.parse import urlparse
 from flask import Blueprint, current_app, jsonify, request, redirect, render_template, url_for
-from flask_login import login_required, login_user
-from .services.login import LoginForm, User, check_user_pwd, get_current_users_group
+from flask_login import login_required, current_user
+from .services.login import authenticate_user
 from .services import parsers
 from .services.bgp_policy_analyzer import prepare_bgp_analysis
 from .services.matrix import prepare_matrix
 from .services.vpn import vpn_get_interfaces, vpn_get_peers, vpn_update_peer, vpn_send_conf, vpn_check_peer_permission
 from .app import basic_auth
-from .services.forms import PeerForm
+from .services.forms import PeerForm, LoginForm
 
 main_bp = Blueprint('main', __name__)
 
@@ -185,7 +185,7 @@ def vpn(interface_id:int = None, methods=['GET', 'POST']):
     if not current_app.config['VPN_ENABLED']:
         return "Not found", 404
 
-    ifs = vpn_get_interfaces(current_app.config['LOCATIONS']['vpn_db'], get_current_users_group())
+    ifs = vpn_get_interfaces(current_app.config['LOCATIONS']['vpn_db'], current_user.group_id)
     peers = []
 
     if interface_id:
@@ -217,8 +217,8 @@ def vpn_peer(peer_id):
         return "Not found", 404
     
     # Check if current user is allowed to access this peer's configuration
-    if not vpn_check_peer_permission(current_app.config['LOCATIONS']['vpn_db'], peer_id, get_current_users_group()):
-        print(f"Error: Group {get_current_users_group()} tried to access peer {peer_id}!")
+    if not vpn_check_peer_permission(current_app.config['LOCATIONS']['vpn_db'], peer_id, current_user.group_id):
+        print(f"Error: Group {current_user.group_id} tried to access peer {peer_id}!")
         return "Not found", 404
     
     # Send peer config to user
@@ -246,8 +246,7 @@ def login():
     form = LoginForm()
 
     if form.validate_on_submit():
-        if(check_user_pwd(form.username.data, form.password.data)):
-            login_user(User(form.username.data))
+        if authenticate_user(form.username.data, form.password.data):
             # flash('Logged in successfully.', 'success')
             next = request.args.get('next') or url_for('main.index')
             return redirect(next)

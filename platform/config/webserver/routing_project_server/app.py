@@ -26,7 +26,7 @@ from jinja2 import StrictUndefined
 
 from .services.bgp_policy_analyzer import prepare_bgp_analysis
 from.services.matrix import prepare_matrix
-from .services.login import csrf, login_manager
+from .services.login import login_init
 from .services.vpn import vpn_db_init, vpn_db_populate
 
 config_defaults = {
@@ -41,6 +41,7 @@ config_defaults = {
         "matrix": "../../../groups/matrix/connectivity.txt",
         "matrix_stats": "../../../groups/matrix/stats.txt",
         "vpn_folder":"wireguard",
+        "vpn_passwd":"../../../groups/vpn_passwords.json",
         "vpn_db":"../../../groups/vpn.db"
     },
     'KRILL_URL': "http://{hostname}:3080/index.html",
@@ -83,9 +84,7 @@ def create_app(config=None):
     app.register_blueprint(main_bp)
 
     # Initialize extensions
-    csrf.init_app(app)
-    login_manager.init_app(app)
-    login_manager.login_view = "main.login"
+    login_init(app)
     basic_auth.init_app(app) 
     vpn_db_init(app.config)
     vpn_db_populate(app.config)

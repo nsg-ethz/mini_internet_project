@@ -114,6 +114,12 @@ VPN_DNS_ENABLED=true
 # VPN_WEBSITE_ENABLED=fale
 VPN_WEBSITE_ENABLED=${VPN_ENABLED}
 
+# The file for the vpn database
+VPN_DB_FILE="vpn.db"
+
+# Path to the file where the vpn passwords for the webinterface are stored (relative to groups folder).
+VPN_PASSWD_FILE="vpn_passwords.json"
+
 # Restrict the number of clients that can connect to each interface:
 VPN_NO_CLIENTS=1
 
