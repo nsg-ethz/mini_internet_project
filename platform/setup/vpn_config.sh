@@ -50,7 +50,7 @@ for ((k = 0; k < group_numbers; k++)); do
 			if [[ ${client_no} > 1 ]]; then
 				peer_name="Client${client_no}"
 			else
-				peer_name=Client
+				peer_name=Peer
 			fi
 			create_wg_peer "${group_number}" "${router_name}" "${peer_name}" "${peer_ip}"
 			

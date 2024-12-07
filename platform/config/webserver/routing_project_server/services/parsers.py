@@ -362,7 +362,7 @@ def parse_wg_dump(filename: os.PathLike, interface_name="vpn"):
             parsed_peer['isConnected'] = 0
         else:
             lastSeen = datetime.fromtimestamp(raw_peer['latestHandshake'])
-            parsed_peer['lastSeen'] = lastSeen.strftime("%H:%M - %d %B")
+            parsed_peer['lastSeen'] = lastSeen.strftime("%H:%M (%d %B)")
             parsed_peer['isConnected'] = int((datetime.now() - lastSeen) < timedelta(seconds=150))
 
         # RX/TX values

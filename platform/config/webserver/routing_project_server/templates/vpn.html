@@ -1,15 +1,17 @@
 {% extends "base.html" %}
-{% from 'macros.html' import h1 %}
+{% from 'macros.html' import update_message, h1 %}
 
 {% block body %}
 <div class="max-w-4xl mx-auto px-6 pt-6 w-full">
-	<div>
-		<div class="flex flex-row justify-between">
+	<div class="flex flex-row justify-between">
+		<div class="flex flex-col">
 			{{ h1("vpn overview") }}
-			<div class="flex-none">
-				{% if current_user.is_authenticated %}
-					{{ current_user.username }}
-				{% endif %}
+			{% if interface_id is not none %}<p class="italic text-sm text-neutral-500 mb-4">updates every 30s, page reload required</p>{% endif %}
+		</div>
+		<div class="flex flex-col items-center self-center">
+			<div class="flex items-center space-x-2">
+				<p class="text-md font-bold text-neutral-700">{{ current_user.username }}</p>
+				<span class="text-neutral-500">👤</span>
 			</div>
 		</div>
 	</div>
@@ -38,89 +40,212 @@
 		</blockquote>
 	-->
 
-		<!-- Informational Message (Displayed only when no tab is selected) -->
-		{% if interface_id is none %}
+	<!-- Informational Message (Displayed only when no tab is selected) -->
+	{% if interface_id is none %}
+	<div
+		class="mb-8 p-4 text-md border-l-4 bg-neutral-100 text-neutral-700 border-neutral-400 flex flex-row items-center">
 		<div
-			class="mb-8 p-4 text-md border-l-4 bg-neutral-100 text-neutral-700 border-neutral-400 flex flex-row">
-			<div
-				class="flex shrink-0 items-center justify-center text-2xl row-span-2 w-12 h-12 mr-4 rounded-full bg-orange-300">
-				💬
-			</div>
-			<p>Welcome to the VPN Overview. <br>
-			   Please select a tab to view detailed information.</p>
+			class="flex shrink-0 items-center justify-center text-2xl row-span-2 w-12 h-12 mr-4 rounded-full bg-orange-300">
+			💬
 		</div>
-		{% endif %}
-
-		<!-- Tab Selector -->
-		<div class="mt-6 border-b border-neutral-300">
-			<div class="flex -mb-px space-x-6 flex-wrap justify-between">
-				<!-- Loop through tabs to generate the tab bar -->
-				{% for id, label in labels.items() %}
-				<a href="{{ url_for('.vpn', interface_id=id) }}" 
-					class="py-2 px-4 text-sm font-medium rounded-t-md 
-					{% if id |string == interface_id |string %}bg-white text-[#ff7e79] border-b-2 border-[#ff7e79]{% else %}text-neutral-600 hover:text-[#ff7e79]{% endif %}">
-					{{ label }}
-				</a>
-				{% endfor %}
-			</div>
+		<div>
+			<p>
+				Welcome to the VPN Overview. Select a router to get started. <br>
+				After creating a peer you can connect to the mini-internet using the 
+				<a href="https://www.wireguard.com/install/" class="text-[#ff7e79] underline">wireguard client</a>. <br> 
+				Click on "Show Configuration" and download the file. In your wireguard client, import the file or scan the QR-Code. 
+			</p>
+			<p class="italic">
+				Tip: You can rename a peer by clicking on the name.
+			</p>
 		</div>
+	</div>
+	{% endif %}
 
-		<!-- Current Tab Content -->
-		{% if interface_id is not none %}
-		<div id="tab-content" class="mt-4">
-			<div class="flex flex-wrap justify-center gap-8">
-				{% for peer in peer_forms %}
-				<form 
-							method="POST" 
-							action="{{ url_for('.vpn_peer', peer_id=peer.peer_id.data, next=request.url) }}" 
-							class="w-full flex items-center justify-center group-focus-within:visible"
-						>
-					{{ peer.hidden_tag() }}
-					<input type="hidden" name="enable_flag" value=1 />	<!-- Set this so we know that this client should be enabled when the form is submitted -->
+	<!-- Tab Selector -->
+	<div class="mt-6 border-b border-neutral-300">
+		<div class="flex -mb-px space-x-6 flex-wrap justify-between">
+			<!-- Loop through tabs to generate the tab bar -->
+			{% for id, label in labels.items() %}
+			<a href="{{ url_for('.vpn', interface_id=id) }}" 
+				class="py-2 px-4 text-sm font-medium rounded-t-md 
+				{% if id |string == interface_id |string %}bg-white text-[#ff7e79] border-b-2 border-[#ff7e79]{% else %}text-neutral-600 hover:text-[#ff7e79]{% endif %}">
+				{{ label }}
+			</a>
+			{% endfor %}
+		</div>
+	</div>
+
+	<!-- Current Tab Content -->
+	{% if interface_id is not none %}
+	<div id="tab-content" class="flex flex-wrap justify-center gap-8 mt-4">
+		{% for peer in peer_forms %}
+		<form 
+					class="w-full flex items-center justify-center"
+					method="POST" 
+					action="{{ url_for('.vpn_peer', peer_id=peer.peer_id.data, next=request.url) }}" 
+				>
+			{{ peer.hidden_tag() }}
+			<input type="hidden" name="enable_flag" value=1 />	<!-- Set this so we know that this client should be enabled when the form is submitted -->
+			
+			<!-- If the peer is in use, display detailed information -->
+			{% if peer.in_use.data %}
+			<div class="bg-white rounded-1 shadow-xl p-8 flex flex-col justify-between items-start w-full">
+				<!-- Top Section: Peer Name and Status -->
+				<div class="flex justify-between items-center w-full">
+					<!-- Peer Name -->
+					<h2 class="text-2xl font-semibold text-left">
+						{{ peer.peer_name(class=" rounded-sm p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#ff7e79]") }}
+					</h2>
 					
-					<!-- If the peer is in use, display detailed information -->
-					{% if peer.in_use.data %}
-					<div class="bg-white rounded-lg shadow-lg p-8 flex flex-col justify-center items-center max-w-xs w-full">
-						{{ peer.peer_name(class="text-2xl font-semibold text-center focus:border-2 focus:border-gray-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#ff7e79]") }}
-						{% for error in peer.peer_name.errors %}
-							<p class="text-red-500 text-sm mt-2">{{ error }}</p>
-						{% endfor %}
+					<!-- Status Indicator -->
+					<div class="flex items-center space-x-2">
+						{% if peer.isConnected.data %}
+						<!-- Green dot for 'Connected' -->
+						<span class="text-green-600 text-sm">Connected</span>
+						<div class="w-3 h-3 bg-green-500 rounded-full"></div>
+						{% elif peer.lastSeen.data == 'Never' %}
+						<!-- Red dot for 'Never' -->
+						<span class="text-red-600 text-sm">Never Seen</span>
+						<div class="w-3 h-3 bg-red-500 rounded-full"></div>
+						{% else %}
+						<!-- Orange dot for 'Last Seen' -->
+						<span class="text-orange-600 text-sm">Last Seen at {{ peer.lastSeen.data }}</span>
+						<div class="w-3 h-3 bg-orange-500 rounded-full"></div>
+						{% endif %}
+					</div>
+				</div>
 
-						<p class="mb-2"> {{ peer.ip_address.data }} </p>
-						<p class="mb-2"> {{ peer.lastSeen.data }} </p>
-						<p class="mb-2"> {{ peer.isConnected.data }} </p>
-						<p class="mb-2"> {{ peer.transferRxUnits.data }} </p>
-						<p class="mb-2"> {{ peer.transferTxUnits.data }} </p>
-						<p class="mb-2"> {{ peer.endpoint.data }} </p>
+				<!-- Second Row for stats and qrcode -->
+				<!-- Show stats and small qr code when device was connected earlier. -->
+				{% if peer.lastSeen.data != 'Never' %}
+				<div class="flex flex-col md:flex-row items-center md:justify-between w-full mt-4 mx-4">
+					<div class="flex flex-row gap-8">
+						<!-- Labels -->
+						<div class="flex flex-col">
+							<p class="flex flex-row items-center text-sm text-gray-600 h-8">IP Address</p>
+
+							<p class="flex flex-row items-center text-sm text-gray-600 h-8">Endpoint</p>
+							<p class="flex flex-row items-center text-sm text-gray-600 h-8">Received</p>
+							<p class="flex flex-row items-center text-sm text-gray-600 h-8">Transmitted</p>
+						</div>
+
+						<!-- Values -->
+						<div class="flex flex-col">
+							<p class="flex flex-row items-center  text-sm text-gray-600 h-8">{{ peer.ip_address.data }}</p>
+
+								<p class="flex flex-row items-center  text-sm text-gray-600 h-8">{{ peer.endpoint.data }}</p>
+								
+								<!-- Transfer RX (Down Arrow) -->
+								<div class="flex flex-row items-center text-sm text-gray-600 h-8">
+									<span class="text-xl ">&#8595;</span>
+									<p class="mx-2">{{ peer.transferRxUnits.data }}</p>
+								</div>
+
+								<!-- Transfer TX (Up Arrow) -->
+								<div class="flex flex-row items-center text-sm text-gray-600 h-8">
+									<span class="text-xl">&#8593;</span> 
+									<p class="mx-2">{{ peer.transferTxUnits.data }}</p>
+								</div>
+						</div>
+					</div>
+
+					<!-- QR Code Icon and Show Configuration Button -->
+					<div 
+						class="group relative flex flex-col items-center hover:text-[#ff7e79] px-4 cursor-pointer" 
+						onclick="document.getElementById('download_config_popup').classList.remove('hidden')">
+						<!-- Wrapper for QR Code Icons -->
+						<div class="relative w-[100px] h-[100px]">
+							<!-- Default QR Code Icon -->
+							<img src="{{ url_for('static', filename='qrcode_icon.png') }}" alt="QR Code Icon" 
+								class="absolute inset-0 w-full h-full object-contain transition-opacity duration-300 opacity-100 group-hover:opacity-0" />
+					
+							<!-- Hovered QR Code Icon (Colored version) -->
+							<img src="{{ url_for('static', filename='qrcode_icon_hover.png') }}" alt="Hovered QR Code Icon" 
+								class="absolute inset-0 w-full h-full object-contain transition-opacity duration-300 opacity-0 group-hover:opacity-100" />
+						</div>
+					
+						<!-- Show Configuration Link -->
+						<p class="mt-1 text-md font-bold transition duration-300 group-hover:text-[#ff7e79]">
+							Show Configuration
+						</p>
+					</div>
+				</div>
+				{% else %}
+				<!-- Show bigger qr code when no device was ever connected -->
+				<div class="flex flex-row justify-center w-full mx-4">
+					<!-- QR Code Icon and Show Configuration Button -->
+					<div 
+						class="group relative flex flex-col justify-self-center items-center hover:text-[#ff7e79] px-4 w-full cursor-pointer" 
+						onclick="document.getElementById('download_config_popup').classList.remove('hidden')">
+						<!-- Wrapper for QR Code Icons -->
+						<div class="relative w-[130px] h-[130px]">
+							<!-- Default QR Code Icon -->
+							<img src="{{ url_for('static', filename='qrcode_icon.png') }}" alt="QR Code Icon" 
+								class="absolute inset-0 w-full h-full object-contain transition-opacity duration-300 opacity-100 group-hover:opacity-0" />
+					
+							<!-- Hovered QR Code Icon (Colored version) -->
+							<img src="{{ url_for('static', filename='qrcode_icon_hover.png') }}" alt="Hovered QR Code Icon" 
+								class="absolute inset-0 w-full h-full object-contain transition-opacity duration-300 opacity-0 group-hover:opacity-100" />
+						</div>
+					
+						<!-- Show Configuration Link -->
+						<p class="mt-1 text-md font-bold transition duration-300 group-hover:text-[#ff7e79]">
+							Show Configuration
+						</p>
+					</div>
+				</div>
+				{% endif %}
+
+				<!-- Download Config Popup -->
+				<script>
+					// Close the popup when the Escape key is pressed
+					document.addEventListener('keydown', function(event) {
+						if (event.key === 'Escape' && !getElementById('download_config_popup').classList.contains('hidden')) {
+							getElementById('download_config_popup').classList.add('hidden')
+						}
+					});
+				</script>
+				<div id="download_config_popup" class="fixed inset-0 z-50 bg-black hidden bg-opacity-70 backdrop-blur-sm flex justify-center items-center">
+					<div class="relative bg-white rounded-lg shadow-2xl max-h-[80vh] min-w-[300px] p-8 flex flex-col justify-center items-center">
+						<!-- Close Button -->
+						<button onclick="document.getElementById('download_config_popup').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-[#ff7e79]">
+							<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+							</svg>
+						</button>
+						<h2 class="text-xl font-semibold text-gray-800 mb-4">Wireguard Configuration</h2>
 						<img 
 							src="data:image/png;base64,{{ peer.qr_image.data }}" 
 							alt="No qr-code found." 
-							class="w-full h-180 object-contain rounded-md"
+							class="h-[50vh] min-h-[200px] min-w-[200px] object-contain"
 						/>
-						<a href="{{ url_for('.vpn_peer', peer_id=peer.peer_id.data) }}" 
-						class="mt-6 px-6 py-3 bg-black text-white text-lg rounded-sm hover:bg-[#ff7e79] transition duration-300">
+						<a 
+							href="{{ url_for('.vpn_peer', peer_id=peer.peer_id.data) }}" 
+							class="px-4 py-2 text-white bg-black text-lg hover:bg-[#ff7e79] transition duration-300 mt-2 rounded-1">
 							Download Config
-						</a>
+						</a> 
 					</div>
-					{% endif  %}
-
-					<!-- If the peer is NOT in use, display an add button -->
-					{% if not peer.in_use.data %}
-					{{ peer.peer_name(class="hidden") }}
-					<a 
-						class="bg-neutral-200 rounded-lg shadow-lg p-8 flex flex-col justify-center items-center max-w-xs w-full group cursor-pointer min-h-[500px] h-[50vh]"
-						href="#"
-        				onclick="event.preventDefault(); this.closest('form').submit();"
-					>
-						<p class="text-5xl font-bold text-neutral-600 group-hover:text-[#ff7e79] transition duration-300"> + </p>
-						<p class="mt-4 text-neutral-600 group-hover:text-[#ff7e79] transition duration-300">Add Peer</p>
-					</a>
-					{% endif  %}
-				</form>
-				{% endfor %}
+				</div>
 			</div>
-		</div> 
-		{% endif %}
+			{% endif %}
+
+			<!-- If the peer is NOT in use, display an add button -->
+			{% if not peer.in_use.data %}
+			{{ peer.peer_name(class="hidden") }}
+			<a 
+				class="bg-white rounded-1 shadow-xl p-4 flex flex-col justify-center items-center w-full group cursor-pointer"
+				href="#"
+				onclick="event.preventDefault(); this.closest('form').submit();"
+			>
+				<p class="text-5xl font-bold text-neutral-600 group-hover:text-[#ff7e79] transition duration-300"> + </p>
+				<p class="mt-4 text-neutral-600 group-hover:text-[#ff7e79] transition duration-300">Add Peer</p>
+			</a>
+				{% endif  %}
+		</form>
+		{% endfor %}
+	</div>
+	{% endif %}
 
 	</div>
 </div>
