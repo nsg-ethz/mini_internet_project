@@ -20,7 +20,6 @@ DIRECTORY=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && cd ../.
 groups_directory="${DIRECTORY}"/groups/
 
 source "${DIRECTORY}"/config/variables.sh
-source "${DIRECTORY}"/config/subnet_config.sh
 source "${DIRECTORY}"/groups/docker_pid.map
 
 # read configs
@@ -91,7 +90,7 @@ check_if_up() {
 }
 
 
-# Creates a new interface for group $1, connected to router $2
+# Creates a new interface for group $1, connected to router $2. $3 = IP Address
 create_if() {
 	if [[ $(check_if_exists $1 $2 ) == 1 ]]; then
 		echo "Error: A wireguard interface already exists!"
@@ -107,7 +106,7 @@ create_if() {
 	listen_port=$(get_port $1 $2)
 	
 	router_number=$(get_router_number "$1" "$2")
-	ip_address=$(subnet_router_VPN_interface "$1" "$router_number")
+	ip_address=${3}
 
 	# Save configuration and public key
 	printf "[Interface]\nPrivateKey=%s\nListenPort=%s\n\n" ${private_key} ${listen_port} | tee "${path_to_file}"/interface.conf > /dev/null
@@ -124,8 +123,13 @@ create_if() {
 	# Configure interface
 	nsenter --net=/proc/"${PID}"/ns/net ip address add "${ip_address}" dev vpn 
 	docker exec -u root "$(get_container_name $1 $2)" wg setconf vpn /etc/wireguard/interface.conf
-
+	
 	nsenter --net=/proc/"${PID}"/ns/net ip link set vpn up
+	
+	# Set up rate limits
+	if [[ ${VPN_LIMIT_ENABLED} == true  ]]; then
+		nsenter --net=/proc/"${PID}"/ns/net tc qdisc add dev vpn root tbf rate ${VPN_LIMIT_RATE} burst ${VPN_LIMIT_BURST} latency ${VPN_LIMIT_LATENCY}
+	fi
 
 	# Set firewall exception	
 	ufw allow "${listen_port}" > /dev/null

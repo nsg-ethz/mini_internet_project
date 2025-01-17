@@ -42,11 +42,11 @@ for ((k = 0; k < group_numbers; k++)); do
 		router_number=($i + 1)
                 router_name="${router_i[0]}"
 		
-		create_if "${group_number}" "${router_name}" > /dev/null
-		interface_ip=$(subnet_router_VPN_interface "${group_number}" "${router_number}")
+		interface_ip=$(subnet_host_router "${group_number}" "${router_number}" vpn_interface)
+		create_if "${group_number}" "${router_name}" "${interface_ip}"> /dev/null
 		
 		for ((client_no = 1; client_no <= "${VPN_NO_CLIENTS}"; client_no++)); do
-			peer_ip=$(subnet_router_VPN_peer "${group_number}" "${router_number}" "${client_no}")
+			peer_ip=$(subnet_host_router "${group_number}" "${router_number}" vpn_peer "${client_no}")
 			if [[ ${client_no} > 1 ]]; then
 				peer_name="Client${client_no}"
 			else

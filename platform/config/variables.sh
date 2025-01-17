@@ -123,4 +123,10 @@ VPN_PASSWD_FILE="vpn_passwords.json"
 # Restrict the number of clients that can connect to each interface:
 VPN_NO_CLIENTS=1
 
+# Rate limits for wireguard interface
+VPN_LIMIT_ENABLED=true
+VPN_LIMIT_RATE="10mbit"
+VPN_LIMIT_BURST="32kbit"
+VPN_LIMIT_LATENCY="400ms"
+
 # Note: The IP subnets for the VPN are declared in config/subnet_config.sh 
