@@ -6,12 +6,36 @@ set -o nounset
 
 DIRECTORY="$1"
 
+# Check if user has su rights
+if [ $USER != root ] ; then
+        echo "script needs to be executed with superuser rights!";
+        exit 1
+fi
+
 source "${DIRECTORY}"/config/variables.sh
 source "${DIRECTORY}"/config/subnet_config.sh
 
 if [ ${VPN_ENABLED} = false ]; then
 	echo "VPN not enabled, skipping VPN setup"
 	exit 0 
+fi
+
+# Check if wireguard is installed.
+if command -v wg > /dev/null 2>&1; then 
+	echo "WireGuard is already installed. Proceeding."
+else 
+	echo "WireGuard is not installed. Installing WireGuard."
+	
+	# Install wireguard
+	sudo apt update && sudo apt install -y wireguard-tools
+
+	
+	if command -v wg > /dev/null 2>&1; then 
+		echo "WireGuard sucessfully installed. Proceeding."
+	else 
+		echo "WireGuard installation failed. Skipping VPN setup."
+		exit 0
+	fi
 fi
 
 # read configs
