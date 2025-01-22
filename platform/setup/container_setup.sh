@@ -223,7 +223,8 @@ for ((k = 0; k < group_numbers; k++)); do
                         -v /etc/timezone:/etc/timezone:ro \
                         --log-opt max-size=1m --log-opt max-file=3 \
                         --network="${ssh_to_ctn_bname}" --ip="${subnet_ssh_router%/*}" \
-                        "${DOCKERHUB_PREFIX}d_router" > /dev/null
+                        --env "VPN_OBSERVER_SLEEP=${VPN_OBSERVER_SLEEP}" \
+			"${DOCKERHUB_PREFIX}d_router" > /dev/null
 
                     # rename eth0 interface to ssh in the router container
                     docker exec "${group_number}""_""${rname}""router" ip link set dev eth0 down

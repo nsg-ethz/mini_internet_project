@@ -120,12 +120,15 @@ VPN_DB_FILE="vpn.db"
 # Path to the file where the vpn passwords for the webinterface are stored (relative to groups folder).
 VPN_PASSWD_FILE="vpn_passwords.json"
 
+# Each router container has an observer process that gets the interface status in a fixed interval
+VPN_OBSERVER_SLEEP=30
+
 # Restrict the number of clients that can connect to each interface:
 VPN_NO_CLIENTS=1
 
 # Rate limits for wireguard interface
-VPN_LIMIT_ENABLED=true
-VPN_LIMIT_RATE="10mbit"
+VPN_LIMIT_ENABLED=false
+VPN_LIMIT_RATE="1mbit"
 VPN_LIMIT_BURST="32kbit"
 VPN_LIMIT_LATENCY="400ms"
 

@@ -68,5 +68,5 @@ do
     	if [[ -s /tmp/wg_dump.txt ]]; then
 		print_json < /tmp/wg_dump.txt > /etc/wireguard/status.json
 	fi
-	sleep 30
+	sleep ${VPN_OBSERVER_SLEEP}
 done

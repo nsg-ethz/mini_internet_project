@@ -14,7 +14,7 @@ subnet_group() {
 }
 
 subnet_host_router() {
-  local n_grp="$1" n_router="$2" device="$3"
+  local n_grp="$1" n_router="$2" device="$3" n_vpn_peer="${4:-1}"
 
   if [ "$device" = "host" ]; then
 
@@ -28,6 +28,14 @@ subnet_host_router() {
 
     echo "${n_grp}"".""$(($n_router + 101))"".0.0/24"
 
+  elif [ "$device" = "vpn_interface" ]; then
+
+    echo "${n_grp}"".""$(($n_router + 101))"".10.1/24"
+	  
+  elif [ "$device" = "vpn_peer" ]; then
+
+    echo "${n_grp}"".""$(($n_router + 100))"".10.""$((1+$n_vpn_peer))""/32"
+  
   else
 
     echo "subnet_host_router: unknown device $device" 1>&2
@@ -226,18 +234,6 @@ subnet_router_DNS() {
     exit 1
 
   fi
-}
-
-subnet_router_VPN_interface() {
-    local n_grp="$1" n_router="$2"
-
-    echo "${n_grp}.$((50+$n_router)).0.1/24"
-}
-
-subnet_router_VPN_peer() {
-    local n_grp="$1" n_router="$2" n_peer="$3"
-
-    echo "${n_grp}.$((50 + $n_router)).0.$((1 + $n_peer))/32"
 }
 
 subnet_ext_sshContainer() {
