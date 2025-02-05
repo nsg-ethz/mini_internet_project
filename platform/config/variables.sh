@@ -23,7 +23,7 @@ SSH_URL="ee-tik-nsgvm073.ethz.ch"
 # You need to specify the hostname of the server and an email for
 # LetsEncrypt to be enabled.
 # UPDATE THOSE VARIABLES. WEBSERVER_HOSTNAME -> hostname of the server and EMAIL -> empty string (for http)
-WEBSERVER_HOSTNAME="ee-tik-nsgvm073.ethz.ch"
+WEBSERVER_HOSTNAME="localhost"
 WEBSERVER_ACME_MAIL="nsg@ethz.ch"
 # Hostname and ports for the webserver and krill on the host.
 # (must be publicly available)
@@ -127,7 +127,7 @@ VPN_OBSERVER_SLEEP=30
 VPN_NO_CLIENTS=1
 
 # Rate limits for wireguard interface
-VPN_LIMIT_ENABLED=false
+VPN_LIMIT_ENABLED=true
 VPN_LIMIT_RATE="1mbit"
 VPN_LIMIT_BURST="32kbit"
 VPN_LIMIT_LATENCY="400ms"

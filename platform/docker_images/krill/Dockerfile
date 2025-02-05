@@ -1,8 +1,8 @@
 # -- stage 1: build static krill with musl libc for alpine
-FROM d_base:latest as build
+FROM d_base:latest AS build
 
 # Specify what version of krill should be built.
-ARG KRILL_VERSION=0.9.0-rc2
+ARG KRILL_VERSION=0.14.0
 
 RUN apk add wget openssl-dev patch rust cargo
 
@@ -22,8 +22,8 @@ RUN cargo build \
 FROM d_base_supervisor:latest
 COPY --from=build /tmp/krill/target/x86_64-alpine-linux-musl/release/krill /usr/local/bin/
 COPY --from=build /tmp/krill/target/x86_64-alpine-linux-musl/release/krillc /usr/local/bin/
-COPY --from=build /tmp/krill/target/x86_64-alpine-linux-musl/release/krillpubd /usr/local/bin/
-COPY --from=build /tmp/krill/target/x86_64-alpine-linux-musl/release/krillpubc /usr/local/bin/
+#COPY --from=build /tmp/krill/target/x86_64-alpine-linux-musl/release/krillpubd /usr/local/bin/
+#COPY --from=build /tmp/krill/target/x86_64-alpine-linux-musl/release/krillpubc /usr/local/bin/
 
 RUN apk add --no-cache haproxy curl rsync libgcc ca-certificates openssl openssh-server \
     && ssh-keygen -A \
