@@ -29,7 +29,7 @@
   % Hijack ASes have a different shape,
   hijack/.style={stub, regular polygon, regular polygon sides=6},
   % How to draw IXPs
-  ixp/.style={rounded rectangle, draw, semithick, minimum height=6mm, minimum width=18mm, font={\ttfamily}},
+  ixp/.style={rounded rectangle, draw, fill=white, semithick, minimum height=6mm, minimum width=18mm, font={\ttfamily}},
   % Style of peer2peer links
   peer/.style={draw=ForestGreen, thick, densely dashed},
   % Style of customer-provider links
@@ -38,8 +38,12 @@
 
 % ------------------------------------------------
 % Enable Stub Hijacks (adds two ASes to each zone)
-% -----------------------------------------------
-\def\EnableStubHijacks{}
+% ------------------------------------------------
+\def\EnableStubHijacks{} % Commend this line out to disable.
+% -------------------------------
+% Make the background transparent
+% -------------------------------
+\def\TransparentBackground{} % Comment this line out to disable.
 
 \tikzmath{
   integer \zones, \studentAsPerZone, \asPerZone, \zoneStep, \firstIxp, \ixp, \i, \start;
@@ -54,9 +58,13 @@
   \radiusIxp = 4;        % How far IXPs are from the center IXP.
   \radiusZone = 2;       % How far the tier-1 ASes of each group are from the center IXP.
   \legendPos = (5, -4);  % Location of the legend
-  % -------------------------------------------
-  % BELOW THIS POINT, nothing needs to be changed.
-  % -------------------------------------------
+}
+
+% -------------------------------------------
+% BELOW THIS POINT, NOTHING MUST BE CHANGED.
+% -------------------------------------------
+
+\tikzmath{
   \asPerZone = \studentAsPerZone + 4;
   \angleStep = 360 / \zones;
   \zoneStep = 10 * ceil((\asPerZone + 1) / 10);
@@ -164,30 +172,38 @@
 }
 
 % Legend
-\begin{scope}[shift=(\legendPos), yscale=0.5, legend/.style={inner sep=2mm, anchor=west}, small/.style={minimum size=4mm}]
+\begin{scope}[shift=(\legendPos), yscale=0.5, legend/.style={inner sep=2mm, anchor=west}, small/.style={minimum size=4mm}, local bounding box=legend box]
   \node[legend] at (0,-0) (l1) {Tier 1 AS};  \node[left=0mm of l1, tier 1,  small] {};
   \node[legend] at (0,-1) (l2) {Tier 2 AS};  \node[left=0mm of l2, tier 2,  small] {};
   \node[legend] at (0,-2) (l3) {Stub AS};    \node[left=0mm of l3, stub,    small] {};
 
   \node[legend] at (0,-3.5) (l4) {Student managed}; \node[left=0mm of l4, student managed, circle,  small] {};
   \ifdefined\EnableStubHijacks
-  \node[legend] at (0,-4.5) (l4b) {Malicious AS}; \node[left=0mm of l4b, hijack, thick, small] {};
-  \node[legend] at (0,-6) (l5) {provider/customer link}; \draw[prov] (l5.west) -- ++(-0.6, 0);
-  \node[legend] at (0,-7) (l6) {peer/peer link};         \draw[peer] (l6.west) -- ++(-0.6, 0);
-  \else
-  \node[legend] at (0,-5) (l5) {provider/customer link}; \draw[prov] (l5.west) -- ++(-0.6, 0);
-  \node[legend] at (0,-6) (l6) {peer/peer link};         \draw[peer] (l6.west) -- ++(-0.6, 0);
+    \node[legend] at (0,-4.5) (l4b) {Malicious AS}; \node[left=0mm of l4b, hijack, thick, small] {};
   \fi
 
+  \ifdefined\EnableStubHijacks \begin{scope}[yshift=-1cm] \fi % shift down everything that follows by 1 unit
+  \node[legend] at (0,-5) (l5) {provider/customer link}; \draw[prov] (l5.west) -- ++(-0.4, 0);
+  \node[legend] at (0,-6) (l6) {peer/peer link};         \draw[peer] (l6.west) -- ++(-0.4, 0);
+  \ifdefined\EnableStubHijacks \end{scope} \fi % close the scope for the shift
+
+  \ifdefined\TransparentBackground
+    \begin{pgfonlayer}{background}
+      \fill[white] ($(legend box.south west) - (2mm, 2mm)$) rectangle ($(legend box.north east) + (2mm, 2mm)$);
+    \end{pgfonlayer}
+  \fi
 \end{scope}
 
 \begin{scope}[shift={(-7, 3.0)}, transform shape]
 \end{scope}
 
 
-\begin{pgfonlayer}{background}
-  \fill[white] (current bounding box.north west) rectangle (current bounding box.south east);
-\end{pgfonlayer}
+\ifdefined\TransparentBackground
+\else
+  \begin{pgfonlayer}{background}
+    \fill[white] (current bounding box.north west) rectangle (current bounding box.south east);
+  \end{pgfonlayer}
+\fi
 
 \end{tikzpicture}
 \end{document}
