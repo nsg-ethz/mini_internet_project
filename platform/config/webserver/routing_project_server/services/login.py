@@ -36,10 +36,26 @@ def login_init(app):
         login_db_populate(app.config['LOCATIONS'])
 
 
+def load_passwd(file):
+    users = []
+    lines = file.read().splitlines()
+    for line in lines:
+        if len(line.split()) != 2:
+            continue
+        user = {}
+        group_id, passwd = line.replace("\n","").split()
+        user["group_id"] = group_id
+        user["username"] = f"Group {group_id}"
+        user["password"] = passwd
+        users.append(user)
+
+    return users
+
+
 def login_db_populate(locations):
     try:
         with open(Path(locations['vpn_passwd']), 'r') as file:
-            user_data = json.load(file)
+            user_data = load_passwd(file)
             
         for user in user_data:
             conn = sqlite3.connect(locations['vpn_db'])

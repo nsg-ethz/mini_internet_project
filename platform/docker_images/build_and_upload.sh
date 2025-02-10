@@ -7,7 +7,7 @@ set -o pipefail
 set -o nounset
 
 images=(base base_supervisor host router ixp ssh measurement dns switch matrix vpn vlc hostm routinator krill webserver history)
-images=(krill webserver history)
+#images=(webserver)
 for image in "${images[@]}"; do
     echo 'Build '$image
     docker build --tag="d_${image}" "docker_images/${image}/"

@@ -45,19 +45,21 @@ group_numbers=${#groups[@]}
 # import wireguard scripts
 source "${DIRECTORY}"/utils/vpn/interface_manager.sh
 
-echo "[" >> "${DIRECTORY}"/groups/"${VPN_PASSWD_FILE}"
+#echo "[" >> "${DIRECTORY}"/groups/"${VPN_PASSWD_FILE}"
 
 # loop through every existing router and set up a wireguard interface.
-for ((k = 0; k < group_numbers; k++)); do
+create_vpn(){
+
+	k=$1
         group_k=(${groups[$k]})
         group_number="${group_k[0]}"
         group_as="${group_k[1]}"
         group_router_config="${group_k[3]}"
 	
         if [ "${group_as}" != "IXP" ]; then
-            if [[ ${VPN_WEBSITE_ENABLED} == true ]]; then
-		echo '{"group_id":'${group_number}', "username":"Group '${group_number}'", "password":"'$(openssl rand -base64 12)'"},' >> "${DIRECTORY}"/groups/"${VPN_PASSWD_FILE}"
-	    fi
+            #if [[ ${VPN_WEBSITE_ENABLED} == true ]]; then
+		#echo '{"group_id":'${group_number}', "username":"Group '${group_number}'", "password":"'$(openssl rand -base64 12)'"},' >> "${DIRECTORY}"/groups/"${VPN_PASSWD_FILE}"
+	    #fi
 		
 	    readarray routers < "${DIRECTORY}"/config/$group_router_config
 	    n_routers=${#routers[@]}
@@ -84,8 +86,15 @@ for ((k = 0; k < group_numbers; k++)); do
 	    done		
         fi
 	echo "Configured VPN of group ${group_number} "
+}
+
+for ((k = 0; k < group_numbers; k++)); do
+
+    create_vpn $k
+
 done
 
+wait
 # Remove trailing comma and close the list
-sed -i '${s/,$//}' "${DIRECTORY}"/groups/"${VPN_PASSWD_FILE}"
-echo "]" >> "${DIRECTORY}"/groups/"${VPN_PASSWD_FILE}"
+#sed -i '${s/,$//}' "${DIRECTORY}"/groups/"${VPN_PASSWD_FILE}"
+#echo "]" >> "${DIRECTORY}"/groups/"${VPN_PASSWD_FILE}"

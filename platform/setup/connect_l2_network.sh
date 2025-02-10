@@ -35,7 +35,9 @@ readarray ASConfig < "${DIRECTORY}"/config/AS_config.txt
 GroupNumber=${#ASConfig[@]}
 
 # TODO: Specify link properties to a gateway router in a config file instead.
-for ((k = 0; k < GroupNumber; k++)); do
+
+connect_l2(){
+    k=$1 
     GroupK=(${ASConfig[$k]})           # group config file array
     GroupAS="${GroupK[0]}"             # ASN
     GroupType="${GroupK[1]}"           # IXP/AS
@@ -122,5 +124,8 @@ for ((k = 0; k < GroupNumber; k++)); do
         done
         echo "Connected L2 network in group ${GroupAS}"
     fi
+}
+for ((k = 0; k < GroupNumber; k++)); do
+     connect_l2 $k &
 done
 wait

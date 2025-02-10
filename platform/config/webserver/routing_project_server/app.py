@@ -41,7 +41,7 @@ config_defaults = {
         "matrix": "../../../groups/matrix/connectivity.txt",
         "matrix_stats": "../../../groups/matrix/stats.txt",
         "vpn_folder":"wireguard",
-        "vpn_passwd":"../../../groups/vpn_passwords.json",
+        "vpn_passwd":"../../../groups/passwords.txt",
         "vpn_db":"../../../groups/vpn.db"
     },
     'KRILL_URL': "http://{hostname}:3080/index.html",
@@ -57,7 +57,8 @@ config_defaults = {
     'MATRIX_CACHE': '/tmp/cache/matrix.pickle',
     'ANALYSIS_CACHE': '/tmp/cache/analysis.db',
     'VPN_ENABLED':True,
-    'VPN_NO_CLIENTS':1
+    'VPN_NO_CLIENTS':1,
+    'CHATBOT_INTEGRATION':True
 }
 
 # TODO: This is kind of ugly:

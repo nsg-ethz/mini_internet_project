@@ -2,8 +2,8 @@ import math
 from pathlib import Path
 from typing import Optional
 from urllib.parse import urlparse
-from flask import Blueprint, current_app, jsonify, request, redirect, render_template, url_for
-from flask_login import login_required, current_user
+from flask import Blueprint, current_app, jsonify, request, redirect, render_template, url_for, flash
+from flask_login import login_required, current_user, logout_user
 from .services.login import authenticate_user
 from .services import parsers
 from .services.bgp_policy_analyzer import prepare_bgp_analysis
@@ -164,6 +164,12 @@ def krill():
     krill_url = current_app.config['KRILL_URL'].format(hostname=hostname)
     return render_template("krill.html", krill_url=krill_url)
 
+@main_bp.route("/chatbot")
+def chatbot():
+    """Allow access to the chatbot as an iframe. """
+    chatbot_url = "https://de.wikipedia.org/wiki/Chatbot"
+    return render_template("ta-bot.html", chatbot_url=chatbot_url) 
+
 @main_bp.route("/bgp-analysis")
 @basic_auth.required
 def bgp_analysis():
@@ -247,14 +253,22 @@ def login():
 
     if form.validate_on_submit():
         if authenticate_user(form.username.data, form.password.data):
-            # flash('Logged in successfully.', 'success')
+            flash('Logged in successfully.', 'success')
             next = request.args.get('next') or url_for('main.index')
             return redirect(next)
         else:
-            # flash('Wrong username or password', 'danger')
+            flash('Wrong username or password')
             pass
 
     return render_template(                                                                       
         "login.html", 
         form=form
-    )  
+    )
+
+@main_bp.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    flash('You have successfully logged out', "success")
+    return redirect('/')
+

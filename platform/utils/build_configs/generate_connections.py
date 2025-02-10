@@ -58,10 +58,10 @@ import math
 # If true, stub ASes in the same area try to hijack each others prefixes. Also,
 # add two TA-configured ASes between the stubs and student ASes so that no
 # student AS is directly connected to a malicious AS.
-ENABLE_STUB_HIJACKS = False
+ENABLE_STUB_HIJACKS = True
 
 # Set true to test the topology.
-AUTOCONF_EVERYTHING = False
+AUTOCONF_EVERYTHING = True
 
 # If true, links between student ASes are only assigned a subnet in the
 # aslevel_links_students.txt file. If False, they are assigned an IP address.
@@ -75,9 +75,9 @@ BUFFER_ADVERTISES_ALL_VIA_IXP = True
 # Size of the topology.
 # ---------------------
 
-AREAS = 2
-CONFIGURABLE_PER_AREA = 2  # Number of ASes that can be configured by students.
-FIRST_IXP = 80
+AREAS = 6
+CONFIGURABLE_PER_AREA = 8  # Number of ASes that can be configured by students.
+FIRST_IXP = 140
 
 # Define the connections and roles of the ASes in each topology.
 # --------------------------------------------------------------

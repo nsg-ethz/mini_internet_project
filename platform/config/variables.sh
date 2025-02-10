@@ -39,6 +39,11 @@ WEBSERVER_TZ="Europe/Zurich"
 # If you want your own webserver files instead add the filepath here (relative to the platform/config folder)
 WEBSERVER_SOURCEFILES="/webserver"
 
+# This year we are adding a chatbot to help the students with the project
+# By enabling this a new tab will be added which is used to connect to the chatbot webserver
+CHATBOT_INTEGRATION=true
+
+
 # =============================================================================
 # Connections
 # =============================================================================
@@ -118,7 +123,7 @@ VPN_WEBSITE_ENABLED=${VPN_ENABLED}
 VPN_DB_FILE="vpn.db"
 
 # Path to the file where the vpn passwords for the webinterface are stored (relative to groups folder).
-VPN_PASSWD_FILE="vpn_passwords.json"
+VPN_PASSWD_FILE="passwords.txt"
 
 # Each router container has an observer process that gets the interface status in a fixed interval
 VPN_OBSERVER_SLEEP=30

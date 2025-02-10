@@ -31,8 +31,9 @@ source "${DIRECTORY}"/setup/_connect_utils.sh
 readarray ASConfig < "${DIRECTORY}"/config/AS_config.txt
 GroupNumber=${#ASConfig[@]}
 
-for ((k = 0; k < GroupNumber; k++)); do
-    (
+connect_internal() {
+
+	k=$1
         GroupK=(${ASConfig[$k]})               # group config file array
         GroupAS="${GroupK[0]}"                 # ASN
         GroupType="${GroupK[1]}"               # IXP/AS
@@ -55,6 +56,12 @@ for ((k = 0; k < GroupNumber; k++)); do
             done
         echo "Connected internal routers in group ${GroupAS}"
         fi
-    )
+}
+
+for ((k = 0; k < GroupNumber; k++)); do
+
+   connect_internal $k &
+
 done
+
 wait
