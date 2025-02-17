@@ -2,87 +2,65 @@
 
 The documentation is available in the [**wiki**](https://github.com/nsg-ethz/mini_internet_project/wiki).
 
-### 2024 Routing project (25 March!)
+### 2025 Routing project (23 March!)
 
--[x] Fix the website/krill unreachable issue.
+-[x] Design this year's topology (Central Europe).
 
--[ ] Finish and test the new restart script for each containers.
-     Alex: I added the MATRIX because I needed to restart it :D
+-[x] Update and fix routinator and krill
 
--[x] Design this year's topology (Africa).
+-[x] Fix the autograder
 
 -[x] Adjust and test the configuration for the new topology using the same tasks as last year.
 
--[ ] Adjust the matrix based on Laurent's feedback.
-     Allow to disable validity checking.
-     Alex: Need to update webserver, not matrix.
-     Not sure if reallt needed.
+-[x] Fix saving (some issue with the script?)
 
--[x] Adjust the wiki based on Romain and Laurent's feedback
+-[ ] Fix the website/krill unreachable issue.
 
-    - [x] mention `advertised-route` in the wiki
-    - [x] more on community list semantics
-    - [x] adjust command examples ,e.g., `neighbor 11.11.11.11`
+-[ ] Finish and test the new restart script for each containers.
 
--[x] Contact sysadmin to open ports.
+-[ ] Adjust the wiki
 
--[x] Launch a medium-sized topology and contact student TAs to solve it.
+-[ ] Contact sysadmin to open ports.
+
+-[ ] Launch a medium-sized topology and contact student TAs to solve it.
 
 -[ ] Generate student Gitlab repositories.
 
 -[ ] Search for all FIXME and TODOs and address them.
 
--[x] Test launch traceroute and the matrix. I'm not sure I understand the matrix updates.
-
--[x] Test goto commands, also in stub and tier1.
-
 -[ ] Is the examples folder of any use nowadays? Maybe just remove it.
 
--[x] Can I get from one ssh proxy to another via the network? Or ping others via the ssh proxy?
-     I think this is working as intended.
+-[ ] Can I get from one ssh proxy to another via the network? Or ping others via the ssh proxy?
 
 -[ ] Test restarting any container.
 
 -[ ] Plenty of scripts in /groups are not used anymore. Are they still created? check that.
 
--[x] Uncomment hijack.
+-[ ] Uncomment hijack.
 
--[ ] VPN?
+-[ ] VPN
 
--[x] Add ./go-to MEASUREMENT?
+-[ ] Add ./go-to MEASUREMENT?
 
--[x] Create a MEASUREMENT Welcome message.
+-[ ] Create a MEASUREMENT Welcome message.
 
-
--[x] Ask student TAs to check: downloading configs, L2 stuff, 6in4 tunnel, goto scripts, dns output.
-
--[x] Collect all variables in one file for easier config.
-
--[x] Add new matrix flags.
-
--[x] Fix saving (some issue with the script?)
+-[ ] Ask student TAs to check: downloading configs, L2 stuff, 6in4 tunnel, goto scripts, dns output.
 
 ### Checklist for the final reboot.
 
-I've done a couple of fixes that won't show up until the final reboot.
-Here's a checklist of things to verify.
+-[ ] Do router-host interfaces show up in DNS, e.g. run a traceroute from CAIR host in group 10 to host.cape.group10, and see whether the first hop 10.101.0.2 is resolved.
 
--[x] Do router-host interfaces show up in DNS, e.g. run a traceroute from CAIR host in group 10 to host.cape.group10, and see whether the first hop 10.101.0.2 is resolved.
+-[ ] Is one of the provider/customer links delayed? 25ms vs 2.5ms.
 
--[x] Is one of the provider/customer links delayed? 25ms vs 2.5ms.
+-[ ] Check the ./goto script for TA ASes e.g. AS 11; there should not be multiple router entries.
 
--[x] Check the ./goto script for TA ASes e.g. AS 11; there should not be multiple router entries.
-
--[x] Check that saving does not throw an error anymore.
+-[ ] Check that saving does not throw an error anymore.
 
 ### Critical tasks remaining
 
--[x] Set up automated snapshots. I think putting it in a container would be best.
+-[ ] Set up automated snapshots. I think putting it in a container would be best.
 
--[x] Fix the hijack (other topology was needed).
-
--[x] Go over TODOs and FIXMEs and see if anything really important is left.
-     Yu checked, they can wait until we merge the branch back.
+-[ ] Go over TODOs and FIXMEs and see if anything really important is left.
 
 ### Things to do when merging back into the main branch
 
