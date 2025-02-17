@@ -60,7 +60,7 @@
         style="grid-template-columns: min-content() fit-content(200px)  min-content();">
         <!-- First row: reset button. -->
         <div class="col-span-3 justify-self-center">
-            <form action="{{url_for('as_connections')}}">
+            <form action="{{url_for('main.as_connections')}}">
                 <button type="submit" class="rounded border p-0 px-4
                     text-black border-black
                     disabled:text-neutral-400 disabled:border-neutral-300
@@ -73,12 +73,12 @@
         <div class="mb-2 px-4">
             <select class="bg-transparent font-bold border-0 border-b-2 border-neutral-400 hover:border-[#ff7e79]"
                 onchange="if (this.value) window.location.href=this.value">
-                <option {% if group is none %}selected{%endif%} value="{{url_for('as_connections', group=None)}}">
+                <option {% if group is none %}selected{%endif%} value="{{url_for('main.as_connections', group=None)}}">
                     any AS
                 </option>
                 {% for _group in dropdown_groups|sort %}
                 {# Always reset second field. #}
-                <option {% if _group==group %}selected{%endif%} value="{{url_for('as_connections', group=_group)}}">
+                <option {% if _group==group %}selected{%endif%} value="{{url_for('main.as_connections', group=_group)}}">
                     AS {{_group}}
                 </option>
                 {% endfor %}
@@ -89,13 +89,13 @@
             <select
                 class="max-w-4xl m-2 bg-transparent font-bold border-0 border-b-2 border-neutral-400 hover:border-[#ff7e79]"
                 onchange="if (this.value) window.location.href=this.value">
-                <option {% if othergroup is none %}selected{%endif%} value="{{url_for('as_connections', group=group)}}">
+                <option {% if othergroup is none %}selected{%endif%} value="{{url_for('main.as_connections', group=group)}}">
                     any AS
                 </option>
                 {% for _group in dropdown_others|sort %}
                 {# If group is None, selecting other selects group instead. #}
                 <option {% if _group==othergroup %}selected{%endif%}
-                    value="{{url_for('as_connections', group=group if group is not none else _group, othergroup=_group if group is not none else None)}}">
+                    value="{{url_for('main.as_connections', group=group if group is not none else _group, othergroup=_group if group is not none else None)}}">
                     AS {{_group}}
                 </option>
                 {% endfor %}

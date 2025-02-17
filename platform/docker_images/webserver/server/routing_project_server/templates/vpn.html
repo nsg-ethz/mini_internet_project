@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% from 'macros.html' import h1 %}
+
+{% block body %}
+<div class="max-w-4xl mx-auto px-6 pt-6 w-full">
+	<div>
+		<div class="flex flex-row justify-between">
+			{{ h1("vpn overview") }}
+			<div class="flex-none">
+				{% if current_user.is_authenticated %}
+					{{ current_user.id }}
+				{% endif %}
+			</div>
+		</div>
+	</div>
+	<!--
+	<div class="max-w-4xl mx-auto px-6 mb-16">
+		<blockquote class="relative m-4 mb-8 p-4 text-md border-l-4 bg-neutral-100 text-neutral-700 border-neutral-400">
+			<p class="italic quote  mb-4">    
+				Virtual private network (VPN) is a network architecture for virtually extending a private network
+				(i.e. any computer network which is not the public Internet) 
+				across one or multiple other networks which are either untrusted [...] 
+				or need to be isolated (thus making the lower network invisible or not directly usable).
+			</p><p>
+				A VPN can extend access to a private network to users who do not have direct access to it, 
+				such as [the mini-internet] allowing secure access from off-site over the Internet.
+			</p><br>
+			<cite>
+				<a href="https://en.wikipedia.org/wiki/Virtual_private_network" class="flex items-center not-italic">
+					<img alt="avatar" class="w-12 mr-4 rounded-full"
+						src="https://upload.wikimedia.org/wikipedia/commons/6/63/Wikipedia-logo.png" />
+					<div class="flex flex-col">
+						<span class="text-md text-neutral-800 ">Virtual Private Network</span>
+						<span class="text-sm text-neutral-500 ">wikipedia.org</span>
+					</div>
+				</a>
+			</cite>
+		</blockquote>
+	-->
+
+
+		<!-- Informational Message (Displayed only when no tab is selected) -->
+		{% if router is none %}
+		<div
+			class="mb-8 p-4 text-md border-l-4 bg-neutral-100 text-neutral-700 border-neutral-400 flex flex-row">
+			<div
+				class="flex shrink-0 items-center justify-center text-2xl row-span-2 w-12 h-12 mr-4 rounded-full bg-orange-300">
+				💬
+			</div>
+			<p>Welcome to the VPN Overview. <br>
+			   Please select a tab to view detailed information.</p>
+		</div>
+		{% endif %}
+
+		<!-- Tab Selector -->
+		<div class="mt-6 border-b border-neutral-300">
+			<div class="flex -mb-px space-x-6">
+				<!-- Loop through tabs to generate the tab bar -->
+				{% for tab_label in tabs %}
+				<a href="{{ url_for('main.vpn', router=tab_label) }}" 
+					class="py-2 px-4 text-sm font-medium rounded-t-md 
+					{% if tab_label == router %}bg-white text-[#ff7e79] border-b-2 border-[#ff7e79]{% else %}text-neutral-600 hover:text-[#ff7e79]{% endif %}">
+					{{ tab_label }}
+				</a>
+				{% endfor %}
+			</div>
+		</div>
+
+
+		<!-- Tab Selector -->
+		<!-- <div class="mt-6 flex items-center justify-center">
+			<div class="mr-8 mb-4">
+				<span class="font-bold">Select Router:</span>
+				<select class="bg-transparent border-0 border-b-2 border-neutral-400 hover:border-blue-500"
+					onchange="if (this.value) window.location.href=this.value">
+					<option {% if router is none %}selected{% endif %} 
+						value="{{ url_for('main.vpn', router=None) }}">
+						None
+					</option>
+					{% for tab_label in tabs %}
+					<option {% if tab_label==router %}selected{% endif %}
+						value="{{ url_for('main.vpn', router=tab_label) }}">
+						{{ tab_label }}
+					</option>
+					{% endfor %}
+				</select>
+			</div>
+		</div> -->
+
+		<!-- Current Tab Content -->
+		{% if router is not none %}
+		<div id="tab-content" class="mt-4">
+			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+				{% for interface in if_property_list %}
+					<div class="bg-white rounded-lg shadow-lg p-4">
+						<h3 class="text-lg font-semibold mb-4">{{ interface.name }}</h3>
+						<p class="mb-2">
+							{{ interface.description }}
+						</p>
+						<img 
+							src="{{ interface.qr_image }}" 
+							alt="QR-Code image" 
+							class="w-full h-32 object-cover rounded-md"
+						/>
+					</div>
+				{% endfor %}
+			</div>
+		</div> 
+		{% endif %}
+
+	</div>
+</div>
+
+{% endblock %}

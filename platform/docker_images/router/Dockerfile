@@ -1,6 +1,6 @@
 FROM d_base_supervisor:latest
 
-RUN apk add --no-cache openssh-server openssh-client frr frr-rpki frr-pythontools \
+RUN apk add --no-cache openssh-server openssh-client frr frr-rpki frr-pythontools wireguard-tools \
     && ssh-keygen -A \
     && sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/g' /etc/ssh/sshd_config \
     && sed -i 's/#PrintMotd yes/PrintMotd no/g' /etc/ssh/sshd_config \
@@ -26,8 +26,11 @@ RUN install -m 755 -o frr -g frr -d /var/log/frr \
 
 EXPOSE 22
 
+ENV VPN_OVSERVER_SLEEP=30
+
 COPY supervisord.conf /etc/supervisor/conf.d/processes.conf
 COPY looking_glass.sh /usr/local/bin/looking_glass
 COPY run_frr.sh /usr/local/bin/run_frr
+COPY wg_observer /usr/local/bin/wg_observer
 
-RUN chmod +x /usr/local/bin/looking_glass /usr/local/bin/run_frr
+RUN chmod +x /usr/local/bin/looking_glass /usr/local/bin/run_frr /usr/local/bin/wg_observer
