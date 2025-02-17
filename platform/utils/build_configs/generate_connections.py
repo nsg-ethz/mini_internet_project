@@ -58,10 +58,10 @@ import math
 # If true, stub ASes in the same area try to hijack each others prefixes. Also,
 # add two TA-configured ASes between the stubs and student ASes so that no
 # student AS is directly connected to a malicious AS.
-ENABLE_STUB_HIJACKS = True
+ENABLE_STUB_HIJACKS = False
 
 # Set true to test the topology.
-AUTOCONF_EVERYTHING = True
+AUTOCONF_EVERYTHING = False
 
 # If true, links between student ASes are only assigned a subnet in the
 # aslevel_links_students.txt file. If False, they are assigned an IP address.
@@ -75,9 +75,9 @@ BUFFER_ADVERTISES_ALL_VIA_IXP = True
 # Size of the topology.
 # ---------------------
 
-AREAS = 6
-CONFIGURABLE_PER_AREA = 8  # Number of ASes that can be configured by students.
-FIRST_IXP = 140
+AREAS = 2
+CONFIGURABLE_PER_AREA = 2  # Number of ASes that can be configured by students.
+FIRST_IXP = 80
 
 # Define the connections and roles of the ASes in each topology.
 # --------------------------------------------------------------
@@ -99,13 +99,13 @@ transit_as_topo = {
     # connection of AS to X: (AS city, AS role)
     # Example: The connection to the first provider is at Basel, and the AS
     # takes the role of a customer.
-    'provider1': ('MUNI', customer),
-    'provider2': ('BASE', customer),
-    'customer1': ('LYON', provider),
-    'customer2': ('MILA', provider),
+    'provider1': ('BIRM', customer),
+    'provider2': ('FRAN', customer),
+    'customer1': ('BARC', provider),
+    'customer2': ('NAPL', provider),
     # Peer and IXP.
-    'peer': ('LUGA', peer),
-    'ixp': ('VIEN', peer),
+    'peer': ('MUNI', peer),
+    'ixp': ('LYON', peer),
 }
 
 # All non-transit ASes only have a single router ZURI.

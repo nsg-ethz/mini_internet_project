@@ -61,6 +61,7 @@ connect_internal() {
 for ((k = 0; k < GroupNumber; k++)); do
 
    connect_internal $k &
+   wait_if_n_tasks_are_running
 
 done
 

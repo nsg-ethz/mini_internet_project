@@ -125,7 +125,11 @@ connect_l2(){
         echo "Connected L2 network in group ${GroupAS}"
     fi
 }
+
 for ((k = 0; k < GroupNumber; k++)); do
+
      connect_l2 $k &
+     wait_if_n_tasks_are_running
+     
 done
 wait

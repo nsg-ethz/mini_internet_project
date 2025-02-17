@@ -135,6 +135,7 @@ config_ssh(){
 for ((k = 0; k < GroupNumber; k++)); do
 
     config_ssh $k &
+    wait_if_n_tasks_are_running
 
 done
 
