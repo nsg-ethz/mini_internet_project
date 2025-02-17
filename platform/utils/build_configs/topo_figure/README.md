@@ -4,10 +4,9 @@ Latex file to generate the AS level topology, generated using the `../generate_c
 
 ## Requirements
 - Up-to-date latex distribution, including TikZ.
-- ImageMagick
 
 On Ubuntu, you can install them as follows:
 
 ```sh
-sudo apt install texlive-latex-extra libpng-dev imagemagick
+sudo apt install texlive-latex-extra
 ```
