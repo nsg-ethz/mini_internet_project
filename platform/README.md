@@ -40,9 +40,9 @@ The documentation is available in the [**wiki**](https://github.com/nsg-ethz/min
 
 -[ ] VPN
 
--[ ] Add ./go-to MEASUREMENT?
+-[x] Add ./go-to MEASUREMENT?
 
--[ ] Create a MEASUREMENT Welcome message.
+-[x] Create a MEASUREMENT Welcome message.
 
 -[ ] Ask student TAs to check: downloading configs, L2 stuff, 6in4 tunnel, goto scripts, dns output.
 
