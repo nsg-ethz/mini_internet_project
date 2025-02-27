@@ -1,5 +1,5 @@
 # -- stage 1: build static routinator with musl libc for alpine
-FROM d_base:latest as build
+FROM d_base:latest AS build
 
 # Specify what version of routinator should be built.
 ARG ROUTINATOR_VERSION=0.14.1

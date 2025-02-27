@@ -276,6 +276,9 @@ for ((k = 0; k < group_numbers; k++)); do
                         additional_args+=("-v" "${rpki_location}/tals:/root/.rpki-cache/tals:ro")
                         additional_args+=("-v" "${DIRECTORY}/groups/g${group_number}/rpki_exceptions.json:/root/rpki_exceptions.json")
                         additional_args+=("-v" "${DIRECTORY}/groups/g${group_number}/rpki_exceptions_autograder.json:/root/rpki_exceptions_autograder.json")
+
+                    elif [[ "${htype}" == *"vpnsecret"* ]]; then
+                        additional_args+=("-v" "${DIRECTORY}/config/vpnsecret/:/server/:ro")
                     fi
 
                     docker run -itd --dns="${subnet_dns%/*}" \

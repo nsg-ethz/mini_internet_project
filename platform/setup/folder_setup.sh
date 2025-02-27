@@ -64,36 +64,36 @@ done
 
 location="${DIRECTORY}"/groups
 
-echo "#!/bin/bash" > "${location}"/ip_setup.sh
-echo "#!/bin/bash" > "${location}"/add_ports.sh
-echo "#!/bin/bash" > "${location}"/add_bridges.sh
-echo "#!/bin/bash" > "${location}"/l2_init_switch.sh
-echo "#!/bin/bash" > "${location}"/delay_throughput.sh
-echo "#!/bin/bash" > "${location}"/throughput.sh
-echo "#!/bin/bash" > "${location}"/delete_veth_pairs.sh
-echo "#!/bin/bash" > "${location}"/add_vpns.sh
-echo "#!/bin/bash" > "${location}"/del_vpns.sh
+#echo "#!/bin/bash" > "${location}"/ip_setup.sh
+#echo "#!/bin/bash" > "${location}"/add_ports.sh
+#echo "#!/bin/bash" > "${location}"/add_bridges.sh
+#echo "#!/bin/bash" > "${location}"/l2_init_switch.sh
+#echo "#!/bin/bash" > "${location}"/delay_throughput.sh
+#echo "#!/bin/bash" > "${location}"/throughput.sh
+#echo "#!/bin/bash" > "${location}"/delete_veth_pairs.sh
+#echo "#!/bin/bash" > "${location}"/add_vpns.sh
+#echo "#!/bin/bash" > "${location}"/del_vpns.sh
 echo "#!/bin/bash" > "${location}"/restart_container.sh
-echo "#!/bin/bash" > "${location}"/open_vpn_ports.sh
+#echo "#!/bin/bash" > "${location}"/open_vpn_ports.sh
 
-chmod +x "${location}"/ip_setup.sh
-chmod +x "${location}"/add_ports.sh
-chmod +x "${location}"/add_bridges.sh
-chmod +x "${location}"/l2_init_switch.sh
-chmod +x "${location}"/delay_throughput.sh
-chmod +x "${location}"/throughput.sh
-chmod +x "${location}"/delete_veth_pairs.sh
-chmod +x "${location}"/add_vpns.sh
-chmod +x "${location}"/del_vpns.sh
+#chmod +x "${location}"/ip_setup.sh
+#chmod +x "${location}"/add_ports.sh
+#chmod +x "${location}"/add_bridges.sh
+#chmod +x "${location}"/l2_init_switch.sh
+#chmod +x "${location}"/delay_throughput.sh
+#chmod +x "${location}"/throughput.sh
+#chmod +x "${location}"/delete_veth_pairs.sh
+#chmod +x "${location}"/add_vpns.sh
+#chmod +x "${location}"/del_vpns.sh
 chmod +x "${location}"/restart_container.sh
-chmod +x "${location}"/open_vpn_ports.sh
+#chmod +x "${location}"/open_vpn_ports.sh
 
-echo -n "ovs-vsctl " >> "${location}"/add_ports.sh
-echo -n "ovs-vsctl " >> "${location}"/add_bridges.sh
-echo -n "ovs-vsctl " >> "${location}"/throughput.sh
+#echo -n "ovs-vsctl " >> "${location}"/add_ports.sh
+#echo -n "ovs-vsctl " >> "${location}"/add_bridges.sh
+#echo -n "ovs-vsctl " >> "${location}"/throughput.sh
 
-echo "source \"${DIRECTORY}/setup/ovs-docker.sh\"" >> "${location}"/ip_setup.sh
-echo "source \"${DIRECTORY}/setup/ovs-docker.sh\"" >> "${location}"/add_vpns.sh
+#echo "source \"${DIRECTORY}/setup/ovs-docker.sh\"" >> "${location}"/ip_setup.sh
+#echo "source \"${DIRECTORY}/setup/ovs-docker.sh\"" >> "${location}"/add_vpns.sh
 
 # FIXME: what is this check for
 if [ $# -ne 1 ]; then

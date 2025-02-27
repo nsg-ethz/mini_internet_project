@@ -44,7 +44,7 @@ config_defaults = {
         "vpn_passwd":"../../../groups/passwords.txt",
         "vpn_db":"../../../groups/vpn.db"
     },
-    'KRILL_URL': "http://{hostname}:3080/index.html",
+    'KRILL_URL': "http://{hostname}:3000/index.html",
     'BASIC_AUTH_USERNAME': 'admin',
     'BASIC_AUTH_PASSWORD': 'admin',
     'HOST': '127.0.0.1',

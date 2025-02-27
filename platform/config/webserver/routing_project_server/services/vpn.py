@@ -244,7 +244,7 @@ def vpn_send_conf(db_path: os.PathLike, peer_id: int):
     if result is None:
         return "Not found", 404
 
-    download_name = f"Mini-Internet {group_id}-{router_name} {peer_name}.conf"
+    download_name = f"Mini-Internet-{group_id}-{router_name}-{peer_name}.conf"
     return send_file(
         config_file,
         as_attachment=True,

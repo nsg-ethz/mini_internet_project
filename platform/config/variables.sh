@@ -6,14 +6,14 @@
 
 # The prefix for the dockerhub images. Leave empty for local images.
 # If it isn't empty, it must end with a slash.
-DOCKERHUB_PREFIX=""
+DOCKERHUB_PREFIX="miniinterneteth/"
 # DOCKERHUB_PREFIX="miniinterneteth/"
 
 
 # This URL will be suggested as the default location for students
 # to download their configs. It should be publicly accessible via ssh at port
 # 2000 + X, where X is each AS number.
-SSH_URL="ee-tik-nsgvm073.ethz.ch"
+SSH_URL="westvleteren.ethz.ch"
 
 # =============================================================================
 # WEBSERVER
@@ -23,7 +23,7 @@ SSH_URL="ee-tik-nsgvm073.ethz.ch"
 # You need to specify the hostname of the server and an email for
 # LetsEncrypt to be enabled.
 # UPDATE THOSE VARIABLES. WEBSERVER_HOSTNAME -> hostname of the server and EMAIL -> empty string (for http)
-WEBSERVER_HOSTNAME="localhost"
+WEBSERVER_HOSTNAME="westvleteren.ethz.ch"
 WEBSERVER_ACME_MAIL="nsg@ethz.ch"
 # Hostname and ports for the webserver and krill on the host.
 # (must be publicly available)
@@ -64,7 +64,7 @@ DEFAULT_BUFFER=50ms
 # at the start of every ping cycle.
 
 # Interval for pings in seconds.
-MATRIX_FREQUENCY=300
+MATRIX_FREQUENCY=120
 # Number of ping processes to run concurrently.
 MATRIX_CONCURRENT_PINGS=500
 # Flags to pass to the ping command.
@@ -89,13 +89,13 @@ HISTORY_UPDATE_FREQUENCY=$(( 60*60 ))  # every hour (in seconds)
 # Timeout for ./save_configs.sh
 HISTORY_TIMEOUT="300s"
 # Username and email that will show up on the commit.
-HISTORY_GIT_USER=""
-HISTORY_GIT_EMAIL=""
+HISTORY_GIT_USER="Mini-internet History"
+HISTORY_GIT_EMAIL="mini-internet-history@ethz.ch"
 # URL of the git repository to push the snapshots to; should be accessible.
 # For example, create a gitlab access token and use it in the URL.
 # The token needs to have write access to the repository.
 # HISTORY_GIT_URL="https://gitlab-ci-token:<TOKEN HERE>@gitlab.ethz.ch/nsg/lectures/lec_commnet/projects/2024/routing_project/test_history.git"
-HISTORY_GIT_URL=""
+HISTORY_GIT_URL="https://gitlab-ci-token:2UCSGoRkyFKW2x7usq9E@gitlab.ethz.ch/nsg/lectures/lec_commnet/projects/2025/routing-project/history.git"
 HISTORY_GIT_BRANCH="main"
 # switch.db and rpki.cache are binaries that cannot be stored easily in git.
 # If this option is "true" (recommend), we re-write the git history at every
@@ -135,6 +135,6 @@ VPN_NO_CLIENTS=1
 VPN_LIMIT_ENABLED=true
 VPN_LIMIT_RATE="1mbit"
 VPN_LIMIT_BURST="32kbit"
-VPN_LIMIT_LATENCY="400ms"
+VPN_LIMIT_LATENCY="40ms"
 
 # Note: The IP subnets for the VPN are declared in config/subnet_config.sh 
