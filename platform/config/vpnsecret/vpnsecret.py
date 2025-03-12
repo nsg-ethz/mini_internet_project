@@ -24,7 +24,7 @@ def create_app():
             response = [f'Hello, Group {group_number}', 'I see you managed to find the VPN, well done.',  f'Here is your secret:', f'{random_string}']
         else:
             response = [f'Hello, Group {group_number}', 'Please try again using the VPN']
-        return render_template('./vpnsecret.html', response=response)
+        return render_template('./vpnsecret.html', response=enumerate(response))
     
     
     return app
