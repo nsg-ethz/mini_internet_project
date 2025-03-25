@@ -93,4 +93,4 @@ See [LICENSE](./LICENSE) and [RELICENSED.md](./RELICENSED.md) for details.
 The Docker container includes an unmodified script (`bgpsimple.pl`) that is licensed under the **GNU General Public License v3 (GPLv3)**.
 While the rest of the project is under the MIT License, users and redistributors of the Docker container must comply with the terms of the GPLv3 for that component.
 
-See [THIRD_PARTY_LICENSES.md](./THIRD_PARTY_LICENSES.md) for more information.
+See [THIRD_PARTY_LICENSES.md](./THIRD_PARTY_LICENSES) for more information.
