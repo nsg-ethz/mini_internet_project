@@ -84,3 +84,13 @@ This platform has been tailored to teach how the Internet works in our Communica
 
 If you want to use this platform for your networking class, we recommend that you spent some time understanding the code and how we build the mini-Internet, and we recommend you to try it first before using it with actual students.
 We assume no responsibility or liability for any problem you may encounter while using the platform.
+
+### License
+
+This project is licensed under the MIT License as of March 25, 2025.
+See [LICENSE](./LICENSE) and [RELICENSED.md](./RELICENSED.md) for details.
+
+The Docker container includes an unmodified script (`bgpsimple.pl`) that is licensed under the **GNU General Public License v3 (GPLv3)**.
+While the rest of the project is under the MIT License, users and redistributors of the Docker container must comply with the terms of the GPLv3 for that component.
+
+See [THIRD_PARTY_LICENSES.md](./THIRD_PARTY_LICENSES.md) for more information.
