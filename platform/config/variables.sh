@@ -92,3 +92,7 @@ HISTORY_GIT_BRANCH="main"
 # recent update.
 # You must allow force pushing on the remove branch for this to work.
 HISTORY_FORGET_BINARIES="true"
+
+# Each router container has an observer process that gets the interface status in a fixed interval
+VPN_OBSERVER_SLEEP=120
+
