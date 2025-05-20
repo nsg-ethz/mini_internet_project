@@ -1,5 +1,6 @@
 {% set navigation_bar = {
 'main.connectivity_matrix': 'matrix',
+'main.show_topology': 'traceroutes',
 'main.looking_glass': 'looking glass',
 'main.as_connections': 'connections',
 'main.krill': 'krill',
@@ -28,22 +29,21 @@
         <nav class="max-w-6xl mx-auto flex items-center justify-between flex-wrap p-4">
             <!-- Logo -->
             <div class="flex items-center flex-shrink-0 mr-6 text-3xl font-bold">
-                <img class=" h-16 pr-4" alt="logo" src="{{url_for('static', filename='logo.svg')}}" />
-                <!-- <span class="text-gray-400 pr-2">></span> -->
+                <img class="h-16 pr-4" alt="logo" src="{{ url_for('static', filename='logo.svg') }}" />
                 <span>routing project</span>
             </div>
             <!-- Menu -->
-            <div class="w-full block flex-grow lg:flex lg:items-center lg:w-auto"></div>
-            {% for endpoint, name in navigation_bar.items() %}
-            <div class="">
-                <a class="block mt-4 lg:inline-block lg:mt-0 hover:font-bold mr-4 text-lg" href="{{url_for(endpoint)}}"
-                    }}>
+            <div class="flex flex-wrap items-center">
+                {% for endpoint, name in navigation_bar.items() %}
+                <a class="block mt-2 lg:mt-0 hover:font-bold mr-4 text-lg"
+                   href="{{ url_for(endpoint) }}">
                     <span class="pr-2 pl-2">
-                        <span class="text-gray-400">[</span>{{'*' if endpoint == request.endpoint else ' '}}<span
-                            class="text-gray-400">]</span></span>{{name}}
+                        <span class="text-gray-400">[</span>{{ '*' if endpoint == request.endpoint else ' ' }}<span
+                                class="text-gray-400">]</span>
+                    </span>{{ name }}
                 </a>
+                {% endfor %}
             </div>
-            {% endfor %}
         </nav>
     </div>
     {% block body %}{% endblock %}

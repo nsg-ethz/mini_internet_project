@@ -14,9 +14,13 @@ By default, these workers are started automatically when the app is created.
 
 import os
 import traceback
+import logging
+import sys
+import json
 from datetime import datetime as dt
 from datetime import timezone
 from multiprocessing import Process
+from threading import Thread
 from pathlib import Path
 from time import sleep
 
@@ -25,8 +29,12 @@ from flask_basicauth import BasicAuth
 from jinja2 import StrictUndefined
 
 from .services.bgp_policy_analyzer import prepare_bgp_analysis
-from.services.matrix import prepare_matrix
+from .services.matrix import prepare_matrix
 from .services.login import csrf, login_manager
+from .services.parsers import parse_topology_txt
+from .services.parsers import get_all_routers
+from .services.launch_traceroute import traceroute_bp
+from .services.launch_traceroute import cleanup_loop
 
 config_defaults = {
     'SECRET_KEY': os.urandom(32),
@@ -39,6 +47,8 @@ config_defaults = {
         "config_directory": "../../../config",
         "matrix": "../../../groups/matrix/connectivity.txt",
         "matrix_stats": "../../../groups/matrix/stats.txt",
+        "topology_txt": "server/routing_project_server/static/topology.txt",
+        "topology_json": "server/routing_project_server/static/topology.json",
     },
     'KRILL_URL': "http://{hostname}:3080/index.html",
     'BASIC_AUTH_USERNAME': 'admin',
@@ -50,6 +60,8 @@ config_defaults = {
     'AUTO_START_WORKERS': True,
     'MATRIX_UPDATE_FREQUENCY': 30,  # seconds
     'ANALYSIS_UPDATE_FREQUENCY': 300,  # seconds
+    'TRACEROUTE_CLEANUP_INTERVAL': 300,  # seconds
+    'TRACEROUTE_CLEANUP_EXPIRE_AFTER': 600,  # seconds
     'MATRIX_CACHE': '/tmp/cache/matrix.pickle',
     'ANALYSIS_CACHE': '/tmp/cache/analysis.db'
 }
@@ -64,6 +76,15 @@ def create_app(config=None):
     app.config.from_mapping(config_defaults)
     app.jinja_env.undefined = StrictUndefined
 
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setLevel(logging.INFO)
+    formatter = logging.Formatter('[%(levelname)s] %(message)s')
+    handler.setFormatter(formatter)
+
+    if not app.logger.handlers:
+        app.logger.addHandler(handler)
+    app.logger.setLevel(logging.INFO)
+
     if config is None:
         config = os.environ.get("SERVER_CONFIG", None)
 
@@ -72,16 +93,36 @@ def create_app(config=None):
     elif config is not None:
         app.config.from_pyfile(config)
 
+    try:
+        parse_topology_txt(config_defaults)
+    except Exception:
+        traceback.print_exc()
 
     # Register Blueprints
     from .routes import main_bp
     app.register_blueprint(main_bp)
+    app.register_blueprint(traceroute_bp)
 
     # Initialize extensions
     csrf.init_app(app)
     login_manager.init_app(app)
     login_manager.login_view = "main.login"
-    basic_auth.init_app(app) 
+    basic_auth.init_app(app)
+    
+    # Load allowed container names
+    try:
+        router_data = get_all_routers(app.config["LOCATIONS"]["config_directory"])
+        allowed_containers = set()
+        for asn_data in router_data.values():
+            for router_info in asn_data["routers"].values():
+                container_name = router_info.get("container")
+                if container_name:
+                    allowed_containers.add(container_name)
+        app.config["ALLOWED_CONTAINERS"] = allowed_containers
+        app.logger.info(f"[Init] Loaded {len(allowed_containers)} allowed containers.")
+    except Exception as e:
+        app.logger.warning(f"[Init] Failed to load allowed containers: {e}")
+        app.config["ALLOWED_CONTAINERS"] = set()
 
     # Initialize template filters
     @app.template_filter()
@@ -135,6 +176,15 @@ def start_workers(config):
     )
     pbgp.start()
     processes.append(pbgp)
+
+    # Traceroute cleanup thread NOT added to processes list
+    tcleanup = Thread(
+        target=loop,
+        args=(cleanup_loop, config['TRACEROUTE_CLEANUP_INTERVAL'], config),
+        kwargs=dict(worker=True),
+        daemon=True
+    )
+    tcleanup.start()
 
     return processes
 
