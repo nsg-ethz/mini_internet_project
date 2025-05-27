@@ -565,7 +565,7 @@ restart_one_l2_switch() {
                 if [[ "${SWName}" == "${CurrentSwitch}" ]]; then
                     local SwitchCtnName="${CurrentAS}_L2_${DCName}_${CurrentSwitch}"
 
-                    docker kill "${SwitchCtnName}" 2>/dev/null || true
+                    docker kill "${SwitchCtnName}" 2>/dev/null
 
                     # clean up the old netns of the container
                     clean_ctn_netns "${SwitchCtnName}"
