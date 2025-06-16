@@ -9,7 +9,7 @@
 |       ./goto.sh zuri router                          |
 |       ./goto.sh zuri host                            |
 |       ./goto.sh dcn  s1                              |
-|       ./goto.sh dcn  fifa_1                          |
+|       ./goto.sh dcs  a_mil                          |
 |                                                      |
 |   Or you can access the public measurement service:  |
 |                                                      |
