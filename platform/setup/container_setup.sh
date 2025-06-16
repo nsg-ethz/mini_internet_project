@@ -223,6 +223,7 @@ for ((k = 0; k < group_numbers; k++)); do
                         -v /etc/timezone:/etc/timezone:ro \
                         --log-opt max-size=1m --log-opt max-file=3 \
                         --network="${ssh_to_ctn_bname}" --ip="${subnet_ssh_router%/*}" \
+
                         --env "VPN_OBSERVER_SLEEP=${VPN_OBSERVER_SLEEP}" \
 			"${DOCKERHUB_PREFIX}d_router" > /dev/null
 
