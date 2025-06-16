@@ -139,3 +139,4 @@ VPN_LIMIT_BURST="32kbit"
 VPN_LIMIT_LATENCY="40ms"
 
 # Note: The IP subnets for the VPN are declared in config/subnet_config.sh 
+
