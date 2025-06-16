@@ -13,7 +13,8 @@ The documentation is available in the [**wiki**](https://github.com/nsg-ethz/min
 - Change the color of the invalid entries in the matrix to something darker to make it easier to distinguish from green, for color blindness reasons
 - Change the meaning of yellow in the matrix to avoid confusion
 - Fix the performance problem of the wg\_observer process when no sleep time environment variable is set
-- History creates zombie processes if enabled but no gitlab token set 
+- History creates zombie processes if enabled but no gitlab token set
+- Fix configure_as.sh and restart_mini_internet.sh to directly read the config files
 
 
 ## Checklist:

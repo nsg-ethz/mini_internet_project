@@ -8,7 +8,8 @@ PLATFORM_DIR=/home/roellinl/mini_internet_project/platform
 ASN_TO_CONFIGURE="3 4 23 24 43 46"
 # this variable contains all the router names that need to be configured.
 # The order is important, as it will be used to assign IP addresses to the routers.
-ROUTER_NAMES="BIRM FRAN MUNI ZURI LYON MILA BARC NAPL"
+#ROUTER_NAMES="BIRM FRAN MUNI ZURI LYON MILA BARC NAPL"
+ROUTER_NAMES="ZURI BASE GENE LUGA MUNI LYON VIEN MILA"
 CONFIG_FILES="conf_init.sh conf_full.sh conf_rpki.sh"
 
 echo "Updating configs."
