@@ -38,7 +38,7 @@ DIRECTORY=$(cd `dirname $0` && pwd)
 echo "$(date +%Y-%m-%d_%H-%M-%S)"
 
 echo "cleanup.sh"
-#time ./cleanup/cleanup.sh "${DIRECTORY}"
+time ./cleanup/cleanup.sh "${DIRECTORY}"
 #time ./cleanup/hard_reset.sh
 
 echo ""

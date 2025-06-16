@@ -23,7 +23,7 @@ SSH_URL="westvleteren.ethz.ch"
 # You need to specify the hostname of the server and an email for
 # LetsEncrypt to be enabled.
 # UPDATE THOSE VARIABLES. WEBSERVER_HOSTNAME -> hostname of the server and EMAIL -> empty string (for http)
-WEBSERVER_HOSTNAME="westvleteren.ethz.ch"
+WEBSERVER_HOSTNAME=""
 WEBSERVER_ACME_MAIL="nsg@ethz.ch"
 # Hostname and ports for the webserver and krill on the host.
 # (must be publicly available)
@@ -42,6 +42,7 @@ WEBSERVER_SOURCEFILES="/webserver"
 # This year we are adding a chatbot to help the students with the project
 # By enabling this a new tab will be added which is used to connect to the chatbot webserver
 CHATBOT_INTEGRATION=false
+CHATBOT_URL="https://de.wikipedia.org/wiki/Chatbot"
 
 
 # =============================================================================
@@ -116,7 +117,7 @@ VPN_ENABLED=false
 VPN_DNS_ENABLED=true
 
 # Enable/Disable VPN website
-# VPN_WEBSITE_ENABLED=fale
+# VPN_WEBSITE_ENABLED=false
 VPN_WEBSITE_ENABLED=${VPN_ENABLED}
 
 # The file for the vpn database

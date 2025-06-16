@@ -167,7 +167,7 @@ def krill():
 @main_bp.route("/chatbot")
 def chatbot():
     """Allow access to the chatbot as an iframe. """
-    chatbot_url = "https://de.wikipedia.org/wiki/Chatbot"
+    chatbot_url = current_app.config['CHATBOT_URL']
     return render_template("ta-bot.html", chatbot_url=chatbot_url) 
 
 @main_bp.route("/bgp-analysis")

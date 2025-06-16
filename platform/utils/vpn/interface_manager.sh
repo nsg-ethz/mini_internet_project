@@ -85,8 +85,13 @@ check_if_exists() {
 # Check if a wireguard interface is up and running ($1 = GroupNumber and $2 = RouterName)
 # Example "check_if_up 3 MUNI"
 check_if_up() {
-	docker_output=$(docker exec "$(get_container_name $1 $2)" sh -c "ip link show vpn up > /dev/null 2>&1 && echo 1 || echo 0")
-	echo "${docker_output}"
+	exists=$(docker ps -q -f name="$(get_container_name $1 $2)")
+	if [ -n "$exists" ]; then
+		docker_output=$(docker exec "$(get_container_name $1 $2)" sh -c "ip link show vpn up > /dev/null 2>&1 && echo 1 || echo 0")
+		echo "${docker_output}"
+	else
+		echo 0
+	fi
 }
 
 
@@ -137,13 +142,14 @@ create_if() {
 
 # Deletes an interface
 delete_if() {
-	PID=$(get_container_pid $1 $2)
-        path_to_file="${DIRECTORY}"/groups/g"$1"/"$2"/wireguard
+	
+    path_to_file="${DIRECTORY}"/groups/g"$1"/"$2"/wireguard
 	listen_port=$(get_port $1 $2)
 
 	# Delete interface if it exists
 	if [[ $(check_if_up $1 $2 ) == 1 ]]; then
         	# No need to save config, because we delete interface
+		PID=$(get_container_pid $1 $2)
 		nsenter --net=/proc/"${PID}"/ns/net ip link del vpn
 	fi
 
