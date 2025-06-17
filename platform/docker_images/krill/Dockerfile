@@ -23,6 +23,10 @@ FROM d_base_supervisor:latest
 COPY --from=build /tmp/krill/target/x86_64-alpine-linux-musl/release/krill /usr/local/bin/
 COPY --from=build /tmp/krill/target/x86_64-alpine-linux-musl/release/krillc /usr/local/bin/
 
+#COPY --from=build /tmp/krill/target/x86_64-alpine-linux-musl/release/krillpubd /usr/local/bin/
+#COPY --from=build /tmp/krill/target/x86_64-alpine-linux-musl/release/krillpubc /usr/local/bin/
+
+
 RUN apk add --no-cache haproxy curl rsync libgcc ca-certificates openssl openssh-server \
     && ssh-keygen -A \
     && sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/g' /etc/ssh/sshd_config \

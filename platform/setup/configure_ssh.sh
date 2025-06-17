@@ -36,7 +36,9 @@ cp groups/id_rsa.pub groups/authorized_keys
 readarray ASConfig < "${DIRECTORY}"/config/AS_config.txt
 GroupNumber=${#ASConfig[@]}
 
-for ((k = 0; k < GroupNumber; k++)); do
+config_ssh(){
+
+    k=$1
     GroupK=(${ASConfig[$k]})           # group config file array
     GroupAS="${GroupK[0]}"             # ASN
     GroupType="${GroupK[1]}"           # IXP/AS
@@ -128,5 +130,13 @@ for ((k = 0; k < GroupNumber; k++)); do
         done
     echo "Configured SSH in group ${GroupAS}"
     fi
+}
+
+for ((k = 0; k < GroupNumber; k++)); do
+
+    config_ssh $k &
+    wait_if_n_tasks_are_running
+
 done
+
 wait # wait for all parallel tasks to finish

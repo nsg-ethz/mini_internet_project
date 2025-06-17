@@ -1,0 +1,2 @@
+recursive-include routing_project_server/templates *
+recursive-include routing_project_server/static *

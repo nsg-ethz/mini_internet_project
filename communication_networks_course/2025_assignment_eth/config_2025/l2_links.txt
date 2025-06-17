@@ -1,0 +1,1 @@
+DCS   S2   DCS   S3   10mbit   1ms    50ms

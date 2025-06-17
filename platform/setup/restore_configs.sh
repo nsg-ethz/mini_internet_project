@@ -47,7 +47,7 @@ clear_config_vtysh() {
   local router_name="$2"
   local config
   echo -n "Clearing $router_name configuration: "
-  if ! config="$(_ssh $router_subnet -- -c 'sh run')"; then
+  if ! config="$(_ssh $router_subnet vtysh -c 'sh run')"; then
     echo_red "Failed to load the current running configuration."
     return 1
   fi
@@ -111,7 +111,7 @@ clear_config_vtysh() {
   done
   clear_command="${clear_command}exit"$'\n'
 
-  if  _ssh "$router_subnet" -- -c "$clear_command" ; then
+  if  _ssh "$router_subnet" vtysh -c "$clear_command" ; then
     echo "Success"
   else
     echo_red "Failed, will attempt the restore regardless"
@@ -129,7 +129,7 @@ restore_config_vtysh() {
   local build_command="configure"$'\n'"${config#*frr defaults traditional}"
   echo -n "Restoring $router_name configuration: "
 
-  if _ssh "$router_subnet" -- -c "${build_command}" ; then
+  if _ssh "$router_subnet" vtysh -c "${build_command}" ; then
     echo "Success"
   else
     echo_red "Failed"
@@ -144,7 +144,7 @@ check_config_vtysh() {
   local config_restored
   config_restored="$(cat "$config_file")"
   echo -n "Verifying restored configuration on $3: "
-  if ! running_config="$(_ssh $router_subnet -- -c 'sh run')"; then
+  if ! running_config="$(_ssh $router_subnet vtysh -c 'sh run')"; then
     echo_red "Failed to load the current running configuration."
     return 1
   fi

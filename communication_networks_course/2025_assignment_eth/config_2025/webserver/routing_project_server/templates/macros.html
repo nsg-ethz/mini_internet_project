@@ -1,0 +1,15 @@
+{% macro update_message(freq, last) -%}
+{% if freq or last -%}
+<p class="italic text-sm text-neutral-500 mb-4">
+    {% if freq -%}
+    updates every {{ freq|format_timedelta_int }}{% if last %},{% else %}.{% endif %}
+    {%- endif%}
+    {% if last -%}
+    last updated on {{ last|format_datetime }}.
+    {%- endif %}
+</p>
+{%- endif %}
+{%- endmacro %}
+{% macro h1(text) -%}
+<h1 class="text-4xl underline underline-offset-2 decoration-4  decoration-[#ff7e79] mono mb-4">{{text}}</h1>
+{%- endmacro %}
