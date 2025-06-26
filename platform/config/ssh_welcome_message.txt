@@ -1,6 +1,6 @@
 +------------------------------------------------------+
 |                                                      |
-|   Communication Networks 2024  - Routing Project     |
+|   Communication Networks 2025  - Routing Project     |
 |             Build your mini-Internet!                |
 |                                                      |
 |   From here, you can access your virtual devices     |
