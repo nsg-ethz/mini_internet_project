@@ -35,64 +35,30 @@ function updateTargetRouters(asn) {
 
   if (routerSelect.options.length > 0) {
     routerSelect.selectedIndex = 0;
-    updateTargetIP(routerSelect.value, asn);
-  }
-
-  bindTargetRouterListener(asn);
-}
-
-function updateTargetIP(routerName, asn) {
-  const viaSelect = document.getElementById("target-ip");
-  viaSelect.innerHTML = "";
-
-  const asEntry = allRouters[asn];
-  const router = asEntry?.routers?.[routerName];
-
-  if (!router || !Array.isArray(router.interfaces)) {
-    console.warn(`No interfaces found for router ${routerName} in AS ${asn}`);
-    return;
-  }
-
-  router.interfaces
-    .filter((intf) => intf.type === "internal" || intf.type === "loopback")
-    .forEach((intf) => {
-      const option = document.createElement("option");
-      option.value = intf.ip;
-      option.text = `${intf.ip} (${intf.type})`;
-      viaSelect.appendChild(option);
-    });
-
-  if (viaSelect.options.length > 0) {
-    viaSelect.selectedIndex = 0;
   }
 }
 
-function bindTargetRouterListener(asn) {
-  const targetRouterSelect = document.getElementById("target-router");
-  if (targetRouterSelect) {
-    targetRouterSelect.addEventListener("change", e => {
-      updateTargetIP(e.target.value, asn);
-    });
-  }
-}
 
 function runTraceroute() {
   resetVisualization();
 
-  const origin = document.getElementById("origin-as").value;
+  const originASN = document.getElementById("origin-as").value;
   const originRouter = document.getElementById("origin-router").value;
-  const target = document.getElementById("target-as").value;
+  const targetASN = document.getElementById("target-as").value;
   const targetRouter = document.getElementById("target-router").value;
-  const targetIP = document.getElementById("target-ip").value;
 
-  const originContainer = allRouters[origin]?.routers?.[originRouter]?.container || "unknown";
+  const originHost = allRouters[originASN]?.routers?.[originRouter]?.host;
+  const targetHost = allRouters[targetASN]?.routers?.[targetRouter]?.host;
 
-  if (!origin || !originRouter || !target || !targetRouter || !targetIP) {
-    alert("Please select Origin AS + Router and Target AS + Router + IP.");
+  const originContainer = originHost?.container;
+  const targetIP = targetHost?.ip;
+
+  if (!originASN || !originRouter || !targetASN || !targetRouter || !targetIP || !originContainer) {
+    alert("Please select Origin AS + Router and Target AS + Router. Host info missing.");
     return;
   }
 
-  console.log(`[traceroute] From AS${origin} ${originRouter} to AS${target} ${targetRouter} [${targetIP}]`);
+  console.log(`[traceroute] From AS${originASN} ${originRouter} to AS${targetASN} ${targetRouter} [${targetIP}]`);
 
   const box = document.getElementById("traceroute-result");
   box.classList.remove("hidden");
@@ -114,15 +80,14 @@ function runTraceroute() {
       }
 
       const jobId = data.job_id;
-      const originText = `AS${origin} (${originRouter})`;
-      const targetText = `AS${target} (${targetRouter})`;
+      const originText = `AS${originASN} (${originRouter})`;
+      const targetText = `AS${targetASN} (${targetRouter})`;
 
-      // Log the polling endpoint to console
       const pollURL = `/get-traceroute-result?job_id=${jobId}`;
       console.log(`[Traceroute] Poll result at: ${pollURL}`);
 
       const pollInterval = setInterval(() => {
-        fetch(`/get-traceroute-result?job_id=${jobId}`)
+        fetch(pollURL)
           .then((res) => res.json())
           .then((result) => {
             if (result.status === "pending") return;
@@ -287,8 +252,9 @@ function drawTraceroutePath(network, allNodes, tracerouteData) {
 
     // Check for policy violation AFTER drawing everything
     const violation = detectPolicyViolation(asPath, allRouters);
+    const box = document.getElementById("traceroute-result");
+
     if (violation && violation.reason) {
-      const box = document.getElementById("traceroute-result");
       box.innerHTML += `
         <div class="mt-2 text-red-600 font-semibold text-sm">
           Policy Violation Detected: ${violation.reason}
@@ -306,6 +272,12 @@ function drawTraceroutePath(network, allNodes, tracerouteData) {
           arrows: 'to'
         });
       }
+    } else {
+      box.innerHTML += `
+        <div class="mt-2 text-green-700 font-semibold text-sm">
+          No policy violations detected.
+        </div>
+      `;
     }
 
   } catch (err) {
@@ -327,7 +299,7 @@ function resetVisualization() {
   const network = window.currentNetwork;
   const nodes = window.currentNodes;
 
-  // 1. Remove ALL custom (traceroute) edges � purple or red ones
+  // 1. Remove ALL custom (traceroute) edges   purple or red ones
   const customEdges = network.body.data.edges.get().filter(e =>
     e.color?.color === tracerouteColor || e.color?.color === "red"
   );
@@ -430,7 +402,7 @@ function showASLinkBetween(asn1, asn2) {
           <li>
             AS${asn1}.${link.router} (${link.ip}) ↔ AS${asn2}.${link.peer_router} (${link.peer_ip})<br/>
             <span class="text-xs text-neutral-600">
-              Role: ${link.role} ↔ ${link.peer_role} — Subnet: <code>${link.subnet}</code>
+              Role: ${link.role} ↔ ${link.peer_role} - Subnet: <code>${link.subnet}</code>
             </span>
           </li>
         `).join("")}

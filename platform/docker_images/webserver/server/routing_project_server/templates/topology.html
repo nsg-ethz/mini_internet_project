@@ -13,79 +13,69 @@
     {{ h1("topology") }}
 
     <p class="mb-2">
-        This visualization shows the AS-level topology including Tier 1 ISPs, Internet Exchange Points, student-operated transit ASes, and stub networks. You can also view the traceroute path dynamically overlaid on top of this topology.
+        This visualization displays the AS-level topology, including Tier 1 ISPs, Internet Exchange Points (IXPs), student-operated transit ASes, and stub networks. Traceroute paths can be dynamically overlaid onto this topology. Each traceroute originates from and targets the host connected to the selected routers.    
     </p>
 
-<div class="bg-neutral-50 p-4 rounded border text-sm text-neutral-700 mb-6">
-  <div class="flex flex-wrap items-center justify-center gap-6">
+    <div class="bg-neutral-50 p-4 rounded border text-sm text-neutral-700 mb-6">
+        <div class="flex flex-wrap items-center justify-center gap-6">
 
-    <!-- Origin AS -->
-    <div class="flex flex-col items-start">
-      <span class="font-bold">Origin AS</span>
-      <select id="origin-as"
-              class="bg-transparent border-0 border-b-2 border-neutral-400 hover:border-[#ff7e79] px-2 py-1">
-        {% for _group in dropdown_groups|sort %}
-        <option value="{{ _group }}" {% if _group == group %}selected{% endif %}>{{ _group }}</option>
-        {% endfor %}
-      </select>
+            <!-- Origin AS -->
+            <div class="flex flex-col items-start">
+                <span class="font-bold">Origin AS</span>
+                <select id="origin-as"
+                        class="bg-transparent border-0 border-b-2 border-neutral-400 hover:border-[#ff7e79] px-2 py-1">
+                    {% for _group in dropdown_groups|sort %}
+                    <option value="{{ _group }}" {% if _group == group %}selected{% endif %}>{{ _group }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Origin Router -->
+            <div class="flex flex-col items-start">
+                <span class="font-bold">Origin Router</span>
+                <select id="origin-router"
+                        class="bg-transparent border-0 border-b-2 border-neutral-400 hover:border-[#ff7e79] px-2 py-1">
+                    <!-- Filled by JS -->
+                </select>
+            </div>
+
+            <!-- Target AS -->
+            <div class="flex flex-col items-start">
+                <span class="font-bold">Target AS</span>
+                <select id="target-as"
+                        class="bg-transparent border-0 border-b-2 border-neutral-400 hover:border-[#ff7e79] px-2 py-1">
+                    {% for _group in dropdown_groups|sort %}
+                    <option value="{{ _group }}" {% if _group == group %}selected{% endif %}>{{ _group }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Target Router -->
+            <div class="flex flex-col items-start">
+                <span class="font-bold">Target Router</span>
+                <select id="target-router"
+                        class="bg-transparent border-0 border-b-2 border-neutral-400 hover:border-[#ff7e79] px-2 py-1">
+                    <!-- Filled by JS -->
+                </select>
+            </div>
+
+            <!-- Run Button -->
+            <div class="flex items-end">
+                <button id="run-traceroute-btn"
+                        class="px-4 py-2 bg-[#ff7e79] hover:bg-[#ff5c58] text-white rounded shadow transition">
+                    Run Traceroute
+                </button>
+            </div>
+        </div>
+
+        <!-- Border Router Legend -->
+        <div class="mt-4 flex justify-start pl-2">
+            <div class="legend-item flex items-center text-xs text-neutral-600">
+                <span class="inline-block mr-1 text-base leading-none text-black">*</span>
+                Border Router
+            </div>
+        </div>
     </div>
-
-    <!-- Origin Router -->
-    <div class="flex flex-col items-start">
-      <span class="font-bold">Origin Router</span>
-      <select id="origin-router"
-              class="bg-transparent border-0 border-b-2 border-neutral-400 hover:border-[#ff7e79] px-2 py-1">
-        <!-- Filled by JS -->
-      </select>
-    </div>
-
-    <!-- Target AS -->
-    <div class="flex flex-col items-start">
-      <span class="font-bold">Target AS</span>
-      <select id="target-as"
-              class="bg-transparent border-0 border-b-2 border-neutral-400 hover:border-[#ff7e79] px-2 py-1">
-        {% for _group in dropdown_groups|sort %}
-        <option value="{{ _group }}" {% if _group == group %}selected{% endif %}>{{ _group }}</option>
-        {% endfor %}
-      </select>
-    </div>
-
-    <!-- Target Router -->
-    <div class="flex flex-col items-start">
-      <span class="font-bold">Target Router</span>
-      <select id="target-router"
-              class="bg-transparent border-0 border-b-2 border-neutral-400 hover:border-[#ff7e79] px-2 py-1">
-        <!-- Filled by JS -->
-      </select>
-    </div>
-
-    <!-- Target IP -->
-    <div class="flex flex-col items-start">
-      <span class="font-bold">Target IP</span>
-      <select id="target-ip"
-              class="bg-transparent border-0 border-b-2 border-neutral-400 hover:border-[#ff7e79] px-2 py-1">
-        <!-- Filled by JS -->
-      </select>
-    </div>
-
-    <!-- Run Button -->
-    <div class="flex items-end">
-      <button id="run-traceroute-btn"
-              class="px-4 py-2 bg-[#ff7e79] hover:bg-[#ff5c58] text-white rounded shadow transition">
-        Run Traceroute
-      </button>
-    </div>
-  </div>
-
-  <!-- Border Router Legend -->
-  <div class="mt-4 flex justify-start pl-2">
-    <div class="legend-item flex items-center text-xs text-neutral-600">
-      <span class="inline-block mr-1 text-base leading-none text-black">*</span>
-      Border Router
-    </div>
-  </div>
-</div>
-
 
     <!-- Traceroute Result Display -->
     <div id="traceroute-result"

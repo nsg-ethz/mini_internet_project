@@ -87,6 +87,11 @@ def parse_as_config(filename: os.PathLike,
             asn = int(row[0])
             results[asn] = {'type': row[1]}
 
+            if row[2] == "Config":
+                results[asn]["all_in_one"] = True
+            else:
+                results[asn]["all_in_one"] = False
+
             if router_config_dir is not None:
                 router_config_file = Path(router_config_dir) / Path(row[3])
 
@@ -452,12 +457,16 @@ def get_all_routers(config_dir: os.PathLike) -> Dict[int, Dict]:
             try:
                 loopback_ip = call_subnet_func("subnet_router", [asn, idx, "router"], script_path)
                 loopback_ip = loopback_ip.split("/")[0]
+
+                host_ip = call_subnet_func("subnet_host_router", [asn, idx, "host"], script_path)
+                host_ip = host_ip.split("/")[0]
+                host_name = derive_container_name(asn, router_name, "host", info.get("all_in_one"))
             except subprocess.CalledProcessError as e:
                 print(f"Error getting IP for AS{asn} router {router_name}: {e}")
                 continue
 
             router_details = get_router_interfaces_from_config(router_name, asn, config_dir)
-            container_name = derive_container_name(asn, router_name)
+            container_name = derive_container_name(asn, router_name, "router")
 
             interfaces = router_details["interfaces"]
             interfaces.insert(0, {
@@ -468,7 +477,11 @@ def get_all_routers(config_dir: os.PathLike) -> Dict[int, Dict]:
             router_map[router_name] = {
                 "is_border": router_details["is_border"],
                 "interfaces": interfaces,
-                "container": container_name
+                "container": container_name,
+                "host": {
+                    "container": host_name,  # Adjust to your actual naming convention
+                    "ip": host_ip
+                }
             }
 
         result[asn] = {
@@ -480,6 +493,13 @@ def get_all_routers(config_dir: os.PathLike) -> Dict[int, Dict]:
     return result
 
 
-def derive_container_name(asn: int, router_name: str) -> str:
-    """Derive Docker container name based on AS number and router name."""
-    return f"{asn}_{router_name}router"
+def derive_container_name(asn: int, name: str, container_type: str, all_in_one: bool = False) -> Optional[str]:
+    """Derive Docker container name."""
+    if container_type == "router":
+        return f"{asn}_{name}router"
+    elif container_type == "host":
+        if not all_in_one:
+            return f"{asn}_{name}host"
+        else:
+            return f"{asn}_{name}host0"
+    return None

@@ -1,8 +1,6 @@
 import ipaddress
-import json
 import uuid
 import threading
-from time import sleep
 from datetime import datetime
 from flask import Blueprint, request, jsonify, current_app
 import subprocess
@@ -16,7 +14,6 @@ traceroute_bp = Blueprint("traceroute", __name__)
 TRACEROUTE_RESULTS = {}
 
 def cleanup_loop(config=None, **kwargs):
-    from datetime import datetime
     expire_after = config.get("TRACEROUTE_CLEANUP_EXPIRE_AFTER", 600) if config else 600
     now = datetime.now()
     expired = []
@@ -43,7 +40,22 @@ def run_traceroute_job(job_id, container, target_ip, logger):
         cmd = ["docker", "exec", container, "sh", "-c", f"traceroute -w 1 -q 1 -m 10 {target_ip} 2>&1"]
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
         output = result.stdout
+        stderr = result.stderr
 
+        # Pr�fe, ob der Befehl fehlgeschlagen ist
+        if result.returncode != 0 or not output.strip():
+            error_msg = stderr.strip() or "Traceroute command failed or returned no output."
+            logger.warning(f"[Traceroute] Execution failed: {error_msg}")
+            TRACEROUTE_RESULTS[job_id] = {
+                "timestamp": timestamp,
+                "container": container,
+                "target_ip": target_ip,
+                "raw_output": output or stderr,
+                "error": f"Traceroute failed (code {result.returncode}): {error_msg}"
+            }
+            return
+
+        # Versuche, mit jc zu parsen
         try:
             parsed = jc.parse("traceroute", output)
         except Exception as e:
@@ -59,6 +71,7 @@ def run_traceroute_job(job_id, container, target_ip, logger):
         }
 
     except subprocess.TimeoutExpired:
+        logger.warning(f"[Traceroute] Timeout for {target_ip}")
         TRACEROUTE_RESULTS[job_id] = {
             "error": f"Traceroute to {target_ip} timed out after 60s"
         }
