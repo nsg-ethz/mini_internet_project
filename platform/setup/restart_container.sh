@@ -66,7 +66,9 @@ restart_one_l3_host() {
     local RouterCtnName="${CurrentAS}_${CurrentRegion}router"
 
     # make sure the container is not running, otherwise will cause error and need to manually clear ip link
-    docker kill "${HostCtnName}" 2>/dev/null || true
+    if $(docker inspect -f '{{.State.Running}}' ${HostCtnName}); then
+    	docker kill "${HostCtnName}" 2>/dev/null
+    fi
 
     # clean up the old netns of the container
     clean_ctn_netns "${HostCtnName}"
@@ -141,7 +143,9 @@ restart_one_router() {
 
     local RouterCtnName="${CurrentAS}_${CurrentRegion}router"
 
-    docker kill "${RouterCtnName}" 2>/dev/null || true
+    if $(docker inspect -f '{{.State.Running}}' ${RouterCtnName}); then
+    	docker kill "${RouterCtnName}" 2>/dev/null
+    fi
 
     # clean up the old netns of the container
     clean_ctn_netns "${RouterCtnName}"
@@ -448,7 +452,9 @@ restart_one_l2_host() {
                     # cannot move the following out of the loop, because need to find the DCName
                     HostCtnName="${CurrentAS}_L2_${DCName}_${HostName}"
 
-                    docker kill "${HostCtnName}" 2>/dev/null || true
+                    if $(docker inspect -f '{{.State.Running}}' ${HostCtnName}); then
+    	                docker kill "${HostCtnName}" 2>/dev/null
+                    fi
 
                     # clean up the old netns of the container
                     clean_ctn_netns "${HostCtnName}"
@@ -565,7 +571,9 @@ restart_one_l2_switch() {
                 if [[ "${SWName}" == "${CurrentSwitch}" ]]; then
                     local SwitchCtnName="${CurrentAS}_L2_${DCName}_${CurrentSwitch}"
 
-                    docker kill "${SwitchCtnName}" 2>/dev/null
+                    if $(docker inspect -f '{{.State.Running}}' ${SwitchCtnName}); then
+    	                docker kill "${SwitchCtnName}" 2>/dev/null
+                    fi
 
                     # clean up the old netns of the container
                     clean_ctn_netns "${SwitchCtnName}"
@@ -681,7 +689,9 @@ restart_one_ixp() {
 
     local IXPCtnName="${CurrentAS}_IXP"
 
-    docker kill "${IXPCtnName}" 2>/dev/null || true
+    if $(docker inspect -f '{{.State.Running}}' ${IXPCtnName}); then
+    	docker kill "${IXPCtnName}" 2>/dev/null
+    fi
     # set -x # used to see which router container still has the IXP interface
 
     # clean up the old netns of the container
@@ -693,7 +703,7 @@ restart_one_ixp() {
     echo "Restarted IXP ${IXPCtnName}"
 
     # need enough time for each router to clean up the old IXP interface
-    sleep 300
+    sleep 60
 
     # connect all external links
     readarray ExternalLinks <"${DIRECTORY}/config/aslevel_links.txt"
@@ -734,7 +744,7 @@ restart_one_ixp() {
     docker exec -d "${IXPCtnName}" bash -c "ip link set dev IXP up"
 
     # clear bgp
-    docker exec "${IXPCtnName}" vtysh -c 'clear ip bgp *' -c 'exit'
+    docker exec -d "${IXPCtnName}" vtysh -c 'clear ip bgp *' -c 'exit'
 }
 
 # restart an ssh proxy container
@@ -747,7 +757,10 @@ restart_one_ssh() {
 
     local CurrentAS=$1
     local SshCtnName="${CurrentAS}_ssh"
-    docker kill "${SshCtnName}" 2>/dev/null || true
+    
+    if $(docker inspect -f '{{.State.Running}}' ${SshCtnName}); then
+    	docker kill "${SshCtnName}" 2>/dev/null
+    fi
 
     # enough to just restart the container
     docker restart "${SshCtnName}" 1>/dev/null
@@ -758,8 +771,12 @@ restart_web_proxy() {
     local WebCtnName="WEB"
     local WebProxyCtnName="PROXY"
 
-    docker kill "${WebCtnName}" 2>/dev/null || true
-    docker kill "${WebProxyCtnName}" 2>/dev/null || true
+     if $(docker inspect -f '{{.State.Running}}' ${WebCtnName}); then
+    	docker kill "${WebCtnName}" 2>/dev/null
+    fi
+    if $(docker inspect -f '{{.State.Running}}' ${WebProxyCtnName}); then
+    	docker kill "${WebProxyCtnName}" 2>/dev/null
+    fi
 
     docker restart "${WebCtnName}" 1>/dev/null
     docker restart "${WebProxyCtnName}" 1>/dev/null
@@ -772,7 +789,9 @@ restart_web_proxy() {
 restart_mesaurement() {
     local MeasureCtnName="MEASUREMENT"
 
-    docker kill "${MeasureCtnName}" 2>/dev/null || true
+    if $(docker inspect -f '{{.State.Running}}' ${MeasureCtnName}); then
+    	docker kill "${MeasureCtnName}" 2>/dev/null
+    fi
 
     # clean up the old netns of the container
     clean_ctn_netns "${MeasureCtnName}"
@@ -817,7 +836,9 @@ restart_mesaurement() {
 restart_dns() {
     local DnsCtnName="DNS"
 
-    docker kill "${DnsCtnName}" 2>/dev/null || true
+    if $(docker inspect -f '{{.State.Running}}' ${DnsCtnName}); then
+    	docker kill "${DnsCtnName}" 2>/dev/null
+    fi
 
     # clean up the old netns of the container
     clean_ctn_netns "${DnsCtnName}"
@@ -862,7 +883,9 @@ restart_matrix() {
 
     local MatrixCtnName="MATRIX"
 
-    docker kill "${MatrixCtnName}" 2>/dev/null || true
+    if $(docker inspect -f '{{.State.Running}}' ${MatrixCtnName}); then
+    	docker kill "${MatrixCtnName}" 2>/dev/null
+    fi
 
     # clean up the old netns of the container
     clean_ctn_netns "${MatrixCtnName}"
