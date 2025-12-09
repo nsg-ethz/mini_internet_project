@@ -219,10 +219,12 @@ for ((k = 0; k < group_numbers; k++)); do
                         -v "${location}"/looking_glass_json.txt:/home/looking_glass_json.txt \
                         -v "${location}"/daemons:/etc/frr/daemons \
                         -v "${location}"/frr.conf:/etc/frr/frr.conf \
+                        -v "${location}"/wireguard/:/etc/wireguard/ \
                         -v /etc/timezone:/etc/timezone:ro \
                         --log-opt max-size=1m --log-opt max-file=3 \
                         --network="${ssh_to_ctn_bname}" --ip="${subnet_ssh_router%/*}" \
-                        "${DOCKERHUB_PREFIX}d_router" > /dev/null
+                        --env "VPN_OBSERVER_SLEEP=${VPN_OBSERVER_SLEEP}" \
+			"${DOCKERHUB_PREFIX}d_router" > /dev/null
 
                     # rename eth0 interface to ssh in the router container
                     docker exec "${group_number}""_""${rname}""router" ip link set dev eth0 down
@@ -274,6 +276,9 @@ for ((k = 0; k < group_numbers; k++)); do
                         additional_args+=("-v" "${rpki_location}/tals:/root/.rpki-cache/tals:ro")
                         additional_args+=("-v" "${DIRECTORY}/groups/g${group_number}/rpki_exceptions.json:/root/rpki_exceptions.json")
                         additional_args+=("-v" "${DIRECTORY}/groups/g${group_number}/rpki_exceptions_autograder.json:/root/rpki_exceptions_autograder.json")
+
+                    elif [[ "${htype}" == *"vpnsecret"* ]]; then
+                        additional_args+=("-v" "${DIRECTORY}/config/vpnsecret/:/server/:ro")
                     fi
 
                     docker run -itd --dns="${subnet_dns%/*}" \

@@ -4,13 +4,66 @@ import shutil
 import sqlite3
 import sys
 import tempfile
+from pathlib import Path
 from itertools import chain
 
+from .parsers import parse_as_config, parse_as_connections, parse_looking_glass_json
 from .analyzer_helpers import load_config, load_looking_glass
 
 
 class ASPathError(Exception):
     pass
+
+
+def prepare_bgp_analysis(config, asn=None, worker=False):
+    """Prepare matrix.
+
+    Without background workers, create it from scratch now.
+    With background workers, only read result if `worker=False`, and
+    only create result if `worker=True`.
+    """
+    db_file = Path(config["ANALYSIS_CACHE"])
+
+    # Don't even load configs, just immediately return results.
+    if config["BACKGROUND_WORKERS"] and not worker:
+        freq = config['ANALYSIS_UPDATE_FREQUENCY']
+        if not db_file.is_file():
+            last = None
+            msgs = None
+        elif asn is not None:
+            last, msgs = load_analysis(db_file, asn)
+        else:
+            last, msgs = load_report(db_file)
+        return last, freq, msgs
+
+    # Now we need configs and compute.
+    as_data = parse_as_config(
+        config['LOCATIONS']['as_config'],
+        router_config_dir=config['LOCATIONS']['config_directory'],
+    )
+    connection_data = parse_as_connections(
+        config['LOCATIONS']['as_connections']
+    )
+    looking_glass_data = parse_looking_glass_json(
+        config['LOCATIONS']['groups']
+    )
+
+    if config["BACKGROUND_WORKERS"] and worker:
+        os.makedirs(db_file.parent, exist_ok=True)
+        # Update db, return nothing
+        update_db(
+            db_file, as_data, connection_data, looking_glass_data)
+        return
+
+    # Compute on the fly
+    freq = None
+    if asn is not None:
+        last, msgs = analyze_bgp(
+            asn, as_data, connection_data, looking_glass_data)
+    else:
+        last, msgs = bgp_report(
+            as_data, connection_data, looking_glass_data)
+    return last, freq, msgs
 
 
 # Helpers to get results.

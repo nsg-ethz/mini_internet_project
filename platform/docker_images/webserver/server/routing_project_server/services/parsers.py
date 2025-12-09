@@ -17,22 +17,25 @@ def find_looking_glass_textfiles(directory: os.PathLike) \
         -> Dict[int, Dict[str, Path]]:
     """Find all available looking glass files."""
     results = {}
-    for groupdir in Path(directory).iterdir():
-        if not groupdir.is_dir() or not groupdir.name.startswith('g'):
-            # Groups have directories gX with X being the group number.
-            # Ignore other dirs.
-            continue
-        group = int(groupdir.name.replace('g', ''))
-        groupresults = {}
-        for routerdir in groupdir.iterdir():
-            if not routerdir.is_dir():
+    try:
+        for groupdir in Path(directory).iterdir():
+            if not groupdir.is_dir() or not groupdir.name.startswith('g'):
+                # Groups have directories gX with X being the group number.
+                # Ignore other dirs.
                 continue
-            # Check if there is a looking_glass file.
-            looking_glass_file = routerdir / "looking_glass.txt"
-            if looking_glass_file.is_file():
-                groupresults[routerdir.name] = looking_glass_file
-        if groupresults:
-            results[group] = groupresults
+            group = int(groupdir.name.replace('g', ''))
+            groupresults = {}
+            for routerdir in groupdir.iterdir():
+                if not routerdir.is_dir():
+                    continue
+                # Check if there is a looking_glass file.
+                looking_glass_file = routerdir / "looking_glass.txt"
+                if looking_glass_file.is_file():
+                    groupresults[routerdir.name] = looking_glass_file
+            if groupresults:
+                results[group] = groupresults
+    except:
+        print("Error when accessing " + directory)
 
     return results
 
@@ -45,23 +48,26 @@ def parse_looking_glass_json(directory: os.PathLike) -> \
     """
     # Note: group 1 = AS 1; group/as is used interchangeable.
     results = {}
-    for groupdir in Path(directory).iterdir():
-        if not groupdir.is_dir() or not groupdir.name.startswith('g'):
-            # Groups have directories gX with X being the group number.
-            # Ignore other dirs.
-            continue
-        group = int(groupdir.name.replace('g', ''))
-        groupresults = {}
-        for routerdir in groupdir.iterdir():
-            if not routerdir.is_dir():
+    try:
+        for groupdir in Path(directory).iterdir():
+            if not groupdir.is_dir() or not groupdir.name.startswith('g'):
+                # Groups have directories gX with X being the group number.
+                # Ignore other dirs.
                 continue
-            # Check if there is a looking_glass file.
-            looking_glass_file = routerdir / "looking_glass_json.txt"
-            if looking_glass_file.is_file():
-                groupresults[routerdir.name] = _read_json_safe(
-                    looking_glass_file)
-        if groupresults:
-            results[group] = groupresults
+            group = int(groupdir.name.replace('g', ''))
+            groupresults = {}
+            for routerdir in groupdir.iterdir():
+                if not routerdir.is_dir():
+                    continue
+                # Check if there is a looking_glass file.
+                looking_glass_file = routerdir / "looking_glass_json.txt"
+                if looking_glass_file.is_file():
+                    groupresults[routerdir.name] = _read_json_safe(
+                        looking_glass_file)
+            if groupresults:
+                results[group] = groupresults
+    except:
+        print("Error when accessing " + directory)
     return results
 
 
@@ -72,21 +78,25 @@ def parse_as_config(filename: os.PathLike,
 
     The available routers are only loaded if `router_config_dir` is provided.
     """
-    reader = csv.reader(_read_clean(filename), delimiter='\t')
+
     results = {}
-    for row in reader:
-        asn = int(row[0])
-        results[asn] = {'type': row[1]}
+    try:
+        reader = csv.reader(_read_clean(filename), delimiter='\t')
+        for row in reader:
+            asn = int(row[0])
+            results[asn] = {'type': row[1]}
 
-        if router_config_dir is not None:
-            router_config_file = Path(router_config_dir) / Path(row[3])
+            if router_config_dir is not None:
+                router_config_file = Path(router_config_dir) / Path(row[3])
 
-            if not router_config_file.is_file():
-                continue
+                if not router_config_file.is_file():
+                    continue
 
-            r_reader = csv.reader(_read_clean(
-                router_config_file), delimiter='\t')
-            results[asn]['routers'] = [row[0] for row in r_reader]
+                r_reader = csv.reader(_read_clean(
+                    router_config_file), delimiter='\t')
+                results[asn]['routers'] = [row[0] for row in r_reader]
+    except:
+        print("Failed to read " + filename)
 
     return results
 
@@ -107,8 +117,12 @@ def parse_public_as_connections(filename: os.PathLike) \
         'b_asn', 'b_router', 'b_role',
         'a_ip',
     ]
-    reader = csv.DictReader(
-        _read_clean(filename), fieldnames=header, delimiter='\t')
+    try:
+        reader = csv.DictReader(
+            _read_clean(filename), fieldnames=header, delimiter='\t')
+    except:
+        print("Failed to read: " + filename)
+        return None
 
     data = {}
     for row in reader:
@@ -153,31 +167,34 @@ def parse_as_connections(filename: os.PathLike) \
         'b_asn', 'b_router', 'b_role',
         'bw', 'delay', 'subnet',
     ]
-    reader = csv.DictReader(
-        _read_clean(filename), fieldnames=header, delimiter='\t')
+    try:
+        reader = csv.DictReader(
+            _read_clean(filename), fieldnames=header, delimiter='\t')
 
-    connections = []
-    for row in reader:
-        row["a_asn"] = int(row["a_asn"])
-        row["b_asn"] = int(row["b_asn"])
-        link = {
-            'bandwith': row['bw'],
-            'delay': row['delay'],
-            'subnet': row['subnet'],
-        }
+        connections = []
+        for row in reader:
+            row["a_asn"] = int(row["a_asn"])
+            row["b_asn"] = int(row["b_asn"])
+            link = {
+                'bandwith': row['bw'],
+                'delay': row['delay'],
+                'subnet': row['subnet'],
+            }
 
-        connection = tuple(
-            {key: row[f"{side}_{key}"] for key in ["asn", "router", "role"]}
-            for side in ('a', 'b')
-        )
-        # Now replace N/As with None and add link data to both sides.
-        for sidedata in connection:
-            if sidedata['router'] == 'N/A':
-                sidedata['router'] = None
-            sidedata.update(link)
-        connections.append(connection)
+            connection = tuple(
+                {key: row[f"{side}_{key}"] for key in ["asn", "router", "role"]}
+                for side in ('a', 'b')
+            )
+            # Now replace N/As with None and add link data to both sides.
+            for sidedata in connection:
+                if sidedata['router'] == 'N/A':
+                    sidedata['router'] = None
+                sidedata.update(link)
+            connections.append(connection)
 
-    return sorted(connections, key=lambda x: (x[0]['asn'], x[1]['asn']))
+        return sorted(connections, key=lambda x: (x[0]['asn'], x[1]['asn']))
+    except:
+        return []
 
 
 def parse_matrix_connectivity(filename: os.PathLike):
@@ -226,5 +243,9 @@ def _read_json_safe(filename: os.PathLike, sleep_time=0.01, max_attempts=200):
 
 def _read_clean(filename: os.PathLike) -> List[str]:
     """Read a file and make sure that all delimiters are single tabs."""
-    with open(Path(filename)) as file:
-        return [re.sub('\s+', '\t', line) for line in file]
+    try:
+        with open(Path(filename)) as file:
+            return [re.sub('\s+', '\t', line) for line in file]
+    except:
+        print("Error accessing " + filename)
+        return []

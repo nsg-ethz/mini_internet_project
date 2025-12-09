@@ -60,6 +60,7 @@ journal = {SIGCOMM Comput. Commun. Rev.},
 
 - **Thomas Holterbach** <thomasholterbach@gmail.com>
 - **Tobias Bühler** <buehlert@ethz.ch> 
+- **Lukas Röllin** <roellinl@ethz.ch> 
 - **Laurent Vanbever** <lvanbever@ethz.ch> 
 [NSG Group website](https://nsg.ee.ethz.ch/home/)
 
@@ -73,6 +74,7 @@ We thank our ETH colleagues:
  - **Roland Meier**, for the connectivity matrix (prior 2022). 
 
 We are thankful to the following ETH students who helped us developping the platform during their studies:
+- **Leonard Wechsler**, 2024. He implemented the new VPN based on Wireguard and added a webpage tab for the students to debug the VPN connections.
 - **Martin Vahlensieck**, 2021. He implemented the BGP policy analyzer and the auto-completion in the SSH container.
 - **Sandro Lutz**, 2021. He continued the work of Denis and managed to make RPKI work within the mini-Internet. Besides, he improved the docker images that are used within the platform.
 - **Denis Mikhaylov**, 2020. He was the first student who worked on implementing RPKI within the mini-Internet.
@@ -84,3 +86,13 @@ This platform has been tailored to teach how the Internet works in our Communica
 
 If you want to use this platform for your networking class, we recommend that you spent some time understanding the code and how we build the mini-Internet, and we recommend you to try it first before using it with actual students.
 We assume no responsibility or liability for any problem you may encounter while using the platform.
+
+### License
+
+This project is licensed under the MIT License as of March 25, 2025.
+See [LICENSE](./LICENSE) and [RELICENSED.md](./RELICENSED.md) for details.
+
+The Docker container includes an unmodified script (`bgpsimple.pl`) that is licensed under the **GNU General Public License v3 (GPLv3)**.
+While the rest of the project is under the MIT License, users and redistributors of the Docker container must comply with the terms of the GPLv3 for that component.
+
+See [THIRD_PARTY_LICENSES](./THIRD_PARTY_LICENSES) for more information.

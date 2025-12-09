@@ -1,8 +1,61 @@
 """Check whether the path between ASes is correct."""
 
 from collections import defaultdict
+import os
+from pathlib import Path
+import pickle
 from typing import Dict
+from . import parsers
 
+
+
+def prepare_matrix(config, worker=False):
+    """Prepare matrix.
+
+    Without background workers, create it from scratch now.
+    With background workers, only read result if `worker=False`, and
+    only create result if `worker=True`.
+    """
+    cache_file = Path(config["MATRIX_CACHE"])
+    if config["BACKGROUND_WORKERS"] and not worker:
+        try:
+            with open(cache_file, 'rb') as file:
+                return pickle.load(file)
+        except FileNotFoundError:
+            return (None, None, {}, {})
+
+    # Load all required files.
+    as_data = parsers.parse_as_config(
+        config['LOCATIONS']['as_config'],
+        router_config_dir=config['LOCATIONS']['config_directory'],
+    )
+    connection_data = parsers.parse_as_connections(
+        config['LOCATIONS']['as_connections']
+    )
+    looking_glass_data = parsers.parse_looking_glass_json(
+        config['LOCATIONS']['groups']
+    )
+    connectivity_data = parsers.parse_matrix_connectivity(
+        config['LOCATIONS']['matrix']
+    )
+    last_updated, update_frequency = parsers.parse_matrix_stats(
+        config['LOCATIONS']['matrix_stats']
+    )
+
+    # Compute results
+    connectivity = check_connectivity(
+        as_data, connectivity_data)
+    validity = check_validity(
+        as_data, connection_data, looking_glass_data)
+
+    results = (last_updated, update_frequency, connectivity, validity)
+
+    if config["BACKGROUND_WORKERS"] and worker:
+        os.makedirs(cache_file.parent, exist_ok=True)
+        with open(cache_file, "wb") as file:
+            pickle.dump(results, file)
+
+    return results
 
 def check_connectivity(as_data, connectivity_data):
     """Check whether two ASes are reachable with ping."""
@@ -16,7 +69,7 @@ def check_connectivity(as_data, connectivity_data):
             if dst_data['type'] != 'AS':
                 continue
             connected[src_asn][dst_asn] = False
-
+            
     # Check which connections we have data for.
     for src_asn, dst_asn, status in connectivity_data:
         connected[src_asn][dst_asn] = status
