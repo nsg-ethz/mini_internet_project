@@ -6,7 +6,7 @@
 ###########################################
 ### READ ARGUMENTS WITH DEFAULT VALUES  ###
 ###########################################
-CONFIG_DIR="${1:-$(pwd)}"
+CONFIG_DIR="${1:-$(dirname $0)/../../}"
 action="${2:--A}" # or -D to undo
 SSH_PORT_BASE="${3:-2000}"
 WEBSERVER_ARG="${4:-80,443}"
@@ -49,7 +49,7 @@ iptables $action INPUT -p tcp --tcp-flags RST RST -m limit --limit 2/s --limit-b
 iptables $action INPUT -p tcp --tcp-flags RST RST -j DROP
 
 # SSH brute-force protection
-readarray groups < "$CONFIG_DIR/AS_config.txt"
+readarray groups < "$CONFIG_DIR/config/AS_config.txt"
 group_numbers=${#groups[@]}
 
 for ((k=0;k<group_numbers;k++)); do
