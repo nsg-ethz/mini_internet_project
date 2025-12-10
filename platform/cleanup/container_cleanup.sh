@@ -97,6 +97,7 @@ docker kill MEASUREMENT &>/dev/null || true &
 docker kill MATRIX &>/dev/null || true &
 docker kill WEB &>/dev/null || true &
 docker kill PROXY &>/dev/null || true &
+docker kill HISTORY &>/dev/null || true &
 
 wait # wait for all background processes to finish
 docker system prune -f --volumes  # remove all unused volumes

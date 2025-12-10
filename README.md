@@ -60,6 +60,7 @@ journal = {SIGCOMM Comput. Commun. Rev.},
 
 - **Thomas Holterbach** <thomasholterbach@gmail.com>
 - **Tobias Bühler** <buehlert@ethz.ch> 
+- **Lukas Röllin** <roellinl@ethz.ch> 
 - **Laurent Vanbever** <lvanbever@ethz.ch> 
 [NSG Group website](https://nsg.ee.ethz.ch/home/)
 
@@ -73,6 +74,7 @@ We thank our ETH colleagues:
  - **Roland Meier**, for the connectivity matrix (prior 2022). 
 
 We are thankful to the following ETH students who helped us developping the platform during their studies:
+- **Leonard Wechsler**, 2024. He implemented the new VPN based on Wireguard and added a webpage tab for the students to debug the VPN connections.
 - **Martin Vahlensieck**, 2021. He implemented the BGP policy analyzer and the auto-completion in the SSH container.
 - **Sandro Lutz**, 2021. He continued the work of Denis and managed to make RPKI work within the mini-Internet. Besides, he improved the docker images that are used within the platform.
 - **Denis Mikhaylov**, 2020. He was the first student who worked on implementing RPKI within the mini-Internet.
