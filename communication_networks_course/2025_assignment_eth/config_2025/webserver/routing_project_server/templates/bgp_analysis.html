@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% from 'macros.html' import update_message, h1 %}
+
+{% block body %}
+
+<div class="max-w-4xl mx-auto p-6">
+    {{ h1("bgp analysis (full report)") }}
+    {{ update_message(update_frequency, last_updated)}}
+    {% if messages %}
+    <ul class="list-disc list-inside text-sm">
+        {% for msg in messages %}
+        <li class="p-1">{{msg}}</li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>There are no reports.</p>
+    {% endif %}
+</div>
+{% endblock %}
