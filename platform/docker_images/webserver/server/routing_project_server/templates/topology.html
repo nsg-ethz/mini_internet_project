@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% from 'macros.html' import update_message, h1 %}
+
+{% block head %}
+{{ super() }}
+<!-- vis-network CDN -->
+<script src="https://unpkg.com/vis-network@9.1.2/dist/vis-network.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/vis-network@9.1.2/styles/vis-network.min.css" />
+{% endblock %}
+
+{% block body %}
+<div id="lg-body" class="max-w-4xl mx-auto px-6 pt-6 mb-16">
+    {{ h1("topology") }}
+
+    <p class="mb-2">
+        This visualization displays the AS-level topology, including Tier 1 ISPs, Internet Exchange Points (IXPs), student-operated transit ASes, and stub networks. Traceroute paths can be dynamically overlaid onto this topology. Each traceroute originates from and targets the host connected to the selected routers.    
+    </p>
+
+    <div class="bg-neutral-50 p-4 rounded border text-sm text-neutral-700 mb-6">
+        <div class="flex flex-wrap items-center justify-center gap-6">
+
+            <!-- Origin AS -->
+            <div class="flex flex-col items-start">
+                <span class="font-bold">Origin AS</span>
+                <select id="origin-as"
+                        class="bg-transparent border-0 border-b-2 border-neutral-400 hover:border-[#ff7e79] px-2 py-1">
+                    {% for _group in dropdown_groups|sort %}
+                    <option value="{{ _group }}" {% if _group == group %}selected{% endif %}>{{ _group }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Origin Router -->
+            <div class="flex flex-col items-start">
+                <span class="font-bold">Origin Router</span>
+                <select id="origin-router"
+                        class="bg-transparent border-0 border-b-2 border-neutral-400 hover:border-[#ff7e79] px-2 py-1">
+                    <!-- Filled by JS -->
+                </select>
+            </div>
+
+            <!-- Target AS -->
+            <div class="flex flex-col items-start">
+                <span class="font-bold">Target AS</span>
+                <select id="target-as"
+                        class="bg-transparent border-0 border-b-2 border-neutral-400 hover:border-[#ff7e79] px-2 py-1">
+                    {% for _group in dropdown_groups|sort %}
+                    <option value="{{ _group }}" {% if _group == group %}selected{% endif %}>{{ _group }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Target Router -->
+            <div class="flex flex-col items-start">
+                <span class="font-bold">Target Router</span>
+                <select id="target-router"
+                        class="bg-transparent border-0 border-b-2 border-neutral-400 hover:border-[#ff7e79] px-2 py-1">
+                    <!-- Filled by JS -->
+                </select>
+            </div>
+
+            <!-- Run Button -->
+            <div class="flex items-end">
+                <button id="run-traceroute-btn"
+                        class="px-4 py-2 bg-[#ff7e79] hover:bg-[#ff5c58] text-white rounded shadow transition">
+                    Run Traceroute
+                </button>
+            </div>
+        </div>
+
+        <!-- Border Router Legend -->
+        <div class="mt-4 flex justify-start pl-2">
+            <div class="legend-item flex items-center text-xs text-neutral-600">
+                <span class="inline-block mr-1 text-base leading-none text-black">*</span>
+                Border Router
+            </div>
+        </div>
+    </div>
+
+    <!-- Traceroute Result Display -->
+    <div id="traceroute-result"
+         class="mt-4 p-4 w-full bg-white border border-neutral-300 rounded shadow-sm text-sm text-neutral-800 hidden">
+    </div>
+    
+    <div id="router-connection-info" class="hidden mt-4 text-sm bg-neutral-100 p-3 rounded border border-neutral-300"></div>
+
+    <!-- Network Graph -->
+    <div id="network" class="w-full h-[80vh] mt-6 mb-8 border rounded shadow-sm bg-white"></div>
+
+    <!-- Full Legend -->
+    <div class="legend bg-neutral-50 p-4 rounded border text-sm text-neutral-700">
+        <h3 class="text-lg font-semibold mb-2">Legend</h3>
+        <div class="grid grid-cols-2 gap-y-2">
+            <div class="legend-item flex items-center">
+                <span class="w-4 h-4 rounded-full inline-block mr-2" style="background: #e74c3c;"></span>
+                Tier 1 AS
+            </div>
+            <div class="legend-item flex items-center">
+                <span class="w-4 h-4 rounded inline-block mr-2" style="background: #f39c12;"></span>
+                IXP
+            </div>
+            <div class="legend-item flex items-center">
+                <span class="w-4 h-4 rounded-full inline-block mr-2" style="background: #3498db;"></span>
+                Transit AS (Student)
+            </div>
+            <div class="legend-item flex items-center">
+                <span class="w-4 h-4 rounded-full inline-block mr-2" style="background: #7f8c8d;"></span>
+                Stub AS
+            </div>
+            <div class="legend-item flex items-center">
+                <span class="w-8 border-t-2 border-red-500 inline-block mr-2"></span>
+                Provider/Customer Link
+            </div>
+            <div class="legend-item flex items-center">
+                <span class="w-8 border-t-2 border-dashed border-green-500 inline-block mr-2"></span>
+                Peer/Peer Link
+            </div>
+            <div class="legend-item flex items-center">
+                <span class="w-8 border-t-2 border-[#8e44ad] inline-block mr-2"></span>
+                Traceroute Path
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Inject routers data -->
+<script>
+  window.allRouters = {{ all_routers | tojson }};
+</script>
+
+<!-- Load static JS at end for performance -->
+<script type="module" src="{{ url_for('static', filename='topology.js') }}"></script>
+{% endblock %}

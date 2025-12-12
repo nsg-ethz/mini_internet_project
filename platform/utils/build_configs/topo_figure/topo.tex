@@ -7,6 +7,29 @@
 \pgfdeclarelayer{background}
 \pgfsetlayers{background,main}
 
+% -----------------------------
+% Coordinate logging macros
+% -----------------------------
+\newwrite\topofile
+\immediate\openout\topofile=topology.txt
+
+\newcommand{\LogNode}[3]{%%
+	\path (#1);%%
+	\pgfgetlastxy{\px}{\py}%%
+	\pgfmathsetmacro{\angle}{#3}%% Capture the angle
+	% Apply the rotation transformation
+	\pgfmathsetmacro{\xrot}{\px * cos(\angle) - \py * sin(\angle)}
+	\pgfmathsetmacro{\yrot}{\px * sin(\angle) + \py * cos(\angle)}
+	\edef\xstr{\xrot}%%
+	\edef\ystr{\yrot}%%
+	\immediate\write\topofile{node #1 #2 \xstr pt\space \ystr pt}
+}
+
+
+\newcommand{\LogEdge}[3]{%%
+	\immediate\write\topofile{edge #1 #2 #3}
+}
+
 \begin{document}
 \begin{tikzpicture}[
   % ------------------
@@ -100,13 +123,13 @@
       \last = \s2;
       \step = \start + 2;
     }
-    \node[rot, tier 1, above=4mm of #3] (as\t1) {\t1};
-    \node[rot, tier 1, below=4mm of #3] (as\t2) {\t2};
-    \draw[peer] (as\t1) -- (#5);
-    \draw[peer] (as\t2) -- (#5);
-    \draw[peer] (as\t1) -- (#6);
-    \draw[peer] (as\t2) -- (#7);
-    \draw[peer] (as\t1) -- (as\t2);
+    \node[rot, tier 1, above=4mm of #3] (as\t1) {\t1}; \LogNode{as\t1}{tier1}{#4}
+    \node[rot, tier 1, below=4mm of #3] (as\t2) {\t2}; \LogNode{as\t2}{tier1}{#4}
+    \draw[peer] (as\t1) -- (#5); \LogEdge{as\t1}{#5}{peer}
+    \draw[peer] (as\t2) -- (#5); \LogEdge{as\t2}{#5}{peer}
+    \draw[peer] (as\t1) -- (#6); \LogEdge{as\t1}{#6}{peer}
+    \draw[peer] (as\t2) -- (#7); \LogEdge{as\t2}{#7}{peer}
+    \draw[peer] (as\t1) -- (as\t2); \LogEdge{as\t1}{as\t2}{peer}
     \foreach \n [remember=\n as \p (initially \t1)] in {\start,\step,...,\last}{
       \tikzmath{integer \m, \q; \m = \n + 1; \q = \p + 1;}
       \ifdefined\EnableStubHijacks
@@ -130,25 +153,25 @@
           };
         }
       \fi
-      \node[rot, \kind, left=of as\p]  (as\n) {\n};
-      \node[rot, \kind, left=of as\q] (as\m) {\m};
-      \draw[prov] (as\n) -- (as\p);
-      \draw[prov] (as\n) -- (as\q);
-      \draw[prov] (as\m) -- (as\p);
-      \draw[prov] (as\m) -- (as\q);
-      \draw[peer] (as\n) -- (as\m);
-      \draw[peer] (as\n) -- (#6);
-      \draw[peer] (as\m) -- (#7);
+      \node[rot, \kind, left=of as\p]  (as\n) {\n}; \LogNode{as\n}{\kind}{#4}
+      \node[rot, \kind, left=of as\q] (as\m) {\m}; \LogNode{as\m}{\kind}{#4}
+      \draw[prov] (as\n) -- (as\p); \LogEdge{as\n}{as\p}{prov}
+      \draw[prov] (as\n) -- (as\q); \LogEdge{as\n}{as\q}{prov}
+      \draw[prov] (as\m) -- (as\p); \LogEdge{as\m}{as\p}{prov}
+      \draw[prov] (as\m) -- (as\q); \LogEdge{as\m}{as\q}{prov}
+      \draw[peer] (as\n) -- (as\m); \LogEdge{as\n}{as\m}{peer}
+      \draw[peer] (as\n) -- (#6); \LogEdge{as\n}{#6}{peer}
+      \draw[peer] (as\m) -- (#7); \LogEdge{as\m}{#7}{peer}
     }
   \end{scope}
 }
 
 % Draw all IXPs
-\node[ixp] (ixp\ixp{0}) {IXP \ixp{0}};
+\node[ixp] (ixp\ixp{0}) {IXP \ixp{0}}; \LogNode{ixp\ixp{0}}{ixp}{0}
 \foreach [
   evaluate=\i as \theta using (\i-1.5)*\angleStep+\angle
 ] \i in {1,...,\zones} {
-  \node[ixp] at (\theta:\radiusIxp) (ixp\ixp{\i}) {IXP \ixp{\i}};
+  \node[ixp] at (\theta:\radiusIxp) (ixp\ixp{\i}) {IXP \ixp{\i}}; \LogNode{ixp\ixp{\i}}{ixp}{0}
 };
 
 % draw all zones
@@ -168,7 +191,7 @@
   evaluate=\i as \n using int(((\i-1)*\zoneStep)+2),
   evaluate=\j as \m using int(((\j-1)*\zoneStep)+1),
 ] \i in {1,...,\zones} {
-  \draw[peer] (as\n) -- (as\m);
+  \draw[peer] (as\n) -- (as\m); \LogEdge{as\n}{as\m}{peer}
 }
 
 % Legend

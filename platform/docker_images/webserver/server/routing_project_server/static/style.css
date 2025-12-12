@@ -3,3 +3,34 @@ body {
 	font-family: "Helvetica Neue", Arial, sans-serif;
 }
 
+#network {
+  width: 100%;
+  height: 800px;
+  border: 1px solid #ccc;
+}
+
+.legend {
+  margin-top: 2rem;
+}
+
+.legend-item {
+  margin-bottom: 5px;
+}
+
+.dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 5px;
+  vertical-align: middle;
+}
+
+.legend-line {
+  width: 20px;
+  height: 2px;
+  display: inline-block;
+  margin-right: 5px;
+}
+
+

@@ -91,6 +91,7 @@ fi
 docker run -itd --name="WEB" --cpus=2 \
     --network="bridge" -p 8000:8000 \
     --pids-limit 100 \
+    -v /var/run/docker.sock:/var/run/docker.sock \
     -v ${DATADIR}:${DATADIR_SERVER} \
     -v ${CONFIGDIR}:${CONFIGDIR_SERVER} \
     -v ${CONFIGFILE}:/server/config.py \
