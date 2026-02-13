@@ -81,7 +81,7 @@ EOM
 
 # Add external sourcefiles if necessary:
 additional_args=()
-if [ ${WEBSERVER_SOURCEFILES} != "" ]; then
+if [ -n "${WEBSERVER_SOURCEFILES}" ]; then
 	additional_args+=("--mount" "type=bind,source="${CONFIGDIR}${WEBSERVER_SOURCEFILES}",target=/server")
 fi
 
@@ -121,7 +121,7 @@ docker run -d --name='PROXY' --network="bridge" \
     -v "/var/run/docker.sock:/var/run/docker.sock:ro" \
     -v ${LETSENCRYPT}:/letsencrypt \
     --privileged \
-    traefik:v2.6 \
+    traefik:v3.6.7 \
     "--providers.docker=True" \
     "--providers.docker.network=bridge" \
     "--providers.docker.exposedbydefault=false" ${TLSCONF[@]} \

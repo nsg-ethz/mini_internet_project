@@ -23,7 +23,7 @@ SSH_URL="westvleteren.ethz.ch"
 # You need to specify the hostname of the server and an email for
 # LetsEncrypt to be enabled.
 # UPDATE THOSE VARIABLES. WEBSERVER_HOSTNAME -> hostname of the server and EMAIL -> empty string (for http)
-WEBSERVER_HOSTNAME=""
+WEBSERVER_HOSTNAME="localhost"
 WEBSERVER_ACME_MAIL="nsg@ethz.ch"
 # Hostname and ports for the webserver and krill on the host.
 # (must be publicly available)
