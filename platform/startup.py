@@ -1,46 +1,347 @@
 # import docker
+from dataclasses import dataclass, field
+from collections import defaultdict
 import argparse
+from enum import Enum
 import subprocess
-import csv
 from pathlib import Path
 
-class Domain:
-    id: int
+def read_config(filename: str) -> list[list[str]]:
+    """
+    Helper function to pull text configs from a whitespace-separated file
+    """
+    config_file = args.config / filename
+    if not config_file.exists():
+        raise FileNotFoundError(f"Configuration file not found: {config_file}")
+    with config_file.open() as f:
+        return [line.split() for line in f if line.strip()]
 
-    def __init__(self, config: list[str]) -> None:
-        self.id = int(config[0])
+@dataclass
+class LinkData:
+    throughput_mbit: int
+    delay_ms: float
+    max_buffer_ms: int
 
-    @staticmethod
-    def from_config(config: list[str]) -> "Domain":
-        if config[1] == "AS":
-            return AS(config)
-        elif config[1] == "IXP":
-            return IXP(config)
+    @classmethod
+    def from_triple(cls, config: list[str]) -> "LinkData":
+        assert len(config) == 3, "The config of a link must be a triple"
+        
+        throughput = config[0]
+        if throughput.endswith("mbit"):
+            throughput = throughput[:-4]
         else:
-            raise ValueError(f"Unknown domain type: {config[1]}")
+            raise ValueError(f"Throughput must be in mbit, got: {config[0]}")
+        
+        delay = config[1]
+        if delay.endswith("ms"):
+            delay = delay[:-2]
+        else:
+            raise ValueError(f"Delay must be in ms, got: {config[1]}")
+        
+        max_buffer = config[2]
+        if max_buffer.endswith("ms"):
+            max_buffer = max_buffer[:-2]
+        else:
+            raise ValueError(f"Delay must be in ms, got: {config[2]}")
+        
+        return cls(
+            throughput_mbit = int(throughput),
+            delay_ms = float(delay),
+            max_buffer_ms = int(max_buffer)
+        )
+
+class Relationship(Enum):
+    PROV_CUST = "Provider/Customer"
+    PEER = "Peer/Peer"
+
+    @classmethod
+    def from_roles(cls, role_a: str, role_b: str) -> "Relationship":
+        pair = (role_a.strip().lower(), role_b.strip().lower())
+
+        if pair == ("provider", "customer"):
+            return cls.PROV_CUST
+        elif pair == ("peer", "peer"):
+            return cls.PEER
+        else:
+            raise ValueError(f"Invalid relationship: {role_a}/{role_b}")
+
+@dataclass
+class ExternalLink:
+    """ A directed link between devices in different ASes """
+    src: tuple[int, str]
+    dst: tuple[int, str]
+    relationship: Relationship
+    data: LinkData
+    # TODO: How do we want to deal with this?
+    extra: str
+
+    @classmethod
+    def from_config(cls, link_config: list[str]) -> "ExternalLink":
+        src = (int(link_config[0]), link_config[1])
+        dst = (int(link_config[3]), link_config[4])
+        # Get the type of link
+        relationship = Relationship.from_roles(link_config[2], link_config[5])
+        link_data = LinkData.from_triple(link_config[6:9])
+        return cls(src, dst, relationship, link_data, link_config[9])
+
+@dataclass
+class InternalLink:
+    """ An undirected link between internal devices in an AS """
+    endpoints: frozenset[str]
+    data: LinkData
+
+    @classmethod
+    def from_partial_config(cls, src: str, dst: str, link_config: list[str]) -> "InternalLink":
+        endpoints = frozenset({src, dst})
+        return cls(endpoints, LinkData.from_triple(link_config))
+
+class HostType(Enum):
+    HOST = "host"
+    ROUTINATOR = "routinator"
+    KRILL = "krill"
+
+@dataclass(frozen=True) # This needs to be hashable
+class Host:
+    container_name: str
+    type: HostType
+
+    @classmethod
+    def from_str(cls, value: str) -> "Host | None":
+        """Parse a string to a Host along with its type"""
+
+        if value == "N/A":
+            return None
+        # This happens if the host is an L2 host
+        if ":" not in value:
+            # Plain container path is always a HOST
+            return cls(value, HostType.HOST)
+
+        information, container = value.split(":", maxsplit=1)
+        # The additional information can describe a lot of things
+        try:
+            # If we can parse it, great
+            host_type = HostType(information)
+        except ValueError:
+            # Anything else still has a host
+            # WARN: We purposefully ignore the information about the L2 stuff here
+            host_type = HostType.HOST
+
+        return cls(container, host_type)
+
+@dataclass
+class Switch:
+    name: str
+    mac: str  # Maybe we want a better data structure for this?
+    bridge_id: int
+
+    @classmethod
+    def from_config(cls, config: list[str]) -> "Switch":
+        return cls(
+            name=config[1],
+            mac=config[3],
+            bridge_id=int(config[4])
+        )
+
+@dataclass
+class L2Network:
+    name: str
+    switches: list[Switch] = field(default_factory=list[Switch])
+    hosts: dict[str, tuple[Host, int]] = field(default_factory=dict[str, tuple[Host, int]])
+    links: list[InternalLink] = field(default_factory=list[InternalLink])
+
+def l2_networks_from_configs(routers: set[str], switches_config: str, hosts_config: str, links_config: str) -> dict[str, L2Network]:
+    """
+    Constructs L2 network topology from configuration files.
+    Parses configuration files for switches, hosts, and links to build a dictionary
+    of L2Network objects representing the layer 2 network topology.
+    """
+
+    l2_networks: dict[str, L2Network] = {}
+
+    # First populate all the switches
+    for switch_config in read_config(switches_config):
+        if switch_config[2] != "N/A":
+            assert switch_config[2] in routers, f"The router ({switch_config[2]}) this switch ({switch_config[1]}) is trying to connect to does not exist"
+        switch = Switch.from_config(switch_config)
+        net_name = switch_config[0]
+        
+        if net_name not in l2_networks:
+            l2_networks[net_name] = L2Network(name=net_name)
+
+        l2_networks[net_name].switches.append(switch)
+
+    # Then the hosts and their respective links
+    for host_config in read_config(hosts_config):
+        net_name = host_config[2]
+        assert net_name in l2_networks.keys(), f"The L2 network ({net_name}) this host ({host_config[0]}) is a part of does not exist"
+
+        host_name = host_config[0]
+        vlan = int(host_config[7])
+        host = Host.from_str(host_config[1])
+        assert host is not None, "Unparsable host in L2 network"
+        l2_networks[net_name].hosts[host_name] = (host, vlan)
+
+        # Now the host links
+        host_switch = host_config[3]
+        assert host_switch in [switch.name for switch in  l2_networks[net_name].switches], f"This host ({host_config[0]}) is trying to connect to a switch that does not exist ({host_config[3]})"
+        l2_networks[net_name].links.append(InternalLink.from_partial_config(host_name, host_switch, host_config[4:7]))
+
+    # Finally the links
+    for link_config in read_config(links_config):
+        net_name = link_config[0]
+        assert net_name == link_config[2], "It is not possible to connect two switches that are in different L2 networks"
+
+        src = link_config[1]
+        dst = link_config[3]
+        l2_networks[net_name].links.append(InternalLink.from_partial_config(src, dst, link_config[4:7]))
+
+    return l2_networks
+
+
+class Service(Enum):
+    DNS = "DNS"
+    MATRIX = "MATRIX"
+    MATRIX_TARGET = "MATRIX_TARGET"
+    MEASUREMENT = "MEASUREMENT"
+
+    @classmethod
+    def from_str(cls, value: str) -> "Service | None":
+        """Parse a string to a Service enum, returning None for 'N/A'"""
+        if value == "N/A":
+            return None
+        try:
+            return cls(value)
+        except ValueError:
+            raise ValueError(f"Invalid service value: {value}")
+
+class Access(Enum):
+    VTYSH = "vtysh"
+    LINUX = "linux"
+
+@dataclass
+class Router:
+    name: str
+    services: set[Service]
+    hosts: set[Host]
+    access: str
+
+    @classmethod
+    def from_configs(cls, config: list[list[str]]) -> "Router":
+        """
+        Builds a router from an L3 router configuration line
+        """
+        # Sanity checks, ensure that all config lines share the same name and access                
+        name = config[0][0]
+        access = config[0][3]
+        for row in config:
+            if row[0] != name:
+                raise ValueError(f"Multiline configs must share the same router name. Expected '{name}', got '{row[0]}'")
+            if row[3] != access:
+                raise ValueError(f"Multiline configs must share the same type of access. Expected '{access}', got '{row[3]}'")
             
+        # Extract all services
+        services: set[Service] = {s for row in config if (s := Service.from_str(row[1])) is not None}
+        # Extract all hosts
+        hosts: set[Host] = {h for row in config if (h := Host.from_str(row[2])) is not None}
+        return cls(name, services, hosts, access)
 
-class IXP(Domain):
+def routers_from_config(routers_config: str) -> dict[str, Router]:
+    """
+    Builds a map of routers, indexed by their names, based on an L3 router configuration file
+    """
+    router_configs = read_config(routers_config)
+    # Group them by router, as a router may have multiple lines
+    grouped: dict[str, list[list[str]]] = defaultdict(list)
+
+    for row in router_configs:
+        router_name = row[0]
+        grouped[router_name].append(row)
+
+    if args.verbose:
+        print(f"Found {len(grouped)} routers in configuration '{routers_config}'")
+
+    # Then merge
+    return { router_name: Router.from_configs(configs) for router_name, configs in grouped.items() }
+
+
+class IXP:
     as_id: int
+    #TODO
 
-class AS(Domain):
-    as_id: int
+@dataclass
+class AS:
+    auto: bool
+    routers: dict[str, Router]
+    internal_links: list[InternalLink]
+    l2_networks: dict[str, L2Network]
 
+    @classmethod
+    def from_config(cls, config: list[str]) -> "AS":
+        """
+        Builds an overview of an AS based on the provided configuration 
+        """
+        if args.verbose:
+            print(f"Building AS {config[0]}")
+        # Save these to make sure they are available for L2 construction
+        routers = routers_from_config(config[3])
+        # Build the internal links
+        links: list[InternalLink] = []
+        for link_config in read_config(config[4]):
+            src = link_config[0]
+            dst = link_config[1]
+            assert (src in routers and dst in routers), "Trying to connect two routers that do not exist"
+            links.append(InternalLink.from_partial_config(src, dst, link_config[2:]))
+
+        return cls(
+            auto = config[2] == "Config",
+            routers = routers,
+            internal_links = links,
+            l2_networks = l2_networks_from_configs(set(routers.keys()), config[5], config[6], config[7])
+        )
+
+type Domain = IXP|AS
+
+def domain_from_config(config: list[str]) -> Domain:
+
+    type = config[1]
+    if type == "AS":
+        return AS.from_config(config)
+    elif type == "IXP":
+        return IXP()
+    else:
+        raise(ValueError)
+
+@dataclass
 class Topology:
-    as_es: list[Domain]
+    """
+    The Topology class contains an overview of all ASes and their devices in the mini internet
+    """
+    
+    as_es: dict[int, Domain]
+    external_links: list[ExternalLink]
 
-def parse_configs(path: Path) -> Topology:
+    @classmethod
+    def from_config(cls) -> "Topology":
+        """
+        Builds a view of the ASes in our network from a config file in which every row corresponds to a new AS
+        """
 
-    with open(path.joinpath("AS_config.txt"), 'r') as f:
-        # Specify the tab delimiter and quoting behavior
-        as_level_config = csv.reader(f, delimiter='\t')
+        as_configs = read_config("AS_config.txt")
+        as_es = {int(config[0]): domain_from_config(config) for config in as_configs}
+        # Configure the external links
+        external_links: list[ExternalLink] = []
+        for link_config in read_config("aslevel_links.txt"):
+            # Verify that the endpoints exist
+            src_as = as_es[int(link_config[0])]
+            assert isinstance(src_as, AS), f"Source AS {link_config[0]} must be an AS, not an IXP"
+            assert link_config[1] in src_as.routers.keys(), f"Source router {link_config[1]} does not exist in AS {link_config[0]}"
+            dst_as = as_es[int(link_config[3])]
+            assert isinstance(dst_as, AS), f"Destination AS {link_config[3]} must be an AS, not an IXP"
+            assert link_config[4] in dst_as.routers.keys(), f"Destination router {link_config[4]} does not exist in AS {link_config[3]}"
 
-    as_es: list[Domain] = [Domain(domain_config) for domain_config in as_level_config]
+            external_links.append(ExternalLink.from_config(link_config))
 
-
-    return Topology()
-
-
+        return cls(as_es, external_links)
 
 def run_cmd(cmd: str | list[str], check: bool = True) -> subprocess.CompletedProcess[str]:
     """Run a shell command and return the result.
@@ -66,18 +367,21 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--config', default=script_dir.joinpath("config"))
+    parser.add_argument('-v', '--verbose', action='store_true', help='Enable verbose output')
     args = parser.parse_args()
 
-    parse_configs(args.config)
+    topology = Topology.from_config()
 
-    # Change size of ARP table necessary for large networks
-    # ARP: IP-to-MAC resolution
-    run_cmd("sysctl net.ipv4.neigh.default.gc_thresh1=16384") # the kernel begins to purge unused entries periodically
-    run_cmd("sysctl net.ipv4.neigh.default.gc_thresh2=32768") # more aggresive purging
-    run_cmd("sysctl net.ipv4.neigh.default.gc_thresh3=131072") # no new entries are allowed
-    # apply changes from sysctl.conf
-    run_cmd("sysctl -p")
-    # Increase the max number of running processes
-    run_cmd("sysctl kernel.pid_max=4194304")
+    print("Success")
 
-    print("hello")
+    # # Change size of ARP table necessary for large networks
+    # # ARP: IP-to-MAC resolution
+    # run_cmd("sysctl net.ipv4.neigh.default.gc_thresh1=16384") # the kernel begins to purge unused entries periodically
+    # run_cmd("sysctl net.ipv4.neigh.default.gc_thresh2=32768") # more aggresive purging
+    # run_cmd("sysctl net.ipv4.neigh.default.gc_thresh3=131072") # no new entries are allowed
+    # # apply changes from sysctl.conf
+    # run_cmd("sysctl -p")
+    # # Increase the max number of running processes
+    # run_cmd("sysctl kernel.pid_max=4194304")
+
+    # print("hello")
