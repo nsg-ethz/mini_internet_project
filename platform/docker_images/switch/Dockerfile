@@ -1,4 +1,4 @@
-FROM d_base_supervisor:latest
+FROM base_supervisor:latest
 
 RUN apk add --no-cache openssh-server openvswitch \
     && ssh-keygen -A \

@@ -7,6 +7,7 @@
 # The prefix for the dockerhub images. Leave empty for local images.
 # If it isn't empty, it must end with a slash.
 DOCKERHUB_PREFIX="miniinterneteth/"
+DOCKER_TAG="26"
 # DOCKERHUB_PREFIX="miniinterneteth/"
 
 

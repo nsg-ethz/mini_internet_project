@@ -82,7 +82,7 @@ for ((k = 0; k < group_numbers; k++)); do
                 -v "${DIRECTORY}"/config/ssh_welcome_message.txt:/etc/motd:ro \
                 --log-opt max-size=1m --log-opt max-file=3 \
                 --network="bridge" -p "$((group_number + 2000)):22" \
-                "${DOCKERHUB_PREFIX}d_ssh" > /dev/null # suppress container id output
+                "${DOCKERHUB_PREFIX}ssh:${DOCKER_TAG}" > /dev/null # suppress container id output
 
             # connect to the ssh container network and rename interface
             docker network connect --ip="${subnet_ssh_to_grp%/*}" "$ssh_to_grp_bname" "${group_number}_ssh"
@@ -126,7 +126,7 @@ for ((k = 0; k < group_numbers; k++)); do
                     -v /etc/localtime:/etc/localtime:ro \
                     --log-opt max-size=1m --log-opt max-file=3 \
                     --network="${ssh_to_ctn_bname}" --ip="${subnet_ssh_switch%/*}" \
-                    "${DOCKERHUB_PREFIX}d_switch" > /dev/null
+                    "${DOCKERHUB_PREFIX}switch:${DOCKER_TAG}" > /dev/null
                 # echo ${group_number}_L2_${l2name}_${sname}
 
                 # rename eth0 interface to ssh in the switch container
@@ -179,6 +179,7 @@ for ((k = 0; k < group_numbers; k++)); do
                 property2="${router_i[2]}"
                 htype=$(echo $property2 | cut -d ':' -f 1)
                 dname=$(echo $property2 | cut -d ':' -f 2)
+                dtag=$(echo $property2 | cut -d ':' -f 3)
 
                 # location="${DIRECTORY}"/groups/g"${group_number}"/"${rname}"
                 # for tier-1 and stub ASes, connect all services to the same router
@@ -210,8 +211,6 @@ for ((k = 0; k < group_numbers; k++)); do
                         --sysctl net.ipv6.conf.all.disable_ipv6=0 \
                         --sysctl net.ipv6.conf.all.forwarding=1 \
                         --sysctl net.ipv6.icmp.ratelimit=0 \
-                        --sysctl net.mpls.conf.lo.input=1 \
-                        --sysctl net.mpls.platform_labels=1048575 \
                         --cap-add=ALL \
                         --cap-drop=SYS_RESOURCE \
                         --cpus=2 --pids-limit 100 --hostname "${rname}""_router" \
@@ -224,7 +223,7 @@ for ((k = 0; k < group_numbers; k++)); do
                         --log-opt max-size=1m --log-opt max-file=3 \
                         --network="${ssh_to_ctn_bname}" --ip="${subnet_ssh_router%/*}" \
                         --env "VPN_OBSERVER_SLEEP=${VPN_OBSERVER_SLEEP}" \
-			"${DOCKERHUB_PREFIX}d_router" > /dev/null
+			            "${DOCKERHUB_PREFIX}router:${DOCKER_TAG}" > /dev/null
 
                     # rename eth0 interface to ssh in the router container
                     docker exec "${group_number}""_""${rname}""router" ip link set dev eth0 down
@@ -293,7 +292,7 @@ for ((k = 0; k < group_numbers; k++)); do
                         --log-opt max-size=1m --log-opt max-file=3 \
                         "${additional_args[@]}" \
                         --network="${ssh_to_ctn_bname}" --ip="${subnet_ssh_host%/*}" \
-                        $dname > /dev/null
+                        ${dname}:${dtag} > /dev/null
                     # add this for bgpsimple -v ${DIRECTORY}/docker_images/host/bgpsimple.pl:/home/bgpsimple.pl \
 
                     # rename eth0 interface to ssh in the host container
@@ -330,7 +329,7 @@ for ((k = 0; k < group_numbers; k++)); do
                 -v /etc/localtime:/etc/localtime:ro \
                 -v "${location}"/looking_glass.txt:/home/looking_glass.txt \
                 --log-opt max-size=1m --log-opt max-file=3 \
-                "${DOCKERHUB_PREFIX}d_ixp" > /dev/null
+                "${DOCKERHUB_PREFIX}ixp:${DOCKER_TAG}" > /dev/null
 
             CONTAINERS+=("${group_number}""_IXP")
         fi

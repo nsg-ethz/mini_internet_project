@@ -161,7 +161,7 @@ for ((k = 0; k < group_numbers; k++)); do
                 echo "rpki reset"
                 echo "rpki polling_period 60"
                 for ((j = 0; j < n_routinator_addrs; j++)); do
-                    echo "rpki cache ${routinator_addrs[$j]%$'\n'} 3323 pref ${j+1}"
+                    echo "rpki cache tcp ${routinator_addrs[$j]%$'\n'} 3323 pref ${j+1}"
                 done
                 echo "exit"
             } >> "${location}"

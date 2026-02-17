@@ -1,4 +1,4 @@
-FROM d_base:latest
+FROM base:latest
 
 RUN apk add --no-cache openvpn bridge-utils
 

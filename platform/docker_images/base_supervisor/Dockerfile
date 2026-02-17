@@ -1,4 +1,4 @@
-FROM d_base:latest
+FROM base:latest
 
 # Install and configure supervisor
 RUN apk add --no-cache supervisor gawk tzdata \

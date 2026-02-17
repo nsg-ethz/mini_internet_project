@@ -53,7 +53,7 @@ if [[ "$MeasureRequired" == "True" ]]; then
         "${DIRECTORY}"/config/measurement_welcome_message.txt:/etc/motd:rw \
         --cap-add=NET_ADMIN \
         --network="bridge" -p 2099:22 \
-        "${DOCKERHUB_PREFIX}d_measurement" > /dev/null
+        "${DOCKERHUB_PREFIX}measurement:${DOCKER_TAG}" > /dev/null
 
     # connect to ssh network and rename interface to ssh in the ssh container
     docker network connect --ip="${SubNetSsh%/*}" $SshBridge "MEASUREMENT"
@@ -100,7 +100,7 @@ if [[ "$MatrixRequired" == "True" ]]; then
         -e "UPDATE_FREQUENCY=${MATRIX_FREQUENCY}" \
         -e "CONCURRENT_PINGS=${MATRIX_CONCURRENT_PINGS}" \
         -e "PING_FLAGS=${MATRIX_PING_FLAGS}" \
-        "${DOCKERHUB_PREFIX}d_matrix" > /dev/null
+        "${DOCKERHUB_PREFIX}matrix:${DOCKER_TAG}" > /dev/null
 
     if $MATRIX_PAUSE_AFTER_START; then
         docker pause MATRIX
@@ -121,7 +121,7 @@ if [[ "$DNSRequired" == "True" ]]; then
         --sysctl net.ipv4.ip_forward=0 \
         -v /etc/timezone:/etc/timezone:ro \
         -v /etc/localtime:/etc/localtime:ro \
-        "${DOCKERHUB_PREFIX}d_dns"
+        "${DOCKERHUB_PREFIX}dns:${DOCKER_TAG}"
 
     docker cp "${DIRECTORY}"/groups/dns/group_config DNS:/etc/bind/group_config > /dev/null
     docker cp "${DIRECTORY}"/groups/dns/zones DNS:/etc/bind/zones > /dev/null

@@ -1,4 +1,4 @@
-FROM alpine:3.19
+FROM alpine:3.23
 
 # Install and configure packages which are required in every container
 # and make bash the default shell.
