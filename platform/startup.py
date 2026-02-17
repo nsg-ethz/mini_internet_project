@@ -3,8 +3,10 @@ from dataclasses import dataclass, field
 from collections import defaultdict
 import argparse
 from enum import Enum
+from ipaddress import IPv4Network
 import subprocess
 from pathlib import Path
+from subnets import LinkSubnet, SubnetScheme
 
 def read_config(filename: str) -> list[list[str]]:
     """
@@ -72,27 +74,28 @@ class ExternalLink:
     dst: tuple[int, str]
     relationship: Relationship
     data: LinkData
-    # TODO: How do we want to deal with this?
-    extra: str
+    subnet: LinkSubnet
+    community_values: list[int]
 
     @classmethod
-    def from_config(cls, link_config: list[str]) -> "ExternalLink":
+    def from_config(cls, link_config: list[str], subnet: LinkSubnet, community_values: list[int] = []) -> "ExternalLink":
         src = (int(link_config[0]), link_config[1])
         dst = (int(link_config[3]), link_config[4])
         # Get the type of link
         relationship = Relationship.from_roles(link_config[2], link_config[5])
         link_data = LinkData.from_triple(link_config[6:9])
-        return cls(src, dst, relationship, link_data, link_config[9])
+        return cls(src, dst, relationship, link_data, subnet, community_values)
 
 @dataclass
 class InternalLink:
-    """ An undirected link between internal devices in an AS """
-    endpoints: frozenset[str]
+    """ A link between internal devices in an AS """
+    endpoints: tuple[str,str]
     data: LinkData
 
     @classmethod
     def from_partial_config(cls, src: str, dst: str, link_config: list[str]) -> "InternalLink":
-        endpoints = frozenset({src, dst})
+        sorted_endpoints = sorted([src, dst])
+        endpoints: tuple[str, str] = (sorted_endpoints[0], sorted_endpoints[1])
         return cls(endpoints, LinkData.from_triple(link_config))
 
 class HostType(Enum):
@@ -217,13 +220,23 @@ class Service(Enum):
 class Access(Enum):
     VTYSH = "vtysh"
     LINUX = "linux"
+    NONE = "none"
+
+    @classmethod
+    def from_str(cls, value: str) -> "Access":
+        """Parse a string to an Access enum, can only be linux or vtysh"""
+        try:
+            return cls(value)
+        except ValueError:
+            raise ValueError(f"Invalid service value: {value}")
+
 
 @dataclass
 class Router:
     name: str
-    services: set[Service]
-    hosts: set[Host]
-    access: str
+    services: set[Service] = field(default_factory=set[Service])
+    hosts: set[Host] = field(default_factory=set[Host])
+    access: Access = Access.NONE
 
     @classmethod
     def from_configs(cls, config: list[list[str]]) -> "Router":
@@ -232,13 +245,14 @@ class Router:
         """
         # Sanity checks, ensure that all config lines share the same name and access                
         name = config[0][0]
-        access = config[0][3]
+        access_str = config[0][3]
         for row in config:
             if row[0] != name:
                 raise ValueError(f"Multiline configs must share the same router name. Expected '{name}', got '{row[0]}'")
-            if row[3] != access:
-                raise ValueError(f"Multiline configs must share the same type of access. Expected '{access}', got '{row[3]}'")
-            
+            if row[3] != access_str:
+                raise ValueError(f"Multiline configs must share the same type of access. Expected '{access_str}', got '{row[3]}'")
+        
+        access = Access.from_str(access_str)
         # Extract all services
         services: set[Service] = {s for row in config if (s := Service.from_str(row[1])) is not None}
         # Extract all hosts
@@ -263,10 +277,18 @@ def routers_from_config(routers_config: str) -> dict[str, Router]:
     # Then merge
     return { router_name: Router.from_configs(configs) for router_name, configs in grouped.items() }
 
-
+@dataclass
 class IXP:
-    as_id: int
-    #TODO
+    routers: dict[str, Router]
+    
+    @classmethod
+    def from_config(cls, config: list[str]) -> "IXP":
+        assert config[2] == "Config", f"IXP {config[0]} can only be autoconfigured"
+        assert all([c == "N/A" for c in config[3:]]), f"Cannot set links or routers on IXP {config[0]}"
+
+        # TODO: make this smarter, ideally change the config files to read an actual router name for the IXP one
+        return cls({"None": Router("None")})
+        
 
 @dataclass
 class AS:
@@ -307,7 +329,7 @@ def domain_from_config(config: list[str]) -> Domain:
     if type == "AS":
         return AS.from_config(config)
     elif type == "IXP":
-        return IXP()
+        return IXP.from_config(config)
     else:
         raise(ValueError)
 
@@ -332,14 +354,37 @@ class Topology:
         external_links: list[ExternalLink] = []
         for link_config in read_config("aslevel_links.txt"):
             # Verify that the endpoints exist
-            src_as = as_es[int(link_config[0])]
-            assert isinstance(src_as, AS), f"Source AS {link_config[0]} must be an AS, not an IXP"
-            assert link_config[1] in src_as.routers.keys(), f"Source router {link_config[1]} does not exist in AS {link_config[0]}"
-            dst_as = as_es[int(link_config[3])]
-            assert isinstance(dst_as, AS), f"Destination AS {link_config[3]} must be an AS, not an IXP"
-            assert link_config[4] in dst_as.routers.keys(), f"Destination router {link_config[4]} does not exist in AS {link_config[3]}"
+            src_id = int(link_config[0])
+            src_domain = as_es[int(src_id)]
+            assert isinstance(src_domain, AS), f"Source AS {src_id} must be an AS, not an IXP"
+            assert link_config[1] in src_domain.routers.keys(), f"Source router {link_config[1]} does not exist in AS {src_id}"
+            dst_id = int(link_config[3])
+            dst_domain = as_es[int(dst_id)]
+            # Destinations can be either ASes or IXPs, IXPs have a single router in them
+            assert link_config[4] in dst_domain.routers.keys(), f"Destination router {link_config[4]} does not exist in AS {dst_id}"
+            
+            # Dispatch based on endpoint types
+            if isinstance(dst_domain, IXP):
+                # AS to IXP link
+                subnet = SubnetScheme.get_as_ixp_subnet(as_num=src_id, ixp_num=dst_id)
 
-            external_links.append(ExternalLink.from_config(link_config))
+                # Get the community lists
+                # TODO: can we think of a better way of doing this?
+                raw_value = link_config[9]
+                # Check if it's an IP address (should not happen in this branch)
+                if '.' in raw_value or '/' in raw_value:
+                    raise ValueError(f"Unexpected IP address format in AS-IXP link: {raw_value}")
+                # Parse as comma-separated community values
+                communities: list[int] = [int(x.strip()) for x in raw_value.split(',') if x.strip()]
+
+                external_links.append(ExternalLink.from_config(link_config, subnet, communities))
+            else:
+                # AS to AS link
+                # TODO: this will fail if AS to AS is not specified, eventually we may want to retire this field in the config altogether
+                custom = IPv4Network(link_config[9], strict=True)
+                subnet = SubnetScheme.get_as_as_subnet(src_id, dst_id, custom)
+
+                external_links.append(ExternalLink.from_config(link_config, subnet))
 
         return cls(as_es, external_links)
 
