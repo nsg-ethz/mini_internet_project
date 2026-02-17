@@ -1,4 +1,5 @@
 import math
+import json
 from typing import Optional
 from flask import Blueprint, current_app, jsonify, request
 from flask import redirect, render_template, url_for
@@ -57,7 +58,35 @@ def connectivity_matrix():
         valid=valid, invalid=invalid, failure=failure,
         last_updated=updated, update_frequency=frequency,
     )
-    
+
+@main_bp.route("/traceroutes")
+def show_topology():
+    group_router_map = parsers.get_all_routers(current_app.config['LOCATIONS']['config_directory'])
+
+    if not group_router_map:
+        return render_template(
+            "topology.html",
+            group=None,
+            router=None,
+            dropdown_groups=[],
+            all_routers={}
+        )
+
+    group = min(group_router_map)
+    router = next(iter(group_router_map[group]["routers"]))
+
+    return render_template(
+        "topology.html",
+        group=group,
+        router=router,
+        dropdown_groups=sorted(group_router_map),
+        all_routers=group_router_map
+    )
+
+@main_bp.route("/traceroutes/routers")
+def show_topology_json():
+    group_router_map = parsers.get_all_routers(current_app.config['LOCATIONS']['config_directory'])
+    return jsonify(group_router_map)
 @main_bp.route("/looking-glass")
 @main_bp.route("/looking-glass/<int:group>")
 @main_bp.route("/looking-glass/<int:group>/<router>")

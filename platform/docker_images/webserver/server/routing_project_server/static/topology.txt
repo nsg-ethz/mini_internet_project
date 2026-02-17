@@ -1,0 +1,55 @@
+node ixp80 ixp 0.0pt 0.0pt
+node ixp81 ixp 0.0pt -113.81097pt
+node ixp82 ixp 0.0pt 113.81097pt
+node as1 tier1 56.90549pt -21.53954pt
+node as2 tier1 56.90549pt 21.53954pt
+edge as1 ixp80 peer
+edge as2 ixp80 peer
+edge as1 ixp81 peer
+edge as2 ixp82 peer
+edge as1 as2 peer
+node as3 student 100.38457pt -21.53954pt
+node as4 student 100.38457pt 21.53954pt
+edge as3 as1 prov
+edge as3 as2 prov
+edge as4 as1 prov
+edge as4 as2 prov
+edge as3 as4 peer
+edge as3 ixp81 peer
+edge as4 ixp82 peer
+node as5 stub 143.86365pt -21.53954pt
+node as6 stub 143.86365pt 21.53954pt
+edge as5 as3 prov
+edge as5 as4 prov
+edge as6 as3 prov
+edge as6 as4 prov
+edge as5 as6 peer
+edge as5 ixp81 peer
+edge as6 ixp82 peer
+node as11 tier1 -56.90549pt 21.53954pt
+node as12 tier1 -56.90549pt -21.53954pt
+edge as11 ixp80 peer
+edge as12 ixp80 peer
+edge as11 ixp82 peer
+edge as12 ixp81 peer
+edge as11 as12 peer
+node as13 student -100.38457pt 21.53954pt
+node as14 student -100.38457pt -21.53954pt
+edge as13 as11 prov
+edge as13 as12 prov
+edge as14 as11 prov
+edge as14 as12 prov
+edge as13 as14 peer
+edge as13 ixp82 peer
+edge as14 ixp81 peer
+node as15 stub -143.86365pt 21.53954pt
+node as16 stub -143.86365pt -21.53954pt
+edge as15 as13 prov
+edge as15 as14 prov
+edge as16 as13 prov
+edge as16 as14 prov
+edge as15 as16 peer
+edge as15 ixp82 peer
+edge as16 ixp81 peer
+edge as2 as11 peer
+edge as12 as1 peer
