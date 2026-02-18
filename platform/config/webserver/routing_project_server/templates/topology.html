@@ -61,7 +61,7 @@
 
             <!-- Run Button -->
             <div class="flex items-end">
-                <button id="run-traceroute-btn"
+                <button id="run-traceroute-btn", hx-headers='{{ csrf_token() }}',
                         class="px-4 py-2 bg-[#ff7e79] hover:bg-[#ff5c58] text-white rounded shadow transition">
                     Run Traceroute
                 </button>

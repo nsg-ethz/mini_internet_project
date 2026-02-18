@@ -2,12 +2,18 @@
     'main.connectivity_matrix': 'matrix',
     'main.looking_glass': 'looking glass',
     'main.as_connections': 'connections',
-    'main.krill': 'krill'
 } %}
+{% if config.TOPOLOGY_TAB %}
+    {% set _ = navigation_bar.update({'main.show_topology': 'topology'}) %}
+{% endif %}
+
+{% set _ = navigation_bar.update({'main.krill': 'krill'}) %}
+
 <!-- Only add VPN to navigation bar, if VPN has been enabled in the config. -->
 {% if config.VPN_ENABLED %}
     {% set _ = navigation_bar.update({'main.vpn': 'vpn'}) %}
 {% endif %}
+
 {% if config.CHATBOT_INTEGRATION %}
     {% set _ = navigation_bar.update({'main.chatbot': 'TA-bot'}) %}
 {% endif %}

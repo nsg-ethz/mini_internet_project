@@ -64,7 +64,9 @@ LOCATIONS = {
     "matrix_stats": "${DATADIR_SERVER}/matrix/stats.txt",
     "vpn_folder": "wireguard",
     "vpn_passwd": "${DATADIR_SERVER}/${VPN_PASSWD_FILE}",
-    "vpn_db":"${DATADIR_SERVER}/webserver/${VPN_DB_FILE}"
+    "vpn_db":"${DATADIR_SERVER}/webserver/${VPN_DB_FILE}",
+    "topology_txt":"/server/routing_project_server/static/topology.txt",
+    "topology_json":"/server/routing_project_server/static/topology.json"
 }
 KRILL_URL="${KRILL_SCHEME}://{hostname}:${WEBSERVER_PORT_KRILL}/index.html"
 BASIC_AUTH_USERNAME = 'admin'
@@ -74,6 +76,7 @@ HOST = '0.0.0.0'
 PORT = 8000
 VPN_ENABLED = ${VPN_WEBSITE_ENABLED^}
 VPN_NO_CLIENTS = ${VPN_NO_CLIENTS}
+TOPOLOGY_TAB = ${TOPOLOGY_TAB^}
 CHATBOT_INTEGRATION = ${CHATBOT_INTEGRATION^}
 CHATBOT_URL = "${CHATBOT_URL}"
 EOM
@@ -103,7 +106,7 @@ docker run -itd --name="WEB" --cpus=2 \
     "${additional_args[@]}" \
     --hostname="web" \
     --privileged \
-    "${DOCKERHUB_PREFIX}d_webserver" > /dev/null
+    "${DOCKERHUB_PREFIX}webserver:${DOCKER_TAG}" > /dev/null
 
 # Next start the proxy
 # Setup based on the following tutorials:

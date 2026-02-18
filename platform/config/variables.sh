@@ -40,6 +40,10 @@ WEBSERVER_TZ="Europe/Zurich"
 # If you want your own webserver files instead add the filepath here (relative to the platform/config folder)
 WEBSERVER_SOURCEFILES="/webserver"
 
+# feature to visualize traceroute paths on the topology
+# requires a topology.txt file to be set
+TOPOLOGY_TAB=true
+
 # This year we are adding a chatbot to help the students with the project
 # By enabling this a new tab will be added which is used to connect to the chatbot webserver
 CHATBOT_INTEGRATION=false

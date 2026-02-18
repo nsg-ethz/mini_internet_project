@@ -505,3 +505,9 @@ if ENABLE_STUB_HIJACKS:
 with open("./config/hijacks.txt", "w") as file:
     for hijack in hijacks:
         file.write("\t".join(map(str, hijack)) + "\n")
+
+
+# STEP 5: Create topology.txt file
+with open("./config/topology.txt", "w") as file:
+    #TODO create topology.txt file
+    pass

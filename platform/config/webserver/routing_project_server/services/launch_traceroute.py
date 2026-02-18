@@ -82,7 +82,6 @@ def run_traceroute_job(job_id, container, target_ip, logger):
         }
 
 # Launch traceroute request
-@csrf.exempt
 @traceroute_bp.route("/launch-traceroute", methods=["POST"])
 def launch_traceroute():
     logger = current_app.logger
@@ -110,7 +109,7 @@ def launch_traceroute():
         daemon=True
     )
     thread.start()
-
+    
     logger.info(f"[Traceroute] Launched job {job_id} for {target_ip}")
     return jsonify({"status": "started", "job_id": job_id})
 

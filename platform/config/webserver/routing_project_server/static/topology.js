@@ -39,7 +39,7 @@ function updateTargetRouters(asn) {
 }
 
 
-function runTraceroute() {
+function runTraceroute(csrf) {
   resetVisualization();
 
   const originASN = document.getElementById("origin-as").value;
@@ -52,8 +52,8 @@ function runTraceroute() {
 
   const originContainer = originHost?.container;
   const targetIP = targetHost?.ip;
-
-  if (!originASN || !originRouter || !targetASN || !targetRouter || !targetIP || !originContainer) {
+ 
+  if (!originASN || !originRouter || !targetASN || !targetRouter || !targetIP || !originContainer){
     alert("Please select Origin AS + Router and Target AS + Router. Host info missing.");
     return;
   }
@@ -66,7 +66,7 @@ function runTraceroute() {
 
   fetch("/launch-traceroute", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", 'X-CSRF-TOKEN': csrf },
     body: JSON.stringify({
       container: originContainer,
       target_ip: targetIP
@@ -478,7 +478,7 @@ async function init() {
 
   const runBtn = document.getElementById("run-traceroute-btn");
   if (runBtn) {
-    runBtn.addEventListener("click", runTraceroute);
+    runBtn.addEventListener("click", e =>runTraceroute(runBtn.getAttribute("hx-headers")));
   }
 
   const originAS = document.getElementById("origin-as");

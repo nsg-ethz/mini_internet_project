@@ -15,9 +15,13 @@ By default, these workers are started automatically when the app is created.
 import os
 import traceback
 from datetime import datetime as dt
+import logging
+import sys
+import json
 from datetime import timezone
 from multiprocessing import Process
 from pathlib import Path
+from threading import Thread
 from time import sleep
 
 from flask import Flask
@@ -28,6 +32,10 @@ from .services.bgp_policy_analyzer import prepare_bgp_analysis
 from.services.matrix import prepare_matrix
 from .services.login import login_init
 from .services.vpn import vpn_init, vpn_update_status
+from .services.parsers import parse_topology_txt
+from .services.parsers import get_all_routers
+from .services.launch_traceroute import traceroute_bp
+from .services.launch_traceroute import cleanup_loop
 
 config_defaults = {
     'SECRET_KEY': os.urandom(32),
@@ -42,7 +50,9 @@ config_defaults = {
         "matrix_stats": "../../../groups/matrix/stats.txt",
         "vpn_folder":"wireguard",
         "vpn_passwd":"../../../groups/passwords.txt",
-        "vpn_db":"../../../groups/vpn.db"
+        "vpn_db":"../../../groups/vpn.db",
+        "topology_txt":"../static/topology.txt",
+        "topology_json":"../static/topology.json"
     },
     'KRILL_URL': "http://{hostname}:3000/index.html",
     'BASIC_AUTH_USERNAME': 'admin',
@@ -58,6 +68,10 @@ config_defaults = {
     'ANALYSIS_CACHE': '/tmp/cache/analysis.db',
     'VPN_ENABLED':True,
     'VPN_NO_CLIENTS':1,
+    'TOPOLOGY_TAB': False,
+    'ANALYSIS_UPDATE_FREQUENCY': 300,  # seconds
+    'TRACEROUTE_CLEANUP_INTERVAL': 300,  # seconds
+    'TRACEROUTE_CLEANUP_EXPIRE_AFTER': 600,  # seconds
     'CHATBOT_INTEGRATION':True
 }
 
@@ -71,6 +85,15 @@ def create_app(config=None):
     app.config.from_mapping(config_defaults)
     app.jinja_env.undefined = StrictUndefined
 
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setLevel(logging.INFO)
+    formatter = logging.Formatter('[%(levelname)s] %(message)s')
+    handler.setFormatter(formatter)
+
+    if not app.logger.handlers:
+        app.logger.addHandler(handler)
+    app.logger.setLevel(logging.INFO)
+
     if config is None:
         config = os.environ.get("SERVER_CONFIG", None)
 
@@ -79,15 +102,35 @@ def create_app(config=None):
     elif config is not None:
         app.config.from_pyfile(config)
 
+    try:
+        parse_topology_txt(app.config)
+    except Exception:
+        traceback.print_exc()
 
     # Register Blueprints
     from .routes import main_bp
     app.register_blueprint(main_bp)
+    app.register_blueprint(traceroute_bp)
 
     # Initialize extensions
     login_init(app)
     basic_auth.init_app(app) 
     vpn_init(app)
+
+    # Load allowed container names
+    try:
+        router_data = get_all_routers(app.config["LOCATIONS"]["config_directory"])
+        allowed_containers = set()
+        for asn_data in router_data.values():
+            for router_info in asn_data["routers"].values():
+                host_info = router_info.get("host")
+                if host_info and host_info.get("container"):
+                    allowed_containers.add(host_info["container"])
+        app.config["ALLOWED_CONTAINERS"] = allowed_containers
+        app.logger.info(f"[Init] Loaded {len(allowed_containers)} allowed host containers.")
+    except Exception as e:
+        app.logger.warning(f"[Init] Failed to load allowed containers: {e}")
+        app.config["ALLOWED_CONTAINERS"] = set()
 
     # Initialize template filters
     @app.template_filter()
@@ -142,6 +185,13 @@ def start_workers(config):
     bgpd.start()
     processes.append(bgpd)
 
+    tcleanup = Thread(
+        target=loop,
+        args=(cleanup_loop, config['TRACEROUTE_CLEANUP_INTERVAL'], config),
+        kwargs=dict(worker=True),
+        daemon=True
+    )
+    tcleanup.start()
     # vpn_statusd = Process(
     #     target=loop,
     #     args=(vpn_update_status, 31), 
