@@ -63,7 +63,7 @@ def show_topology():
     if not current_app.config['TOPOLOGY_TAB']:
         return "Not found", 404
     
-    group_router_map = parsers.get_all_routers(current_app.config['LOCATIONS']['config_directory'])
+    group_router_map = current_app.config["router_data"]
     if not group_router_map:
         return render_template(
             "topology.html",

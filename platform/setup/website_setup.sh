@@ -65,7 +65,7 @@ LOCATIONS = {
     "vpn_folder": "wireguard",
     "vpn_passwd": "${DATADIR_SERVER}/${VPN_PASSWD_FILE}",
     "vpn_db":"${DATADIR_SERVER}/webserver/${VPN_DB_FILE}",
-    "topology_txt":"/server/routing_project_server/static/topology.txt",
+    "topology_txt":"${CONFIGDIR_SERVER}/topology.txt",
     "topology_json":"/server/routing_project_server/static/topology.json"
 }
 KRILL_URL="${KRILL_SCHEME}://{hostname}:${WEBSERVER_PORT_KRILL}/index.html"

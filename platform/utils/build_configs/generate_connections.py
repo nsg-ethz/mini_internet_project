@@ -58,7 +58,7 @@ import math
 # If true, stub ASes in the same area try to hijack each others prefixes. Also,
 # add two TA-configured ASes between the stubs and student ASes so that no
 # student AS is directly connected to a malicious AS.
-ENABLE_STUB_HIJACKS = True
+ENABLE_STUB_HIJACKS = False
 
 # Set true to test the topology.
 AUTOCONF_EVERYTHING = False
@@ -75,9 +75,9 @@ BUFFER_ADVERTISES_ALL_VIA_IXP = True
 # Size of the topology.
 # ---------------------
 
-AREAS = 3
-CONFIGURABLE_PER_AREA = 4  # Number of ASes that can be configured by students.
-FIRST_IXP = 140
+AREAS = 2
+CONFIGURABLE_PER_AREA = 2  # Number of ASes that can be configured by students.
+FIRST_IXP = 80
 
 # Define the connections and roles of the ASes in each topology.
 # --------------------------------------------------------------
@@ -99,13 +99,13 @@ transit_as_topo = {
     # connection of AS to X: (AS city, AS role)
     # Example: The connection to the first provider is at Basel, and the AS
     # takes the role of a customer.
-    'provider1': ('BIRM', customer),
-    'provider2': ('FRAN', customer),
-    'customer1': ('BARC', provider),
-    'customer2': ('NAPL', provider),
+    'provider1': ('MUNI', customer),
+    'provider2': ('BASE', customer),
+    'customer1': ('LYON', provider),
+    'customer2': ('MILA', provider),
     # Peer and IXP.
-    'peer': ('MUNI', peer),
-    'ixp': ('LYON', peer),
+    'peer': ('LUGA', peer),
+    'ixp': ('VIEN', peer),
 }
 
 # All non-transit ASes only have a single router ZURI.
@@ -179,7 +179,7 @@ if ENABLE_STUB_HIJACKS:
     ASES_PER_AREA += 2  # add 2 ASes as buffer between students and hijackers.
 # Leave enough space if we have to skip some ASes.
 _area_max = 10 * math.ceil((ASES_PER_AREA + 1 + len(skip_groups)) / 10)
-
+links = []
 
 def _area_ases(start):
     """Append ASes to the list, skipping the ones in skip_groups."""
@@ -509,5 +509,42 @@ with open("./config/hijacks.txt", "w") as file:
 
 # STEP 5: Create topology.txt file
 with open("./config/topology.txt", "w") as file:
-    #TODO create topology.txt file
-    pass
+    file.seek(0)
+    file.truncate()
+
+    zones = AREAS          
+    studentAsPerZone = CONFIGURABLE_PER_AREA
+    AsPerZone = ASES_PER_AREA
+    firstIxp = FIRST_IXP       
+    radiusZone = 50
+    radiusIxp = AsPerZone/4 * radiusZone 
+
+    file.write(f"node ixp{firstIxp} ixp 0pt 0pt \n")
+
+    for i in range(0,zones):
+        rad = i*2*math.pi/zones-2*math.pi/(2*zones)
+        x = radiusIxp * math.sin(rad)
+        y = radiusIxp * math.cos(rad)
+        file.write(f"node ixp{firstIxp+i+1} ixp {x:.1f}pt {y:.1f}pt \n")
+
+    for i in range(0,len(areas)):
+        for j, asn in enumerate(areas[i]):
+            print(i,j,asn)
+            rad = i*2*math.pi/zones
+            print(j//2)
+            x = radiusZone * math.sin(rad) * (zones/3+j//2) + ((j%2)*2-1) * radiusZone/2 * math.cos(rad)
+            y = radiusZone * math.cos(rad) * (zones/3+j//2) - ((j%2)*2-1) * radiusZone/2 * math.sin(rad)
+            type = "student"
+            if asn in tier1:
+                type = "tier1"
+            elif asn in stub or asn in buffer:
+                type = "stub"
+            file.write(f"node as{asn} {type} {x:.1f}pt {y:.1f}pt \n")
+
+    for line in config:
+        if line is not None:
+            line = line.split()
+            type = "prov" if line[2] == "Provider" else "peer"
+            file.write(f"edge as{line[0]} as{line[3]} {type} \n")
+        
+

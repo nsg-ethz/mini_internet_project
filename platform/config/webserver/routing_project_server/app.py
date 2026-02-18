@@ -110,7 +110,8 @@ def create_app(config=None):
     # Register Blueprints
     from .routes import main_bp
     app.register_blueprint(main_bp)
-    app.register_blueprint(traceroute_bp)
+    if app.config['TOPOLOGY_TAB']:
+        app.register_blueprint(traceroute_bp)
 
     # Initialize extensions
     login_init(app)
@@ -120,6 +121,7 @@ def create_app(config=None):
     # Load allowed container names
     try:
         router_data = get_all_routers(app.config["LOCATIONS"]["config_directory"])
+        app.config["router_data"] = router_data
         allowed_containers = set()
         for asn_data in router_data.values():
             for router_info in asn_data["routers"].values():

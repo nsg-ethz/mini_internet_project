@@ -358,6 +358,7 @@ async function loadTopology() {
     color: nodeColors[n.type] || "#ccc",
     x: n.x,
     y: n.y,
+    widthConstraint: n.type === 'ixp' ? false : 25,
     fixed: { x: true, y: true },
     shape: n.type === 'ixp' ? 'box' : 'circle'
   })));
