@@ -3,8 +3,10 @@ from collections import defaultdict
 from enum import Enum
 from ipaddress import IPv4Network
 from subnets import LinkSubnet, SubnetScheme
+import argparse
 
-def read_config(args, filename: str) -> list[list[str]]:
+
+def read_config(args: argparse.Namespace, filename: str) -> list[list[str]]:
     """
     Helper function to pull text configs from a whitespace-separated file
     """
@@ -103,9 +105,11 @@ class HostType(Enum):
 class Host:
     container_name: str
     type: HostType
+    l2_id: int | None
+    vlan: int | None
 
     @classmethod
-    def from_str(cls, value: str) -> "Host | None":
+    def from_str(cls, value: str, l2_id: int | None, vlan: int| None) -> "Host | None":
         """Parse a string to a Host along with its type"""
 
         if value == "N/A":
@@ -113,7 +117,7 @@ class Host:
         # This happens if the host is an L2 host
         if ":" not in value:
             # Plain container path is always a HOST
-            return cls(value, HostType.HOST)
+            return cls(value, HostType.HOST, l2_id, vlan)
 
         information, container = value.split(":", maxsplit=1)
         # The additional information can describe a lot of things
@@ -125,7 +129,7 @@ class Host:
             # WARN: We purposefully ignore the information about the L2 stuff here
             host_type = HostType.HOST
 
-        return cls(container, host_type)
+        return cls(container, host_type, l2_id, vlan)
 
 @dataclass
 class Switch:
@@ -145,10 +149,10 @@ class Switch:
 class L2Network:
     name: str
     switches: list[Switch] = field(default_factory=list[Switch])
-    hosts: dict[str, tuple[Host, int]] = field(default_factory=dict[str, tuple[Host, int]])
+    hosts: dict[str, Host] = field(default_factory=dict[str, Host])
     links: list[InternalLink] = field(default_factory=list[InternalLink])
 
-def l2_networks_from_configs(args, routers: set[str], switches_config: str, hosts_config: str, links_config: str) -> dict[str, L2Network]:
+def l2_networks_from_configs(args: argparse.Namespace, routers: set[str], switches_config: str, hosts_config: str, links_config: str) -> dict[str, L2Network]:
     """
     Constructs L2 network topology from configuration files.
     Parses configuration files for switches, hosts, and links to build a dictionary
@@ -170,15 +174,15 @@ def l2_networks_from_configs(args, routers: set[str], switches_config: str, host
         l2_networks[net_name].switches.append(switch)
 
     # Then the hosts and their respective links
-    for host_config in read_config(args, hosts_config):
+    for id, host_config in enumerate(read_config(args, hosts_config)):
         net_name = host_config[2]
         assert net_name in l2_networks.keys(), f"The L2 network ({net_name}) this host ({host_config[0]}) is a part of does not exist"
 
         host_name = host_config[0]
         vlan = int(host_config[7])
-        host = Host.from_str(host_config[1])
+        host = Host.from_str(host_config[1], id, vlan)
         assert host is not None, "Unparsable host in L2 network"
-        l2_networks[net_name].hosts[host_name] = (host, vlan)
+        l2_networks[net_name].hosts[host_name] = host
 
         # Now the host links
         host_switch = host_config[3]
@@ -252,10 +256,10 @@ class Router:
         # Extract all services
         services: set[Service] = {s for row in config if (s := Service.from_str(row[1])) is not None}
         # Extract all hosts
-        hosts: set[Host] = {h for row in config if (h := Host.from_str(row[2])) is not None}
+        hosts: set[Host] = {h for row in config if (h := Host.from_str(row[2], None, None)) is not None}
         return cls(name, services, hosts, access)
 
-def routers_from_config(args, routers_config: str) -> dict[str, Router]:
+def routers_from_config(args: argparse.Namespace, routers_config: str) -> dict[str, Router]:
     """
     Builds a map of routers, indexed by their names, based on an L3 router configuration file
     """
@@ -294,7 +298,7 @@ class AS:
     l2_networks: dict[str, L2Network]
 
     @classmethod
-    def from_config(cls, args, config: list[str]) -> "AS":
+    def from_config(cls, args: argparse.Namespace, config: list[str]) -> "AS":
         """
         Builds an overview of an AS based on the provided configuration 
         """
@@ -319,7 +323,7 @@ class AS:
 
 type Domain = IXP|AS
 
-def domain_from_config(args, config: list[str]) -> Domain:
+def domain_from_config(args: argparse.Namespace, config: list[str]) -> Domain:
 
     type = config[1]
     if type == "AS":
@@ -339,7 +343,7 @@ class Topology:
     external_links: list[ExternalLink]
 
     @classmethod
-    def from_config(cls, args) -> "Topology":
+    def from_config(cls, args :argparse.Namespace) -> "Topology":
         """
         Builds a view of the ASes in our network from a config file in which every row corresponds to a new AS
         """
