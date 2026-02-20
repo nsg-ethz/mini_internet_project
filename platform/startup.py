@@ -32,10 +32,7 @@ if __name__ == "__main__":
 
     topology = Topology.from_config(args)
 
-    print("Success")
-
-    container_setup(Topology)
-
+    container_setup(topology, script_dir)
 
 
     # # Change size of ARP table necessary for large networks

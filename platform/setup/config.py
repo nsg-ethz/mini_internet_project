@@ -3,6 +3,7 @@ from collections import defaultdict
 from enum import Enum
 from ipaddress import IPv4Network
 from subnets import LinkSubnet, SubnetScheme
+from pathlib import Path
 import argparse
 
 
@@ -10,7 +11,7 @@ def read_config(args: argparse.Namespace, filename: str) -> list[list[str]]:
     """
     Helper function to pull text configs from a whitespace-separated file
     """
-    config_file = args.config / filename
+    config_file = Path(args.config + f"/{filename}")
     if not config_file.exists():
         raise FileNotFoundError(f"Configuration file not found: {config_file}")
     with config_file.open() as f:
@@ -119,7 +120,10 @@ class Host:
             # Plain container path is always a HOST
             return cls(value, HostType.HOST, l2_id, vlan)
 
-        information, container = value.split(":", maxsplit=1)
+        if len(value.split(":")) == 3:
+            information, container = value.split(":", maxsplit=1)
+        else:
+            information, container = "host", value
         # The additional information can describe a lot of things
         try:
             # If we can parse it, great
@@ -233,13 +237,14 @@ class Access(Enum):
 
 @dataclass
 class Router:
+    id: int
     name: str
     services: set[Service] = field(default_factory=set[Service])
     hosts: set[Host] = field(default_factory=set[Host])
     access: Access = Access.NONE
 
     @classmethod
-    def from_configs(cls, config: list[list[str]]) -> "Router":
+    def from_configs(cls,id: int, config: list[list[str]]) -> "Router":
         """
         Builds a router from an L3 router configuration line
         """
@@ -257,7 +262,7 @@ class Router:
         services: set[Service] = {s for row in config if (s := Service.from_str(row[1])) is not None}
         # Extract all hosts
         hosts: set[Host] = {h for row in config if (h := Host.from_str(row[2], None, None)) is not None}
-        return cls(name, services, hosts, access)
+        return cls(id, name, services, hosts, access)
 
 def routers_from_config(args: argparse.Namespace, routers_config: str) -> dict[str, Router]:
     """
@@ -275,7 +280,7 @@ def routers_from_config(args: argparse.Namespace, routers_config: str) -> dict[s
         print(f"Found {len(grouped)} routers in configuration '{routers_config}'")
 
     # Then merge
-    return { router_name: Router.from_configs(configs) for router_name, configs in grouped.items() }
+    return { key: Router.from_configs(id, grouped[key]) for id, key in enumerate(grouped.keys()) }
 
 @dataclass
 class IXP:
@@ -287,7 +292,7 @@ class IXP:
         assert all([c == "N/A" for c in config[3:]]), f"Cannot set links or routers on IXP {config[0]}"
 
         # TODO: make this smarter, ideally change the config files to read an actual router name for the IXP one
-        return cls({"None": Router("None")})
+        return cls({"None": Router(0, "None")})
         
 
 @dataclass

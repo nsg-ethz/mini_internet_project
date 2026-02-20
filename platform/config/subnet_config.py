@@ -1,9 +1,9 @@
 
-def subnet_group(n_grp):
+def subnet_group(n_grp: int):
   return f"{n_grp}.0.0.0/8"
 
 
-def subnet_host_router(n_grp, n_router, device, n_vpn_peer=1):
+def subnet_host_router(n_grp: int, n_router: int, device: str, n_vpn_peer=1):
     if device == "host":
         return f"{n_grp}.{n_router + 101}.0.1/24"
     elif device == "router":
@@ -17,25 +17,25 @@ def subnet_host_router(n_grp, n_router, device, n_vpn_peer=1):
     else:
         raise ValueError(f"subnet_host_router: unknown device {device}")
 
-def subnet_l2_router(n_grp,l2_id):
+def subnet_l2_router(n_grp: int, l2_id: int):
     return f"{n_grp}.{200 + l2_id}.0.0/16"
 
-def subnet_l2(n_grp, l2_id, vlan, n_host):
+def subnet_l2(n_grp: int, l2_id: int, vlan: int, n_host: int):
     return f"{n_grp}.{200 + l2_id}.{vlan}.{n_host}/24"
 
-def gw_l2_(n_grp, vlan, n_host):
+def gw_l2_(n_grp: int, vlan: int, n_host: int):
     return f"{n_grp}.200.{vlan}.{n_host}/24"
 
-def subnet_l2_router_ipv6(n_grp, l2_id):
+def subnet_l2_router_ipv6(n_grp: int, l2_id: int):
     return f"{n_grp}:{200 + l2_id}::/32"
 
-def subnet_l2_ipv6(n_grp, l2_id, vlan, n_host):
+def subnet_l2_ipv6(n_grp: int, l2_id: int, vlan: int, n_host: int):
     return f"{n_grp}:{200 + l2_id}:{vlan}::{n_host}/48"
 
-def subnet_router(n_grp, n_router):
+def subnet_router(n_grp: int, n_router: int):
     return f"{n_grp}.{n_router + 151}.0.1/24"
 
-def subnet_router_router_intern(n_grp, n_net, device):
+def subnet_router_router_intern(n_grp: int, n_net: int, device: str):
     if device == "1":
         return f"{n_grp}.0.{n_net + 1}.1/24"
     elif device == "2":
@@ -45,7 +45,7 @@ def subnet_router_router_intern(n_grp, n_net, device):
     else:
         raise ValueError(f"subnet_router_router_intern: unknown device {device}")
 
-def subnet_router_router_extern(n_net, device):
+def subnet_router_router_extern(n_net: int, device: str):
     mod = n_net % 100
     div = n_net // 100
     
@@ -58,7 +58,7 @@ def subnet_router_router_extern(n_net, device):
     else:
         raise ValueError(f"subnet_router_router_extern: unknown device {device}")
 
-def subnet_router_IXP(n_grp, n_ixp, device):
+def subnet_router_IXP(n_grp: int, n_ixp: int, device: str):
     if device == "group":
         return f"180.{n_ixp}.0.{n_grp}/24"
     elif device == "IXP":
@@ -68,7 +68,7 @@ def subnet_router_IXP(n_grp, n_ixp, device):
     else:
         raise ValueError(f"subnet_router_IXP: unknown device {device}")
 
-def subnet_router_MEASUREMENT(n_grp, device):
+def subnet_router_MEASUREMENT(n_grp: int , device: str):
     if device == "group":
         return f"{n_grp}.0.199.1/24"
     elif device == "measurement":
@@ -78,7 +78,7 @@ def subnet_router_MEASUREMENT(n_grp, device):
     else:
         raise ValueError(f"subnet_router_MEASUREMENT: unknown device {device}")
 
-def subnet_router_MATRIX(n_grp, device):
+def subnet_router_MATRIX(n_grp: int, device: str):
     if device == "group":
         return f"{n_grp}.0.198.1/24"
     elif device == "matrix":
@@ -88,7 +88,7 @@ def subnet_router_MATRIX(n_grp, device):
     else:
         raise ValueError(f"subnet_router_MATRIX: unknown device {device}")
 
-def subnet_router_DNS(n_grp, device):
+def subnet_router_DNS(n_grp: int, device: str):
     if device == "group":
         return f"198.{n_grp}.0.1/24"
     elif device == "measurement":
@@ -104,7 +104,7 @@ def subnet_router_DNS(n_grp, device):
     else:
         raise ValueError(f"subnet_router_DNS: unknown device {device}")
 
-def subnet_ext_sshContainer(n_grp, device):
+def subnet_ext_sshContainer(n_grp: int, device: str):
     if device == "sshContainer":
         return f"157.0.0.{n_grp + 10}/24"
     elif device == "MEASUREMENT":
@@ -116,7 +116,7 @@ def subnet_ext_sshContainer(n_grp, device):
     else:
         raise ValueError(f"subnet_ext_sshContainer: unknown device {device}")
 
-def subnet_sshContainer_groupContainer(n_grp, n_router, n_layer2, device):
+def subnet_sshContainer_groupContainer(n_grp: int, n_router: int, n_layer2: int, device: str):
     if device == "sshContainer":
         return f"158.{n_grp}.0.2/16"
     elif device == "MEASUREMENT":

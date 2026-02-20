@@ -37,6 +37,9 @@ DIRECTORY=$(cd `dirname $0` && pwd)
 
 echo "$(date +%Y-%m-%d_%H-%M-%S)"
 
+# used to activate the python venv
+#source ../../.venv/bin/activate
+
 echo "cleanup.sh"
 time ./cleanup/cleanup.sh "${DIRECTORY}"
 # time ./cleanup/hard_reset.sh
@@ -97,7 +100,8 @@ echo ""
 
 echo "container_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
 echo "container_setup.sh: "
-time ./setup/container_setup.sh "${DIRECTORY}"
+#time ./setup/container_setup.sh "${DIRECTORY}"
+python3 ./startup.py -c "${DIRECTORY}/config"
 
 echo ""
 echo ""
