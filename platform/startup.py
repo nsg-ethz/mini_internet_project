@@ -1,5 +1,6 @@
 from setup.config import Topology
 from setup.container_setup import container_setup
+from setup.save_configs import save_configs
 from pathlib import Path
 import subprocess, argparse
 
@@ -32,6 +33,7 @@ if __name__ == "__main__":
 
     topology = Topology.from_config(args)
 
+    save_configs(topology, script_dir)
     container_setup(topology, script_dir)
 
 
