@@ -1,5 +1,6 @@
 from .config import *
 from config.subnet_config import *
+from .helper import run_cmd
 
 def save_configs(config: Topology, directory: Path):
 
@@ -21,6 +22,7 @@ def save_configs(config: Topology, directory: Path):
             with open(f"{directory}/setup/restart_ospfd.sh") as source_file:
                 with open(ospfd_file, "w+") as destination_file:
                     destination_file.write(source_file.read())
+                    run_cmd(f"chmod 0755 {ospfd_file}")
 
             save_content += "#!/bin/bash\n"
             save_content += "\n" 
@@ -61,7 +63,7 @@ def save_configs(config: Topology, directory: Path):
                         save_content += f"save {savedir}/{host_name}.rpki_cache {subnet_host} \"tar -czC /root/.rpki-cache repository\"\n"
                 
 
-            for name, l2_network in domain.l2_networks.items():
+            for _, l2_network in domain.l2_networks.items():
 
                 for switch in l2_network.switches:
                     subnet=subnet_sshContainer_groupContainer(group_no, 0, switch.bridge_id-1 ,"switch")
@@ -72,7 +74,7 @@ def save_configs(config: Topology, directory: Path):
                     save_content += f"save {save_dir}/switch.db      {subnet} \"ovsdb-client backup\"\n"
                     save_content += f"save {save_dir}/switch.summary {subnet} \"ovs-vsctl show\"\n"
 
-            for name, l2_network in domain.l2_networks.items():
+            for _, l2_network in domain.l2_networks.items():
                 for host_name, l2_host in l2_network.hosts.items():
                     subnet=subnet_sshContainer_groupContainer(group_no, 0, l2_host.l2_id,"L2-host")
                     save_dir=f"${{dirname}}/{host_name}"
@@ -108,6 +110,7 @@ def save_configs(config: Topology, directory: Path):
 
             with open(save_file, "w+") as f:
                 f.write(save_content)
+                run_cmd(f"chmod 0755 {save_file}")
     
 
             restore_content += "#!/bin/bash\n"
@@ -159,7 +162,7 @@ def save_configs(config: Topology, directory: Path):
                     restore_content += f"restore {subnet_host} ip address add ${{ipv4}} dev {router_name}router\n"
                     restore_content += f"restore {subnet_host} ip route add default via ${{default_route}}\n"
             
-            for name, l2_network in domain.l2_networks.items():
+            for _, l2_network in domain.l2_networks.items():
 
                 for switch in l2_network.switches:
                     subnet=subnet_sshContainer_groupContainer(group_no, 0, switch.bridge_id-1 ,"switch")
@@ -171,7 +174,7 @@ def save_configs(config: Topology, directory: Path):
                     restore_content += "sleep 2\n"
                     restore_content += f"restore {subnet} rm /root/switch.db\n"
                         
-            for name, l2_network in domain.l2_networks.items():
+            for _, l2_network in domain.l2_networks.items():
                 for host_name, l2_host in l2_network.hosts.items():
                     subnet=subnet_sshContainer_groupContainer(group_no, 0, l2_host.l2_id,"L2-host")
                     save_dir=f"${{dirname}}//{host_name}"
@@ -204,4 +207,5 @@ def save_configs(config: Topology, directory: Path):
 
             with open(restore_file, "w+") as f:
                 f.write(restore_content)
+                run_cmd(f"chmod 0755 {restore_file}")
 

@@ -141,7 +141,7 @@ def create_group(group_no:int, domain: Domain, directory: Path, rpki_location: P
                 group_containers += [switch_cnt_name]
 
                 client.containers.get(switch_cnt_name).exec_run("ip link set dev eth0 down")
-                client.containers.get(switch_cnt_name).exec_run("ip link set dev name ssh")
+                client.containers.get(switch_cnt_name).exec_run("ip link set dev eth0 name ssh")
                 client.containers.get(switch_cnt_name).exec_run("ip link set dev ssh up")
             
             # start l2 hosts

@@ -86,7 +86,8 @@ echo ""
 
 echo "goto_scripts.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
 echo "goto_scripts.sh: "
-time ./setup/goto_scripts.sh "${DIRECTORY}"
+#time ./setup/goto_scripts.sh "${DIRECTORY}"
+time python3 ./startup.py -c "${DIRECTORY}/config"
 
 echo ""
 echo ""
@@ -94,7 +95,7 @@ echo ""
 echo "save_configs.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
 echo "save_configs.sh: "
 #time ./setup/save_configs.sh "${DIRECTORY}"
-time python3 ./startup.py -c "${DIRECTORY}/config"
+
 
 echo ""
 echo ""
