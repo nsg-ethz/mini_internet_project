@@ -2,6 +2,7 @@ from setup.config import Topology
 from setup.goto_scripts import goto_scripts
 from setup.save_configs import save_configs
 from setup.container_setup import container_setup
+from setup.vpn_config import vpn_config
 from pathlib import Path
 import argparse
 
@@ -19,7 +20,7 @@ if __name__ == "__main__":
     goto_scripts(topology, script_dir)
     save_configs(topology, script_dir)
     container_setup(topology, script_dir)
-
+    vpn_config(topology, script_dir)
 
     # # Change size of ARP table necessary for large networks
     # # ARP: IP-to-MAC resolution

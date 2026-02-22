@@ -34,6 +34,7 @@ def container_setup(config: Topology, directory: Path):
     pool = Pool(processes = 16)
     inputs = [(group_no,domain,directory,rpki_location) for group_no, domain in config.as_es.items()]
     result = pool.starmap(create_group, inputs)
+    
     for group in result:
         all_containers += group[0]
         all_routinator_containers += group[1]

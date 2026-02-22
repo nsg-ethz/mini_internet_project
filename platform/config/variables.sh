@@ -116,7 +116,7 @@ HISTORY_FORGET_BINARIES="true"
 # =============================================================================
 
 # Enable/Disable VPN
-VPN_ENABLED=false
+VPN_ENABLED=true
 
 # Enable/Disable DNS for wireguard clients
 VPN_DNS_ENABLED=true
