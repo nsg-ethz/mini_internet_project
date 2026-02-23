@@ -1,7 +1,8 @@
 from .config import *
 from config.subnet_config import *
-from .helper import run_cmd
+from .helper import run_cmd, get_num_threads
 from subprocess import CalledProcessError
+from multiprocessing import Pool
 import os
 import docker
 import time
@@ -32,8 +33,9 @@ def vpn_config(config: Topology, directory: Path):
         return
     print("WireGuard is installed. Proceeding.")
     
-    for group_no, domain in config.as_es.items():
-        create_vpn(directory, group_no, domain)
+    pool = Pool(processes = get_num_threads())
+    inputs = [(directory,group_no,domain) for group_no, domain in config.as_es.items()]
+    pool.starmap(create_vpn, inputs)
 
 
 def check_intf_exists(interface_file: Path):
@@ -68,7 +70,7 @@ def create_if(directory: Path, group_no: int, router_name: str, router_id: int, 
 
     container.exec_run("wg setconf vpn /etc/wireguard/interface.conf",user="root")
 
-    time.sleep(0.1)
+    time.sleep(0.5)
     run_cmd(f"nsenter --net=/proc/{pid}/ns/net ip link set vpn up")
 
     # Set up rate limits

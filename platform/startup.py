@@ -18,12 +18,27 @@ if __name__ == "__main__":
 
     topology = Topology.from_config(args)
 
+    print("\n\nstarting goto_scripts\n\n")
     goto_scripts(topology, script_dir)
+
+    print("\n\nstarting save_configs\n\n")
     save_configs(topology, script_dir)
+
+    print("\n\nstarting container_setup\n\n")
     container_setup(topology, script_dir)
+
+    print("\n\nstarting vpn_config\n\n")
     vpn_config(topology, script_dir)
+
+    print("\n\nstarting connect_l3_host_router\n\n")
     connect_l3_host_router(topology,script_dir)
+
+    print("\n\nstarting connect_l2_network\n\n")
     connect_l2_network(topology, script_dir)
+
+    print("\n\nstarting connect_l3_network\n\n")
+    connect_l3_network(topology,script_dir)
+
     # # Change size of ARP table necessary for large networks
     # # ARP: IP-to-MAC resolution
     # run_cmd("sysctl net.ipv4.neigh.default.gc_thresh1=16384") # the kernel begins to purge unused entries periodically

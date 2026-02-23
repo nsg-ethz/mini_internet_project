@@ -44,7 +44,6 @@ def connect_l3_host_router(config: Topology, directory: Path):
 
 def connect_l2_network_group(group_no: int, domain: Domain):
     
-
     if isinstance(domain, AS):
         client = docker.from_env()
 
@@ -104,6 +103,7 @@ def connect_l2_network_group(group_no: int, domain: Domain):
 
         print(f"Connected L2 network in group {group_no}")
 
+
 def connect_l2_network(config: Topology, directory: Path):
 
     run_cmd("modprobe 8021q")
@@ -115,3 +115,27 @@ def connect_l2_network(config: Topology, directory: Path):
     pool = Pool(processes = get_num_threads())
     inputs = [(group_no,domain) for group_no, domain in config.as_es.items()]
     pool.starmap(connect_l2_network_group, inputs)
+
+
+def connect_l3_network_group(group_no: int, domain: Domain):
+    
+    if isinstance(domain, AS):
+
+        for link in domain.internal_links:
+            cnt_router_1 = f"{group_no}_{link.endpoints[0]}router"
+            intf_router_1 = f"port_{link.endpoints[1]}"
+            cnt_router_2 = f"{group_no}_{link.endpoints[1]}router"
+            intf_router_2 = f"port_{link.endpoints[0]}"
+            thrp = f"{link.data.throughput_mbit}mbit"
+            delay = f"{link.data.delay_ms}ms"
+            buffer = f"{link.data.max_buffer_ms}ms"
+
+            connect_two_interfaces(cnt_router_1,intf_router_1,cnt_router_2,intf_router_2, (thrp,delay,buffer))
+
+        print(f"Connected L3 network in group {group_no}")
+
+
+def connect_l3_network(config: Topology, directory: Path):
+    pool = Pool(processes = get_num_threads())
+    inputs = [(group_no,domain) for group_no, domain in config.as_es.items()]
+    pool.starmap(connect_l3_network_group, inputs)
