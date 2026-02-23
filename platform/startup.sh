@@ -41,8 +41,8 @@ echo "$(date +%Y-%m-%d_%H-%M-%S)"
 source ../../.venv/bin/activate
 
 echo "cleanup.sh"
-#time ./cleanup/cleanup.sh "${DIRECTORY}"
-time ./cleanup/hard_reset.sh
+time ./cleanup/cleanup.sh "${DIRECTORY}"
+#time ./cleanup/hard_reset.sh
 
 echo ""
 echo ""
@@ -144,7 +144,7 @@ echo ""
 
 echo "configure_ssh.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
 echo "configure_ssh.sh: "
-time ./setup/configure_ssh.sh "${DIRECTORY}"
+#time ./setup/configure_ssh.sh "${DIRECTORY}"
 
 echo ""
 echo ""

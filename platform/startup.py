@@ -5,6 +5,7 @@ from setup.container_setup import container_setup
 from setup.vpn_config import vpn_config
 from setup.connect_internal import *
 from setup.connect_external import *
+from setup.configure_ssh import configure_ssh
 from pathlib import Path
 import argparse
 
@@ -42,6 +43,9 @@ if __name__ == "__main__":
 
     print("\n\nstarting connect_external_router\n\n")
     connect_external_router(topology,script_dir)
+
+    print("\n\nstarting configure_ssh\n\n")
+    configure_ssh(topology,script_dir)
 
     # # Change size of ARP table necessary for large networks
     # # ARP: IP-to-MAC resolution

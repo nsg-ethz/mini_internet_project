@@ -116,11 +116,11 @@ def create_group(group_no:int, domain: Domain, directory: Path, rpki_location: P
 
 
         # start l2 networks
-        for name, l2_network in domain.l2_networks.items():
+        for l2_name, l2_network in domain.l2_networks.items():
 
             # start switches
             for switch in l2_network.switches:
-                switch_cnt_name = f"{group_no}_L2_{name}_{switch.name}"
+                switch_cnt_name = f"{group_no}_L2_{l2_name}_{switch.name}"
                 subnet_ssh_switch = str(IPv4Interface(subnet_sshContainer_groupContainer(group_no, -1, switch.bridge_id-1, "switch")).ip)
                 netconf_ssh_switch = {ssh_net_name: client.api.create_endpoint_config(ipv4_address=subnet_ssh_switch)}
 
