@@ -7,7 +7,7 @@ def save_configs(config: Topology, directory: Path):
     for group_no, domain in config.as_es.items():
         
         #TODO fix environment variable
-        SSH_URL = "westvleteren.ethz.ch"
+        SSH_URL = config.environment["SSH_URL"]
 
         folder = f"{directory}/groups/g{group_no}"
         save_file = f"{folder}/save_configs.sh"

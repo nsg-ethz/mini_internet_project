@@ -346,6 +346,7 @@ class Topology:
     
     as_es: dict[int, Domain]
     external_links: list[ExternalLink]
+    environment: dict[str,str]
 
     @classmethod
     def from_config(cls, args :argparse.Namespace) -> "Topology":
@@ -390,4 +391,8 @@ class Topology:
 
                 external_links.append(ExternalLink.from_config(link_config, subnet))
 
-        return cls(as_es, external_links)
+        with open(Path(args.config + f"/variables.sh")) as variable_file:
+            lines = [line.split("#",maxsplit=1)[0].strip() for line in variable_file.readlines()]
+            environment = {line.split("=")[0]: line.split("=")[1].strip('\"') for line in lines if len(line.split("="))==2}
+
+        return cls(as_es, external_links, environment)

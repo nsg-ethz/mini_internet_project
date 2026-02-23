@@ -10,14 +10,14 @@ import docker
 def vpn_config(config: Topology, directory: Path):
 
     #TODO fix getting evironment variables
-    os.environ["VPN_DNS_ENABLED"] = "true"
-    os.environ["SSH_URL"] = "westvleteren.ethz.ch"
-    os.environ["VPN_ENABLED"] = "true"
-    os.environ["VPN_NO_CLIENTS"] = "1"
-    os.environ["VPN_LIMIT_ENABLED"] = "true"
-    os.environ["VPN_LIMIT_RATE"] = "1mbit"
-    os.environ["VPN_LIMIT_BURST"] = "32kbit"
-    os.environ["VPN_LIMIT_LATENCY"] = "40ms"
+    os.environ["VPN_ENABLED"] = config.environment.get("VPN_ENABLED", "true")
+    os.environ["VPN_NO_CLIENTS"] = config.environment.get("VPN_NO_CLIENTS", "1")
+    os.environ["VPN_LIMIT_ENABLED"] = config.environment.get("VPN_LIMIT_ENABLED", "true")
+    os.environ["VPN_LIMIT_RATE"] = config.environment.get("VPN_LIMIT_RATE", "1mbit")
+    os.environ["VPN_LIMIT_BURST"] = config.environment.get("VPN_LIMIT_BURST", "32kbit")
+    os.environ["VPN_LIMIT_LATENCY"] = config.environment.get("VPN_LIMIT_LATENCY", "40ms")
+    os.environ["VPN_DNS_ENABLED"] = config.environment.get("VPN_DNS_ENABLED","true")
+    os.environ["SSH_URL"] = config.environment.get("SSH_URL", "localhost")
 
     VPN_ENABLED = bool(os.environ["VPN_ENABLED"])
 
