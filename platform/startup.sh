@@ -137,7 +137,7 @@ echo ""
 
 echo "connect_external_routers.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
 echo "connect_external_routers.sh: "
-time ./setup/connect_external_routers.sh "${DIRECTORY}"
+#time ./setup/connect_external_routers.sh "${DIRECTORY}"
 
 echo ""
 echo ""

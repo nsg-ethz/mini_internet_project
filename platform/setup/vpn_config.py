@@ -64,8 +64,9 @@ def create_if(directory: Path, group_no: int, router_name: str, router_id: int, 
     api = docker.APIClient(base_url='unix://var/run/docker.sock')
     pid = api.inspect_container(container.id)["State"]["Pid"]
 
-    run_cmd("ip link add vpn type wireguard")
-    run_cmd(f"ip link set vpn netns {pid}")
+    run_cmd(f"ip link add vpn_{group_no} type wireguard")
+    run_cmd(f"ip link set vpn_{group_no} netns {pid}")
+    run_cmd(f"nsenter --net=/proc/{pid}/ns/net ip link set dev vpn_{group_no} name vpn")
     run_cmd(f"nsenter --net=/proc/{pid}/ns/net ip address add {interface_ip} dev vpn")
 
     container.exec_run("wg setconf vpn /etc/wireguard/interface.conf",user="root")
