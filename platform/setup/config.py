@@ -140,13 +140,15 @@ class Switch:
     name: str
     mac: str  # Maybe we want a better data structure for this?
     bridge_id: int
+    router: str
 
     @classmethod
     def from_config(cls, config: list[str]) -> "Switch":
         return cls(
             name=config[1],
             mac=config[3],
-            bridge_id=int(config[4])
+            bridge_id=int(config[4]),
+            router=str(config[2])
         )
 
 @dataclass

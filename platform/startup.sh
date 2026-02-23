@@ -123,7 +123,7 @@ echo ""
 
 echo "connect_l2_network.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
 echo "connect_l2_network.sh: "
-time ./setup/connect_l2_network.sh "${DIRECTORY}"
+#time ./setup/connect_l2_network.sh "${DIRECTORY}"
 
 echo ""
 echo ""

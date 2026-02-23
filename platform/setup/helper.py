@@ -34,9 +34,9 @@ def compute_burstsize(thrp: str):
     # 10 times MTU in bits
     min_burst = 1500 * 80
 
-    head = thrp.rstrip('0123456789')
-    tail = thrp[len(head):]
-    bits = int(head)
+    tail = thrp.lstrip('0123456789')
+    bits = int(thrp[:-len(tail)])
+
     if "bps" in tail:
         bits *= 8
     suffix_unit = tail.replace("bps","").replace("bit","")

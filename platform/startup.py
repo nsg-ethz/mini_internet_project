@@ -3,7 +3,7 @@ from setup.goto_scripts import goto_scripts
 from setup.save_configs import save_configs
 from setup.container_setup import container_setup
 from setup.vpn_config import vpn_config
-from setup.connect_l3_host_router import connect_l3_host_router
+from setup.connect_internal import *
 from pathlib import Path
 import argparse
 
@@ -23,7 +23,7 @@ if __name__ == "__main__":
     container_setup(topology, script_dir)
     vpn_config(topology, script_dir)
     connect_l3_host_router(topology,script_dir)
-
+    connect_l2_network(topology, script_dir)
     # # Change size of ARP table necessary for large networks
     # # ARP: IP-to-MAC resolution
     # run_cmd("sysctl net.ipv4.neigh.default.gc_thresh1=16384") # the kernel begins to purge unused entries periodically
