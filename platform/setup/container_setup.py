@@ -1,7 +1,8 @@
 from .config import *
 from config.subnet_config import *
+from .helper import get_num_threads
 from ipaddress import IPv4Interface
-from multiprocessing import Process, Pool
+from multiprocessing import Pool
 from pathlib import Path
 import os
 import docker
@@ -31,7 +32,7 @@ def container_setup(config: Topology, directory: Path):
     ipam_config_ssh = IPAMConfig(pool_configs=[IPAMPool(subnet=subnet_ssh.network.with_prefixlen)])
     client.networks.create(driver="bridge", ipam=ipam_config_ssh, name="ssh_bridge")
 
-    pool = Pool(processes = 16)
+    pool = Pool(processes = get_num_threads())
     inputs = [(group_no,domain,directory,rpki_location) for group_no, domain in config.as_es.items()]
     result = pool.starmap(create_group, inputs)
     
@@ -54,6 +55,9 @@ def container_setup(config: Topology, directory: Path):
             pid = api.inspect_container(container_id)["State"]["Pid"]
             file.write(f" [{container_name}]=\"{pid}\" ")
         file.write(")")
+
+
+
 
 def create_group(group_no:int, domain: Domain, directory: Path, rpki_location: Path):
     client = docker.from_env()

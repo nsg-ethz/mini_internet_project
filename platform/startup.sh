@@ -116,7 +116,7 @@ echo ""
 
 echo "connect_l3_host_router.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
 echo "connect_l3_host_router.sh: "
-time ./setup/connect_l3_host_router.sh "${DIRECTORY}"
+#time ./setup/connect_l3_host_router.sh "${DIRECTORY}"
 
 echo ""
 echo ""

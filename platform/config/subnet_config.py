@@ -13,7 +13,7 @@ def subnet_host_router(n_grp: int, n_router: int, device: str, n_vpn_peer=1):
     elif device == "vpn_interface":
         return f"{n_grp}.{n_router + 101}.10.1/24"
     elif device == "vpn_peer":
-        return f"{n_grp}.{n_router + 100}.10.{1 + n_vpn_peer}/32"
+        return f"{n_grp}.{n_router + 101}.10.{1 + n_vpn_peer}/32"
     else:
         raise ValueError(f"subnet_host_router: unknown device {device}")
 
