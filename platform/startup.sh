@@ -151,7 +151,7 @@ echo ""
 
 echo "connect_services.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
 echo "connect_services.sh: "
-time ./setup/connect_services.sh "${DIRECTORY}"
+#time ./setup/connect_services.sh "${DIRECTORY}"
 
 echo ""
 echo ""

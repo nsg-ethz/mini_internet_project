@@ -21,7 +21,7 @@ def vpn_config(config: Topology, directory: Path):
     os.environ["VPN_DNS_ENABLED"] = config.environment.get("VPN_DNS_ENABLED","true")
     os.environ["SSH_URL"] = config.environment.get("SSH_URL", "localhost")
 
-    VPN_ENABLED = bool(os.environ["VPN_ENABLED"])
+    VPN_ENABLED = os.environ["VPN_ENABLED"].strip().lower() == "true"
 
     if VPN_ENABLED == False:
         print("VPN not enabled, skipping VPN setup")
@@ -75,7 +75,7 @@ def create_if(directory: Path, group_no: int, router_name: str, router_id: int, 
     run_cmd(f"nsenter --net=/proc/{pid}/ns/net ip link set vpn up")
 
     # Set up rate limits
-    if bool(os.environ["VPN_LIMIT_ENABLED"]):
+    if os.environ["VPN_LIMIT_ENABLED"].strip().lower() == "true":
         VPN_LIMIT_RATE = os.environ["VPN_LIMIT_RATE"]
         VPN_LIMIT_BURST = os.environ["VPN_LIMIT_BURST"]
         VPN_LIMIT_LATENCY = os.environ["VPN_LIMIT_LATENCY"]
@@ -111,7 +111,7 @@ def create_wg_peer(directory: Path, group_no: int, router_name: str, router_id: 
     with open(peer_file,"w+") as file:
         file.write(f"[Interface]\nPrivateKey={private_key}\nAddress={peer_ip}\n")
         
-        if bool(os.environ["VPN_DNS_ENABLED"]):
+        if os.environ["VPN_DNS_ENABLED"].strip().lower() == "true":
             file.write(f"DNS={dns}\n")
         
         with open(pubkey_file) as pubkey:
