@@ -25,8 +25,8 @@ def connect_l3_host_router_group(group_no: int, domain: Domain):
                 run_cmd(f"ip netns exec {pid_router} ip route del default", check=False)
 
                 if domain.auto:
-                    ip_router = str(IPv4Interface(subnet_host_router(group_no, router.id, "router")).ip)
-                    subnet_host=subnet_host_router(group_no, router.id, "host")
+                    ip_router = str(IPv4Interface(subnet_host_router(group_no, router.id + i, "router")).ip)
+                    subnet_host=subnet_host_router(group_no, router.id + i, "host")
 
                     run_cmd(f"ip netns exec {pid_host} ip addr add {subnet_host} dev {host_intf_name}")
                     run_cmd(f"ip netns exec {pid_host} ip route add default via {ip_router}")
