@@ -134,7 +134,6 @@ def connect_services(config: Topology, directory: Path):
             if Service.MEASUREMENT in services:
                 with open(f"{directory}/groups/g{group_no}/id_rsa.pub") as file:
                     pubkey = file.read()
-                    print(pubkey)
 
                     sshifname=f"ssh_group{group_no}"
                     ssh_subnet = IPv4Interface(subnet_sshContainer_groupContainer(group_no, -1, -1, "MEASUREMENT"))

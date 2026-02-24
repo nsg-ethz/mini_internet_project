@@ -1,6 +1,6 @@
 from .config import *
 from config.subnet_config import *
-from .helper import get_num_threads
+from .helper import get_num_threads,get_docker_pid
 from ipaddress import IPv4Interface
 from multiprocessing import Pool
 from pathlib import Path
@@ -50,9 +50,7 @@ def container_setup(config: Topology, directory: Path):
     with open(f"{directory}/groups/docker_pid.map","w+") as file:
         file.write("declare -A DOCKER_TO_PID=(")
         for container_name in all_containers:
-            container_id = client.containers.get(container_name).id
-            api = docker.APIClient(base_url='unix://var/run/docker.sock')
-            pid = api.inspect_container(container_id)["State"]["Pid"]
+            pid = get_docker_pid(container_name)
             file.write(f" [{container_name}]=\"{pid}\" ")
         file.write(")")
 
@@ -87,7 +85,7 @@ def create_group(group_no:int, domain: Domain, directory: Path, rpki_location: P
         volumes_ssh = {f'{location}/goto.sh': {'bind': '/root/goto.sh', 'mode': 'rw'},
                 f'{location}/save_configs.sh': {'bind': '/root/save_configs.sh', 'mode': 'rw'},
                 f'{location}/restore_configs.sh': {'bind': '/root/restore_configs.sh', 'mode': 'rw'},
-                f'{location}/restore_ospfd.sh': {'bind': '/root/restore_ospfd.sh', 'mode': 'rw'},
+                f'{location}/restart_ospfd.sh': {'bind': '/root/restart_ospfd.sh', 'mode': 'rw'},
                 f'{str(directory)}/config/ssh_welcome_message.txt': {'bind': '/etc/motd', 'mode': 'ro'},
                 f'/etc/timezone': {'bind': '/etc/timezone', 'mode': 'ro'},
                 f'/etc/localtime': {'bind': '/etc/localtime', 'mode': 'ro'}}

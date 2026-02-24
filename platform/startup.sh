@@ -42,7 +42,7 @@ source ../../.venv/bin/activate
 
 echo "cleanup.sh"
 time ./cleanup/cleanup.sh "${DIRECTORY}"
-#time ./cleanup/hard_reset.sh
+time ./cleanup/hard_reset.sh
 
 echo ""
 echo ""
@@ -158,7 +158,7 @@ echo ""
 
 echo "layer2_config.sh: "
 echo "layer2_config.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
-time ./setup/layer2_config.sh "${DIRECTORY}"
+#time ./setup/layer2_config.sh "${DIRECTORY}"
 
 echo ""
 echo ""

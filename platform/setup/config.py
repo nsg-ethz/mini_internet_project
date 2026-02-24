@@ -303,6 +303,7 @@ class AS:
     routers: dict[str, Router]
     internal_links: list[InternalLink]
     l2_networks: dict[str, L2Network]
+    l2_tunnel: list[tuple[str,str]]
 
     @classmethod
     def from_config(cls, args: argparse.Namespace, config: list[str]) -> "AS":
@@ -321,11 +322,14 @@ class AS:
             assert (src in routers and dst in routers), "Trying to connect two routers that do not exist"
             links.append(InternalLink.from_partial_config(src, dst, link_config[2:]))
 
+        tunnels = [(line[0],line[1]) for line in read_config(args,"l2_tunnel.txt")]
+
         return cls(
             auto = config[2] == "Config",
             routers = routers,
             internal_links = links,
-            l2_networks = l2_networks_from_configs(args, set(routers.keys()), config[5], config[6], config[7])
+            l2_networks = l2_networks_from_configs(args, set(routers.keys()), config[5], config[6], config[7]),
+            l2_tunnel = tunnels
         )
 
 type Domain = IXP|AS

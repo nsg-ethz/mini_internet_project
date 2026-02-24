@@ -88,10 +88,13 @@ def connect_l2_network_group(group_no: int, domain: Domain):
                 switch_names = [switch.name for switch in l2_network.switches]
 
                 if l2_link.endpoints[0] in switch_names and l2_link.endpoints[1] in switch_names :
-                    command = f"ovs-vsctl add-port br0 {intf_1} --set Port {intf_1} trunks=0"
-                    client.containers.get(f"{group_no}_L2_{l2_name}_{l2_link.endpoints[0]}").exec_run(command)
-                    command = f"ovs-vsctl add-port br0 {intf_2} --set Port {intf_2} trunks=0"
-                    client.containers.get(f"{group_no}_L2_{l2_name}_{l2_link.endpoints[1]}").exec_run(command)
+                    cnt_sw1 = client.containers.get(f"{group_no}_L2_{l2_name}_{l2_link.endpoints[0]}")
+                    cnt_sw1.exec_run(f"ovs-vsctl add-port br0 {intf_1}")
+                    cnt_sw1.exec_run(f"ovs-vsctl set Port {intf_1} trunks=0")
+                    cnt_sw2 = client.containers.get(f"{group_no}_L2_{l2_name}_{l2_link.endpoints[1]}")
+                    cnt_sw2.exec_run(f"ovs-vsctl add-port br0 {intf_2}")
+                    cnt_sw2.exec_run(f"ovs-vsctl set Port {intf_2} trunks=0")
+                    
 
                 elif l2_link.endpoints[0] in switch_names:
                     command = f"ovs-vsctl add-port br0 {intf_1}"

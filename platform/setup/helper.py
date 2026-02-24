@@ -71,15 +71,18 @@ def create_netns_symlink(pid: int):
 
         for signal in [1, 2, 3, 13, 14, 15]:
             run_cmd(f"trap \'delete_netns_symlink; trap - $signal; kill -$signal $$\' {signal}")
-        
 
-def connect_two_interfaces(cont_1: str, intf_1: str, cont_2: str, intf_2: str, perf: None | tuple[str,str,str] = None) -> tuple[int, int]:
+def get_docker_pid(name: str):
     client = docker.from_env()
     api = docker.APIClient(base_url='unix://var/run/docker.sock')
-    container_id_1 = client.containers.get(cont_1).id
-    pid_1 = int(api.inspect_container(container_id_1)["State"]["Pid"])
-    container_id_2 = client.containers.get(cont_2).id
-    pid_2 = int(api.inspect_container(container_id_2)["State"]["Pid"])
+    container_id_1 = client.containers.get(name).id
+    return int(api.inspect_container(container_id_1)["State"]["Pid"])
+
+def connect_two_interfaces(cont_1: str, intf_1: str, cont_2: str, intf_2: str, perf: None | tuple[str,str,str] = None) -> tuple[int, int]:
+
+    pid_1 = get_docker_pid(cont_1)
+    pid_2 = get_docker_pid(cont_2)
+    
     if perf != None:
         thrp, delay, buffer = perf
         burst = compute_burstsize(thrp)
