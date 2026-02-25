@@ -9,9 +9,11 @@ from setup.configure_ssh import configure_ssh
 from setup.connect_services import connect_services
 from setup.layer2_config import layer2_config
 from setup.router_config import router_config
+from setup.rpki_setup import rpki_setup
+
 from pathlib import Path
 import argparse
-
+import time
     
 if __name__ == "__main__":
     script_dir = Path(__file__).resolve().parent
@@ -59,6 +61,10 @@ if __name__ == "__main__":
     print("\n\nstarting router_config\n\n")
     router_config(topology,script_dir)
 
+    time.sleep(60)
+
+    print("\n\nstarting rpki_setup\n\n")
+    rpki_setup(topology,script_dir)
     # # Change size of ARP table necessary for large networks
     # # ARP: IP-to-MAC resolution
     # run_cmd("sysctl net.ipv4.neigh.default.gc_thresh1=16384") # the kernel begins to purge unused entries periodically

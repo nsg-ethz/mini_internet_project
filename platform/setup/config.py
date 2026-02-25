@@ -242,7 +242,7 @@ class Router:
     id: int
     name: str
     services: set[Service] = field(default_factory=set[Service])
-    hosts: set[Host] = field(default_factory=set[Host])
+    hosts: list[Host] = field(default_factory=list[Host])
     access: Access = Access.NONE
 
     @classmethod
@@ -263,7 +263,7 @@ class Router:
         # Extract all services
         services: set[Service] = {s for row in config if (s := Service.from_str(row[1])) is not None}
         # Extract all hosts
-        hosts: set[Host] = {h for row in config if (h := Host.from_str(row[2], None, None)) is not None}
+        hosts: list[Host] = [h for row in config if (h := Host.from_str(row[2], None, None)) is not None]
         return cls(id, name, services, hosts, access)
 
 def routers_from_config(args: argparse.Namespace, routers_config: str) -> dict[str, Router]:

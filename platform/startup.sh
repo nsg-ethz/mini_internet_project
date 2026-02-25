@@ -170,9 +170,9 @@ echo "router_config.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
 echo ""
 echo ""
 
-echo "mpls.sh: "
-echo "mpls.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
-time ./setup/mpls_setup.sh "${DIRECTORY}"
+#echo "mpls.sh: "
+#echo "mpls.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
+#time ./setup/mpls_setup.sh "${DIRECTORY}"
 
 echo ""
 echo ""
@@ -182,7 +182,7 @@ sleep 60
 
 echo "rpki_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
 echo "rpki_setup.sh: "
-time ./setup/rpki_setup.sh "${DIRECTORY}"
+#time ./setup/rpki_setup.sh "${DIRECTORY}"
 
 echo ""
 echo ""

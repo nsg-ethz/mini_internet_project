@@ -1,9 +1,8 @@
 from .config import *
 from config.subnet_config import *
-from .helper import get_num_threads, run_cmd, get_docker_pid
+from .helper import get_num_threads, run_cmd
 from multiprocessing import Pool
-from ipaddress import IPv4Interface, IPv6Interface
-import docker
+from ipaddress import IPv4Interface
 import time
 
 def router_config_group(config: Topology, group_no: int, domain: Domain, directory: Path):

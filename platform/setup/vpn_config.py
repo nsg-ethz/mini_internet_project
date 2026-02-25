@@ -71,7 +71,6 @@ def create_if(directory: Path, group_no: int, router_name: str, router_id: int, 
 
     container.exec_run("wg setconf vpn /etc/wireguard/interface.conf",user="root")
 
-    time.sleep(1)
     run_cmd(f"nsenter --net=/proc/{pid}/ns/net ip link set vpn up")
 
     # Set up rate limits
