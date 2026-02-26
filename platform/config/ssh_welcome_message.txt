@@ -8,8 +8,8 @@
 |                                                      |
 |       ./goto.sh olte router                          |
 |       ./goto.sh olte host                            |
-|       ./goto.sh dcn  s1                              |
-|       ./goto.sh dcn  fifa_1                          |
+|       ./goto.sh tcs  s2                              |
+|       ./goto.sh tcs  a_gott                          |
 |                                                      |
 |   Or you can access the public measurement service:  |
 |                                                      |
