@@ -178,7 +178,7 @@ echo ""
 echo ""
 
 echo "Waiting 60sec for RPKI CA and proxy to startup.."
-sleep 60
+#sleep 60
 
 echo "rpki_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
 echo "rpki_setup.sh: "
@@ -189,21 +189,21 @@ echo ""
 
 echo "website_setup.sh: "
 echo "website_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
-time ./setup/website_setup.sh "${DIRECTORY}"
+#time ./setup/website_setup.sh "${DIRECTORY}"
 
 echo ""
 echo ""
 
 echo "webserver_links.sh: "
 echo "webserver_links.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
-time ./groups/rpki/webserver_links.sh
+#time ./groups/rpki/webserver_links.sh
 
 echo ""
 echo ""
 
 echo "history_setup.sh: "
 echo "history_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
-time ./setup/history_setup.sh "${DIRECTORY}"
+#time ./setup/history_setup.sh "${DIRECTORY}"
 
 echo ""
 echo ""

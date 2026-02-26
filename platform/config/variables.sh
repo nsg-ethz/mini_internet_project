@@ -91,7 +91,7 @@ HISTORY_ENABLED=false
 # Unpause container at any time with `docker container unpause HISTORY`
 HISTORY_PAUSE_AFTER_START=false
 # How often to fetch update configs and matrix state.
-HISTORY_UPDATE_FREQUENCY=$(( 60*60 ))  # every hour (in seconds)
+HISTORY_UPDATE_FREQUENCY=3600  # every hour (in seconds)
 # Timeout for ./save_configs.sh
 HISTORY_TIMEOUT="300s"
 # Username and email that will show up on the commit.
@@ -123,7 +123,7 @@ VPN_DNS_ENABLED=true
 
 # Enable/Disable VPN website
 # VPN_WEBSITE_ENABLED=false
-VPN_WEBSITE_ENABLED=${VPN_ENABLED}
+VPN_WEBSITE_ENABLED=true
 
 # The file for the vpn database
 VPN_DB_FILE="vpn.db"

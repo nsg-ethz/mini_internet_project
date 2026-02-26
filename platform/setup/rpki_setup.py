@@ -145,9 +145,7 @@ def krill_setup(config: Topology, directory: Path):
                         krill_containers += [(group_no, hostl3_cnt_name)]
 
                     if host.type == HostType.ROUTINATOR:
-                        routinator_containers += [(group_no, hostl3_cnt_name)]
-
-    print(krill_containers)        
+                        routinator_containers += [(group_no, hostl3_cnt_name)]    
     
     for as_no, krill_cnt in krill_containers:
                         
@@ -187,7 +185,7 @@ def krill_setup(config: Topology, directory: Path):
                 krill_config_location = f"{krill_group_location}/krill.conf"
 
                 passwd = str(run_cmd(f"awk \" \\$1 == {group_no}{{ print \\$0 }}\" \"{directory}/groups/passwords.txt\" | cut -f 2 -d \' \'").stdout)
-                print(passwd)
+
                 with open(krill_config_location,"a+") as file:
                     file.write(str(run_cmd(f"echo \"{passwd}\" | docker exec -i {krill_cnt} krillc config user --id \"group{group_no}@ethz.ch\" -a \"role=readwrite\" -a \"inc_cas=group{group_no}\" | grep \"group{group_no}\" | tr -d \'\\r\'").stdout))
 

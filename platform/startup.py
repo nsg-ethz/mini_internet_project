@@ -10,6 +10,8 @@ from setup.connect_services import connect_services
 from setup.layer2_config import layer2_config
 from setup.router_config import router_config
 from setup.rpki_setup import rpki_setup
+from setup.website_setup import website_setup
+from setup.history_setup import history_setup
 
 from pathlib import Path
 import argparse
@@ -61,10 +63,18 @@ if __name__ == "__main__":
     print("\n\nstarting router_config\n\n")
     router_config(topology,script_dir)
 
+    print("Waiting 60sec for RPKI CA and proxy to startup..")
     time.sleep(60)
 
     print("\n\nstarting rpki_setup\n\n")
     rpki_setup(topology,script_dir)
+
+    print("\n\nstarting website_setup\n\n")
+    website_setup(topology,script_dir)
+
+    print("\n\nstarting history_setup\n\n")
+    history_setup(topology,script_dir)
+
     # # Change size of ARP table necessary for large networks
     # # ARP: IP-to-MAC resolution
     # run_cmd("sysctl net.ipv4.neigh.default.gc_thresh1=16384") # the kernel begins to purge unused entries periodically
