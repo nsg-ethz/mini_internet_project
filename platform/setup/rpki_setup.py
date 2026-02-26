@@ -120,8 +120,8 @@ def rpki_router_setup(config: Topology, directory: Path):
                     if len(routinator_ips) == 0:
                        print(f"WARN: Group {group_no} has no routinator instance! Skip RPKI router configuration.")
                     else:
-                        run_cmd(f"docker cp \"{location}\" \"{group_no}_{router_name}router\":/home/rpki.conf > /dev/null")
-                        run_cmd("docker exec -d \"{group_no}_{router_name}router\" /home/rpki.conf &")
+                        run_cmd(f"docker cp \"{location}\" \"{group_no}_{router_name}router\":/home/conf_rpki.conf > /dev/null")
+                        run_cmd(f"docker exec -d \"{group_no}_{router_name}router\" /home/conf_rpki.conf &")
 
     
 
@@ -158,7 +158,7 @@ def krill_setup(config: Topology, directory: Path):
         client.containers.get(krill_cnt).exec_run(f"bash -c \"wget -q -O /var/krill/tals/group{as_no}.tal https://127.0.0.1:3000/ta/ta.tal \"")
 
     for as_no, routinator_cnt in routinator_containers:
-            client.containers.get(routinator_cnt).exec_run(f"bash -c \"kill -1 \\$(cat /var/run/routinator.pid)\"")
+        run_cmd(f"docker exec {routinator_cnt} bash -c \"kill -1 \\$(cat /var/run/routinator.pid)\"")
             
 
     for as_no, krill_cnt in krill_containers:

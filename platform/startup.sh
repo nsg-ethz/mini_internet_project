@@ -74,12 +74,14 @@ echo "dns_config.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
 echo "dns_config.sh: "
 time ./setup/dns_config.sh "${DIRECTORY}"
 
+time python3 ./startup.py -c "${DIRECTORY}/config"
+
 echo ""
 echo ""
 
 echo "rpki_config.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
 echo "rpki_config.sh: "
-time ./setup/rpki_config.sh "${DIRECTORY}"
+#time ./setup/rpki_config.sh "${DIRECTORY}"
 
 echo ""
 echo ""
@@ -87,7 +89,7 @@ echo ""
 echo "goto_scripts.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
 echo "goto_scripts.sh: "
 #time ./setup/goto_scripts.sh "${DIRECTORY}"
-time python3 ./startup.py -c "${DIRECTORY}/config"
+
 
 echo ""
 echo ""
