@@ -44,30 +44,35 @@ echo "cleanup.sh"
 time ./cleanup/cleanup.sh "${DIRECTORY}"
 #time ./cleanup/hard_reset.sh
 
-echo ""
-echo ""
+time python3 ./startup.py -c "${DIRECTORY}/config"
+
+
+
 
 # change size of ARP table necessary for large networks
 # ARP: IP-to-MAC resolution
-sysctl net.ipv4.neigh.default.gc_thresh1=16384  # the kernel begins to purge unused entries periodically
-sysctl net.ipv4.neigh.default.gc_thresh2=32768 # more aggresive purging
-sysctl net.ipv4.neigh.default.gc_thresh3=131072 # no new entries are allowed
+#sysctl net.ipv4.neigh.default.gc_thresh1=16384  # the kernel begins to purge unused entries periodically
+#sysctl net.ipv4.neigh.default.gc_thresh2=32768 # more aggresive purging
+#sysctl net.ipv4.neigh.default.gc_thresh3=131072 # no new entries are allowed
 # apply changes ffrom sysctl.conf
-sysctl -p
+#sysctl -p
 
 # Increase the max number of running processes
-sysctl kernel.pid_max=4194304
+#sysctl kernel.pid_max=4194304
 
 # Load MPLS kernel modules
-modprobe mpls_router # enables the kernel to process MPLS packets, which is necessary for VPN
-modprobe mpls_gso # MPLS Generic Segmentation Offload, enables segmentation for large packets to offload the CPU
-modprobe mpls_iptunnel # enables the kernel to create VPN to tunnel IP packets over MPLS
+#modprobe mpls_router # enables the kernel to process MPLS packets, which is necessary for VPN
+#modprobe mpls_gso # MPLS Generic Segmentation Offload, enables segmentation for large packets to offload the CPU
+#modprobe mpls_iptunnel # enables the kernel to create VPN to tunnel IP packets over MPLS
+
+
+if false; then
 
 echo "folder_setup.sh $(($(date +%s%N)/1000000))" > "${DIRECTORY}"/log.txt
 echo "folder_setup.sh: "
-time ./setup/folder_setup.sh "${DIRECTORY}"
+#time ./setup/folder_setup.sh "${DIRECTORY}"
 
-time python3 ./startup.py -c "${DIRECTORY}/config"
+
 
 echo ""
 echo ""
@@ -211,6 +216,7 @@ echo "history_setup.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
 echo ""
 echo ""
 
+
 # reload dns server config
 if [ -n "$(docker ps | grep "DNS")" ]; then
     # docker exec -d DNS service bind9 restart
@@ -238,3 +244,5 @@ echo "bgp_clear $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
 time ./setup/bgp_clear.sh "${DIRECTORY}"
 
 echo "$(date +%Y-%m-%d_%H-%M-%S)"
+
+fi

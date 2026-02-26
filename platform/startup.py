@@ -1,4 +1,5 @@
 from setup.config import Topology
+from setup.folder_setup import folder_setup
 from setup.dns_config import dns_config
 from setup.rpki_config import rpki_config
 from setup.goto_scripts import goto_scripts
@@ -29,68 +30,80 @@ if __name__ == "__main__":
 
     topology = Topology.from_config(args)
 
-    print("\n\nstarting dns_config\n\n")
-    dns_config(topology, script_dir)
-
-    print("\n\nstarting rpki_config\n\n")
-    rpki_config(topology, script_dir)
-
-    print("\n\nstarting goto_scripts\n\n")
-    goto_scripts(topology, script_dir)
-
-    print("\n\nstarting save_configs\n\n")
-    save_configs(topology, script_dir)
-
-    print("\n\nstarting container_setup\n\n")
-    container_setup(topology, script_dir)
-
-    print("\n\nstarting vpn_config\n\n")
-    vpn_config(topology, script_dir)
-
-    print("\n\nstarting connect_l3_host_router\n\n")
-    connect_l3_host_router(topology,script_dir)
-
-    print("\n\nstarting connect_l2_network\n\n")
-    connect_l2_network(topology, script_dir)
-
-    print("\n\nstarting connect_l3_network\n\n")
-    connect_l3_network(topology,script_dir)
-
-    print("\n\nstarting connect_external_router\n\n")
-    connect_external_router(topology,script_dir)
-
-    print("\n\nstarting configure_ssh\n\n")
-    configure_ssh(topology,script_dir)
-
-    print("\n\nstarting connect_services\n\n")
-    connect_services(topology,script_dir)
-
-    print("\n\nstarting layer2_config\n\n")
-    layer2_config(topology,script_dir)
-
-    print("\n\nstarting router_config\n\n")
-    router_config(topology,script_dir)
-
-    print("Waiting 60sec for RPKI CA and proxy to startup..")
-    time.sleep(60)
-
-    print("\n\nstarting rpki_setup\n\n")
-    rpki_setup(topology,script_dir)
-
-    print("\n\nstarting website_setup\n\n")
-    website_setup(topology,script_dir)
-
-    print("\n\nstarting history_setup\n\n")
-    history_setup(topology,script_dir)
-
     # # Change size of ARP table necessary for large networks
     # # ARP: IP-to-MAC resolution
-    # run_cmd("sysctl net.ipv4.neigh.default.gc_thresh1=16384") # the kernel begins to purge unused entries periodically
-    # run_cmd("sysctl net.ipv4.neigh.default.gc_thresh2=32768") # more aggresive purging
-    # run_cmd("sysctl net.ipv4.neigh.default.gc_thresh3=131072") # no new entries are allowed
+    run_cmd("sysctl net.ipv4.neigh.default.gc_thresh1=16384") # the kernel begins to purge unused entries periodically
+    run_cmd("sysctl net.ipv4.neigh.default.gc_thresh2=32768") # more aggresive purging
+    run_cmd("sysctl net.ipv4.neigh.default.gc_thresh3=131072") # no new entries are allowed
     # # apply changes from sysctl.conf
-    # run_cmd("sysctl -p")
+    run_cmd("sysctl -p")
     # # Increase the max number of running processes
-    # run_cmd("sysctl kernel.pid_max=4194304")
+    run_cmd("sysctl kernel.pid_max=4194304")
 
-    # print("hello")
+    print("\n\nstarting folder_setup\n")
+    folder_setup(topology, script_dir)
+
+    print("\n\nstarting dns_config\n")
+    dns_config(topology, script_dir)
+
+    print("\n\nstarting rpki_config\n")
+    rpki_config(topology, script_dir)
+
+    print("\n\nstarting goto_scripts\n")
+    goto_scripts(topology, script_dir)
+
+    print("\n\nstarting save_configs\n")
+    save_configs(topology, script_dir)
+
+    print("\n\nstarting container_setup\n")
+    container_setup(topology, script_dir)
+
+    print("\n\nstarting vpn_config\n")
+    vpn_config(topology, script_dir)
+
+    print("\n\nstarting connect_l3_host_router\n")
+    connect_l3_host_router(topology,script_dir)
+
+    print("\n\nstarting connect_l2_network\n")
+    connect_l2_network(topology, script_dir)
+
+    print("\n\nstarting connect_l3_network\n")
+    connect_l3_network(topology,script_dir)
+
+    print("\n\nstarting connect_external_router\n")
+    connect_external_router(topology,script_dir)
+
+    print("\n\nstarting configure_ssh\n")
+    configure_ssh(topology,script_dir)
+
+    print("\n\nstarting connect_services\n")
+    connect_services(topology,script_dir)
+
+    print("\n\nstarting layer2_config\n")
+    layer2_config(topology,script_dir)
+
+    print("\n\nstarting router_config\n")
+    router_config(topology,script_dir)
+
+    print("\n\nstarting rpki_setup\n")
+    rpki_setup(topology,script_dir)
+
+    print("\n\nstarting website_setup\n")
+    website_setup(topology,script_dir)
+
+    print("\n\nstarting history_setup\n")
+    history_setup(topology,script_dir)
+
+
+    # reload dns server config  
+    run_cmd("docker kill --signal=HUP DNS")
+
+    print("\n\nApplying hijacks\n")
+
+    run_cmd(f"./setup/hijack_config.py {script_dir}")
+
+    print("Waiting 60sec for BGP messages to propagate...")
+    time.sleep(60)
+
+    print("Refreshing selected advertisements: ")
+    run_cmd(f"./setup/bgp_clear.sh {script_dir}")

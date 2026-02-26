@@ -7,6 +7,7 @@ set -o pipefail
 set -o nounset
 
 images=(base base_supervisor host router ixp ssh measurement dns switch matrix vpn vlc hostm routinator krill webserver history)
+images=(base base_supervisor krill)
 tag="26"
 
 for image in "${images[@]}"; do
