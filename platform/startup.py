@@ -1,4 +1,5 @@
 from setup.config import Topology
+from setup.dns_config import dns_config
 from setup.rpki_config import rpki_config
 from setup.goto_scripts import goto_scripts
 from setup.save_configs import save_configs
@@ -27,6 +28,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     topology = Topology.from_config(args)
+
+    print("\n\nstarting dns_config\n\n")
+    dns_config(topology, script_dir)
 
     print("\n\nstarting rpki_config\n\n")
     rpki_config(topology, script_dir)

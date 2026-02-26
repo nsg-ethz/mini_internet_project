@@ -67,14 +67,15 @@ echo "folder_setup.sh $(($(date +%s%N)/1000000))" > "${DIRECTORY}"/log.txt
 echo "folder_setup.sh: "
 time ./setup/folder_setup.sh "${DIRECTORY}"
 
+time python3 ./startup.py -c "${DIRECTORY}/config"
+
 echo ""
 echo ""
 
 echo "dns_config.sh $(($(date +%s%N)/1000000))" >> "${DIRECTORY}"/log.txt
 echo "dns_config.sh: "
-time ./setup/dns_config.sh "${DIRECTORY}"
+#time ./setup/dns_config.sh "${DIRECTORY}"
 
-time python3 ./startup.py -c "${DIRECTORY}/config"
 
 echo ""
 echo ""

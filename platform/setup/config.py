@@ -93,8 +93,7 @@ class InternalLink:
 
     @classmethod
     def from_partial_config(cls, src: str, dst: str, link_config: list[str]) -> "InternalLink":
-        sorted_endpoints = sorted([src, dst])
-        endpoints: tuple[str, str] = (sorted_endpoints[0], sorted_endpoints[1])
+        endpoints: tuple[str, str] = (src, dst)
         return cls(endpoints, LinkData.from_triple(link_config))
 
 class HostType(Enum):
