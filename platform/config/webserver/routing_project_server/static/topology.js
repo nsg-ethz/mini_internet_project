@@ -250,36 +250,6 @@ function drawTraceroutePath(network, allNodes, tracerouteData) {
       });
     }
 
-    // Check for policy violation AFTER drawing everything
-    const violation = detectPolicyViolation(asPath, allRouters);
-    const box = document.getElementById("traceroute-result");
-
-    if (violation && violation.reason) {
-      box.innerHTML += `
-        <div class="mt-2 text-red-600 font-semibold text-sm">
-          Policy Violation Detected: ${violation.reason}
-        </div>
-      `;
-
-      const [from, to] = violation.offendingEdge || [];
-      if (from && to) {
-        network.body.data.edges.add({
-          from,
-          to,
-          color: { color: "red" },
-          width: 3,
-          dashes: true,
-          arrows: 'to'
-        });
-      }
-    } else {
-      box.innerHTML += `
-        <div class="mt-2 text-green-700 font-semibold text-sm">
-          No policy violations detected.
-        </div>
-      `;
-    }
-
   } catch (err) {
     console.error("Failed to draw traceroute:", err);
   }

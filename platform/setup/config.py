@@ -100,6 +100,7 @@ class HostType(Enum):
     HOST = "host"
     ROUTINATOR = "routinator"
     KRILL = "krill"
+    VPNSECRET = "vpnsecret"
 
 @dataclass(frozen=True) # This needs to be hashable
 class Host:

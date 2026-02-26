@@ -3,6 +3,7 @@ import uuid
 import threading
 from datetime import datetime
 from flask import Blueprint, request, jsonify, current_app
+from flask_login import login_required
 import subprocess
 import jc
 
@@ -83,6 +84,7 @@ def run_traceroute_job(job_id, container, target_ip, logger):
 
 # Launch traceroute request
 @traceroute_bp.route("/launch-traceroute", methods=["POST"])
+@login_required
 def launch_traceroute():
     logger = current_app.logger
     data = request.get_json(silent=True)
@@ -115,6 +117,7 @@ def launch_traceroute():
 
 # Poll for traceroute result
 @traceroute_bp.route("/get-traceroute-result", methods=["GET"])
+@login_required
 def get_traceroute_result():
     job_id = request.args.get("job_id")
     if not job_id:

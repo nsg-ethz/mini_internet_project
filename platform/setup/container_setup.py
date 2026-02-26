@@ -259,7 +259,10 @@ def create_group(group_no:int, domain: Domain, directory: Path, rpki_location: P
                                     f'{directory}/groups/g{group_no}/rpki_exceptions_autograder.json': {'bind': '/root/rpki_exceptions_autograder.json', 'mode': 'rw'}}
                     environments_host = []
                     routinator_containers += [f"{group_no} {hostl3_cnt_name}"]
-                #TODO add vpn secret
+
+                elif host.type == HostType.VPNSECRET:
+                    volumes_host = {f'{directory}/config/vpnsecret/': {'bind': '/server/', 'mode': 'ro'}}
+
                 else:
                     volumes_host = {}
                     environments_host = []

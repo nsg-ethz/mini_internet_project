@@ -59,6 +59,7 @@ def connectivity_matrix():
     )
 
 @main_bp.route("/traceroutes")
+@login_required
 def show_topology():
     if not current_app.config['TOPOLOGY_TAB']:
         return "Not found", 404
