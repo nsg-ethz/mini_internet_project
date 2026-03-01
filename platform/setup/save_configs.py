@@ -85,6 +85,7 @@ def save_configs(config: Topology, directory: Path):
                     save_content += f"save {save_dir}/host.route  {subnet} \"ip route\"\n"
                     save_content += f"save {save_dir}/host.route6 {subnet} \"ip -6 route\"\n"
             
+            save_content += "cp ~/secret.txt ${dirname}/secret.txt\n"
             save_content += "\n"
             save_content += "tar -czf ${dirname}.tar.gz ${dirname}/*\n"
             save_content += "\n"
@@ -203,7 +204,7 @@ def save_configs(config: Topology, directory: Path):
                     restore_content += f"restore {subnet} ip address add ${{ipv6}} dev {group_no}-{switch_name}\n"
                     restore_content += f"restore {subnet} ip route add default via ${{default_route}}\n"
                     restore_content += f"restore {subnet} ip route add default via ${{default_route_v6}}\n"
-
+                    restore_content += f"cp $configs_folder_name/secret.txt ~/secret.txt"
 
             with open(restore_file, "w+") as f:
                 f.write(restore_content)

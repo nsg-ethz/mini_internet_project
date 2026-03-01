@@ -1,6 +1,6 @@
 A_VAUD   miniinterneteth/host:26 TCW   S1    10mbit   1ms    50ms    10
 C_VAUD   miniinterneteth/host:26 TCW   S1    10mbit   1ms    50ms    20
-A_GOTT   miniinterneteth/host:26 TCW   S2    10mbit   1ms    50ms    10
-C_GOTT   miniinterneteth/host:26 TCW   S2    10mbit   1ms    50ms    20
+A_GOTT   miniinterneteth/host:26 TCS   S2    10mbit   1ms    50ms    10
+C_GOTT   miniinterneteth/host:26 TCS   S2    10mbit   1ms    50ms    20
 A_CENE   miniinterneteth/host:26 TCS   S3    10mbit   1ms    50ms    10
 C_CENE   miniinterneteth/host:26 TCS   S3    10mbit   1ms    50ms    20

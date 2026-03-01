@@ -173,7 +173,6 @@ def l2_networks_from_configs(args: argparse.Namespace, routers: set[str], switch
             assert switch_config[2] in routers, f"The router ({switch_config[2]}) this switch ({switch_config[1]}) is trying to connect to does not exist"
         switch = Switch.from_config(switch_config)
         net_name = switch_config[0]
-        
         if net_name not in l2_networks:
             l2_networks[net_name] = L2Network(name=net_name)
 

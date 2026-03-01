@@ -6,5 +6,6 @@ LUZE   ZURI     1mbit 5ms    50ms
 LUZE   BELL     1mbit 5ms    50ms    
 ZURI   CHUR     1mbit 5ms    50ms
 ZURI   BELL     1mbit 5ms    50ms
+ZURI   BASE     1mbit 5ms    50ms
 BASE   LAUS     1mbit 5ms    50ms
 BERN   LAUS     1mbit 5ms    50ms

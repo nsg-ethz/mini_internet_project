@@ -10,7 +10,7 @@ def history_setup(config: Topology, directory: Path):
     client = docker.from_env()
 
     datadir=f"{directory}/groups"
-    historydir=f"{directory}/history"
+    historydir=f"{datadir}/history"
     run_cmd(f"mkdir -p {historydir}")
     matrixdir=f"{datadir}/matrix"
 

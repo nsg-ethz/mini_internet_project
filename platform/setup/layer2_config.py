@@ -50,14 +50,14 @@ def layer2_config_group(group_no: int, domain: Domain, directory: Path):
                         for i in range(len(domain.l2_networks.values())):
                             if tunnel_location[0] != i:
 
-                                subnet_1 = subnet_l2_ipv6(group_no, i, vlan,-1)
+                                subnet_1 = subnet_l2_ipv6(group_no, i, vlan, 0)
                                 file.write(f"docker exec -d {group_no}_{router_1.name}router ip route add {subnet_1} dev tun6to4\n")
 
                                 if domain.auto:
                                     cnt_1.exec_run(f"ip route add {subnet_1} dev tun6to4")
                             if tunnel_location[1] != i:
 
-                                subnet_2 = subnet_l2_ipv6(group_no, i, vlan,-1)
+                                subnet_2 = subnet_l2_ipv6(group_no, i, vlan, 0)
                                 file.write(f"docker exec -d {group_no}_{router_2.name}router ip route add {subnet_2} dev tun6to4\n")
 
                                 if domain.auto:
@@ -159,7 +159,7 @@ def layer2_config_group(group_no: int, domain: Domain, directory: Path):
                 for switch in l2_network.switches:
                     cnt_sw = client.containers.get(f"{group_no}_L2_{l2_network.name}_{switch.name}")
 
-                    file.write(f"docker exec -d {group_no}_L2_{l2_network.name}_{switch.name} ovs-vsctl set port {switch.router}router trunks={vlan_str[:-1]}")
+                    file.write(f"docker exec -d {group_no}_L2_{l2_network.name}_{switch.name} ovs-vsctl set port {switch.router}router trunks={vlan_str[:-1]}\n")
 
                     if domain.auto:
                         cnt_sw.exec_run(f"ovs-vsctl set port {switch.router}router trunks={vlan_str[:-1]}")                               

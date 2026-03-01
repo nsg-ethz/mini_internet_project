@@ -101,8 +101,8 @@ transit_as_topo = {
     # takes the role of a customer.
     'provider1': ('BASE', customer),
     'provider2': ('ZURI', customer),
-    'customer1': ('BELL', provider),
-    'customer2': ('LAUS', provider),
+    'customer1': ('LAUS', provider),
+    'customer2': ('BELL', provider),
     # Peer and IXP.
     'peer': ('BERN', peer),
     'ixp': ('CHUR', peer),

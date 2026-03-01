@@ -7,9 +7,8 @@ PLATFORM_DIR=/home/ta/mini-internet-26/platform
 # this variable includes all the AS number that need to be configured.
 ASN_TO_CONFIGURE="3 4 13 14"
 # this variable contains all the router names that need to be configured.
-# The order is important, as it will be used to assign IP addresses to the routers.
-#ROUTER_NAMES="BIRM FRAN MUNI ZURI LYON MILA BARC NAPL"
-ROUTER_NAMES="ZURI BASE GENE LUGA MUNI LYON VIEN MILA"
+# The order is important, as it will be used to assign IP addresses to the routers."
+ROUTER_NAMES="OLTE LUZE ZURI BASE BERN BELL CHUR LAUS"
 CONFIG_FILES="conf_init.sh conf_full.sh conf_rpki.sh"
 
 echo "Updating configs."

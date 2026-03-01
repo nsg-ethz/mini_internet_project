@@ -7,7 +7,7 @@ import docker
 
 def install_key(cnt_name: str, group_directory: str):
     run_cmd(f"docker cp {group_directory}/id_rsa.pub {cnt_name}:/root/.ssh/authorized_keys > /dev/null")
-    run_cmd(f"docker exec {cnt_name} bash -c \"kill -HUP \\$(cat /var/run/sshd.pid)\"")
+    run_cmd(f"docker exec {cnt_name} bash -c \"kill -HUP \\$(cat /var/run/sshd.pid)\"",check=False)
 
 def configure_ssh_group(group_no:int, domain: Domain, directory: Path):
 
@@ -21,9 +21,12 @@ def configure_ssh_group(group_no:int, domain: Domain, directory: Path):
 
         run_cmd(f"docker cp {directory}/groups/authorized_keys {ssh_container}:/root/.ssh/authorized_keys > /dev/null")
 
-        passwd = str(run_cmd(f"awk \"\\$1 == {group_no} {{ print \\$2 }}\" {directory}/groups/passwords.txt").stdout)
-        run_cmd(f"docker exec {ssh_container} printf \"root:{passwd}\" | chpasswd > /dev/null")
-        run_cmd(f"docker exec {ssh_container} bash -c \"kill -HUP \\$(cat /var/run/sshd.pid)\"")
+        passwd = str(run_cmd(f"awk \"\\$1 == {group_no} {{ print \\$2 }}\" {directory}/groups/passwords.txt").stdout).strip()
+        run_cmd(f"docker exec {ssh_container} bash -c \"printf \"root:{passwd}\" | chpasswd > /dev/null \"")
+        run_cmd(f"docker exec {ssh_container} bash -c \"kill -HUP \\$(cat /var/run/sshd.pid)\"", check=False)
+
+        # add file for vpn secret
+        run_cmd(f"docker exec {ssh_container} bash -c \"touch /root/secret.txt\"")
 
         for name, router in domain.routers.items():
             router_cnt_name = f"{group_no}_{router.name}router"

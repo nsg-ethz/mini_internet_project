@@ -35,7 +35,7 @@ function toggle(){
 	if (simplify){
 		simplify = false;
 		for (var k in collection) {
-			collection[k].className = "border border-white/50 bg-[#f0ad4e] invalid";	
+			collection[k].className = "border border-white/50 bg-[#ffa500] invalid";	
 		}
 		sum = valid-invalid
 		barvalid.className="basis-[" + sum + "%] rounded-l-lg px-2 p-1 bg-[#56c157]";
@@ -68,7 +68,7 @@ function toggle(){
 	<ul class="list-disc list-inside mb-2">
 		<li>can reach with a valid AS-level path (<span class="bg-[#56c157]">&nbsp;&nbsp;&nbsp;</span>);
 		</li>
-		<li>can reach with an invalid AS-level path (<span class="bg-[#f0ad4e]">&nbsp;&nbsp;&nbsp;</span>);
+		<li>can reach with an invalid AS-level path (<span class="bg-[ffa500]">&nbsp;&nbsp;&nbsp;</span>);
 		</li>
 		<li>cannot reach (<span class="bg-[#d5605e]">&nbsp;&nbsp;&nbsp;</span>). </li>
 	</ul>
@@ -110,7 +110,7 @@ function toggle(){
 			{{stripes(not valid)}}>
 			{{valid}}%
 		</div>
-		<div class="basis-[{{invalid}}%] px-2 p-1 bg-[#f0ad4e] border-x-2 border-white/50" id="bar-invalid" style="display:none"
+		<div class="basis-[{{invalid}}%] px-2 p-1 bg-[#ffa500] border-x-2 border-white/50" id="bar-invalid" style="display:none"
 			title="Reachable with invalid path: {{invalid}}%" {{stripes(not invalid)}}>
 			{{invalid}}%
 		</div>

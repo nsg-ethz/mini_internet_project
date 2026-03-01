@@ -40,65 +40,65 @@ if __name__ == "__main__":
     # # Increase the max number of running processes
     run_cmd("sysctl kernel.pid_max=4194304")
 
-    print("\n\nstarting folder_setup\n")
+    print("\nstarting folder_setup\n")
     folder_setup(topology, script_dir)
 
-    print("\n\nstarting dns_config\n")
+    print("\nstarting dns_config\n")
     dns_config(topology, script_dir)
 
-    print("\n\nstarting rpki_config\n")
+    print("\nstarting rpki_config\n")
     rpki_config(topology, script_dir)
 
-    print("\n\nstarting goto_scripts\n")
+    print("\nstarting goto_scripts\n")
     goto_scripts(topology, script_dir)
 
-    print("\n\nstarting save_configs\n")
+    print("\nstarting save_configs\n")
     save_configs(topology, script_dir)
 
-    print("\n\nstarting container_setup\n")
+    print("\nstarting container_setup\n")
     container_setup(topology, script_dir)
 
-    print("\n\nstarting vpn_config\n")
+    print("\nstarting vpn_config\n")
     vpn_config(topology, script_dir)
 
-    print("\n\nstarting connect_l3_host_router\n")
+    print("\nstarting connect_l3_host_router\n")
     connect_l3_host_router(topology,script_dir)
 
-    print("\n\nstarting connect_l2_network\n")
+    print("\nstarting connect_l2_network\n")
     connect_l2_network(topology, script_dir)
 
-    print("\n\nstarting connect_l3_network\n")
+    print("\nstarting connect_l3_network\n")
     connect_l3_network(topology,script_dir)
 
-    print("\n\nstarting connect_external_router\n")
+    print("\nstarting connect_external_router\n")
     connect_external_router(topology,script_dir)
 
-    print("\n\nstarting configure_ssh\n")
+    print("\nstarting configure_ssh\n")
     configure_ssh(topology,script_dir)
 
-    print("\n\nstarting connect_services\n")
+    print("\nstarting connect_services\n")
     connect_services(topology,script_dir)
 
-    print("\n\nstarting layer2_config\n")
+    print("\nstarting layer2_config\n")
     layer2_config(topology,script_dir)
 
-    print("\n\nstarting router_config\n")
+    print("\nstarting router_config\n")
     router_config(topology,script_dir)
 
-    print("\n\nstarting rpki_setup\n")
+    print("\nstarting rpki_setup\n")
     rpki_setup(topology,script_dir)
 
-    print("\n\nstarting website_setup\n")
+    print("\nstarting website_setup\n")
     website_setup(topology,script_dir)
 
-    print("\n\nstarting history_setup\n")
+    print("\nstarting history_setup\n")
     history_setup(topology,script_dir)
 
 
     # reload dns server config  
     run_cmd("docker kill --signal=HUP DNS")
 
-    print("\n\nApplying hijacks\n")
+    print("\nApplying hijacks\n")
 
     run_cmd(f"./setup/hijack_config.py {script_dir}")
 
