@@ -4,7 +4,7 @@ FROM alpine:3.23
 # and make bash the default shell.
 RUN apk add --no-cache tini bash bash-completion util-linux coreutils \
     binutils findutils grep vim nano tzdata \
-    iputils net-tools bind-tools iperf3 traceroute tcpdump nmap nmap-nping \
+    iputils net-tools bind-tools iperf3 traceroute tcpdump nmap nmap-nping iproute2 \
     && echo "export PS1=\"\[\033[38;5;2m\]\u@\h \[\033[38;5;75m\]\w\e[m> \"" > /root/.bashrc \
     && sed -i -e "s/bin\/sh/bin\/bash/" /etc/passwd
 

@@ -1,6 +1,6 @@
 from .config import *
 from config.subnet_config import *
-from .helper import get_num_threads,get_docker_pid
+from .helper import get_num_threads,get_docker_pid,run_cmd
 from ipaddress import IPv4Interface
 from multiprocessing import Pool
 from pathlib import Path
@@ -173,6 +173,8 @@ def create_group(group_no:int, domain: Domain, directory: Path, rpki_location: P
                 client.containers.get(l2_host_cnt_name).exec_run("ip link set dev eth0 down")
                 client.containers.get(l2_host_cnt_name).exec_run("ip link set dev eth0 name ssh")
                 client.containers.get(l2_host_cnt_name).exec_run("ip link set dev ssh up")
+                # this disables the automatic docker dns between containers
+                run_cmd(f"docker exec {l2_host_cnt_name} bash -c \"rc=\\$(sed \'s/127.0.0.11/{str(subnet_dns.ip)}/\' /etc/resolv.conf) && echo -e \\\"\\$rc\\\" > /etc/resolv.conf\"")
                 
         
         for name, router in domain.routers.items():
@@ -214,6 +216,8 @@ def create_group(group_no:int, domain: Domain, directory: Path, rpki_location: P
             client.containers.get(router_cnt_name).exec_run("ip link set dev eth0 down")
             client.containers.get(router_cnt_name).exec_run("ip link set dev eth0 name ssh")
             client.containers.get(router_cnt_name).exec_run("ip link set dev ssh up")
+            # this disables the automatic docker dns between containers
+            run_cmd(f"docker exec {router_cnt_name} bash -c \"rc=\\$(sed \'s/127.0.0.11/{str(subnet_dns.ip)}/\' /etc/resolv.conf) && echo -e \\\"\\$rc\\\" > /etc/resolv.conf\"")
 
 
             # start host l3
@@ -280,6 +284,8 @@ def create_group(group_no:int, domain: Domain, directory: Path, rpki_location: P
                 client.containers.get(hostl3_cnt_name).exec_run("ip link set dev eth0 down")
                 client.containers.get(hostl3_cnt_name).exec_run("ip link set dev eth0 name ssh")
                 client.containers.get(hostl3_cnt_name).exec_run("ip link set dev ssh up")
+                # this disables the automatic docker dns between containers
+                run_cmd(f"docker exec {hostl3_cnt_name} bash -c \"rc=\\$(sed \'s/127.0.0.11/{str(subnet_dns.ip)}/\' /etc/resolv.conf) && echo -e \\\"\\$rc\\\" > /etc/resolv.conf\"")
             
                 if host.type == HostType.KRILL:
                     client.networks.get("bridge").connect(container=hostl3_cnt_name)

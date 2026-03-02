@@ -46,6 +46,7 @@ def save_configs(config: Topology, directory: Path):
                     # If we have linux access, we may also configure tunnels, so store that output."
                     # Add tunnels and ipv6 routes."
                     save_content += f"save {savedir}/router.rib6.json {subnet_router} \\\"vtysh -c \\\'sh ipv6 route json\\\'\\\"\n"
+                    save_content += f"save {savedir}/router.rib6 {subnet_router} ip -6 route save\n"
                     save_content += f"save {savedir}/router.tunnels   {subnet_router} ip tunnel show\n"
 
                 for i, host in enumerate(router.hosts):
@@ -137,11 +138,14 @@ def save_configs(config: Topology, directory: Path):
                 restore_content += f"restore {subnet_router} rm /root/frr.conf\n"
 
                 if router.access == Access.LINUX:
-                    restore_content += f"tunnel_name=$(cat ${{configs_folder_name}}{router_name}/router.tunnels | grep -v sit0 | awk '{{sub(\":\", \"\", $1); print $1}}')\n"
-                    restore_content += f"tunnel_remote=$(cat ${{configs_folder_name}}{router_name}/router.tunnels | grep -v sit0 | awk '{{print $4}}')\n"
-                    restore_content += f"tunnel_local=$(cat ${{configs_folder_name}}{router_name}/router.tunnels | grep -v sit0 | awk '{{print $6}}')\n"
-                    restore_content += "add_tunnel_cmd=$(echo ip tunnel add $tunnel_name mode sit remote $tunnel_remote local $tunnel_local ttl 255)\n"
+                    restore_content += f"tunnel_name=$(cat ${{configs_folder_name}}/{router_name}/router.tunnels | grep -v sit0 | awk '{{sub(\":\", \"\", $1); print $1}}')\n"
+                    restore_content += f"tunnel_remote=$(cat ${{configs_folder_name}}/{router_name}/router.tunnels | grep -v sit0 | awk '{{print $4}}')\n"
+                    restore_content += f"tunnel_local=$(cat ${{configs_folder_name}}/{router_name}/router.tunnels | grep -v sit0 | awk '{{print $6}}')\n"
+                    restore_content += "add_tunnel_cmd=$(echo \"ip tunnel add $tunnel_name mode sit remote $tunnel_remote local $tunnel_local ttl 255\")\n"
                     restore_content += f"restore {subnet_router} $add_tunnel_cmd\n"
+                    restore_content += f"restore {subnet_router} ip link set $tunnel_name up\n"
+                    restore_content += f"copy {subnet_router} ${{configs_folder_name}}/{router_name}/router.rib6 router.rib6\n"
+                    restore_content += f"restore {subnet_router} \"ip -6 route restore \\< router.rib6\"\n"
 
                 
                 for i, host in enumerate(router.hosts):
@@ -151,11 +155,11 @@ def save_configs(config: Topology, directory: Path):
 
                     restore_content += f"echo \" \n \n Restoring {router_name} host configuration... \n \" \n"
                     # Get the IPv4 address
-                    restore_content += f"ipv4=$(cat ${{configs_folder_name}}{router_name}/host.ip | grep -w inet | grep {router_name}router | awk '{{print $2}}')\n"
+                    restore_content += f"ipv4=$(cat ${{configs_folder_name}}/{router_name}/host.ip | grep -w inet | grep {router_name}router | awk '{{print $2}}')\n"
                     # Get the IPv6 address
-                    restore_content += f"ipv6=$(cat ${{configs_folder_name}}{router_name}/host.ip | grep -w inet6 | grep {router_name}router | awk '{{print $2}}')\n"
+                    restore_content += f"ipv6=$(cat ${{configs_folder_name}}/{router_name}/host.ip | grep -w inet6 | grep {router_name}router | awk '{{print $2}}')\n"
                     # Get default route (IPv4 only?)
-                    restore_content += f"default_route=$(cat ${{configs_folder_name}}{router_name}/host.route | grep -w default | awk '{{print $3}}')\n"
+                    restore_content += f"default_route=$(cat ${{configs_folder_name}}/{router_name}/host.route | grep -w default | awk '{{print $3}}')\n"
                     restore_content += f"restore {subnet_host} ip addr flush dev {router_name}router\n"
                     restore_content += f"restore {subnet_host} ip route flush dev {router_name}router\n"
                     restore_content += f"restore {subnet_host} ip -6 route flush dev {router_name}router\n"
@@ -204,7 +208,7 @@ def save_configs(config: Topology, directory: Path):
                     restore_content += f"restore {subnet} ip address add ${{ipv6}} dev {group_no}-{switch_name}\n"
                     restore_content += f"restore {subnet} ip route add default via ${{default_route}}\n"
                     restore_content += f"restore {subnet} ip route add default via ${{default_route_v6}}\n"
-                    restore_content += f"cp $configs_folder_name/secret.txt ~/secret.txt"
+            restore_content += f"cp $configs_folder_name/secret.txt ~/secret.txt"
 
             with open(restore_file, "w+") as f:
                 f.write(restore_content)
