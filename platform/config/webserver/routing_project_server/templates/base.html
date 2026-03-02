@@ -51,11 +51,9 @@
             <div class="w-full block flex-grow lg:flex lg:items-center lg:w-auto"></div>
             {% for endpoint, name in navigation_bar.items() %}
             <div class="">
-                <a class="block mt-4 lg:inline-block lg:mt-0 hover:text-[#ff7e79] mr-4 text-lg" href="{{url_for(endpoint)}}"
-                    }}>
+                <a class="block mt-4 lg:inline-block lg:mt-0 hover:text-[#ff7e79] mr-4 text-lg {{'text-[#ff7e79]' if endpoint == request.endpoint else ' '}}" href="{{url_for(endpoint)}}">
+                    {{name}}
                     <span class="pr-2 pl-2">
-                        <span class="text-gray-400">[</span>{{'🞸' if endpoint == request.endpoint else ' '}}<span
-                            class="text-gray-400">]</span></span>{{name}}
                 </a>
             </div>
             {% endfor %}

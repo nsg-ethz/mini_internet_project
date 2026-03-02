@@ -35,7 +35,7 @@ function toggle(){
 	if (simplify){
 		simplify = false;
 		for (var k in collection) {
-			collection[k].className = "border border-white/50 bg-[#ffa500] invalid";	
+			collection[k].className = "border border-white/50 bg-[#ff8c00] invalid";	
 		}
 		sum = valid-invalid
 		barvalid.className="basis-[" + sum + "%] rounded-l-lg px-2 p-1 bg-[#56c157]";
@@ -68,9 +68,9 @@ function toggle(){
 	<ul class="list-disc list-inside mb-2">
 		<li>can reach with a valid AS-level path (<span class="bg-[#56c157]">&nbsp;&nbsp;&nbsp;</span>);
 		</li>
-		<li>can reach with an invalid AS-level path (<span class="bg-[ffa500]">&nbsp;&nbsp;&nbsp;</span>);
+		<li>can reach with an invalid AS-level path (<span class="bg-[#ff8c00]">&nbsp;&nbsp;&nbsp;</span>);
 		</li>
-		<li>cannot reach (<span class="bg-[#d5605e]">&nbsp;&nbsp;&nbsp;</span>). </li>
+		<li>cannot reach (<span class="bg-[#b10500]">&nbsp;&nbsp;&nbsp;</span>). </li>
 	</ul>
 	<p class="mb-2">
 		We determine <em>reachability</em> by sending periodic pings between hosts in all networks, if the ping
@@ -79,9 +79,10 @@ function toggle(){
 	<p class="mb-2">
 		We determine <em>validity</em> by comparing the BGP looking glass outputs with the project topology and business
 		relationships.
-		A path is valid if it does not violate any business policies.
+		A path is valid if it does not violate any business policies. 
 		Importantly, we check <em>both</em> the best advertisement as well as backups.
 		A path is only considered valid if all advertised paths are valid.
+		<b>Note that this does not mean it is your groups fault. The invalid path might be caused by an AS somewhere along the path.</b>
 	</p>
 	<p class="mb-2">
 		If your path is invalid because you receive invalid advertisements from other groups, we encourage you to reach
@@ -110,11 +111,11 @@ function toggle(){
 			{{stripes(not valid)}}>
 			{{valid}}%
 		</div>
-		<div class="basis-[{{invalid}}%] px-2 p-1 bg-[#ffa500] border-x-2 border-white/50" id="bar-invalid" style="display:none"
+		<div class="basis-[{{invalid}}%] px-2 p-1 bg-[#ff8c00] border-x-2 border-white/50" id="bar-invalid" style="display:none"
 			title="Reachable with invalid path: {{invalid}}%" {{stripes(not invalid)}}>
 			{{invalid}}%
 		</div>
-		<div class="basis-[{{failure}}%] px-2 p-1 rounded-r-lg bg-[#d5605e]" title="Not reachable: {{failure}}%"
+		<div class="basis-[{{failure}}%] px-2 p-1 rounded-r-lg bg-[#b10500]" title="Not reachable: {{failure}}%"
 			{{stripes(not failure)}}>
 			{{failure}}%
 		</div>
@@ -158,7 +159,7 @@ function toggle(){
 		<div class="border border-white/50 even:bg-neutral-200 text-right pr-1">{{asn}}</div>
 		{% for asn_dst in connectivity[asn]|sort %}
 		{% if not connectivity[asn][asn_dst] %}
-		<div class="border border-white/50 bg-[#d5605e] notreachable" title="AS{{asn}}&rarr;AS{{asn_dst}}: Not Reachable"
+		<div class="border border-white/50 bg-[#b10500] notreachable" title="AS{{asn}}&rarr;AS{{asn_dst}}: Not Reachable"
 			style="padding-bottom: 80%;">
 		</div>
 		{% else %}

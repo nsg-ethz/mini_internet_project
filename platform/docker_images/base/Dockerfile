@@ -6,7 +6,7 @@ RUN apk add --no-cache tini bash bash-completion util-linux coreutils \
     binutils findutils grep vim nano tzdata \
     iputils net-tools bind-tools iperf3 traceroute tcpdump nmap nmap-nping \
     && echo "export PS1=\"\[\033[38;5;2m\]\u@\h \[\033[38;5;75m\]\w\e[m> \"" > /root/.bashrc \
-    && sed -i -e "s/bin\/ash/bin\/bash/" /etc/passwd
+    && sed -i -e "s/bin\/sh/bin\/bash/" /etc/passwd
 
 ENV LANG=en_US.UTF-8
 ENV LANGUAGE=en_US:en
