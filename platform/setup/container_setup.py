@@ -306,9 +306,10 @@ def create_group(group_no:int, domain: Domain, directory: Path, rpki_location: P
                         "net.ipv6.icmp.ratelimit": 0}
 
         volumes_ixp = {f'{location}/daemons': {'bind': '/etc/frr/daemons'},
-                    f'{location}/looking_glass.txt': {'bind': '/home/looking_glass.txt', 'mode': 'rw'},
-                    f'/etc/timezone': {'bind': '/etc/timezone', 'mode': 'ro'}, 
-                    f'/etc/localtime': {'bind': '/etc/localtime', 'mode': 'ro'}}
+                       f'{location}/frr.conf': {'bind': '/etc/frr/frr.conf', 'mode': 'rw'},
+                       f'{location}/looking_glass.txt': {'bind': '/home/looking_glass.txt', 'mode': 'rw'},
+                       f'/etc/timezone': {'bind': '/etc/timezone', 'mode': 'ro'}, 
+                       f'/etc/localtime': {'bind': '/etc/localtime', 'mode': 'ro'}}
                 
         client.containers.run(image=f"{os.environ["DOCKERHUB_PREFIX"]}ixp:{os.environ["DOCKER_TAG"]}",
                                     name=ixp_cnt_name, tty=True, detach=True, cpu_count=2, pids_limit=200,

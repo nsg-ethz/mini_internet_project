@@ -62,7 +62,7 @@ def create_unique_port_name(identifier: str):
 
 def create_netns_symlink(pid: int):
     if Path("/var/run/netns").exists() == False:
-        run_cmd("mkdir -p /ver/run/netns")
+        run_cmd("mkdir -p /var/run/netns")
     
     if Path(f"/var/run/netns/{pid}").exists() == False:
 
@@ -114,3 +114,9 @@ def connect_two_interfaces(cont_1: str, intf_1: str, cont_2: str, intf_2: str, p
         run_cmd(f"ip netns exec {pid_2} tc qdisc add dev {intf_2} parent 1:1 handle 10: tbf rate \"{thrp}\" burst {burst} latency \"{buffer}\"")
 
     return (pid_1, pid_2)
+
+
+
+def clean_ctn_netns(pid: int):
+    run_cmd(f"ip netns del {pid} 2>/dev/null || true")
+    run_cmd(f"rm -f /var/run/netns/{pid} 2>/dev/null || true")
