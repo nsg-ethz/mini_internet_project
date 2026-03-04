@@ -38,7 +38,7 @@ def only_start(config: Topology, directory: Path):
             file.write(f" [{container_name}]=\"{pid}\" ")
         file.write(")")
 
-
+    client.close()
 
     print("\nstarting connect_l3_host_router\n")
     connect_l3_host_router(config, directory)

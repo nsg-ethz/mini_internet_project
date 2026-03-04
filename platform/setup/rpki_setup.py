@@ -219,7 +219,7 @@ def krill_setup(config: Topology, directory: Path):
                     file.write("exit\n")
                 run_cmd(f"chmod +x {directory}/groups/g{group_no}/{router_name}/config/conf_rpki.sh")
     
-
+    client.close()
     # Restart all krill daemons
     for as_no, krill_cnt in krill_containers:
         run_cmd(f"docker exec {krill_cnt} bash -c \"kill -3 \\$(cat /var/run/krill.pid)\"")

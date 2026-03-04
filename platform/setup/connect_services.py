@@ -210,3 +210,5 @@ def connect_services(config: Topology, directory: Path):
 
         run_cmd(f"ip netns exec {pid_1} ip addr add {subnet_dns_meas} dev {intf_1}")
         run_cmd(f"ip netns exec {pid_2} ip addr add {subnet_meas} dev {intf_2}")
+
+    client.close()

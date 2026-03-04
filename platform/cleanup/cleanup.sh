@@ -30,7 +30,9 @@ DIRECTORY="$1"
 docker system prune -f
 
 # find all namespaces with dangling symbolic links and remove them
-find /var/run/netns -xtype l -delete
+if [ -f "/var/run/netns" ]; then
+   find /var/run/netns -xtype l -delete
+fi
 
 # # clear stale ovs interfaces on the server
 interface_list=$(ip link | grep -E '(_c@|vpn|_l|_a|_b|veth)' | awk -F': ' '{print $2}' | cut -d'@' -f1 || true) # ignore errors

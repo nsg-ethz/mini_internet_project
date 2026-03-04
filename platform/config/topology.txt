@@ -1,55 +1,325 @@
-node ixp80 ixp 0pt 0pt 
-node ixp81 ixp -75.0pt 0.0pt 
-node ixp82 ixp 75.0pt 0.0pt 
-node as1 tier1 -25.0pt 33.3pt 
-node as2 tier1 25.0pt 33.3pt 
-node as3 student -25.0pt 83.3pt 
-node as4 student 25.0pt 83.3pt 
-node as5 stub -25.0pt 133.3pt 
-node as6 stub 25.0pt 133.3pt 
-node as11 tier1 25.0pt -33.3pt 
-node as12 tier1 -25.0pt -33.3pt 
-node as13 student 25.0pt -83.3pt 
-node as14 student -25.0pt -83.3pt 
-node as15 stub 25.0pt -133.3pt 
-node as16 stub -25.0pt -133.3pt 
+node ixp140 ixp 0pt 0pt 
+node ixp141 ixp -75.0pt 129.9pt 
+node ixp142 ixp 75.0pt 129.9pt 
+node ixp143 ixp 150.0pt 0.0pt 
+node ixp144 ixp 75.0pt -129.9pt 
+node ixp145 ixp -75.0pt -129.9pt 
+node ixp146 ixp -150.0pt -0.0pt 
+node as1 tier1 -25.0pt 100.0pt 
+node as2 tier1 25.0pt 100.0pt 
+node as3 student -25.0pt 150.0pt 
+node as4 student 25.0pt 150.0pt 
+node as5 student -25.0pt 200.0pt 
+node as6 student 25.0pt 200.0pt 
+node as7 student -25.0pt 250.0pt 
+node as8 student 25.0pt 250.0pt 
+node as9 stub -25.0pt 300.0pt 
+node as10 stub 25.0pt 300.0pt 
+node as11 stub -25.0pt 350.0pt 
+node as12 stub 25.0pt 350.0pt 
+node as21 tier1 74.1pt 71.7pt 
+node as22 tier1 99.1pt 28.3pt 
+node as23 student 117.4pt 96.7pt 
+node as24 student 142.4pt 53.3pt 
+node as25 student 160.7pt 121.7pt 
+node as26 student 185.7pt 78.3pt 
+node as27 student 204.0pt 146.7pt 
+node as28 student 229.0pt 103.3pt 
+node as29 stub 247.3pt 171.7pt 
+node as30 stub 272.3pt 128.3pt 
+node as31 stub 290.6pt 196.7pt 
+node as32 stub 315.6pt 153.3pt 
+node as41 tier1 99.1pt -28.3pt 
+node as42 tier1 74.1pt -71.7pt 
+node as43 student 142.4pt -53.3pt 
+node as44 student 117.4pt -96.7pt 
+node as45 student 185.7pt -78.3pt 
+node as46 student 160.7pt -121.7pt 
+node as47 student 229.0pt -103.3pt 
+node as48 student 204.0pt -146.7pt 
+node as49 stub 272.3pt -128.3pt 
+node as50 stub 247.3pt -171.7pt 
+node as51 stub 315.6pt -153.3pt 
+node as52 stub 290.6pt -196.7pt 
+node as61 tier1 25.0pt -100.0pt 
+node as62 tier1 -25.0pt -100.0pt 
+node as63 student 25.0pt -150.0pt 
+node as64 student -25.0pt -150.0pt 
+node as65 student 25.0pt -200.0pt 
+node as66 student -25.0pt -200.0pt 
+node as67 student 25.0pt -250.0pt 
+node as68 student -25.0pt -250.0pt 
+node as69 stub 25.0pt -300.0pt 
+node as70 stub -25.0pt -300.0pt 
+node as71 stub 25.0pt -350.0pt 
+node as72 stub -25.0pt -350.0pt 
+node as81 tier1 -74.1pt -71.7pt 
+node as82 tier1 -99.1pt -28.3pt 
+node as83 student -117.4pt -96.7pt 
+node as84 student -142.4pt -53.3pt 
+node as85 student -160.7pt -121.7pt 
+node as86 student -185.7pt -78.3pt 
+node as87 student -204.0pt -146.7pt 
+node as88 student -229.0pt -103.3pt 
+node as89 stub -247.3pt -171.7pt 
+node as90 stub -272.3pt -128.3pt 
+node as91 stub -290.6pt -196.7pt 
+node as92 stub -315.6pt -153.3pt 
+node as101 tier1 -99.1pt 28.3pt 
+node as102 tier1 -74.1pt 71.7pt 
+node as103 student -142.4pt 53.3pt 
+node as104 student -117.4pt 96.7pt 
+node as105 student -185.7pt 78.3pt 
+node as106 student -160.7pt 121.7pt 
+node as107 student -229.0pt 103.3pt 
+node as108 student -204.0pt 146.7pt 
+node as109 stub -272.3pt 128.3pt 
+node as110 stub -247.3pt 171.7pt 
+node as111 stub -315.6pt 153.3pt 
+node as112 stub -290.6pt 196.7pt 
 edge as1 as3 prov 
 edge as1 as4 prov 
 edge as1 as2 peer 
-edge as1 as80 peer 
-edge as1 as81 peer 
+edge as1 as140 peer 
+edge as1 as141 peer 
 edge as2 as3 prov 
 edge as2 as4 prov 
-edge as2 as11 peer 
-edge as2 as80 peer 
-edge as2 as82 peer 
+edge as2 as21 peer 
+edge as2 as140 peer 
+edge as2 as142 peer 
 edge as3 as5 prov 
 edge as3 as6 prov 
 edge as3 as4 peer 
-edge as3 as81 peer 
+edge as3 as141 peer 
 edge as4 as5 prov 
 edge as4 as6 prov 
-edge as4 as82 peer 
+edge as4 as142 peer 
+edge as5 as7 prov 
+edge as5 as8 prov 
 edge as5 as6 peer 
-edge as5 as81 peer 
-edge as6 as82 peer 
-edge as11 as13 prov 
-edge as11 as14 prov 
+edge as5 as141 peer 
+edge as6 as7 prov 
+edge as6 as8 prov 
+edge as6 as142 peer 
+edge as7 as9 prov 
+edge as7 as10 prov 
+edge as7 as8 peer 
+edge as7 as141 peer 
+edge as8 as9 prov 
+edge as8 as10 prov 
+edge as8 as142 peer 
+edge as9 as11 prov 
+edge as9 as12 prov 
+edge as9 as10 peer 
+edge as9 as141 peer 
+edge as10 as11 prov 
+edge as10 as12 prov 
+edge as10 as142 peer 
 edge as11 as12 peer 
-edge as11 as80 peer 
-edge as11 as82 peer 
-edge as12 as13 prov 
-edge as12 as14 prov 
-edge as12 as1 peer 
-edge as12 as80 peer 
-edge as12 as81 peer 
-edge as13 as15 prov 
-edge as13 as16 prov 
-edge as13 as14 peer 
-edge as13 as82 peer 
-edge as14 as15 prov 
-edge as14 as16 prov 
-edge as14 as81 peer 
-edge as15 as16 peer 
-edge as15 as82 peer 
-edge as16 as81 peer 
+edge as11 as141 peer 
+edge as12 as142 peer 
+edge as21 as23 prov 
+edge as21 as24 prov 
+edge as21 as22 peer 
+edge as21 as140 peer 
+edge as21 as142 peer 
+edge as22 as23 prov 
+edge as22 as24 prov 
+edge as22 as41 peer 
+edge as22 as140 peer 
+edge as22 as143 peer 
+edge as23 as25 prov 
+edge as23 as26 prov 
+edge as23 as24 peer 
+edge as23 as142 peer 
+edge as24 as25 prov 
+edge as24 as26 prov 
+edge as24 as143 peer 
+edge as25 as27 prov 
+edge as25 as28 prov 
+edge as25 as26 peer 
+edge as25 as142 peer 
+edge as26 as27 prov 
+edge as26 as28 prov 
+edge as26 as143 peer 
+edge as27 as29 prov 
+edge as27 as30 prov 
+edge as27 as28 peer 
+edge as27 as142 peer 
+edge as28 as29 prov 
+edge as28 as30 prov 
+edge as28 as143 peer 
+edge as29 as31 prov 
+edge as29 as32 prov 
+edge as29 as30 peer 
+edge as29 as142 peer 
+edge as30 as31 prov 
+edge as30 as32 prov 
+edge as30 as143 peer 
+edge as31 as32 peer 
+edge as31 as142 peer 
+edge as32 as143 peer 
+edge as41 as43 prov 
+edge as41 as44 prov 
+edge as41 as42 peer 
+edge as41 as140 peer 
+edge as41 as143 peer 
+edge as42 as43 prov 
+edge as42 as44 prov 
+edge as42 as61 peer 
+edge as42 as140 peer 
+edge as42 as144 peer 
+edge as43 as45 prov 
+edge as43 as46 prov 
+edge as43 as44 peer 
+edge as43 as143 peer 
+edge as44 as45 prov 
+edge as44 as46 prov 
+edge as44 as144 peer 
+edge as45 as47 prov 
+edge as45 as48 prov 
+edge as45 as46 peer 
+edge as45 as143 peer 
+edge as46 as47 prov 
+edge as46 as48 prov 
+edge as46 as144 peer 
+edge as47 as49 prov 
+edge as47 as50 prov 
+edge as47 as48 peer 
+edge as47 as143 peer 
+edge as48 as49 prov 
+edge as48 as50 prov 
+edge as48 as144 peer 
+edge as49 as51 prov 
+edge as49 as52 prov 
+edge as49 as50 peer 
+edge as49 as143 peer 
+edge as50 as51 prov 
+edge as50 as52 prov 
+edge as50 as144 peer 
+edge as51 as52 peer 
+edge as51 as143 peer 
+edge as52 as144 peer 
+edge as61 as63 prov 
+edge as61 as64 prov 
+edge as61 as62 peer 
+edge as61 as140 peer 
+edge as61 as144 peer 
+edge as62 as63 prov 
+edge as62 as64 prov 
+edge as62 as81 peer 
+edge as62 as140 peer 
+edge as62 as145 peer 
+edge as63 as65 prov 
+edge as63 as66 prov 
+edge as63 as64 peer 
+edge as63 as144 peer 
+edge as64 as65 prov 
+edge as64 as66 prov 
+edge as64 as145 peer 
+edge as65 as67 prov 
+edge as65 as68 prov 
+edge as65 as66 peer 
+edge as65 as144 peer 
+edge as66 as67 prov 
+edge as66 as68 prov 
+edge as66 as145 peer 
+edge as67 as69 prov 
+edge as67 as70 prov 
+edge as67 as68 peer 
+edge as67 as144 peer 
+edge as68 as69 prov 
+edge as68 as70 prov 
+edge as68 as145 peer 
+edge as69 as71 prov 
+edge as69 as72 prov 
+edge as69 as70 peer 
+edge as69 as144 peer 
+edge as70 as71 prov 
+edge as70 as72 prov 
+edge as70 as145 peer 
+edge as71 as72 peer 
+edge as71 as144 peer 
+edge as72 as145 peer 
+edge as81 as83 prov 
+edge as81 as84 prov 
+edge as81 as82 peer 
+edge as81 as140 peer 
+edge as81 as145 peer 
+edge as82 as83 prov 
+edge as82 as84 prov 
+edge as82 as101 peer 
+edge as82 as140 peer 
+edge as82 as146 peer 
+edge as83 as85 prov 
+edge as83 as86 prov 
+edge as83 as84 peer 
+edge as83 as145 peer 
+edge as84 as85 prov 
+edge as84 as86 prov 
+edge as84 as146 peer 
+edge as85 as87 prov 
+edge as85 as88 prov 
+edge as85 as86 peer 
+edge as85 as145 peer 
+edge as86 as87 prov 
+edge as86 as88 prov 
+edge as86 as146 peer 
+edge as87 as89 prov 
+edge as87 as90 prov 
+edge as87 as88 peer 
+edge as87 as145 peer 
+edge as88 as89 prov 
+edge as88 as90 prov 
+edge as88 as146 peer 
+edge as89 as91 prov 
+edge as89 as92 prov 
+edge as89 as90 peer 
+edge as89 as145 peer 
+edge as90 as91 prov 
+edge as90 as92 prov 
+edge as90 as146 peer 
+edge as91 as92 peer 
+edge as91 as145 peer 
+edge as92 as146 peer 
+edge as101 as103 prov 
+edge as101 as104 prov 
+edge as101 as102 peer 
+edge as101 as140 peer 
+edge as101 as146 peer 
+edge as102 as103 prov 
+edge as102 as104 prov 
+edge as102 as1 peer 
+edge as102 as140 peer 
+edge as102 as141 peer 
+edge as103 as105 prov 
+edge as103 as106 prov 
+edge as103 as104 peer 
+edge as103 as146 peer 
+edge as104 as105 prov 
+edge as104 as106 prov 
+edge as104 as141 peer 
+edge as105 as107 prov 
+edge as105 as108 prov 
+edge as105 as106 peer 
+edge as105 as146 peer 
+edge as106 as107 prov 
+edge as106 as108 prov 
+edge as106 as141 peer 
+edge as107 as109 prov 
+edge as107 as110 prov 
+edge as107 as108 peer 
+edge as107 as146 peer 
+edge as108 as109 prov 
+edge as108 as110 prov 
+edge as108 as141 peer 
+edge as109 as111 prov 
+edge as109 as112 prov 
+edge as109 as110 peer 
+edge as109 as146 peer 
+edge as110 as111 prov 
+edge as110 as112 prov 
+edge as110 as141 peer 
+edge as111 as112 peer 
+edge as111 as146 peer 
+edge as112 as141 peer 

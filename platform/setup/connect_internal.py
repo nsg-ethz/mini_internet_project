@@ -104,6 +104,8 @@ def connect_l2_network_group(group_no: int, domain: Domain):
                     command = f"ovs-vsctl add-port br0 {intf_2}"
                     client.containers.get(f"{group_no}_L2_{l2_name}_{l2_link.endpoints[1]}").exec_run(command)
 
+        client.close()
+        
         print(f"Connected L2 network in group {group_no}")
 
 

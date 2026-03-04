@@ -45,7 +45,7 @@ def website_setup(config: Topology, directory: Path):
         file.write(f"\"vpn_folder\": \"wireguard\",\n")
         file.write(f"\"vpn_passwd\": \"{datadir_server}/{env["VPN_PASSWD_FILE"]}\",\n")
         file.write(f"\"vpn_db\":\"{datadir_server}/webserver/{env["VPN_DB_FILE"]}\",\n")
-        file.write(f"\"topology_txt\":\"${configdir_server}/topology.txt\",\n")
+        file.write(f"\"topology_txt\":\"{configdir_server}/topology.txt\",\n")
         file.write(f"\"topology_json\":\"/server/routing_project_server/static/topology.json\"\n")
         file.write("}\n")
         file.write(f"KRILL_URL=\"{krill_scheme}://{{hostname}}:{env["WEBSERVER_PORT_KRILL"]}/index.html\"\n")

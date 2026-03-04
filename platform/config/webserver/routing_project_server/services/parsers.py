@@ -87,11 +87,6 @@ def parse_as_config(filename: os.PathLike,
             asn = int(row[0])
             results[asn] = {'type': row[1]}
 
-            if row[2] == "Config":
-                results[asn]["all_in_one"] = True
-            else:
-                results[asn]["all_in_one"] = False
-
             if router_config_dir is not None:
                 router_config_file = Path(router_config_dir) / Path(row[3])
 
@@ -582,7 +577,7 @@ def get_all_routers(config_dir: os.PathLike) -> Dict[int, Dict]:
 
                 host_ip = call_subnet_func("subnet_host_router", [asn, idx, "host"], script_path)
                 host_ip = host_ip.split("/")[0]
-                host_name = derive_container_name(asn, router_name, "host", info.get("all_in_one"))
+                host_name = derive_container_name(asn, router_name, "host", len(routers_list)==1)
             except subprocess.CalledProcessError as e:
                 print(f"Error getting IP for AS{asn} router {router_name}: {e}")
                 continue

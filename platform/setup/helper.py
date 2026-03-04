@@ -76,6 +76,7 @@ def get_docker_pid(name: str):
     client = docker.from_env()
     api = docker.APIClient(base_url='unix://var/run/docker.sock')
     container_id_1 = client.containers.get(name).id
+    client.close()
     return int(api.inspect_container(container_id_1)["State"]["Pid"])
 
 def connect_two_interfaces(cont_1: str, intf_1: str, cont_2: str, intf_2: str, perf: None | tuple[str,str,str] = None) -> tuple[int, int]:

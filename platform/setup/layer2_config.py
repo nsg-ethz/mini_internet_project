@@ -63,6 +63,7 @@ def layer2_config_group(group_no: int, domain: Domain, directory: Path):
                                 if domain.auto:
                                     cnt_2.exec_run(f"ip route add {subnet_2} dev tun6to4") 
 
+            client.close()
             
 
             for i, l2_network in enumerate(domain.l2_networks.values()):

@@ -35,3 +35,4 @@ def history_setup(config: Topology, directory: Path):
 
         if env["HISTORY_PAUSE_AFTER_START"].strip().lower() == "true":
             run_cmd("docker pause HISTORY")
+    client.close()

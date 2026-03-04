@@ -14,7 +14,7 @@ DOCKER_TAG="26"
 # This URL will be suggested as the default location for students
 # to download their configs. It should be publicly accessible via ssh at port
 # 2000 + X, where X is each AS number.
-SSH_URL="westvleteren.ethz.ch"
+SSH_URL="orval.ethz.ch"
 
 # =============================================================================
 # WEBSERVER
@@ -24,7 +24,7 @@ SSH_URL="westvleteren.ethz.ch"
 # You need to specify the hostname of the server and an email for
 # LetsEncrypt to be enabled.
 # UPDATE THOSE VARIABLES. WEBSERVER_HOSTNAME -> hostname of the server and EMAIL -> empty string (for http)
-WEBSERVER_HOSTNAME="localhost"
+WEBSERVER_HOSTNAME="orval.ethz.ch"
 WEBSERVER_ACME_MAIL="nsg@ethz.ch"
 # Hostname and ports for the webserver and krill on the host.
 # (must be publicly available)

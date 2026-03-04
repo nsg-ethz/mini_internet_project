@@ -83,6 +83,8 @@ def create_if(directory: Path, group_no: int, router_name: str, router_id: int, 
 	# Set firewall exception
     run_cmd(f"ufw allow {listen_port}")
 
+    client.close()
+
 
 def create_wg_peer(directory: Path, group_no: int, router_name: str, router_id: int, peer_name: str, peer_ip: str):
     
@@ -117,7 +119,7 @@ def create_wg_peer(directory: Path, group_no: int, router_name: str, router_id: 
             server_pubkey = pubkey.read()
             file.write(f"\n[Peer]\nPublicKey={server_pubkey}\nAllowedIPs={wg_subnet}\nEndpoint={os.environ["SSH_URL"]}:{listen_port}\nPersistentKeepalive=25\n\n")
     
-
+    client.close()
         
 
 
@@ -139,4 +141,5 @@ def create_vpn(directory: Path, group_no: int, domain: Domain):
                 container = docker_client.containers.get(f"{group_no}_{router_name}router")
                 container.exec_run(f"vtysh -c \"conf t\" -c \"router ospf\" -c \"network {interface_ip} area 0\"")
 
+        docker_client.close()
 

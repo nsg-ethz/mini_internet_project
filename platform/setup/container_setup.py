@@ -54,6 +54,7 @@ def container_setup(config: Topology, directory: Path):
             file.write(f" [{container_name}]=\"{pid}\" ")
         file.write(")")
 
+    client.close()
 
 
 
@@ -137,7 +138,7 @@ def create_group(group_no:int, domain: Domain, directory: Path, rpki_location: P
                                 f'/etc/localtime': {'bind': '/etc/localtime', 'mode': 'ro'}}
                 
                 client.containers.run(image=f"{os.environ["DOCKERHUB_PREFIX"]}switch:{os.environ["DOCKER_TAG"]}",
-                                    name=switch_cnt_name, tty=True, detach=True, cpu_count=2, pids_limit=1024,
+                                    name=switch_cnt_name, tty=True, detach=True, cpu_count=2, pids_limit=100,
                                     hostname=f"{switch.name}", cap_add=["ALL"], cap_drop=["SYS_RESOURCE"],
                                     log_config=lc, network=ssh_net_name, networking_config=netconf_ssh_switch, sysctls=sysctl_forward,
                                     volumes=volumes_switch, dns=[str(subnet_dns.ip)])
@@ -276,7 +277,7 @@ def create_group(group_no:int, domain: Domain, directory: Path, rpki_location: P
                     
             
                 client.containers.run(image=f"{host.container_name}", name=hostl3_cnt_name, tty=True, detach=True, cpu_count=2,
-                                    pids_limit=100, hostname=f"{name}", cap_add=["NET_ADMIN"], ports=ports_host, labels=labels_host,
+                                    pids_limit= 800 if host.type == HostType.KRILL else 100, hostname=f"{name}", cap_add=["NET_ADMIN"], ports=ports_host, labels=labels_host,
                                     log_config=lc, network=ssh_net_name, networking_config=netconf_ssh_host, sysctls=sysctl_host,
                                     volumes=volumes_host, dns=[str(subnet_dns.ip)], environment=environments_host)
                 group_containers += [hostl3_cnt_name]
@@ -318,5 +319,7 @@ def create_group(group_no:int, domain: Domain, directory: Path, rpki_location: P
         group_containers += [ixp_cnt_name]
 
     print(f"Group {group_no}: {len(group_containers)} containers created!")
+
+    client.close()
     return (group_containers,routinator_containers,krill_containers)
 
