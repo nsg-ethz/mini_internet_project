@@ -21,8 +21,7 @@ style="background-image: repeating-linear-gradient(45deg, transparent, transpare
 <meta http-equiv="Expires" content="0">
 <meta http-equiv="refresh" content="{{60 if not update_frequency else update_frequency}}" />
 <script>
-var simplify = true;
-
+var simplify = false;
 
 function toggle(){
 	collection = document.getElementsByClassName("invalid");
@@ -54,6 +53,9 @@ function toggle(){
 
 	}
 }
+
+window.onload = function () {toggle()};
+
 </script>
 {% endblock %}
 
@@ -111,7 +113,7 @@ function toggle(){
 			{{stripes(not valid)}}>
 			{{valid}}%
 		</div>
-		<div class="basis-[{{invalid}}%] px-2 p-1 bg-[#ff8c00] border-x-2 border-white/50" id="bar-invalid" style="display:none"
+		<div class="basis-[{{invalid}}%] px-2 p-1 bg-[#ff8c00] border-x-2 border-white/50" id="bar-invalid" style="display:block"
 			title="Reachable with invalid path: {{invalid}}%" {{stripes(not invalid)}}>
 			{{invalid}}%
 		</div>
