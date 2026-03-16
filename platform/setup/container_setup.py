@@ -138,7 +138,7 @@ def create_group(group_no:int, domain: Domain, directory: Path, rpki_location: P
                                 f'/etc/localtime': {'bind': '/etc/localtime', 'mode': 'ro'}}
                 
                 client.containers.run(image=f"{os.environ["DOCKERHUB_PREFIX"]}switch:{os.environ["DOCKER_TAG"]}",
-                                    name=switch_cnt_name, tty=True, detach=True, cpu_count=2, pids_limit=100,
+                                    name=switch_cnt_name, tty=True, detach=True, cpu_count=2, pids_limit=200,
                                     hostname=f"{switch.name}", cap_add=["ALL"], cap_drop=["SYS_RESOURCE"],
                                     log_config=lc, network=ssh_net_name, networking_config=netconf_ssh_switch, sysctls=sysctl_forward,
                                     volumes=volumes_switch, dns=[str(subnet_dns.ip)])

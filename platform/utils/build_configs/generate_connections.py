@@ -517,23 +517,22 @@ with open("./config/topology.txt", "w") as file:
     AsPerZone = ASES_PER_AREA
     firstIxp = FIRST_IXP       
     radiusZone = 50
-    radiusIxp = AsPerZone/4 * radiusZone 
+    offset = math.pi
+    radiusIxp = AsPerZone/2 * radiusZone 
 
     file.write(f"node ixp{firstIxp} ixp 0pt 0pt \n")
 
     for i in range(0,zones):
-        rad = i*2*math.pi/zones-2*math.pi/(2*zones)
+        rad = -i*2*math.pi/zones+2*math.pi/(2*zones) + offset
         x = radiusIxp * math.sin(rad)
         y = radiusIxp * math.cos(rad)
         file.write(f"node ixp{firstIxp+i+1} ixp {x:.1f}pt {y:.1f}pt \n")
 
     for i in range(0,len(areas)):
         for j, asn in enumerate(areas[i]):
-            print(i,j,asn)
-            rad = i*2*math.pi/zones
-            print(j//2)
-            x = radiusZone * math.sin(rad) * (zones/3+j//2) + ((j%2)*2-1) * radiusZone/2 * math.cos(rad)
-            y = radiusZone * math.cos(rad) * (zones/3+j//2) - ((j%2)*2-1) * radiusZone/2 * math.sin(rad)
+            rad = -i*2*math.pi/zones + offset
+            x = radiusZone * math.sin(rad) * (zones/3+j//2) + (((j+1)%2)*2-1) * radiusZone/2 * math.cos(rad)
+            y = radiusZone * math.cos(rad) * (zones/3+j//2) - (((j+1)%2)*2-1) * radiusZone/2 * math.sin(rad)
             type = "student"
             if asn in tier1:
                 type = "tier1"

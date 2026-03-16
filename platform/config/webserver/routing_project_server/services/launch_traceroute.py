@@ -38,7 +38,7 @@ def run_traceroute_job(job_id, container, target_ip, logger):
     timestamp = datetime.now().isoformat(timespec="seconds")
 
     try:
-        cmd = ["docker", "exec", container, "sh", "-c", f"traceroute -w 1 -q 1 -m 10 {target_ip} 2>&1"]
+        cmd = ["docker", "exec", container, "sh", "-c", f"traceroute -w 1 -q 1 -m 20 {target_ip} 2>&1"]
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
         output = result.stdout
         stderr = result.stderr

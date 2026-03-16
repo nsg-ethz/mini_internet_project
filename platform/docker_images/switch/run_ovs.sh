@@ -23,7 +23,7 @@ sleep 2
 # Loop while the daemons are alive.
 # status returns exit code 0 only if all daemons are are running.
 while $command status > /dev/null ; do
-    sleep 0.5
+    sleep 5
 done
 
 $command status
