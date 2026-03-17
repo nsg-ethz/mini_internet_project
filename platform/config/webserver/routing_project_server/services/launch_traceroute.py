@@ -33,12 +33,12 @@ def cleanup_loop(config=None, **kwargs):
         print(f"[Traceroute Cleanup] Removed expired job: {job_id}")
 
 # Traceroute execution
-def run_traceroute_job(job_id, container, target_ip, logger):
-    logger.info(f"[Traceroute] Job {job_id} started: {container} ? {target_ip}")
+def run_traceroute_job(job_id, intf, target_ip, logger):
+    logger.info(f"[Traceroute] Job {job_id} started: {intf} ? {target_ip}")
     timestamp = datetime.now().isoformat(timespec="seconds")
 
     try:
-        cmd = ["docker", "exec", container, "sh", "-c", f"traceroute -w 1 -q 1 -m 20 {target_ip} 2>&1"]
+        cmd = ["docker", "exec", "MEASUREMENT", "sh", "-c", f"traceroute -i {intf} -w 1 -q 1 -m 20 {target_ip} 2>&1"]
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
         output = result.stdout
         stderr = result.stderr
@@ -49,7 +49,7 @@ def run_traceroute_job(job_id, container, target_ip, logger):
             logger.warning(f"[Traceroute] Execution failed: {error_msg}")
             TRACEROUTE_RESULTS[job_id] = {
                 "timestamp": timestamp,
-                "container": container,
+                "intf": intf,
                 "target_ip": target_ip,
                 "raw_output": output or stderr,
                 "error": f"Traceroute failed (code {result.returncode}): {error_msg}"
@@ -65,7 +65,7 @@ def run_traceroute_job(job_id, container, target_ip, logger):
 
         TRACEROUTE_RESULTS[job_id] = {
             "timestamp": timestamp,
-            "container": container,
+            "intf": intf,
             "target_ip": target_ip,
             "raw_output": output,
             "routes": parsed
@@ -88,15 +88,15 @@ def run_traceroute_job(job_id, container, target_ip, logger):
 def launch_traceroute():
     logger = current_app.logger
     data = request.get_json(silent=True)
-    if not data or not all(data.get(k) for k in ["container", "target_ip"]):
-        return jsonify({"error": "Missing required fields: container, target_ip"}), 400
+    if not data or not all(data.get(k) for k in ["intf", "target_ip"]):
+        return jsonify({"error": "Missing required fields: intf, target_ip"}), 400
 
-    container = data["container"]
+    intf = data["intf"]
     target_ip = data["target_ip"]
 
-    if container not in current_app.config.get("ALLOWED_CONTAINERS", set()):
-        logger.warning(f"[Traceroute] Access denied for container '{container}'")
-        return jsonify({"error": f"Container '{container}' is not allowed."}), 403
+    if intf not in current_app.config.get("ALLOWED_INTERFACES", set()):
+        logger.warning(f"[Traceroute] Access denied for container '{intf}'")
+        return jsonify({"error": f"Interface '{intf}' is not allowed."}), 403
 
     try:
         ipaddress.ip_address(target_ip)
@@ -107,7 +107,7 @@ def launch_traceroute():
     job_id = str(uuid.uuid4())
     thread = threading.Thread(
         target=run_traceroute_job,
-        args=(job_id, container, target_ip, logger),
+        args=(job_id, intf, target_ip, logger),
         daemon=True
     )
     thread.start()

@@ -122,17 +122,14 @@ def create_app(config=None):
     try:
         router_data = get_all_routers(app.config["LOCATIONS"]["config_directory"])
         app.config["router_data"] = router_data
-        allowed_containers = set()
-        for asn_data in router_data.values():
-            for router_info in asn_data["routers"].values():
-                host_info = router_info.get("host")
-                if host_info and host_info.get("container"):
-                    allowed_containers.add(host_info["container"])
-        app.config["ALLOWED_CONTAINERS"] = allowed_containers
-        app.logger.info(f"[Init] Loaded {len(allowed_containers)} allowed host containers.")
+        allowed_interfaces = set()
+        for asn in router_data.keys():
+            allowed_interfaces.add(f"group{asn}")
+        app.config["ALLOWED_INTERFACES"] = allowed_interfaces
+        app.logger.info(f"[Init] Loaded {len(allowed_interfaces)} allowed host interfaces.")
     except Exception as e:
-        app.logger.warning(f"[Init] Failed to load allowed containers: {e}")
-        app.config["ALLOWED_CONTAINERS"] = set()
+        app.logger.warning(f"[Init] Failed to load allowed interfaces: {e}")
+        app.config["ALLOWED_INTERFACES"] = set()
 
     # Initialize template filters
     @app.template_filter()

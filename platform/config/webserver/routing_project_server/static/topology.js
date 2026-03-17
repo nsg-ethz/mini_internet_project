@@ -1,23 +1,5 @@
 let allRouters = window.allRouters || {}; // Provided by Jinja in template
 
-function updateOriginRouters(asn) {
-  const routerSelect = document.getElementById("origin-router");
-  routerSelect.innerHTML = "";
-
-  const asEntry = allRouters[asn];
-  const routers = asEntry?.routers || {};
-
-  Object.entries(routers).forEach(([routerName, routerInfo]) => {
-    const option = document.createElement("option");
-    option.value = routerName;
-    option.text = `${routerName}${routerInfo.is_border ? " *" : ""}`;
-    routerSelect.appendChild(option);
-  });
-
-  if (routerSelect.options.length > 0) {
-    routerSelect.selectedIndex = 0;
-  }
-}
 
 function updateTargetRouters(asn) {
   const routerSelect = document.getElementById("target-router");
@@ -43,22 +25,20 @@ function runTraceroute(csrf) {
   resetVisualization();
 
   const originASN = document.getElementById("origin-as").value;
-  const originRouter = document.getElementById("origin-router").value;
   const targetASN = document.getElementById("target-as").value;
   const targetRouter = document.getElementById("target-router").value;
 
-  const originHost = allRouters[originASN]?.routers?.[originRouter]?.host;
   const targetHost = allRouters[targetASN]?.routers?.[targetRouter]?.host;
 
-  const originContainer = originHost?.container;
+  const intf = `group${originASN}`;
   const targetIP = targetHost?.ip;
  
-  if (!originASN || !originRouter || !targetASN || !targetRouter || !targetIP || !originContainer){
-    alert("Please select Origin AS + Router and Target AS + Router. Host info missing.");
+  if (!originASN ||  !targetASN || !targetRouter || !targetIP){
+    alert("Please select Origin AS and Target AS + Router. Host info missing.");
     return;
   }
 
-  console.log(`[traceroute] From AS${originASN} ${originRouter} to AS${targetASN} ${targetRouter} [${targetIP}]`);
+  console.log(`[traceroute] From AS${originASN} to AS${targetASN} ${targetRouter} [${targetIP}]`);
 
   const box = document.getElementById("traceroute-result");
   box.classList.remove("hidden");
@@ -68,7 +48,7 @@ function runTraceroute(csrf) {
     method: "POST",
     headers: { "Content-Type": "application/json", 'X-CSRF-TOKEN': csrf },
     body: JSON.stringify({
-      container: originContainer,
+      intf: intf,
       target_ip: targetIP
     })
   })
@@ -80,7 +60,7 @@ function runTraceroute(csrf) {
       }
 
       const jobId = data.job_id;
-      const originText = `AS${originASN} (${originRouter})`;
+      const originText = `AS${originASN} (MEASUREMENT)`;
       const targetText = `AS${targetASN} (${targetRouter})`;
 
       const pollURL = `/get-traceroute-result?job_id=${jobId}`;
@@ -452,13 +432,6 @@ async function init() {
     runBtn.addEventListener("click", e =>runTraceroute(runBtn.getAttribute("hx-headers")));
   }
 
-  const originAS = document.getElementById("origin-as");
-  if (originAS) {
-    originAS.addEventListener("change", e => {
-      updateOriginRouters(e.target.value);
-    });
-    updateOriginRouters(originAS.value);
-  }
 
   const targetAS = document.getElementById("target-as");
   if (targetAS) {
