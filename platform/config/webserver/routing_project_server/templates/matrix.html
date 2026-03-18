@@ -19,7 +19,7 @@ style="background-image: repeating-linear-gradient(45deg, transparent, transpare
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta http-equiv="refresh" content="{{60 if not update_frequency else update_frequency}}" />
+<meta http-equiv="refresh" content="{{60 if not update_frequency else update_frequency//2}}" />
 <script>
 var simplify = false;
 
@@ -33,16 +33,18 @@ function toggle(){
 
 	if (simplify){
 		simplify = false;
+		sessionStorage.setItem('simplify', "false");
 		for (var k in collection) {
 			collection[k].className = "border border-white/50 bg-[#ff8c00] invalid";	
 		}
-		sum = valid-invalid
+		sum = valid-invalid;
 		barvalid.className="basis-[" + sum + "%] rounded-l-lg px-2 p-1 bg-[#56c157]";
 		barvalid.innerHTML= sum + "%";
 		barinvalid.style="display:block";
 	
 	}else{
 		simplify = true;
+		sessionStorage.setItem('simplify', "true");
 		for (var k in collection) {
 			collection[k].className = "border border-white/50 bg-[#56c157] invalid";	
 		}
@@ -54,7 +56,21 @@ function toggle(){
 	}
 }
 
-window.onload = function () {toggle()};
+document.getElementsByTagName("html")[0].style.visibility = "hidden";
+var prev = sessionStorage.getItem('simplify');
+if (prev === null || prev === "true"){
+	window.onload = function () {
+		toggle();
+		document.getElementById("checkbox").checked = false;
+		document.getElementsByTagName("html")[0].style.visibility = "visible";
+	};
+
+} else{
+	window.onload = function () {
+		document.getElementsByTagName("html")[0].style.visibility = "visible";
+	};
+}
+
 
 </script>
 {% endblock %}
@@ -97,7 +113,7 @@ window.onload = function () {toggle()};
 	</p>
 	<div class="mb-8 flex flex-col items-center">
 		<label class="inline-flex items-center cursor-pointer">
-			<input type="checkbox" value="" class="sr-only peer" unchecked onchange="toggle()">
+			<input type="checkbox" value="" id="checkbox" class="sr-only peer" checked onchange="toggle()">
 			<div class="relative w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600 dark:peer-checked:bg-blue-600"></div>
 			<span class="ms-3 text-base font-bold text-black-900 dark:text-black-300"> Validity Check </span>
 		  </label>
@@ -171,7 +187,7 @@ window.onload = function () {toggle()};
 			style="padding-bottom: 80%;">
 		</div>
 		{% else %}
-		<div class="border border-white/50 bg-[#56c157] invalid"
+		<div class="border border-white/50 bg-[#ff8c00] invalid"
 			title="AS{{asn}}&rarr;AS{{asn_dst}}: Reachable with invalid path" style="padding-bottom: 80%;">
 		</div>
 		{% endif %}

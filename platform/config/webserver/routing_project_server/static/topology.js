@@ -140,6 +140,9 @@ function drawTraceroutePath(network, allNodes, tracerouteData) {
             if (router.interfaces?.some(iface => iface.ip === probeIp)) {
               asn = parseInt(asnKey);
               break;
+            } else if (router.host.ip === probeIp) {
+              asn = parseInt(asnKey);
+              break;
             }
           }
           if (asn !== null) break;
