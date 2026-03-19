@@ -8,6 +8,10 @@ from .website_setup import website_setup
 from .history_setup import history_setup
 import docker
 
+def restart_cont(cont_name:str):
+    client = docker.from_env()
+    client.containers.get(cont_name).restart()
+    client.close()
 
 def only_start(config: Topology, directory: Path):
 
@@ -26,8 +30,10 @@ def only_start(config: Topology, directory: Path):
             pid = api.inspect_container(container_id)["State"]["Pid"]
             clean_ctn_netns(int(pid))
     
-    for cont_name in containers:
-        client.containers.get(cont_name).restart()
+    pool = Pool(processes = 10)
+    inputs = [[cont_name] for cont_name in containers]
+    pool.starmap(restart_cont, inputs)
+        
     
     with open(f"{directory}/groups/docker_pid.map","w+") as file:
         file.write("declare -A DOCKER_TO_PID=(")

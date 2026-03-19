@@ -149,17 +149,18 @@ def save_configs(config: Topology, directory: Path):
 
                 
                 for i, host in enumerate(router.hosts):
+                    
                     subnet_host = subnet_sshContainer_groupContainer(group_no, router.id + i, -1,  "L3-host")
 
                     host_name = f"host{i}" if len(router.services) > 1 else "host"
 
                     restore_content += f"echo \" \n \n Restoring {router_name} host configuration... \n \" \n"
                     # Get the IPv4 address
-                    restore_content += f"ipv4=$(cat ${{configs_folder_name}}/{router_name}/host.ip | grep -w inet | grep {router_name}router | awk '{{print $2}}')\n"
+                    restore_content += f"ipv4=$(cat ${{configs_folder_name}}/{router_name}/{host_name}.ip | grep -w inet | grep {router_name}router | awk '{{print $2}}')\n"
                     # Get the IPv6 address
-                    restore_content += f"ipv6=$(cat ${{configs_folder_name}}/{router_name}/host.ip | grep -w inet6 | grep {router_name}router | awk '{{print $2}}')\n"
+                    restore_content += f"ipv6=$(cat ${{configs_folder_name}}/{router_name}/{host_name}.ip | grep -w inet6 | grep {router_name}router | awk '{{print $2}}')\n"
                     # Get default route (IPv4 only?)
-                    restore_content += f"default_route=$(cat ${{configs_folder_name}}/{router_name}/host.route | grep -w default | awk '{{print $3}}')\n"
+                    restore_content += f"default_route=$(cat ${{configs_folder_name}}/{router_name}/{host_name}.route | grep -w default | awk '{{print $3}}')\n"
                     restore_content += f"restore {subnet_host} ip addr flush dev {router_name}router\n"
                     restore_content += f"restore {subnet_host} ip route flush dev {router_name}router\n"
                     restore_content += f"restore {subnet_host} ip -6 route flush dev {router_name}router\n"
