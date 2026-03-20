@@ -61,7 +61,7 @@ import math
 ENABLE_STUB_HIJACKS = True
 
 # Set true to test the topology.
-AUTOCONF_EVERYTHING = True
+AUTOCONF_EVERYTHING = False
 
 # If true, links between student ASes are only assigned a subnet in the
 # aslevel_links_students.txt file. If False, they are assigned an IP address.

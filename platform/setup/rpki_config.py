@@ -4,7 +4,7 @@ from .helper import run_cmd
 import docker 
 from ipaddress import IPv4Interface
 
-def rpki_config(config: Topology, directory: Path):
+def rpki_config(config: Topology, directory: Path, password_file: Path, keep_password: bool = False):
 
 
     
@@ -16,10 +16,13 @@ def rpki_config(config: Topology, directory: Path):
     run_cmd(f"openssl req -new -x509 -newkey rsa:4096 -sha256 -nodes -keyout \"{rpki_location}/root.key\" \
              -out \"{rpki_location}/root.crt\" -days \"{EXPIRES_IN_DAYS}\" -subj \"{ISSUER}\"")
 
-    for group_no, domain in config.as_es.items():
-        passwd = str(run_cmd("openssl rand -hex 8").stdout)
-        with open(f"{directory}/groups/passwords.txt","a+") as file:
-            file.write(f"{group_no} {passwd}")
+    if keep_password and password_file.is_file():
+            run_cmd(f"cp {password_file} {directory}/groups/passwords.txt")
+    else:
+        for group_no, domain in config.as_es.items():
+            passwd = str(run_cmd("openssl rand -hex 8").stdout)
+            with open(f"{directory}/groups/passwords.txt","a+") as file:
+                file.write(f"{group_no} {passwd}")
     
 
     run_cmd(f"ssh-keygen -t rsa -b 4096 -C \"krill webserver\" -P \"\" -f {directory}/groups/rpki/id_rsa_krill_webserver -q")

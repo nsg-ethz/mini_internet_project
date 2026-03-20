@@ -53,7 +53,7 @@ if __name__ == "__main__":
         dns_config(topology, script_dir)
 
         print("\nstarting rpki_config\n")
-        rpki_config(topology, script_dir)
+        rpki_config(topology, script_dir, Path("/home/ta/passwords.txt"), keep_password=True)
 
         print("\nstarting goto_scripts\n")
         goto_scripts(topology, script_dir)

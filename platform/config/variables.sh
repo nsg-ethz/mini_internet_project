@@ -14,7 +14,7 @@ DOCKER_TAG="26"
 # This URL will be suggested as the default location for students
 # to download their configs. It should be publicly accessible via ssh at port
 # 2000 + X, where X is each AS number.
-SSH_URL="orval.ethz.ch"
+SSH_URL="duvel.ethz.ch"
 
 # =============================================================================
 # WEBSERVER
@@ -24,7 +24,7 @@ SSH_URL="orval.ethz.ch"
 # You need to specify the hostname of the server and an email for
 # LetsEncrypt to be enabled.
 # UPDATE THOSE VARIABLES. WEBSERVER_HOSTNAME -> hostname of the server and EMAIL -> empty string (for http)
-WEBSERVER_HOSTNAME="orval.ethz.ch"
+WEBSERVER_HOSTNAME="duvel.ethz.ch"
 WEBSERVER_ACME_MAIL="nsg@ethz.ch"
 # Hostname and ports for the webserver and krill on the host.
 # (must be publicly available)
@@ -101,7 +101,7 @@ HISTORY_GIT_EMAIL="mini-internet-history@ethz.ch"
 # For example, create a gitlab access token and use it in the URL.
 # The token needs to have write access to the repository.
 # HISTORY_GIT_URL="https://gitlab-ci-token:<TOKEN HERE>@gitlab.ethz.ch/nsg/lectures/lec_commnet/projects/2024/routing_project/test_history.git"
-HISTORY_GIT_URL="https://gitlab-ci-token:RSE4wTCZP5wk6WZASsFB@gitlab.ethz.ch/nsg/lectures/lec_commnet/projects/2026/routing-project/history-26.git"
+HISTORY_GIT_URL="https://gitlab-ci-token:Zdgyb3eDJ9Cw6b1S7vCe@gitlab.ethz.ch/nsg/lectures/lec_commnet/projects/2026/routing-project/history-26.git"
 HISTORY_GIT_BRANCH="main"
 # switch.db and rpki.cache are binaries that cannot be stored easily in git.
 # If this option is "true" (recommend), we re-write the git history at every
