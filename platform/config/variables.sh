@@ -101,7 +101,7 @@ HISTORY_GIT_EMAIL="mini-internet-history@ethz.ch"
 # For example, create a gitlab access token and use it in the URL.
 # The token needs to have write access to the repository.
 # HISTORY_GIT_URL="https://gitlab-ci-token:<TOKEN HERE>@gitlab.ethz.ch/nsg/lectures/lec_commnet/projects/2024/routing_project/test_history.git"
-HISTORY_GIT_URL="https://gitlab-ci-token:Zdgyb3eDJ9Cw6b1S7vCe@gitlab.ethz.ch/nsg/lectures/lec_commnet/projects/2026/routing-project/history-26.git"
+HISTORY_GIT_URL="https://gitlab-ci-token:EjXUnjsXyg8a9VzBm-46@gitlab.ethz.ch/nsg/lectures/lec_commnet/projects/2026/routing-project/history-26.git"
 HISTORY_GIT_BRANCH="main"
 # switch.db and rpki.cache are binaries that cannot be stored easily in git.
 # If this option is "true" (recommend), we re-write the git history at every

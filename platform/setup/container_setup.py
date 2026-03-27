@@ -235,7 +235,8 @@ def create_group(group_no:int, domain: Domain, directory: Path, rpki_location: P
                             "net.ipv4.icmp_echo_ignore_broadcasts": 0,
                             "net.ipv6.conf.all.disable_ipv6": 0,
                             "net.ipv6.icmp.ratelimit": 0}
-
+                
+                pid_limit = 100
                 ports_host: dict[str, int] = {}
                 labels_host: dict[str, str] = {}
                 if host.type == HostType.KRILL:
@@ -256,6 +257,7 @@ def create_group(group_no:int, domain: Domain, directory: Path, rpki_location: P
                         ports_host["3080"] = 3080
                         labels_host["traefik.enable"] = "true"
                         labels_host["traefik.http.routers.krill.entrypoints"]="krill"
+                    pid_limit = 800
 
                 elif host.type == HostType.ROUTINATOR:
                     volumes_host = {f'{rpki_location}/root.crt': {'bind': '/usr/local/share/ca-certificates/root.crt', 'mode': 'ro'},
@@ -264,6 +266,7 @@ def create_group(group_no:int, domain: Domain, directory: Path, rpki_location: P
                                     f'{directory}/groups/g{group_no}/rpki_exceptions_autograder.json': {'bind': '/root/rpki_exceptions_autograder.json', 'mode': 'rw'}}
                     environments_host = []
                     routinator_containers += [f"{group_no} {hostl3_cnt_name}"]
+                    pid_limit = 150
 
                 elif host.type == HostType.VPNSECRET:
                     volumes_host = {f'{directory}/config/vpnsecret/': {'bind': '/server/', 'mode': 'ro'}}
@@ -277,7 +280,7 @@ def create_group(group_no:int, domain: Domain, directory: Path, rpki_location: P
                     
             
                 client.containers.run(image=f"{host.container_name}", name=hostl3_cnt_name, tty=True, detach=True, cpu_count=2,
-                                    pids_limit= 800 if host.type == HostType.KRILL else 100, hostname=f"{name}", cap_add=["NET_ADMIN"], ports=ports_host, labels=labels_host,
+                                    pids_limit=pid_limit, hostname=f"{name}", cap_add=["NET_ADMIN"], ports=ports_host, labels=labels_host,
                                     log_config=lc, network=ssh_net_name, networking_config=netconf_ssh_host, sysctls=sysctl_host,
                                     volumes=volumes_host, dns=[str(subnet_dns.ip)], environment=environments_host)
                 group_containers += [hostl3_cnt_name]
