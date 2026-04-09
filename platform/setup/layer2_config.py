@@ -66,15 +66,15 @@ def layer2_config_group(group_no: int, domain: Domain, directory: Path):
             client.close()
             
 
-            for i, l2_network in enumerate(domain.l2_networks.values()):
+            for l2_network in domain.l2_networks.values():
                 vlan_tags: set[int] = set()
                 vlan_tags = vlan_tags.union(set([host.vlan for host in l2_network.hosts.values() if isinstance(host.vlan,int)]))
 
                 for vlan in vlan_tags:
                     for router_name in [switch.router for switch in l2_network.switches if switch.router != "N/A"]:
                         
-                        subnet_router_l2 = subnet_l2(group_no, i, vlan, 1)
-                        subnet_router_ipv6 = subnet_l2_ipv6(group_no, i, vlan, 1)
+                        subnet_router_l2 = subnet_l2(group_no, l2_network.id, vlan, 1)
+                        subnet_router_ipv6 = subnet_l2_ipv6(group_no, l2_network.id, vlan, 1)
                         router_cnt = client.containers.get(f"{group_no}_{router_name}router")
 
                         if vlan != 0:
@@ -113,8 +113,8 @@ def layer2_config_group(group_no: int, domain: Domain, directory: Path):
                         if domain.auto: 
                             switch_cnt.exec_run(f"ovs-vsctl set port {group_no}-{l2_host_name} tag={l2_host.vlan}")
 
-                    subnet_l2_host = subnet_l2(group_no, i, l2_host.vlan, l2_host.l2_id+2)
-                    subnet_l2_host_ipv6 = subnet_l2_ipv6(group_no, i, l2_host.vlan, l2_host.l2_id+2)
+                    subnet_l2_host = subnet_l2(group_no, l2_network.id, l2_host.vlan, l2_host.l2_id+2)
+                    subnet_l2_host_ipv6 = subnet_l2_ipv6(group_no, l2_network.id, l2_host.vlan, l2_host.l2_id+2)
 
                     pid = get_docker_pid(f"{group_no}_L2_{l2_network.name}_{l2_host_name}")
 
@@ -125,8 +125,8 @@ def layer2_config_group(group_no: int, domain: Domain, directory: Path):
                         run_cmd(f"ip netns exec {pid} ip a add {subnet_l2_host} dev {group_no}-{switch_name}")
                         run_cmd(f"ip netns exec {pid} ip -6 a add {subnet_l2_host_ipv6} dev {group_no}-{switch_name}")
                     
-                    subnet_gw = str(IPv4Interface(subnet_l2(group_no, i, l2_host.vlan, 1)).ip)
-                    subnet_gw_ipv6 = str(IPv6Interface(subnet_l2_ipv6(group_no, i, l2_host.vlan, 1)).ip)
+                    subnet_gw = str(IPv4Interface(subnet_l2(group_no, l2_network.id, l2_host.vlan, 1)).ip)
+                    subnet_gw_ipv6 = str(IPv6Interface(subnet_l2_ipv6(group_no, l2_network.id, l2_host.vlan, 1)).ip)
 
                     file.write(f"ip netns exec {pid} ip route add default via {subnet_gw}\n")
                     file.write(f"ip netns exec {pid} ip -6 route add default via {subnet_gw_ipv6}\n")

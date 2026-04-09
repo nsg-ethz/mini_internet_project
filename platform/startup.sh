@@ -45,8 +45,8 @@ source .env/bin/activate && pip install -r ./requirements.txt
 
 
 echo "cleanup.sh"
-time ./cleanup/cleanup.sh "${DIRECTORY}"
-# time ./cleanup/hard_reset.sh
+# add --hard_reset if you want to do a reset
+time ./cleanup/cleanup.sh "${DIRECTORY}" 
 
 time python3 ./startup.py -c "${DIRECTORY}/config"
 

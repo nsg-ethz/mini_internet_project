@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from collections import defaultdict
 from enum import Enum
 from ipaddress import IPv4Network
-from subnets import LinkSubnet, SubnetScheme
+from .subnets import LinkSubnet, SubnetScheme
 from pathlib import Path
 import argparse
 
@@ -153,6 +153,7 @@ class Switch:
 
 @dataclass
 class L2Network:
+    id: int
     name: str
     switches: list[Switch] = field(default_factory=list[Switch])
     hosts: dict[str, Host] = field(default_factory=dict[str, Host])
@@ -168,13 +169,13 @@ def l2_networks_from_configs(args: argparse.Namespace, routers: set[str], switch
     l2_networks: dict[str, L2Network] = {}
 
     # First populate all the switches
-    for switch_config in read_config(args, switches_config):
+    for id, switch_config in enumerate(read_config(args, switches_config)):
         if switch_config[2] != "N/A":
             assert switch_config[2] in routers, f"The router ({switch_config[2]}) this switch ({switch_config[1]}) is trying to connect to does not exist"
         switch = Switch.from_config(switch_config)
         net_name = switch_config[0]
         if net_name not in l2_networks:
-            l2_networks[net_name] = L2Network(name=net_name)
+            l2_networks[net_name] = L2Network(id=id, name=net_name)
 
         l2_networks[net_name].switches.append(switch)
 

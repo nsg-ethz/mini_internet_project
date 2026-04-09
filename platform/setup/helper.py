@@ -121,3 +121,10 @@ def connect_two_interfaces(cont_1: str, intf_1: str, cont_2: str, intf_2: str, p
 def clean_ctn_netns(pid: int):
     run_cmd(f"ip netns del {pid} 2>/dev/null || true")
     run_cmd(f"rm -f /var/run/netns/{pid} 2>/dev/null || true")
+
+
+def clean_ip_link():
+    interfaces = str(run_cmd("ip link | grep -E '_b|_a|_h|_r' | awk -F': ' '{print $2}' | cut -d'@' -f1").stdout).split()
+
+    for interface in interfaces:
+        run_cmd(f"ip link delete {interface} || true")

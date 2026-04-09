@@ -5,6 +5,66 @@ import docker
 import os
 from ipaddress import IPv4Interface
 
+def connect_measurement(group_no: int, name: str):
+    cnt_1 = "MEASUREMENT"
+    intf_1 = f"group{group_no}"
+    cnt_2 = f"{group_no}_{name}router"
+    intf_2 = f"measurement_{group_no}"
+    pid_1, pid_2 = connect_two_interfaces(cnt_1,intf_1,cnt_2,intf_2,None)
+    subnet_grp = subnet_group(group_no)
+
+    ip_meas = str(IPv4Interface(subnet_router_MEASUREMENT(group_no,"group")).ip)
+    subnet_meas = subnet_router_MEASUREMENT(group_no,"measurement")
+
+    run_cmd(f"ip netns exec {pid_1} ip addr add {subnet_meas} dev {intf_1}")
+    run_cmd(f"ip netns exec {pid_1} ip route add default via {ip_meas} metric {group_no}")
+    run_cmd(f"ip netns exec {pid_1} ip route add {subnet_grp} via {ip_meas}")
+
+
+def connect_matrix(group_no: int, name: str):
+    cnt_1 = "MATRIX"
+    intf_1 = f"group_{group_no}"
+    cnt_2 = f"{group_no}_{name}router"
+    intf_2 = f"matrix_{group_no}"
+    pid_1, pid_2 = connect_two_interfaces(cnt_1,intf_1,cnt_2,intf_2,None)
+    subnet_grp = subnet_group(group_no)
+
+    ip_matrix = str(IPv4Interface(subnet_router_MATRIX(group_no,"group")).ip)
+    subnet_matrix = subnet_router_MATRIX(group_no,"matrix")
+
+    run_cmd(f"ip netns exec {pid_1} ip addr add {subnet_matrix} dev {intf_1}")
+    run_cmd(f"ip netns exec {pid_1} ip route add default via {ip_matrix} metric {group_no}")
+    run_cmd(f"ip netns exec {pid_1} ip route add {subnet_grp} via {ip_matrix}")
+
+
+def connect_dns(group_no: int, name: str):
+    cnt_1 = "DNS"
+    intf_1 = f"group_{group_no}"
+    cnt_2 = f"{group_no}_{name}router"
+    intf_2 = f"dns_{group_no}"
+    pid_1, pid_2 = connect_two_interfaces(cnt_1,intf_1,cnt_2,intf_2,None)
+    subnet_grp = subnet_group(group_no)
+
+    ip_dns = str(IPv4Interface(subnet_router_DNS(group_no,"group")).ip)
+    subnet_dns = subnet_router_DNS(group_no,"dns-group")
+
+    run_cmd(f"ip netns exec {pid_1} ip addr add {subnet_dns} dev {intf_1}")
+    run_cmd(f"ip netns exec {pid_1} ip route add {subnet_grp} via {ip_dns}")
+
+def connect_dns_measurement():
+    cnt_1 = "DNS"
+    intf_1 = f"measurement"
+    cnt_2 = f"MEASUREMENT"
+    intf_2 = f"dns"
+    pid_1, pid_2 = connect_two_interfaces(cnt_1,intf_1,cnt_2,intf_2,None)
+
+    subnet_dns_meas = subnet_router_DNS(-1,"dns-measurement")
+    subnet_meas = subnet_router_DNS(-1, "measurement")
+
+    run_cmd(f"ip netns exec {pid_1} ip addr add {subnet_dns_meas} dev {intf_1}")
+    run_cmd(f"ip netns exec {pid_2} ip addr add {subnet_meas} dev {intf_2}")
+
+
 def connect_services(config: Topology, directory: Path):
 
     os.environ["DOCKERHUB_PREFIX"] = config.environment["DOCKERHUB_PREFIX"]
@@ -151,18 +211,7 @@ def connect_services(config: Topology, directory: Path):
             for name, router in domain.routers.items():
 
                 if Service.MEASUREMENT in router.services:
-                    cnt_1 = "MEASUREMENT"
-                    intf_1 = f"group{group_no}"
-                    cnt_2 = f"{group_no}_{name}router"
-                    intf_2 = f"measurement_{group_no}"
-                    pid_1, pid_2 = connect_two_interfaces(cnt_1,intf_1,cnt_2,intf_2,None)
-
-                    ip_meas = str(IPv4Interface(subnet_router_MEASUREMENT(group_no,"group")).ip)
-                    subnet_meas = subnet_router_MEASUREMENT(group_no,"measurement")
-
-                    run_cmd(f"ip netns exec {pid_1} ip addr add {subnet_meas} dev {intf_1}")
-                    run_cmd(f"ip netns exec {pid_1} ip route add default via {ip_meas} metric {group_no}")
-                    run_cmd(f"ip netns exec {pid_1} ip route add {subnet_grp} via {ip_meas}")
+                    connect_measurement(group_no, name)
                 
                 if Service.MATRIX_TARGET in router.services:
                     matrix_conf_dir = f"{directory}/groups/matrix/"
@@ -171,44 +220,13 @@ def connect_services(config: Topology, directory: Path):
                         file.write(f"{group_no} {dest_ip}\n")
 
                 if Service.MATRIX in router.services:
-                    cnt_1 = "MATRIX"
-                    intf_1 = f"group_{group_no}"
-                    cnt_2 = f"{group_no}_{name}router"
-                    intf_2 = f"matrix_{group_no}"
-                    pid_1, pid_2 = connect_two_interfaces(cnt_1,intf_1,cnt_2,intf_2,None)
-
-                    ip_matrix = str(IPv4Interface(subnet_router_MATRIX(group_no,"group")).ip)
-                    subnet_matrix = subnet_router_MATRIX(group_no,"matrix")
-
-                    run_cmd(f"ip netns exec {pid_1} ip addr add {subnet_matrix} dev {intf_1}")
-                    run_cmd(f"ip netns exec {pid_1} ip route add default via {ip_matrix} metric {group_no}")
-                    run_cmd(f"ip netns exec {pid_1} ip route add {subnet_grp} via {ip_matrix}")
+                    connect_matrix(group_no, name)
 
                 if Service.DNS in router.services:
-                    cnt_1 = "DNS"
-                    intf_1 = f"group_{group_no}"
-                    cnt_2 = f"{group_no}_{name}router"
-                    intf_2 = f"dns_{group_no}"
-                    pid_1, pid_2 = connect_two_interfaces(cnt_1,intf_1,cnt_2,intf_2,None)
-
-                    ip_dns = str(IPv4Interface(subnet_router_DNS(group_no,"group")).ip)
-                    subnet_dns = subnet_router_DNS(group_no,"dns-group")
-
-                    run_cmd(f"ip netns exec {pid_1} ip addr add {subnet_dns} dev {intf_1}")
-                    run_cmd(f"ip netns exec {pid_1} ip route add {subnet_grp} via {ip_dns}")
+                    connect_dns(group_no, name)
 
     # connect measurement to dns
     if Service.DNS in services:
-        cnt_1 = "DNS"
-        intf_1 = f"measurement"
-        cnt_2 = f"MEASUREMENT"
-        intf_2 = f"dns"
-        pid_1, pid_2 = connect_two_interfaces(cnt_1,intf_1,cnt_2,intf_2,None)
-
-        subnet_dns_meas = subnet_router_DNS(-1,"dns-measurement")
-        subnet_meas = subnet_router_DNS(-1, "measurement")
-
-        run_cmd(f"ip netns exec {pid_1} ip addr add {subnet_dns_meas} dev {intf_1}")
-        run_cmd(f"ip netns exec {pid_2} ip addr add {subnet_meas} dev {intf_2}")
+        connect_dns_measurement()
 
     client.close()
