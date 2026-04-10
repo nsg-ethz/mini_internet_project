@@ -35,7 +35,7 @@ def cleanup_group(group_no:int, domain: Domain):
 
             kill_container(f"{group_no}_{router.name}router")           
             
-            for i, host in enumerate(router.hosts):
+            for i, _ in enumerate(router.hosts):
                 extra = f"{i}" if len(router.services) > 1 else ""
                 hostl3_cnt_name=f"{group_no}_{router.name}host{extra}"
 
@@ -44,11 +44,11 @@ def cleanup_group(group_no:int, domain: Domain):
 
         for l2_name, l2_network in domain.l2_networks.items():
 
-            for switch in l2_network.switches:
+            for switch in l2_network.switches.values():
                 switch_cnt_name = f"{group_no}_L2_{l2_name}_{switch.name}"
                 kill_container(switch_cnt_name)
 
-            for name, l2_host in l2_network.hosts.items():
+            for name, _ in l2_network.hosts.items():
                 l2_host_cnt_name = f"{group_no}_L2_{l2_network.name}_{name}"
                 kill_container(l2_host_cnt_name)
     

@@ -1,8 +1,7 @@
 from .config import *
-from config.subnet_config import *
+from .subnet_config import *
 from .helper import *
 from multiprocessing import Pool
-import docker
 
 
 def install_key(cnt_name: str, group_directory: str):
@@ -32,18 +31,18 @@ def configure_ssh_group(group_no:int, domain: Domain, directory: Path):
             router_cnt_name = f"{group_no}_{router.name}router"
             install_key(router_cnt_name,group_directory)
 
-            for i, host in enumerate(router.hosts):
+            for i, _ in enumerate(router.hosts):
                 extra = f"{i}" if len(router.services) > 1 else ""
                 hostl3_cnt_name=f"{group_no}_{router.name}host{extra}"
                 install_key(hostl3_cnt_name,group_directory)
 
         for l2_name, l2_network in domain.l2_networks.items():
 
-            for switch in l2_network.switches:
+            for switch in l2_network.switches.values():
                 switch_cnt_name = f"{group_no}_L2_{l2_name}_{switch.name}"
                 install_key(switch_cnt_name,group_directory)
             
-            for name, l2_host in l2_network.hosts.items():
+            for name, _ in l2_network.hosts.items():
                 l2_host_cnt_name = f"{group_no}_L2_{l2_name}_{name}"
                 install_key(l2_host_cnt_name,group_directory)
 

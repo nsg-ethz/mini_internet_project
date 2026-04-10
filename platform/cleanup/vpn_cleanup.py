@@ -1,6 +1,3 @@
-import sys
-sys.path.append('../')
-
 import docker
 from ..setup.config import *
 from ..setup.helper import get_num_threads,run_cmd

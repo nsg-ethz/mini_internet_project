@@ -1,5 +1,5 @@
 from .config import *
-from config.subnet_config import *
+from .subnet_config import *
 from .helper import run_cmd
 
 def save_configs(config: Topology, directory: Path):
@@ -66,7 +66,7 @@ def save_configs(config: Topology, directory: Path):
 
             for _, l2_network in domain.l2_networks.items():
 
-                for switch in l2_network.switches:
+                for switch in l2_network.switches.values():
                     subnet=subnet_sshContainer_groupContainer(group_no, 0, switch.bridge_id-1 ,"switch")
                     save_dir = f"${{dirname}}/{switch.name}"
 
@@ -175,7 +175,7 @@ def save_configs(config: Topology, directory: Path):
             
             for _, l2_network in domain.l2_networks.items():
 
-                for switch in l2_network.switches:
+                for switch in l2_network.switches.values():
                     subnet=subnet_sshContainer_groupContainer(group_no, 0, switch.bridge_id-1 ,"switch")
                     save_dir = f"${{dirname}}/{switch.name}"
 

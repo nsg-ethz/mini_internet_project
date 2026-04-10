@@ -1,11 +1,8 @@
 from .config import *
-from config.subnet_config import *
+from .subnet_config import *
 from .helper import run_cmd, clean_ctn_netns
 from .connect_internal import *
 from .connect_external import *
-from .connect_services import connect_services
-from .website_setup import website_setup
-from .history_setup import history_setup
 import docker
 
 def restart_cont(cont_name:str):

@@ -1,5 +1,5 @@
 from .config import *
-from config.subnet_config import *
+from .subnet_config import *
 from .helper import run_cmd
 import docker
 import time
@@ -109,7 +109,7 @@ def rpki_router_setup(config: Topology, directory: Path):
 
         if isinstance(domain, AS):
            
-            for router_name, router in domain.routers.items():
+            for router_name, _ in domain.routers.items():
                 
                 if domain.auto:
 

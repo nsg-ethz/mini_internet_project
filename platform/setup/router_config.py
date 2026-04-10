@@ -1,5 +1,5 @@
 from .config import *
-from config.subnet_config import *
+from .subnet_config import *
 from .helper import get_num_threads, run_cmd
 from multiprocessing import Pool
 from ipaddress import IPv4Interface
@@ -25,7 +25,7 @@ def router_config_group(config: Topology, group_no: int, domain: Domain, directo
                 file.write(f"ip address {router_subnet}\n")
                 file.write(f"exit\n")
 
-                for i, host in enumerate(router.hosts):
+                for i, _ in enumerate(router.hosts):
                     host_subnet = subnet_host_router(group_no, router.id + i, "router") 
                     extra = f"{i}" if len(router.services) > 1 else ""
                     file.write(f"interface host{extra}\n")
@@ -36,7 +36,7 @@ def router_config_group(config: Topology, group_no: int, domain: Domain, directo
                     file.write("exit\n")
                 
                 for i, l2_network in enumerate(domain.l2_networks.values()):
-                    for switch in l2_network.switches:
+                    for switch in l2_network.switches.values():
                         if switch.router == router_name:
                             l2_subnet_router = subnet_l2_router(group_no, i)
                             file.write(f"router ospf\n")
@@ -110,11 +110,11 @@ def router_config_group(config: Topology, group_no: int, domain: Domain, directo
                 if external_link.src[0] == group_no or external_link.dst[0] == group_no:
 
                     if external_link.src[0] == group_no:
-                        grp_1, router_grp_1 = external_link.dst
-                        grp_2, router_grp_2 = external_link.src
+                        grp_1, _ = external_link.dst
+                        grp_2, _ = external_link.src
                     else:
-                        grp_1, router_grp_1 = external_link.src
-                        grp_2, router_grp_2 = external_link.dst
+                        grp_1, _ = external_link.src
+                        grp_2, _ = external_link.dst
 
                     subnet_1 = str(IPv4Interface(subnet_router_IXP(grp_1, grp_2, "group")).ip)
 
@@ -181,7 +181,7 @@ def apply_config(group_no: int, domain: Domain, directory: Path):
 
     if isinstance(domain, AS):
 
-        for router_name, router in domain.routers.items():
+        for router_name, _ in domain.routers.items():
 
             config_dir=f"{directory}/groups/g{group_no}/{router_name}/config"
 

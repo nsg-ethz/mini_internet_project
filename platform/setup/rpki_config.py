@@ -1,7 +1,6 @@
 from .config import *
-from config.subnet_config import *
+from .subnet_config import *
 from .helper import run_cmd
-import docker 
 from ipaddress import IPv4Interface
 
 def rpki_config(config: Topology, directory: Path, password_file: Path, keep_password: bool = False):

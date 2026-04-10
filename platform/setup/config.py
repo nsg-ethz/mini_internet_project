@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from collections import defaultdict
 from enum import Enum
 from ipaddress import IPv4Network
-from .subnets import LinkSubnet, SubnetScheme
+from subnets import LinkSubnet, SubnetScheme
 from pathlib import Path
 import argparse
 
@@ -155,7 +155,7 @@ class Switch:
 class L2Network:
     id: int
     name: str
-    switches: list[Switch] = field(default_factory=list[Switch])
+    switches: dict[str, Switch] = field(default_factory=dict[str, Switch])
     hosts: dict[str, Host] = field(default_factory=dict[str, Host])
     links: list[InternalLink] = field(default_factory=list[InternalLink])
 
@@ -177,7 +177,7 @@ def l2_networks_from_configs(args: argparse.Namespace, routers: set[str], switch
         if net_name not in l2_networks:
             l2_networks[net_name] = L2Network(id=id, name=net_name)
 
-        l2_networks[net_name].switches.append(switch)
+        l2_networks[net_name].switches[switch.name] = switch
 
     # Then the hosts and their respective links
     for id, host_config in enumerate(read_config(args, hosts_config)):
@@ -192,7 +192,7 @@ def l2_networks_from_configs(args: argparse.Namespace, routers: set[str], switch
 
         # Now the host links
         host_switch = host_config[3]
-        assert host_switch in [switch.name for switch in  l2_networks[net_name].switches], f"This host ({host_config[0]}) is trying to connect to a switch that does not exist ({host_config[3]})"
+        assert host_switch in l2_networks[net_name].switches.keys(), f"This host ({host_config[0]}) is trying to connect to a switch that does not exist ({host_config[3]})"
         l2_networks[net_name].links.append(InternalLink.from_partial_config(host_name, host_switch, host_config[4:7]))
 
     # Finally the links

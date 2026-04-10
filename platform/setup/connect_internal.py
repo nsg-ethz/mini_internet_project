@@ -1,9 +1,8 @@
 from .config import *
-from config.subnet_config import *
+from .subnet_config import *
 from .helper import *
 from ipaddress import IPv4Interface
 from multiprocessing import Pool
-import docker
 import os
 
 
@@ -24,7 +23,7 @@ def connect_l3_host_router_group(group_no: int, domain: Domain):
 
         for router in domain.routers.values():
 
-            for i, host in enumerate(router.hosts):
+            for i, _ in enumerate(router.hosts):
                 connect_l3_host(group_no, i, router, domain.auto)
 
         print(f"Connected Host to Router in group {group_no}")
@@ -60,25 +59,21 @@ def connect_l2_network(config: Topology, directory: Path):
 
     run_cmd("modprobe 8021q")
 
-    os.environ["DEFAULT_THROUGHPUT"] = config.environment["DEFAULT_THROUGHPUT"]
-    os.environ["DEFAULT_DELAY"] = config.environment["DEFAULT_DELAY"]
-    os.environ["DEFAULT_BUFFER"] = config.environment["DEFAULT_BUFFER"]
-
     pool = Pool(processes = get_num_threads())
-    inputs = [(group_no,domain) for group_no, domain in config.as_es.items()]
+    inputs = [(group_no,domain,config.environment) for group_no, domain in config.as_es.items()]
     pool.starmap(connect_l2_network_group, inputs)
 
     return
 
 
-def connect_l2_network_group(group_no: int, domain: Domain):
+def connect_l2_network_group(group_no: int, domain: Domain, env: dict[str,str]):
     
     if isinstance(domain, AS):
 
         for l2_name, l2_network in domain.l2_networks.items():
 
-            for switch in l2_network.switches:
-                connect_switch(group_no, switch, l2_name)
+            for switch in l2_network.switches.values():
+                connect_switch(group_no, switch, l2_name, env)
             
             for l2_link in l2_network.links:         
                 connect_l2(group_no, l2_link, l2_network)
@@ -88,19 +83,18 @@ def connect_l2_network_group(group_no: int, domain: Domain):
     return
 
 
-def connect_switch(group_no: int, switch: Switch, l2_name: str):
-    client = docker.from_env()
+def connect_switch(group_no: int, switch: Switch, l2_name: str, env: dict[str,str]):
 
-    cnt = client.containers.get(f"{group_no}_L2_{l2_name}_{switch.name}")
-    cnt.exec_run("ovs-vsctl add-br br0")
-    cnt.exec_run("ovs-vsctl set bridge br0 stp_enable=true")
-    cnt.exec_run("ovs-vsctl set-fail-mode br0 standalone")
-    cnt.exec_run(f"ovs-vsctl set bridge br0 other_config:stp-system-id={switch.mac}")
-    cnt.exec_run(f"ovs-vsctl set bridge br0 other_config:stp-priority={switch.bridge_id}")
+    cnt = f"{group_no}_L2_{l2_name}_{switch.name}"
+    run_cmd(f"docker exec -d {cnt} ovs-vsctl add-br br0")
+    run_cmd(f"docker exec -d {cnt} ovs-vsctl set bridge br0 stp_enable=true")
+    run_cmd(f"docker exec -d {cnt} ovs-vsctl set-fail-mode br0 standalone")
+    run_cmd(f"docker exec -d {cnt} ovs-vsctl set bridge br0 other_config:stp-system-id={switch.mac}")
+    run_cmd(f"docker exec -d {cnt} ovs-vsctl set bridge br0 other_config:stp-priority={switch.bridge_id}")
     
-    thrp = os.environ["DEFAULT_THROUGHPUT"]
-    delay = os.environ["DEFAULT_DELAY"] 
-    buffer = os.environ["DEFAULT_BUFFER"]
+    thrp = env["DEFAULT_THROUGHPUT"]
+    delay = env["DEFAULT_DELAY"] 
+    buffer = env["DEFAULT_BUFFER"]
 
     if switch.router != "N/A":
         cnt_router = f"{group_no}_{switch.router}router"
@@ -109,15 +103,13 @@ def connect_switch(group_no: int, switch: Switch, l2_name: str):
         intf_switch = f"{switch.router}router"
         connect_two_interfaces(cnt_router,intf_router,cnt_switch,intf_switch,(thrp,delay,buffer))
 
-        client.containers.get(cnt_switch).exec_run(f"ovs-vsctl add-port br0 {intf_switch}")
+        run_cmd(f"docker exec -d {cnt_switch} ovs-vsctl add-port br0 {intf_switch}")
     
-    client.close()
 
     return
 
 
 def connect_l2(group_no: int, l2_link: InternalLink, l2_network: L2Network):
-    client = docker.from_env()
 
     cnt_1 = f"{group_no}_L2_{l2_network.name}_{l2_link.endpoints[0]}"
     intf_1 = f"{group_no}-{l2_link.endpoints[1]}"
@@ -130,26 +122,26 @@ def connect_l2(group_no: int, l2_link: InternalLink, l2_network: L2Network):
 
     connect_two_interfaces(cnt_1,intf_1,cnt_2,intf_2,(thrp,delay,buffer))
 
-    switch_names = [switch.name for switch in l2_network.switches]
+    switch_names = l2_network.switches.keys()
 
     if l2_link.endpoints[0] in switch_names and l2_link.endpoints[1] in switch_names :
-        cnt_sw1 = client.containers.get(f"{group_no}_L2_{l2_network.name}_{l2_link.endpoints[0]}")
-        cnt_sw1.exec_run(f"ovs-vsctl add-port br0 {intf_1}")
-        cnt_sw1.exec_run(f"ovs-vsctl set Port {intf_1} trunks=0")
-        cnt_sw2 = client.containers.get(f"{group_no}_L2_{l2_network.name}_{l2_link.endpoints[1]}")
-        cnt_sw2.exec_run(f"ovs-vsctl add-port br0 {intf_2}")
-        cnt_sw2.exec_run(f"ovs-vsctl set Port {intf_2} trunks=0")
+        cnt_sw1 = f"{group_no}_L2_{l2_network.name}_{l2_link.endpoints[0]}"
+        run_cmd(f"docker exec -d {cnt_sw1} ovs-vsctl add-port br0 {intf_1}")
+        run_cmd(f"docker exec -d {cnt_sw1} ovs-vsctl set Port {intf_1} trunks=0")
+        cnt_sw2 = f"{group_no}_L2_{l2_network.name}_{l2_link.endpoints[1]}"
+        run_cmd(f"docker exec -d {cnt_sw2} ovs-vsctl add-port br0 {intf_2}")
+        run_cmd(f"docker exec -d {cnt_sw2} ovs-vsctl set Port {intf_2} trunks=0")
         
 
     elif l2_link.endpoints[0] in switch_names:
         command = f"ovs-vsctl add-port br0 {intf_1}"
-        client.containers.get(f"{group_no}_L2_{l2_network.name}_{l2_link.endpoints[0]}").exec_run(command)
+        cnt = f"{group_no}_L2_{l2_network.name}_{l2_link.endpoints[0]}"
+        run_cmd(f"docker exec -d {cnt} {command}")
 
     elif l2_link.endpoints[1] in switch_names:
         command = f"ovs-vsctl add-port br0 {intf_2}"
-        client.containers.get(f"{group_no}_L2_{l2_network.name}_{l2_link.endpoints[1]}").exec_run(command)
-
-    client.close()
+        cnt = f"{group_no}_L2_{l2_network.name}_{l2_link.endpoints[1]}"
+        run_cmd(f"docker exec -d {cnt} {command}")
 
     return
 

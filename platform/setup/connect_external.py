@@ -1,5 +1,5 @@
 from .config import *
-from config.subnet_config import *
+from .subnet_config import *
 from .helper import *
 
 

@@ -1,7 +1,6 @@
 from .config import *
-from config.subnet_config import *
+from .subnet_config import *
 from .helper import run_cmd, connect_two_interfaces
-import docker
 import os
 from ipaddress import IPv4Interface
 
@@ -10,7 +9,7 @@ def connect_measurement(group_no: int, name: str):
     intf_1 = f"group{group_no}"
     cnt_2 = f"{group_no}_{name}router"
     intf_2 = f"measurement_{group_no}"
-    pid_1, pid_2 = connect_two_interfaces(cnt_1,intf_1,cnt_2,intf_2,None)
+    pid_1, _ = connect_two_interfaces(cnt_1,intf_1,cnt_2,intf_2,None)
     subnet_grp = subnet_group(group_no)
 
     ip_meas = str(IPv4Interface(subnet_router_MEASUREMENT(group_no,"group")).ip)
@@ -26,7 +25,7 @@ def connect_matrix(group_no: int, name: str):
     intf_1 = f"group_{group_no}"
     cnt_2 = f"{group_no}_{name}router"
     intf_2 = f"matrix_{group_no}"
-    pid_1, pid_2 = connect_two_interfaces(cnt_1,intf_1,cnt_2,intf_2,None)
+    pid_1, _ = connect_two_interfaces(cnt_1,intf_1,cnt_2,intf_2,None)
     subnet_grp = subnet_group(group_no)
 
     ip_matrix = str(IPv4Interface(subnet_router_MATRIX(group_no,"group")).ip)
@@ -42,7 +41,7 @@ def connect_dns(group_no: int, name: str):
     intf_1 = f"group_{group_no}"
     cnt_2 = f"{group_no}_{name}router"
     intf_2 = f"dns_{group_no}"
-    pid_1, pid_2 = connect_two_interfaces(cnt_1,intf_1,cnt_2,intf_2,None)
+    pid_1, _ = connect_two_interfaces(cnt_1,intf_1,cnt_2,intf_2,None)
     subnet_grp = subnet_group(group_no)
 
     ip_dns = str(IPv4Interface(subnet_router_DNS(group_no,"group")).ip)
@@ -66,7 +65,7 @@ def connect_dns_measurement():
 
 
 def connect_services(config: Topology, directory: Path):
-
+    import docker
     os.environ["DOCKERHUB_PREFIX"] = config.environment["DOCKERHUB_PREFIX"]
     os.environ["DOCKER_TAG"] = config.environment["DOCKER_TAG"]
     os.environ["MATRIX_FREQUENCY"] = config.environment["MATRIX_FREQUENCY"]
@@ -188,8 +187,6 @@ def connect_services(config: Topology, directory: Path):
     for group_no, domain in config.as_es.items():
         
         if isinstance(domain,AS):
-            
-            subnet_grp = subnet_group(group_no)
 
             if Service.MEASUREMENT in services:
                 with open(f"{directory}/groups/g{group_no}/id_rsa.pub") as file:

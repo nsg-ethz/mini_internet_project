@@ -1,5 +1,4 @@
 import subprocess
-import docker
 import time
 from pathlib import Path
 
@@ -73,20 +72,15 @@ def create_netns_symlink(pid: int):
             run_cmd(f"trap \'delete_netns_symlink; trap - $signal; kill -$signal $$\' {signal}")
 
 def get_docker_pid(name: str):
-    client = docker.from_env()
-    api = docker.APIClient(base_url='unix://var/run/docker.sock')
-    container_id_1 = client.containers.get(name).id
-    client.close()
-    return int(api.inspect_container(container_id_1)["State"]["Pid"])
+
+    cnt_id = str(run_cmd("docker inspect --format='{{.Id}}' " + name).stdout).strip()
+    pid = str(run_cmd("docker inspect -f '{{.State.Pid}}' " + cnt_id).stdout).strip()
+    return int(pid)
 
 def connect_two_interfaces(cont_1: str, intf_1: str, cont_2: str, intf_2: str, perf: None | tuple[str,str,str] = None) -> tuple[int, int]:
 
     pid_1 = get_docker_pid(cont_1)
-    pid_2 = get_docker_pid(cont_2)
-    
-    if perf != None:
-        thrp, delay, buffer = perf
-        burst = compute_burstsize(thrp)
+    pid_2 = get_docker_pid(cont_2)    
 
     portname = create_unique_port_name(f"{cont_1}_{intf_1}_{cont_2}_{intf_2}")
     veth_intf_1 = f"{portname}_a"
@@ -108,6 +102,9 @@ def connect_two_interfaces(cont_1: str, intf_1: str, cont_2: str, intf_2: str, p
     time.sleep(0.1)
 
     if perf != None:
+        thrp, delay, buffer = perf
+        burst = compute_burstsize(thrp)
+
         run_cmd(f"ip netns exec {pid_1} tc qdisc add dev {intf_1} root handle 1:0 netem delay {delay}")
         run_cmd(f"ip netns exec {pid_1} tc qdisc add dev {intf_1} parent 1:1 handle 10: tbf rate \"{thrp}\" burst {burst} latency \"{buffer}\"")
 

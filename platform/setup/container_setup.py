@@ -1,5 +1,5 @@
 from .config import *
-from config.subnet_config import *
+from .subnet_config import *
 from .helper import get_num_threads,get_docker_pid,run_cmd
 from ipaddress import IPv4Interface
 from multiprocessing import Pool
@@ -118,7 +118,7 @@ def create_group(group_no:int, domain: Domain, directory: Path, rpki_location: P
         for l2_name, l2_network in domain.l2_networks.items():
 
             # start switches
-            for switch in l2_network.switches:
+            for switch in l2_network.switches.values():
                 switch_cnt_name = f"{group_no}_L2_{l2_name}_{switch.name}"
                 subnet_ssh_switch = str(IPv4Interface(subnet_sshContainer_groupContainer(group_no, -1, switch.bridge_id-1, "switch")).ip)
                 netconf_ssh_switch = {ssh_net_name: client.api.create_endpoint_config(ipv4_address=subnet_ssh_switch)}

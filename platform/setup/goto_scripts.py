@@ -1,5 +1,5 @@
 from .config import *
-from config.subnet_config import *
+from .subnet_config import *
 from .helper import run_cmd
 
 def goto_scripts(config: Topology, directory: Path):
@@ -46,7 +46,7 @@ def goto_scripts(config: Topology, directory: Path):
                 
             for _, l2_network in domain.l2_networks.items():
 
-                for switch in l2_network.switches:
+                for switch in l2_network.switches.values():
                     subnet_switch = subnet_sshContainer_groupContainer(group_no, -1, switch.bridge_id-1, "switch")
 
                     goto_content += f'if [ \"${{location}}" == \"{l2_network.name.lower()}\" ] && [ \"${{device}}" == \"{switch.name.lower()}\" ]; then\n'
@@ -85,7 +85,7 @@ def goto_scripts(config: Topology, directory: Path):
             if len(domain.l2_networks) > 0:
                 l2_name = next(iter(domain.l2_networks))
                 l2_host_name = next(iter(domain.l2_networks[l2_name].hosts))
-                l2_switch_name = domain.l2_networks[l2_name].switches[0].name
+                l2_switch_name = list(domain.l2_networks[l2_name].switches.values())[0].name
                 goto_content += f'echo \"./goto.sh {l2_name.lower()} {l2_switch_name.lower()}\"\n'
                 goto_content += f'echo \"./goto.sh {l2_name.lower()} {l2_host_name.lower()}\"\n'
 

@@ -1,5 +1,5 @@
 from .config import *
-from config.subnet_config import *
+from .subnet_config import *
 from .helper import run_cmd
 
 
@@ -14,7 +14,7 @@ def folder_setup(config: Topology, directory: Path):
 
         if isinstance(domain, AS):
 
-            for router_name, router in domain.routers.items():
+            for router_name, _ in domain.routers.items():
 
                 location = f"{directory}/groups/g{group_no}/{router_name}"
                 run_cmd(f"mkdir {location}")

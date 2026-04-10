@@ -1,5 +1,5 @@
 from .config import *
-from config.subnet_config import *
+from .subnet_config import *
 from .helper import get_num_threads, run_cmd, get_docker_pid
 from multiprocessing import Pool
 from ipaddress import IPv4Interface, IPv6Interface
@@ -40,7 +40,7 @@ def layer2_config_group(group_no: int, domain: Domain, directory: Path):
 
                     for i, l2_network in enumerate(domain.l2_networks.values()):
                         vlan_tags = vlan_tags.union(set([host.vlan for host in l2_network.hosts.values() if isinstance(host.vlan,int)]))
-                        l2_routers = [switch.router for switch in l2_network.switches if switch.router != "N/A"]
+                        l2_routers = [switch.router for switch in l2_network.switches.values() if switch.router != "N/A"]
                         if router_1.name in l2_routers:
                             tunnel_location[0] = i
                         if router_2.name in l2_routers:
@@ -71,7 +71,7 @@ def layer2_config_group(group_no: int, domain: Domain, directory: Path):
                 vlan_tags = vlan_tags.union(set([host.vlan for host in l2_network.hosts.values() if isinstance(host.vlan,int)]))
 
                 for vlan in vlan_tags:
-                    for router_name in [switch.router for switch in l2_network.switches if switch.router != "N/A"]:
+                    for router_name in [switch.router for switch in l2_network.switches.values() if switch.router != "N/A"]:
                         
                         subnet_router_l2 = subnet_l2(group_no, l2_network.id, vlan, 1)
                         subnet_router_ipv6 = subnet_l2_ipv6(group_no, l2_network.id, vlan, 1)
@@ -141,7 +141,7 @@ def layer2_config_group(group_no: int, domain: Domain, directory: Path):
 
                 for link in l2_network.links:
                     
-                    switches = [switch.name for switch in l2_network.switches]
+                    switches = l2_network.switches.keys()
 
                     if link.endpoints[0] in switches and link.endpoints[1] in switches:
 
@@ -157,7 +157,7 @@ def layer2_config_group(group_no: int, domain: Domain, directory: Path):
                             cnt_sw_2.exec_run(f"ovs-vsctl set port {group_no}-{link.endpoints[0]} trunks={vlan_str[:-1]}")
                     
                 
-                for switch in l2_network.switches:
+                for switch in l2_network.switches.values():
                     cnt_sw = client.containers.get(f"{group_no}_L2_{l2_network.name}_{switch.name}")
 
                     file.write(f"docker exec -d {group_no}_L2_{l2_network.name}_{switch.name} ovs-vsctl set port {switch.router}router trunks={vlan_str[:-1]}\n")
