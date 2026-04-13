@@ -92,14 +92,14 @@ def connect_two_interfaces(cont_1: str, intf_1: str, cont_2: str, intf_2: str, p
     run_cmd(f"ip link add {veth_intf_1} type veth peer name {veth_intf_2}")
 
     run_cmd(f"ip link set {veth_intf_1} netns {pid_1}")
-    run_cmd(f"ip netns exec {pid_1} ip link set dev {veth_intf_1} name {intf_1}",check=False)
+    run_cmd(f"ip netns exec {pid_1} ip link set dev {veth_intf_1} name {intf_1}")
     run_cmd(f"ip netns exec {pid_1} ip link set {intf_1} up")
 
     run_cmd(f"ip link set {veth_intf_2} netns {pid_2}")
     run_cmd(f"ip netns exec {pid_2} ip link set dev {veth_intf_2} name {intf_2}")
     run_cmd(f"ip netns exec {pid_2} ip link set {intf_2} up")
     
-    time.sleep(0.1)
+    time.sleep(0.5)
 
     if perf != None:
         thrp, delay, buffer = perf

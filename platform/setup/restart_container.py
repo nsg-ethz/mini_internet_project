@@ -235,6 +235,8 @@ def restart_one_ixp(config: Topology, as_no: int):
     ixp_cnt = f"{as_no}_IXP"
 
     restart_container(ixp_cnt)
+    
+    time.sleep(5)
 
     for link in config.external_links:
         if link.src[0] == as_no or link.dst[0] == as_no:

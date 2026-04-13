@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from collections import defaultdict
 from enum import Enum
 from ipaddress import IPv4Network
-from subnets import LinkSubnet, SubnetScheme
+from .subnets import LinkSubnet, SubnetScheme
 from pathlib import Path
 import argparse
 
