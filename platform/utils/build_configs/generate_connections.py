@@ -177,21 +177,31 @@ assert CONFIGURABLE_PER_AREA % 2 == 0, "Must be even."
 ASES_PER_AREA = CONFIGURABLE_PER_AREA + 4  # 2 stub, 2 provider
 if ENABLE_STUB_HIJACKS:
     ASES_PER_AREA += 2  # add 2 ASes as buffer between students and hijackers.
-# Leave enough space if we have to skip some ASes.
-_area_max = 10 * math.ceil((ASES_PER_AREA + 1 + len(skip_groups)) / 10)
+
+def _next_decade_start(x):
+    """Return the next number of form 10k + 1 strictly above x."""
+    return ((x // 10) + 1) * 10 + 1
 
 
-def _area_ases(start):
+def _area_ases(asn):
     """Append ASes to the list, skipping the ones in skip_groups."""
     _ases = []
     while len(_ases) < ASES_PER_AREA:
-        if start not in skip_groups:
-            _ases.append(start)
-        start += 1
+        if asn not in skip_groups:
+            _ases.append(asn)
+        asn += 1
     return _ases
 
 
-areas = [_area_ases(_area_max * n + 1) for n in range(AREAS)]
+areas = []
+
+start = 1  # First area always starts at 1
+for _ in range(AREAS):
+    area = _area_ases(start)
+    areas.append(area)
+
+    last_used = area[-1]
+    start = _next_decade_start(last_used)
 
 # IXPs
 highest_as = max([max(area) for area in areas])
