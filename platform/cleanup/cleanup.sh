@@ -8,7 +8,7 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
-if [ "$#" != 1 ]; then
+if [ "$#" == 0 ]; then
   echo "usage: ${0##*/} directory" 2>&1
   exit 1
 fi
@@ -20,7 +20,7 @@ if (($UID != 0)); then
 fi
 
 DIRECTORY="$1"
-
+cd $DIRECTORY
 
 python3 -m venv .env
 source .env/bin/activate && pip install -r ./requirements.txt

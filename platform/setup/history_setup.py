@@ -31,7 +31,7 @@ def history_setup(config: Topology, directory: Path):
 
         client.containers.run(image=f"{env["DOCKERHUB_PREFIX"]}history:{env["DOCKER_TAG"]}",
                             network="bridge", name="HISTORY", hostname="HISTORY", tty=True, detach=True,
-                            environment=history_environment, volumes=history_volumes)
+                            environment=history_environment, volumes=history_volumes, init=True)
 
         if env["HISTORY_PAUSE_AFTER_START"].strip().lower() == "true":
             run_cmd("docker pause HISTORY")
