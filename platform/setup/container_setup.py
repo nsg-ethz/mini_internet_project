@@ -92,10 +92,11 @@ def create_group(group_no:int, domain: Domain, directory: Path, rpki_location: P
                 f'/etc/localtime': {'bind': '/etc/localtime', 'mode': 'ro'}}
 
         client.containers.run(image=f"{os.environ["DOCKERHUB_PREFIX"]}ssh:{os.environ["DOCKER_TAG"]}",
-                            name=f"{group_no}_ssh",tty=True, detach=True,cpu_count=2,pids_limit=100,
+                            name=f"{group_no}_ssh",tty=True, detach=True,nano_cpus=2*10**9,pids_limit=100,
                             hostname=f"g{group_no}-proxy", cap_add=["NET_ADMIN"],log_config=lc,
                             network="bridge", ports={'22': group_no + 2000},
                             volumes=volumes_ssh)
+        
         group_containers += [f"{group_no}_ssh"]
 
         subnet_ssh_ext_cont = IPv4Interface(subnet_ext_sshContainer(group_no,"sshContainer"))
@@ -138,7 +139,7 @@ def create_group(group_no:int, domain: Domain, directory: Path, rpki_location: P
                                 f'/etc/localtime': {'bind': '/etc/localtime', 'mode': 'ro'}}
                 
                 client.containers.run(image=f"{os.environ["DOCKERHUB_PREFIX"]}switch:{os.environ["DOCKER_TAG"]}",
-                                    name=switch_cnt_name, tty=True, detach=True, cpu_count=2, pids_limit=200,
+                                    name=switch_cnt_name, tty=True, detach=True, nano_cpus=2*10**9, pids_limit=200,
                                     hostname=f"{switch.name}", cap_add=["ALL"], cap_drop=["SYS_RESOURCE"],
                                     log_config=lc, network=ssh_net_name, networking_config=netconf_ssh_switch, sysctls=sysctl_forward,
                                     volumes=volumes_switch, dns=[str(subnet_dns.ip)])
@@ -165,7 +166,7 @@ def create_group(group_no:int, domain: Domain, directory: Path, rpki_location: P
                 volumes_l2host = {f'/etc/timezone': {'bind': '/etc/timezone', 'mode': 'ro'}, 
                                 f'/etc/localtime': {'bind': '/etc/localtime', 'mode': 'ro'}}
                 
-                client.containers.run(image=f"{l2_image}", name=l2_host_cnt_name, tty=True, detach=True, cpu_count=2,
+                client.containers.run(image=f"{l2_image}", name=l2_host_cnt_name, tty=True, detach=True, nano_cpus=2*10**9,
                                     pids_limit=100, hostname=f"{name}", cap_add=["NET_ADMIN"],
                                     log_config=lc, network=ssh_net_name, networking_config=net_conf_ssh_host, sysctls=sysctl_host,
                                     volumes=volumes_l2host, dns=[str(subnet_dns.ip)])
@@ -207,7 +208,7 @@ def create_group(group_no:int, domain: Domain, directory: Path, rpki_location: P
                             f'/etc/localtime': {'bind': '/etc/localtime', 'mode': 'ro'}}
                 
             client.containers.run(image=f"{os.environ["DOCKERHUB_PREFIX"]}router:{os.environ["DOCKER_TAG"]}",
-                                    name=router_cnt_name, tty=True, detach=True, cpu_count=2, pids_limit=100,
+                                    name=router_cnt_name, tty=True, detach=True, nano_cpus=2*10**9, pids_limit=100,
                                     hostname=f"{router.name}_router", cap_add=["ALL"], cap_drop=["SYS_RESOURCE"],
                                     log_config=lc, network=ssh_net_name, networking_config=netconf_ssh_router, sysctls=sysctl_forward,
                                     volumes=volumes_router, dns=[str(subnet_dns.ip)],
@@ -279,7 +280,7 @@ def create_group(group_no:int, domain: Domain, directory: Path, rpki_location: P
                                                     f'/etc/localtime': {'bind': '/etc/localtime', 'mode': 'ro'}})
                     
             
-                client.containers.run(image=f"{host.container_name}", name=hostl3_cnt_name, tty=True, detach=True, cpu_count=2,
+                client.containers.run(image=f"{host.container_name}", name=hostl3_cnt_name, tty=True, detach=True, nano_cpus=2*10**9,
                                     pids_limit=pid_limit, hostname=f"{name}", cap_add=["NET_ADMIN"], ports=ports_host, labels=labels_host,
                                     log_config=lc, network=ssh_net_name, networking_config=netconf_ssh_host, sysctls=sysctl_host,
                                     volumes=volumes_host, dns=[str(subnet_dns.ip)], environment=environments_host)
@@ -316,7 +317,7 @@ def create_group(group_no:int, domain: Domain, directory: Path, rpki_location: P
                        f'/etc/localtime': {'bind': '/etc/localtime', 'mode': 'ro'}}
                 
         client.containers.run(image=f"{os.environ["DOCKERHUB_PREFIX"]}ixp:{os.environ["DOCKER_TAG"]}",
-                                    name=ixp_cnt_name, tty=True, detach=True, cpu_count=2, pids_limit=200,
+                                    name=ixp_cnt_name, tty=True, detach=True, nano_cpus=2*10**9, pids_limit=200,
                                     hostname=f"{group_no}_IXP", cap_add=["ALL"], cap_drop=["SYS_RESOURCE"],
                                     log_config=lc, network='none', sysctls=sysctl_forward, volumes=volumes_ixp)
         group_containers += [ixp_cnt_name]
