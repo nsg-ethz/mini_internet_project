@@ -85,7 +85,7 @@ MATRIX_PAUSE_AFTER_START=false
 # =============================================================================
 
 # Whether to enable the history collector.
-HISTORY_ENABLED=true
+HISTORY_ENABLED=false
 # Whether to pause the matrix container after starting it.
 # Can reduce disk usage when the mini internet is not used immediately.
 # Unpause container at any time with `docker container unpause HISTORY`

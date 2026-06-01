@@ -44,7 +44,7 @@ if __name__ == "__main__":
 
         run_cmd("docker system prune -f")
 
-        if Path("/var/run/netns").is_file():
+        if Path("/var/run/netns").is_dir():
             run_cmd("find /var/run/netns -xtype l -delete")
 
 
