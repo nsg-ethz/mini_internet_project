@@ -7,6 +7,7 @@ RUN apk add --no-cache supervisor gawk tzdata \
 COPY supervisord.conf /etc/supervisor/supervisord.conf
 COPY stop-supervisord.sh /usr/local/bin/stop-supervisord
 COPY logger.sh /usr/local/bin/tail-supervisor-logs
+COPY wait-pidfds.py /usr/local/bin/wait-piddfs.py
 RUN chmod +x /usr/local/bin/stop-supervisord /usr/local/bin/tail-supervisor-logs
 
 ENV TZ="Europe/Paris"

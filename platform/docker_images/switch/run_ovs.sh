@@ -3,8 +3,19 @@
 set -e
 
 command=/usr/share/openvswitch/scripts/ovs-ctl
+pid_dir="${OVS_PID_DIR:-/var/run/openvswitch}"
+wait_helper="${WAIT_HELPER:-/usr/local/bin/wait-piddfs.py}"
+
+monitor_pid=""
 
 function stop() {
+    trap - SIGINT SIGTERM
+
+    if [ -n "${monitor_pid:-}" ]; then
+        kill "$monitor_pid" 2>/dev/null || true
+        wait "$monitor_pid" 2>/dev/null || true
+    fi
+
     $command stop
     exit 0
 }
@@ -20,12 +31,30 @@ trap "restart" SIGHUP
 $command start
 sleep 2
 
-# Loop while the daemons are alive.
-# status returns exit code 0 only if all daemons are are running.
-while $command status > /dev/null ; do
-    sleep 0.5
-done
+# Validate initial state once.
+# This preserves the old behavior that startup fails if any daemon is not alive.
+if ! $command status > /dev/null; then
+    $command status
+    exit 1
+fi
 
-$command status
+# Block until any currently-running FRR daemon exits.
+python3 "$wait_helper" "$pid_dir" &
+monitor_pid=$!
 
-exit 1 # exit unexpected
+if wait "$monitor_pid"; then
+    # The helper should not normally exit 0.
+    $command status
+    exit 1
+else
+    rc=$?
+
+    # rc=1 means one daemon exited, or was already gone.
+    if [ "$rc" -eq 1 ]; then
+        $command status
+        exit 1
+    fi
+
+    # rc=2 means unsupported platform / permission / helper setup error.
+    exit "$rc"
+fi
