@@ -1,4 +1,4 @@
-FROM d_base:latest
+FROM base:latest
 
 RUN apk add --no-cache bind \
     && mkdir -p /var/cache/bind

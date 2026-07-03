@@ -19,10 +19,9 @@ style="background-image: repeating-linear-gradient(45deg, transparent, transpare
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta http-equiv="refresh" content="{{60 if not update_frequency else update_frequency}}" />
+<meta http-equiv="refresh" content="{{60 if not update_frequency else update_frequency//2}}" />
 <script>
 var simplify = false;
-
 
 function toggle(){
 	collection = document.getElementsByClassName("invalid");
@@ -34,16 +33,18 @@ function toggle(){
 
 	if (simplify){
 		simplify = false;
+		sessionStorage.setItem('simplify', "false");
 		for (var k in collection) {
-			collection[k].className = "border border-white/50 bg-[#f0ad4e] invalid";	
+			collection[k].className = "border border-white/50 bg-[#ff8c00] invalid";	
 		}
-		sum = valid-invalid
+		sum = valid-invalid;
 		barvalid.className="basis-[" + sum + "%] rounded-l-lg px-2 p-1 bg-[#56c157]";
 		barvalid.innerHTML= sum + "%";
 		barinvalid.style="display:block";
 	
 	}else{
 		simplify = true;
+		sessionStorage.setItem('simplify', "true");
 		for (var k in collection) {
 			collection[k].className = "border border-white/50 bg-[#56c157] invalid";	
 		}
@@ -54,6 +55,23 @@ function toggle(){
 
 	}
 }
+
+document.getElementsByTagName("html")[0].style.visibility = "hidden";
+var prev = sessionStorage.getItem('simplify');
+if (prev === null || prev === "true"){
+	window.onload = function () {
+		toggle();
+		document.getElementById("checkbox").checked = false;
+		document.getElementsByTagName("html")[0].style.visibility = "visible";
+	};
+
+} else{
+	window.onload = function () {
+		document.getElementsByTagName("html")[0].style.visibility = "visible";
+	};
+}
+
+
 </script>
 {% endblock %}
 
@@ -68,9 +86,9 @@ function toggle(){
 	<ul class="list-disc list-inside mb-2">
 		<li>can reach with a valid AS-level path (<span class="bg-[#56c157]">&nbsp;&nbsp;&nbsp;</span>);
 		</li>
-		<li>can reach with an invalid AS-level path (<span class="bg-[#f0ad4e]">&nbsp;&nbsp;&nbsp;</span>);
+		<li>can reach with an invalid AS-level path (<span class="bg-[#ff8c00]">&nbsp;&nbsp;&nbsp;</span>);
 		</li>
-		<li>cannot reach (<span class="bg-[#d5605e]">&nbsp;&nbsp;&nbsp;</span>). </li>
+		<li>cannot reach (<span class="bg-[#b10500]">&nbsp;&nbsp;&nbsp;</span>). </li>
 	</ul>
 	<p class="mb-2">
 		We determine <em>reachability</em> by sending periodic pings between hosts in all networks, if the ping
@@ -79,9 +97,10 @@ function toggle(){
 	<p class="mb-2">
 		We determine <em>validity</em> by comparing the BGP looking glass outputs with the project topology and business
 		relationships.
-		A path is valid if it does not violate any business policies.
+		A path is valid if it does not violate any business policies. 
 		Importantly, we check <em>both</em> the best advertisement as well as backups.
 		A path is only considered valid if all advertised paths are valid.
+		<b>Note that this does not mean it is your groups fault. The invalid path might be caused by an AS somewhere along the path.</b>
 	</p>
 	<p class="mb-2">
 		If your path is invalid because you receive invalid advertisements from other groups, we encourage you to reach
@@ -94,7 +113,7 @@ function toggle(){
 	</p>
 	<div class="mb-8 flex flex-col items-center">
 		<label class="inline-flex items-center cursor-pointer">
-			<input type="checkbox" value="" class="sr-only peer" checked onchange="toggle()">
+			<input type="checkbox" value="" id="checkbox" class="sr-only peer" checked onchange="toggle()">
 			<div class="relative w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600 dark:peer-checked:bg-blue-600"></div>
 			<span class="ms-3 text-base font-bold text-black-900 dark:text-black-300"> Validity Check </span>
 		  </label>
@@ -110,11 +129,11 @@ function toggle(){
 			{{stripes(not valid)}}>
 			{{valid}}%
 		</div>
-		<div class="basis-[{{invalid}}%] px-2 p-1 bg-[#f0ad4e] border-x-2 border-white/50" id="bar-invalid"
+		<div class="basis-[{{invalid}}%] px-2 p-1 bg-[#ff8c00] border-x-2 border-white/50" id="bar-invalid" style="display:block"
 			title="Reachable with invalid path: {{invalid}}%" {{stripes(not invalid)}}>
 			{{invalid}}%
 		</div>
-		<div class="basis-[{{failure}}%] px-2 p-1 rounded-r-lg bg-[#d5605e]" title="Not reachable: {{failure}}%"
+		<div class="basis-[{{failure}}%] px-2 p-1 rounded-r-lg bg-[#b10500]" title="Not reachable: {{failure}}%"
 			{{stripes(not failure)}}>
 			{{failure}}%
 		</div>
@@ -158,7 +177,7 @@ function toggle(){
 		<div class="border border-white/50 even:bg-neutral-200 text-right pr-1">{{asn}}</div>
 		{% for asn_dst in connectivity[asn]|sort %}
 		{% if not connectivity[asn][asn_dst] %}
-		<div class="border border-white/50 bg-[#d5605e] notreachable" title="AS{{asn}}&rarr;AS{{asn_dst}}: Not Reachable"
+		<div class="border border-white/50 bg-[#b10500] notreachable" title="AS{{asn}}&rarr;AS{{asn_dst}}: Not Reachable"
 			style="padding-bottom: 80%;">
 		</div>
 		{% else %}
@@ -168,7 +187,7 @@ function toggle(){
 			style="padding-bottom: 80%;">
 		</div>
 		{% else %}
-		<div class="border border-white/50 bg-[#f0ad4e] invalid"
+		<div class="border border-white/50 bg-[#ff8c00] invalid"
 			title="AS{{asn}}&rarr;AS{{asn_dst}}: Reachable with invalid path" style="padding-bottom: 80%;">
 		</div>
 		{% endif %}

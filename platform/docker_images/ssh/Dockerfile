@@ -1,4 +1,4 @@
-FROM d_base:latest
+FROM base:latest
 
 EXPOSE 22/tcp
 

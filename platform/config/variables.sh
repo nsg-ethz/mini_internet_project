@@ -7,13 +7,14 @@
 # The prefix for the dockerhub images. Leave empty for local images.
 # If it isn't empty, it must end with a slash.
 DOCKERHUB_PREFIX="miniinterneteth/"
+DOCKER_TAG="26"
 # DOCKERHUB_PREFIX="miniinterneteth/"
 
 
 # This URL will be suggested as the default location for students
 # to download their configs. It should be publicly accessible via ssh at port
 # 2000 + X, where X is each AS number.
-SSH_URL="westvleteren.ethz.ch"
+SSH_URL="orval.ethz.ch"
 
 # =============================================================================
 # WEBSERVER
@@ -23,7 +24,7 @@ SSH_URL="westvleteren.ethz.ch"
 # You need to specify the hostname of the server and an email for
 # LetsEncrypt to be enabled.
 # UPDATE THOSE VARIABLES. WEBSERVER_HOSTNAME -> hostname of the server and EMAIL -> empty string (for http)
-WEBSERVER_HOSTNAME="localhost"
+WEBSERVER_HOSTNAME="orval.ethz.ch"
 WEBSERVER_ACME_MAIL="nsg@ethz.ch"
 # Hostname and ports for the webserver and krill on the host.
 # (must be publicly available)
@@ -38,6 +39,10 @@ WEBSERVER_TZ="Europe/Zurich"
 # WEBSERVER_SOURCEFILES=""
 # If you want your own webserver files instead add the filepath here (relative to the platform/config folder)
 WEBSERVER_SOURCEFILES="/webserver"
+
+# feature to visualize traceroute paths on the topology
+# requires a topology.txt file to be set
+TOPOLOGY_TAB=true
 
 # This year we are adding a chatbot to help the students with the project
 # By enabling this a new tab will be added which is used to connect to the chatbot webserver
@@ -86,7 +91,7 @@ HISTORY_ENABLED=false
 # Unpause container at any time with `docker container unpause HISTORY`
 HISTORY_PAUSE_AFTER_START=false
 # How often to fetch update configs and matrix state.
-HISTORY_UPDATE_FREQUENCY=$(( 60*60 ))  # every hour (in seconds)
+HISTORY_UPDATE_FREQUENCY=3600  # every hour (in seconds)
 # Timeout for ./save_configs.sh
 HISTORY_TIMEOUT="300s"
 # Username and email that will show up on the commit.
@@ -96,7 +101,7 @@ HISTORY_GIT_EMAIL="mini-internet-history@ethz.ch"
 # For example, create a gitlab access token and use it in the URL.
 # The token needs to have write access to the repository.
 # HISTORY_GIT_URL="https://gitlab-ci-token:<TOKEN HERE>@gitlab.ethz.ch/nsg/lectures/lec_commnet/projects/2024/routing_project/test_history.git"
-HISTORY_GIT_URL=""
+HISTORY_GIT_URL="https://gitlab-ci-token:<TOKEN HERE>@gitlab.ethz.ch/nsg/lectures/lec_commnet/projects/2026/routing-project/history-26.git"
 HISTORY_GIT_BRANCH="main"
 # switch.db and rpki.cache are binaries that cannot be stored easily in git.
 # If this option is "true" (recommend), we re-write the git history at every
@@ -111,14 +116,14 @@ HISTORY_FORGET_BINARIES="true"
 # =============================================================================
 
 # Enable/Disable VPN
-VPN_ENABLED=false
+VPN_ENABLED=true
 
 # Enable/Disable DNS for wireguard clients
 VPN_DNS_ENABLED=true
 
 # Enable/Disable VPN website
 # VPN_WEBSITE_ENABLED=false
-VPN_WEBSITE_ENABLED=${VPN_ENABLED}
+VPN_WEBSITE_ENABLED=true
 
 # The file for the vpn database
 VPN_DB_FILE="vpn.db"

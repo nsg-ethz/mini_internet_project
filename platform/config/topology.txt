@@ -1,0 +1,55 @@
+node ixp140 ixp 0pt 0pt 
+node ixp141 ixp -150.0pt -0.0pt 
+node ixp142 ixp 150.0pt 0.0pt 
+node as1 tier1 -25.0pt -33.3pt 
+node as2 tier1 25.0pt -33.3pt 
+node as3 student -25.0pt -83.3pt 
+node as4 student 25.0pt -83.3pt 
+node as5 stub -25.0pt -133.3pt 
+node as6 stub 25.0pt -133.3pt 
+node as11 tier1 25.0pt 33.3pt 
+node as12 tier1 -25.0pt 33.3pt 
+node as13 student 25.0pt 83.3pt 
+node as14 student -25.0pt 83.3pt 
+node as15 stub 25.0pt 133.3pt 
+node as16 stub -25.0pt 133.3pt 
+edge as1 as3 prov 
+edge as1 as4 prov 
+edge as1 as2 peer 
+edge as1 as140 peer 
+edge as1 as141 peer 
+edge as2 as3 prov 
+edge as2 as4 prov 
+edge as2 as11 peer 
+edge as2 as140 peer 
+edge as2 as142 peer 
+edge as3 as5 prov 
+edge as3 as6 prov 
+edge as3 as4 peer 
+edge as3 as141 peer 
+edge as4 as5 prov 
+edge as4 as6 prov 
+edge as4 as142 peer 
+edge as5 as6 peer 
+edge as5 as141 peer 
+edge as6 as142 peer 
+edge as11 as13 prov 
+edge as11 as14 prov 
+edge as11 as12 peer 
+edge as11 as140 peer 
+edge as11 as142 peer 
+edge as12 as13 prov 
+edge as12 as14 prov 
+edge as12 as1 peer 
+edge as12 as140 peer 
+edge as12 as141 peer 
+edge as13 as15 prov 
+edge as13 as16 prov 
+edge as13 as14 peer 
+edge as13 as142 peer 
+edge as14 as15 prov 
+edge as14 as16 prov 
+edge as14 as141 peer 
+edge as15 as16 peer 
+edge as15 as142 peer 
+edge as16 as141 peer 

@@ -7,10 +7,11 @@ set -o pipefail
 set -o nounset
 
 images=(base base_supervisor host router ixp ssh measurement dns switch matrix vpn vlc hostm routinator krill webserver history)
+tag="26"
 
 for image in "${images[@]}"; do
     echo 'Build '$image
-    docker build --tag="d_${image}" "docker_images/${image}/"
+    docker build --tag="${image}" "docker_images/${image}/"
 done
 
 docker login
@@ -22,6 +23,6 @@ docker_name=miniinterneteth
 # Upload all images to docker hub except the first two (base images).
 for image in "${images[@]:2}"; do
     echo 'Upload '$image
-    docker tag "d_${image}" "${docker_name}/d_${image}"
-    docker push "${docker_name}/d_${image}"
+    docker tag "${image}" "${docker_name}/${image}:${tag}"
+    docker push "${docker_name}/${image}:${tag}"
 done

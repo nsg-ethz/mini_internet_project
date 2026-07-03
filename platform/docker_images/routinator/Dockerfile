@@ -1,5 +1,5 @@
 # -- stage 1: build static routinator with musl libc for alpine
-FROM d_base:latest AS build
+FROM base:latest AS build
 
 # Specify what version of routinator should be built.
 ARG ROUTINATOR_VERSION=0.14.1
@@ -16,7 +16,7 @@ RUN cargo build \
     --locked
 
 # -- stage 2: create image with the static routinator executable
-FROM d_base_supervisor:latest
+FROM base_supervisor:latest
 COPY --from=build /tmp/routinator/target/x86_64-alpine-linux-musl/release/routinator /usr/local/bin/
 
 # Install rsync and ca-certificates as routinator depends on it

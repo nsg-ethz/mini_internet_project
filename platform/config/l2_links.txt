@@ -1,3 +1,1 @@
-DCN   S1   DCN   S2   10mbit   1ms    50ms
-DCN   S1   DCN   S3   10mbit   1ms    50ms
-DCN   S2   DCN   S3   10mbit   1ms    50ms
+TCS   S2   TCS   S3   10mbit   1ms    50ms

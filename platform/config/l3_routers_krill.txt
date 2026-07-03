@@ -1,4 +1,4 @@
-ZURI    MATRIX_TARGET routinator:miniinterneteth/d_routinator   vtysh ALL
-ZURI    DNS           krill:miniinterneteth/d_krill             vtysh ALL
-ZURI    MATRIX        N/A                                       vtysh ALL
-ZURI    MEASUREMENT   N/A                                       vtysh ALL
+OLTE    MATRIX_TARGET routinator:miniinterneteth/routinator:26   vtysh ALL
+OLTE    DNS           krill:miniinterneteth/krill:26             vtysh ALL
+OLTE    MATRIX        N/A                                        vtysh ALL
+OLTE    MEASUREMENT   N/A                                        vtysh ALL

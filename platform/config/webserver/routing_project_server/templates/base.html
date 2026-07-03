@@ -2,12 +2,18 @@
     'main.connectivity_matrix': 'matrix',
     'main.looking_glass': 'looking glass',
     'main.as_connections': 'connections',
-    'main.krill': 'krill'
 } %}
+{% if config.TOPOLOGY_TAB %}
+    {% set _ = navigation_bar.update({'main.show_topology': 'topology'}) %}
+{% endif %}
+
+{% set _ = navigation_bar.update({'main.krill': 'krill'}) %}
+
 <!-- Only add VPN to navigation bar, if VPN has been enabled in the config. -->
 {% if config.VPN_ENABLED %}
     {% set _ = navigation_bar.update({'main.vpn': 'vpn'}) %}
 {% endif %}
+
 {% if config.CHATBOT_INTEGRATION %}
     {% set _ = navigation_bar.update({'main.chatbot': 'TA-bot'}) %}
 {% endif %}
@@ -45,11 +51,9 @@
             <div class="w-full block flex-grow lg:flex lg:items-center lg:w-auto"></div>
             {% for endpoint, name in navigation_bar.items() %}
             <div class="">
-                <a class="block mt-4 lg:inline-block lg:mt-0 hover:font-bold mr-4 text-lg" href="{{url_for(endpoint)}}"
-                    }}>
+                <a class="block mt-4 lg:inline-block lg:mt-0 hover:text-[#ff7e79] mr-4 text-lg {{'text-[#ff7e79]' if endpoint == request.endpoint else ' '}}" href="{{url_for(endpoint)}}">
+                    {{name}}
                     <span class="pr-2 pl-2">
-                        <span class="text-gray-400">[</span>{{'🞸' if endpoint == request.endpoint else ' '}}<span
-                            class="text-gray-400">]</span></span>{{name}}
                 </a>
             </div>
             {% endfor %}
@@ -57,9 +61,9 @@
 	    <div class="">
 		<span class="pr-2 pl-2">
                       <span class="text-gray-400 flex">
-		      {{current_user.username + " "}}
+		      {{current_user.username.split("@")[0] + " "}}
 
-		         <a class="block mt-4 lg:inline-block lg:mt-0 hover:font-bold mr-4 text-lg text-white" href="/logout">
+		         <a class="block mt-4 lg:inline-block lg:mt-0 hover:text-[#ff7e79] mr-4 text-lg text-white" href="/logout">
 		            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1"
 			        stroke="currentColor" class="size-6 hover:stroke-2">
   		            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />

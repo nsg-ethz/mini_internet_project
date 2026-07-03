@@ -1,4 +1,4 @@
-FROM d_base:latest
+FROM base:latest
 
 # Install cpanminus for bgpsimple
 # cpanminus and build-essential needed for this

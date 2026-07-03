@@ -4,7 +4,7 @@
 # PLEASE DO NOT EDIT IT DIRECTLY.
 #
 
-FROM d_base:latest
+FROM base:latest
 
 # ensure local python is preferred over distribution python
 ENV PATH=/usr/local/bin:$PATH

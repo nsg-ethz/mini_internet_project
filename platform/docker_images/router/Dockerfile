@@ -1,4 +1,4 @@
-FROM d_base_supervisor:latest
+FROM base_supervisor:latest
 
 RUN apk add --no-cache openssh-server openssh-client frr frr-rpki frr-pythontools wireguard-tools \
     && ssh-keygen -A \

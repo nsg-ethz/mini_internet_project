@@ -10,6 +10,6 @@
 14	AS	NoConfig	l3_routers.txt	l3_links.txt	l2_switches.txt	l2_hosts.txt	l2_links.txt
 15	AS	Config  	l3_routers_tier1_and_stub.txt	l3_links_tier1_and_stub.txt	empty.txt	empty.txt	empty.txt
 16	AS	Config  	l3_routers_tier1_and_stub.txt	l3_links_tier1_and_stub.txt	empty.txt	empty.txt	empty.txt
-80	IXP	Config  	N/A	N/A	N/A	N/A	N/A
-81	IXP	Config  	N/A	N/A	N/A	N/A	N/A
-82	IXP	Config  	N/A	N/A	N/A	N/A	N/A
+140	IXP	Config  	N/A	N/A	N/A	N/A	N/A
+141	IXP	Config  	N/A	N/A	N/A	N/A	N/A
+142	IXP	Config  	N/A	N/A	N/A	N/A	N/A

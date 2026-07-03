@@ -1,5 +1,5 @@
 # -- stage 1: build static krill with musl libc for alpine
-FROM d_base:latest AS build
+FROM base:latest AS build
 
 # Specify what version of krill should be built.
 ARG KRILL_VERSION=0.14.0
