@@ -96,7 +96,7 @@ def connect_services(config: Topology, directory: Path):
 
         client.containers.run(image=f"{os.environ["DOCKERHUB_PREFIX"]}measurement:{os.environ["DOCKER_TAG"]}",
                    name=f"MEASUREMENT", tty=True, detach=True, cpu_count=2, pids_limit=100,
-                   hostname=f"MEASUREMENT", network="bridge", ports={'22': 2099}, cap_add=["NET_ADMIN"],
+                   hostname=f"MEASUREMENT", network="bridge", ports={'22': 2999}, cap_add=["NET_ADMIN"],
                    dns=[subnet_dns_measurement], sysctls=sysctl_measurement, volumes=volumes_measurement)
         
         containers += ["MEASUREMENT"]

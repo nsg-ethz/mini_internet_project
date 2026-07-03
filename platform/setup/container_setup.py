@@ -16,7 +16,7 @@ def container_setup(config: Topology, directory: Path):
     #TODO read in the environments from the config
     os.environ["DOCKERHUB_PREFIX"] = config.environment["DOCKERHUB_PREFIX"]
     os.environ["DOCKER_TAG"] = config.environment["DOCKER_TAG"]
-    os.environ["VPN_OBSERVER_SLEEP"] = config.environment["VPN_OBSERVER_SLEEP"]
+    os.environ["VPN_OBSERVER_SLEEP"] = config.environment.get("VPN_OBSERVER_SLEEP","30")
 
     rpki_location=Path(f"{directory}/groups/rpki")
     krill_container_list_file=f"{rpki_location}/krill_containers.txt"
