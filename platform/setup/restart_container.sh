@@ -583,22 +583,27 @@ restart_one_l2_switch() {
 
                     echo "Restarted switch ${SwitchCtnName}"
 
-                    read -r SwitchInterface SwitchPID GatewayInterface GatewayPID \
-                        < <(connect_one_l2_gateway "${GroupAS}" "${DCName}" "${SWName}" "${RouterName}" "${Throughput}" "${Delay}" "${Buffer}")
-                    echo "Reconnected l2 switch ${SWName} to router ${RouterName} in ${DCName} in ${GroupAS}"
+                    if [[ "${RouterName}" != "N/A" ]]; then
+                        read -r SwitchInterface SwitchPID GatewayInterface GatewayPID \
+                            < <(connect_one_l2_gateway "${GroupAS}" "${DCName}" "${SWName}" "${RouterName}" "${Throughput}" "${Delay}" "${Buffer}")
+                        echo "Reconnected l2 switch ${SWName} to router ${RouterName} in ${DCName} in ${GroupAS}"
 
-                    # set up the VLAN link on the gateway router
-                    GatewayCtnName="${CurrentAS}_${RouterName}router"
+                        # set up the VLAN link on the gateway router
+                        GatewayCtnName="${CurrentAS}_${RouterName}router"
 
-                    # TODO: check why the symlink is deleted so early in this case
-                    create_netns_symlink "${GatewayPID}"
-                    for ((j = 0; j < ${#VlanSet[@]}; j++)); do
-                        VlanTag="${VlanSet[$j]}"
-                        RouterVlanInterface="${RouterName}-L2.$VlanTag"
-                        ip netns exec "${GatewayPID}" ip link add link "${RouterVlanInterface%.*}" name \
-                            "${RouterVlanInterface}" type vlan id "${VlanTag}"
-                    done
-                    echo "Set up VLAN interfaces on ${GatewayCtnName}"
+                        # TODO: check why the symlink is deleted so early in this case
+                        create_netns_symlink "${GatewayPID}"
+                        for ((j = 0; j < ${#VlanSet[@]}; j++)); do
+                            VlanTag="${VlanSet[$j]}"
+                            RouterVlanInterface="${RouterName}-L2.$VlanTag"
+                            ip netns exec "${GatewayPID}" ip link add link "${RouterVlanInterface%.*}" name \
+                                "${RouterVlanInterface}" type vlan id "${VlanTag}"
+                        done
+                        echo "Set up VLAN interfaces on ${GatewayCtnName}"
+                    else
+                        read -r SwitchPID < <(get_container_pid "${SwitchCtnName}" "False")
+                        create_netns_symlink $SwitchPID
+                    fi
 
                     # rename eth0 to ssh
                     ip netns exec "${SwitchPID}" ip link set dev eth0 down
